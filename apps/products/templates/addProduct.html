@@ -1,0 +1,43 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}App Product{% endblock %}
+
+{% block content %}
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Product Information</h5> 
+      </div>
+      <div class="card-body">
+        <form>
+          {% csrf_token %}
+          <div class="mb-6">
+            <label class="form-label" for="basic-default-fullname">Product ID</label>
+            <input type="text" class="form-control" id="basic-default-fullname" placeholder="PO_01" />
+          </div>
+          <div class="mb-6">
+            <label class="form-label" for="basic-default-company">Product Name</label>
+            <input type="text" class="form-control" id="basic-default-company" placeholder="ACME Inc." />
+          </div>
+          
+          <div class="mb-6">
+            <label class="form-label" for="basic-default-phone">Unit Price</label>
+            <input type="text" id="basic-default-phone" class="form-control phone-mask" placeholder="200" />
+          </div>
+          {% comment %} <div class="mb-6">
+            <label class="form-label" for="basic-default-message">Message</label>
+            <textarea id="basic-default-message" class="form-control" placeholder="Hi, Do you have a moment to talk Joe?"></textarea>
+          </div> {% endcomment %}
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+{% endblock %}

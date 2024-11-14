@@ -1,0 +1,64 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Add Customers{% endblock %}
+
+{% block content %}
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Customer Information</h5> 
+      </div>
+      <div class="card-body">
+        <form>
+          {% csrf_token %}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="basic-default-fullname">Full Names</label>
+              <input type="text" class="form-control" id="basic-default-fullname" placeholder="First Name" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="basic-default-fullname">Address</label>
+              <input type="text" class="form-control" id="basic-default-fullname" placeholder="demo hospital" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="basic-default-fullname">Email Address</label>
+              <input type="text" class="form-control" id="basic-default-fullname" placeholder="johndoe@email.com" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="basic-default-fullname">Phone Number</label>
+              <input type="text" class="form-control" id="basic-default-fullname" placeholder="675 654 897" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="basic-default-fullname">Credit Score</label>
+              <input type="text" class="form-control" id="basic-default-fullname" placeholder="Credit Score" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="exampleFormControlSelect1" class="form-label">Sales Rep</label>
+              <select class="form-select" id="exampleFormControlSelect1" aria-label="Default select example">
+                <option selected>Select Related Sales Rep</option>
+                <option value="1">2FA_01</option>
+                <option value="2">2FA_02</option>
+                <option value="3">2FA_03</option>
+              </select>
+            </div>
+          </div>
+          
+          
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+{% endblock %}
