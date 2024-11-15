@@ -67,6 +67,30 @@
     </div>
 </div>
 
+{% comment %} Only the accountant sees this {% endcomment %}
+<hr>
+<div class="container">
+  <div class="row">
+      <!-- First Column -->
+      <div class="col-md-4">
+          <small class="text m-3">Method of Payment </small>
+          <h6 class="text-secondary m-3">Credit</h6>
+      </div>
+      
+      <!-- Second Column -->
+      <div class="col-md-4">
+          <small class="text m-3">Client Credit Score </small>
+          <h6 class="text-primary m-3">300</h6>
+      </div>
+      
+      <!-- Third Column -->
+      <div class="col-md-4">
+          <small class="text m-3">Sales Rep Credit Score </small>
+          <h6 class="text-success m-3">200</h6>
+      </div>
+  </div>
+</div>
+
 <hr>
 
 <div class="card">
@@ -127,9 +151,26 @@
   </div>
 
 </div>
-
+<button type="button" class="btn btn-success my-5" onclick="window.location.href=''">
+  <span class="tf-icons bx bx-check bx-18px me-2"></span>Verify
+</button> 
+<button type="button" class="btn btn-danger my-5" onclick="window.location.href=''">
+  <span class="tf-icons bx bx-x bx-18px me-2"></span>Decline
+</button>
+<button type="button" class="btn btn-info my-5" onclick="window.location.href=''">
+  <span class="tf-icons bx bx-dollar-circle bx-18px me-2"></span>Mark as Paid
+</button> 
 <button type="button" class="btn btn-primary my-5" onclick="window.location.href=''">
-    <span class="tf-icons bx bx-receipt bx-18px me-2"></span>Generate Document
+    <span class="tf-icons bx bx-receipt bx-18px me-2"></span>Bon de Commande
+  </button>
+  <button type="button" class="btn btn-secondary my-5" onclick="window.location.href=''">
+    <span class="tf-icons bx bx-file bx-18px me-2"></span>Generate Receipt
+  </button>
+  <button type="button" class="btn btn-primary my-5" onclick="window.location.href=''">
+    <span class="tf-icons bx bx-paper-plane bx-18px me-2"></span>Bon de Sortie
+  </button>
+  <button type="button" class="btn btn-warning my-5" onclick="window.location.href=''">
+    <span class="tf-icons bx bx-package bx-18px me-2"></span>Bon de Livraison
   </button>
 <!--/ Hoverable Table rows -->
 
