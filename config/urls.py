@@ -78,6 +78,9 @@ urlpatterns = [
      # Requests Urls
     path("", include("apps.stock_request.urls")),
     
+     # Approved Request Urls
+    path("", include("apps.approved_request.urls")),
+    
     # Requests Urls
     path("", include("apps.stock.urls")),
     

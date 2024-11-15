@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "apps.stock_request",
     "apps.sales_rep",
     "apps.stock",
+    "apps.approved_request",
     "tests.apps.TestsConfig",
 ]
 
