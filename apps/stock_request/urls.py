@@ -14,4 +14,9 @@ urlpatterns = [
         requestView.as_view(template_name="createRequests.html"),
         name="create-request",
     ),
+    path(
+        "request-details/",
+        requestView.as_view(template_name="requestDetails.html"),
+        name="request-details",
+    ),
 ]
