@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "apps.stock",
     "apps.approved_request",
     "tests.apps.TestsConfig",
+    'apps.transfer_stock',
 ]
 
 MIDDLEWARE = [

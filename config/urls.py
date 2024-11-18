@@ -84,6 +84,11 @@ urlpatterns = [
     # Requests Urls
     path("", include("apps.stock.urls")),
     
+    # Transfer Stock Urls
+    path("", include("apps.transfer_stock.urls")),
+    
+    
+    
     
     
 ]

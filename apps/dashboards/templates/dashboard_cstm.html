@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Dashboard - Analytics{% endblock %}
+{% block title %}Warehouse Manager Dashboard{% endblock %}
 
 {% block vendor_css %}
 {{ block.super }}
@@ -28,10 +28,10 @@
       <div class="d-flex align-items-start row">
         <div class="col-sm-7">
           <div class="card-body">
-            <h5 class="card-title text-primary mb-3">CG PHARMA Admin Panel 💻</h5>
+            <h5 class="card-title text-info mb-3">CG PHARMA Central Stock Manager 📈 </h5>
             <p class="mb-6">Manage and control all aspects of your inventory system<br>Monitor and get up-to-date information about your stock</p>
 
-            <a href="{% url 'products' %}" class="btn btn-sm btn-outline-primary">View Stock</a>
+            <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-info">View Stock</a>
           </div>
         </div>
         <div class="col-sm-5 text-center text-sm-left">
@@ -49,168 +49,127 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-box text-success" style="font-size: 2em;"></i>
+                <i class="bx bx-paper-plane text-success" style="font-size: 2em;"></i>
 
               </div>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                  <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                </div>
-              </div>
+             
             </div>
-            <p class="mb-1">Total Stock</p>
-            <h4 class="card-title mb-3">12,628</h4>
-            <a href="{% url 'products' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Stock</small></a>
+            <p class="mb-1">Approved Requests</p>
+            <h4 class="card-title mb-3">104 <small>Requests</small></h4>
+            <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> View Approved</small></a>
           </div>
         </div>
       </div>
-      <div class="col-lg-6 col-md-12 col-6 mb-6">
+
+      <div class="col-6 mb-6">
         <div class="card h-100">
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <img src="{% static 'img/icons/unicons/wallet-info.png' %}" alt="wallet info" class="rounded">
+                <i class="bx bx-receipt text-info" style="font-size: 2em;"></i>
+
               </div>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt6" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                  <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                </div>
+              
+            </div>
+            <p class="mb-1">Total Bon de Sortie</p>
+            <h4 class="card-title mb-3">30 <small>Created</small></h4>
+            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Documents</small></a>
+          </div>
+        </div>
+      </div>
+      
+
+    </div>
+  </div>
+  <!-- Total Revenue -->
+  <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
+    <div class="card">
+      <div class="row row-bordered g-0">
+        <div class="col-lg-8">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="card-title mb-0">
+              <h5 class="m-0 me-2"> <i class="bx bx-info-circle text-warning"></i> Notice Board</h5>
+            </div>
+            
+          </div>
+          <div class="m-2">
+            <marquee behavior="" direction="">
+              <h3 class="my-4">CG PHARMA - ANNOUNCEMENTS</h3>
+            </marquee>
+            <p class="fw-medium">No Notice to show at the moment ⚠️</p>
+          </div>
+          <div id="totalRevenueChart" class="px-3"></div>
+        </div>
+        <div class="col-lg-4 d-flex align-items-center">
+          <div class="card-body px-xl-9">
+            <div class="text-center mb-6">
+              <div class="">
+                <p class="text-info fw-medium fs-5">
+                  <script>
+                    document.write(new Date().toDateString());
+                    
+                  </script>
+                </p>
+                <p class="text-warning fw-bold fs-4">
+                  <script>
+                    
+                    document.write(new Date().toLocaleTimeString());
+                  </script>
+                </p>
+                
               </div>
             </div>
-            <p class="mb-1">Sales</p>
-            <h4 class="card-title mb-3">$4,679</h4>
-            <a href="{% url 'orders' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Orders</small></a>
 
+            <div id="growthChart"></div>
+            <div class="text-center fw-bold my-6">CG PHARMA CENTRAL WAREHOUSE</div>
+          
           </div>
         </div>
       </div>
     </div>
   </div>
-    <!-- Total Revenue -->
-    <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
-      <div class="card">
-        <div class="row row-bordered g-0">
-          <div class="col-lg-8">
-            <div class="card-header d-flex align-items-center justify-content-between">
-              <div class="card-title mb-0">
-                <h5 class="m-0 me-2"> <i class="bx bx-info-circle text-warning"></i> Notice Board</h5>
+  <!--/ Total Revenue -->
+  <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
+    <div class="row">
+
+      <div class="col-lg-6 col-md-12 col-6 mb-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="card-title d-flex align-items-start justify-content-between mb-4">
+              <div class="avatar flex-shrink-0">
+                <i class="bx bx-paper-plane text-danger" style="font-size: 2em;"></i>
+
+              </div>
+            </div>
+            <p class="mb-1">Declined Requests</p>
+            <h4 class="card-title mb-3">20 <small>Requests</small></h4>
+            <a href="{% url 'requests' %}"><small class="text-danger fw-medium"><i class='bx bx-open'></i> View Declined</small></a>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="col-6 mb-6">
+
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="card-title d-flex align-items-start justify-content-between mb-4">
+              <div class="avatar flex-shrink-0">
+                <i class="bx bx-box text-warning" style="font-size: 2em;"></i>
+
               </div>
               
             </div>
-            <div class="m-2">
-              <marquee behavior="" direction="">
-                <h3 class="my-4">CG PHARMA - ANNOUNCEMENTS</h3>
-              </marquee>
-              <p class="fw-medium">No Notice to show at the moment ⚠️</p>
-              <a href="{% url 'products' %}" class="btn btn-sm btn-outline-primary">Create Notice</a>
-            </div>
-            <div id="totalRevenueChart" class="px-3"></div>
-          </div>
-          <div class="col-lg-4 d-flex align-items-center">
-            <div class="card-body px-xl-9">
-              <div class="text-center mb-6">
-                <div class="">
-                  <p class="text-info fw-medium fs-5">
-                    <script>
-                      document.write(new Date().toDateString());
-                      
-                    </script>
-                  </p>
-                  <p class="text-warning fw-bold fs-4">
-                    <script>
-                      
-                      document.write(new Date().toLocaleTimeString());
-                    </script>
-                  </p>
-                  
-                </div>
-              </div>
-  
-              <div id="growthChart"></div>
-              <div class="text-center fw-bold my-6">ADMIN DASHBOARD</div>
-            
-            </div>
+            <p class="mb-1">Warehouse Stock</p>
+            <h4 class="card-title mb-3">3345 <small>Products</small></h4>
+            <a href="{% url 'stock' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i> Update Stock</small></a>
           </div>
         </div>
-      </div>
-    </div>
-  <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
-    <div class="row">
-      <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-warning" style="font-size: 2em;"></i>
 
-              </div>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt4" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                  <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                </div>
-              </div>
-            </div>
-            <p class="mb-1">Stock Requests</p>
-            <h4 class="card-title mb-3">2,456</h4>
-            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Requests</small></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="bx bx-group text-primary" style="font-size: 2em;"></i>
 
-              </div>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                  <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                </div>
-              </div>
-            </div>
-            <p class="mb-1">Total Customers</p>
-            <h4 class="card-title mb-3">14,857</h4>
-            <a href="{% url 'customers' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Customers</small></a>
-          </div>
-        </div>
+        
       </div>
-      <div class="col-12 mb-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-10">
-              <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
-                <div class="card-title mb-6">
-                  <h5 class="text-nowrap mb-1">Profile Report</h5>
-                  <span class="badge bg-label-warning">YEAR 2022</span>
-                </div>
-                <div class="mt-sm-auto">
-                  <span class="text-success text-nowrap fw-medium"><i class='bx bx-up-arrow-alt'></i> 68.2%</span>
-                  <h4 class="mb-0">$84,686k</h4>
-                </div>
-              </div>
-              <div id="profileReportChart"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   </div>
 </div>
