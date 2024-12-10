@@ -1,0 +1,35 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}New Recommedation{% endblock %}
+
+{% block content %}
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Send a new recommendation</h5> 
+      </div>
+      <div class="card-body">
+        <form>
+          {% csrf_token %}
+          <div class="mb-6">
+            <label class="form-label" for="basic-default-fullname">Title</label>
+            <input type="text" class="form-control" id="basic-default-fullname" placeholder="John Doe" />
+          </div>
+          <div class="mb-6">
+            <label class="form-label" for="basic-default-company">Recommendation Body</label>
+            <input type="text" class="form-control" id="basic-default-company" placeholder="ACME Inc." />
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+{% endblock %}

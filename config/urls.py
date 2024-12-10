@@ -87,6 +87,9 @@ urlpatterns = [
     # Transfer Stock Urls
     path("", include("apps.transfer_stock.urls")),
     
+    # Recommendation Urls
+    path("", include("apps.recommendations.urls")),
+    
     
     
     

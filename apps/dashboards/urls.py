@@ -10,9 +10,9 @@ urlpatterns = [
         name="index",
     ),
     path(
-        "dashboard-wm",
-        DashboardsView.as_view(template_name="dashboard_wm.html"),
-        name="index-wm",
+        "dashboard-phar",
+        DashboardsView.as_view(template_name="dashboard_pharmacist.html"),
+        name="index-phar",
     ),
     path(
         "dashboard-cstm",

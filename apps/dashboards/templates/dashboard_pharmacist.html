@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Warehouse Manager Dashboard{% endblock %}
+{% block title %}Pharmacist Dashboard{% endblock %}
 
 {% block vendor_css %}
 {{ block.super }}
@@ -23,15 +23,15 @@
 {% block content %}
 
 <div class="row">
-  <div class="col-xxl-8 mb-6 order-0">
+  <div class="col-xxl-15 mb-6 order-0">
     <div class="card">
       <div class="d-flex align-items-start row">
         <div class="col-sm-7">
           <div class="card-body">
-            <h5 class="card-title text-primary mb-3">CG PHARMA Central Warehouse Manager 🧑🏾‍💼</h5>
+            <h5 class="card-title text-primary mb-3">GC PHARMA Pharmacist 🧑🏾‍⚕️</h5>
             <p class="mb-6">Manage and control all aspects of your inventory system<br>Monitor and get up-to-date information about your stock</p>
-
-            <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-primary">View Stock</a>
+            <a href="{% url 'new-recommend' %}" class="btn btn-sm btn-outline-success">New Recommendation</a>
+            <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-warning">Approve Stock Requisition</a>
           </div>
         </div>
         <div class="col-sm-5 text-center text-sm-left">
@@ -42,6 +42,36 @@
       </div>
     </div>
   </div>
+  <div class="col-xxl-8 mb-6 ">
+    <div class="card">
+      <div class="d-flex align-items-start row">
+        <div class="col-sm-7">
+          <div class="card-body">
+            <h5 class="card-title text-warning mb-3">Quick Actions Board </h5>
+            <p class="mb-6">Access function of your dashboard Easily<br>Get Quick Access and increase productivity</p>
+
+            <div class="row">
+              <div class="col-md-5 mb-2">
+                <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-info">Create Customs Report</a>
+              </div>
+              <div class="col-md-5 mb-2">
+                <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-primary">Create Goods Receipt Note (Bon de Recu)</a>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5 text-center text-sm-left">
+          <div class="card-body pb-0 px-0 px-md-6">
+            {% comment %} <img src="{% static 'img/illustrations/man-with-laptop.png' %}" height="175" alt="View Badge User"> {% endcomment %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
   <div class="col-lg-4 col-md-4 order-1">
     <div class="row">
       <div class="col-lg-6 col-md-12 col-6 mb-6">
@@ -54,7 +84,7 @@
               </div>
               
             </div>
-            <p class="mb-1">New Stock Reqests</p>
+            <p class="mb-1">New Stock Requisition</p>
             <h4 class="card-title mb-3">3 <small>New</small></h4>
             <a href="{% url 'requests' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i> View New</small></a>
           </div>
@@ -66,14 +96,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-info" style="font-size: 2em;"></i>
+                <i class="bx bx-anchor text-info" style="font-size: 2em;"></i>
 
               </div>
               
             </div>
-            <p class="mb-1">Total Stock Requests</p>
-            <h4 class="card-title mb-3">2,456 <small>Requests</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Total</small></a>
+            <p class="mb-1">Custom Clearance Report</p>
+            <h4 class="card-title mb-3">6<small>Reports</small></h4>
+            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Reports</small></a>
           </div>
         </div>
       </div>
@@ -81,6 +111,7 @@
 
     </div>
   </div>
+
   <!-- Total Revenue -->
   <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
     <div class="card">
@@ -94,7 +125,7 @@
           </div>
           <div class="m-2">
             <marquee behavior="" direction="">
-              <h3 class="my-4">CG PHARMA - ANNOUNCEMENTS</h3>
+              <h3 class="my-4">GC PHARMA - ANNOUNCEMENTS</h3>
             </marquee>
             <p class="fw-medium">No Notice to show at the moment ⚠️</p>
           </div>
@@ -121,7 +152,7 @@
             </div>
 
             <div id="growthChart"></div>
-            <div class="text-center fw-bold my-6">CG PHARMA CENTRAL WAREHOUSE</div>
+            <div class="text-center fw-bold my-6">GC PHARMA CENTRAL WAREHOUSE</div>
           
           </div>
         </div>
@@ -136,14 +167,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-success" style="font-size: 2em;"></i>
+                <i class="bx bx-plus-medical text-success" style="font-size: 2em;"></i>
 
               </div>
              
             </div>
-            <p class="mb-1">Approved Requests</p>
-            <h4 class="card-title mb-3">104 <small>Requests</small></h4>
-            <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> View Approved</small></a>
+            <p class="mb-1">Recommend Medical Products</p>
+            <h4 class="card-title mb-3">5 <small>Recommendations</small></h4>
+            <a href="{% url 'recommend' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> Recommendations</small></a>
           </div>
         </div>
       </div>
@@ -152,13 +183,13 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-danger" style="font-size: 2em;"></i>
+                <i class="bx bx-file text-primary" style="font-size: 2em;"></i>
 
               </div>
             </div>
-            <p class="mb-1">Declined Requests</p>
-            <h4 class="card-title mb-3">20 <small>Requests</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-danger fw-medium"><i class='bx bx-open'></i> View Declined</small></a>
+            <p class="mb-1">Goods Receipt Note(Bon de Recu)</p>
+            <h4 class="card-title mb-3">10 <small>Documents</small></h4>
+            <a href="{% url 'requests' %}"><small class="text-primary fw-medium"><i class='bx bx-open'></i> View Documents</small></a>
           </div>
         </div>
       </div>
