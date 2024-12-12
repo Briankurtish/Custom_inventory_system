@@ -1,17 +1,15 @@
 from django.urls import path
-from .views import branchView
+from .views import ManageBranchView, add_branch_view, update_branch_view, delete_branch_view
 
 
 
 urlpatterns = [
     path(
-        "branches-list/",
-        branchView.as_view(template_name="branches.html"),
-        name="branches",
+        "branches-list/", ManageBranchView, name="branches",
     ),
     path(
-        "add-branch/",
-        branchView.as_view(template_name="addBranch.html"),
-        name="add-branch",
+        "add-branch/", add_branch_view, name="add-branch",
     ),
+    path("edit-branch/<int:pk>/", update_branch_view, name="edit-branch"),
+    path("delete-branch/<int:pk>/", delete_branch_view, name="delete-branch"),
 ]

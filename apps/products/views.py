@@ -131,22 +131,22 @@ def delete_product_view(request, pk):
 
 
 def edit_batch_view(request, pk):
-    batch = get_object_or_404(Batch, pk=pk)  # Fetch the batch by primary key (ID)
+    batch = get_object_or_404(Batch, pk=pk)  
     
     if request.method == "POST":
-        form = BatchForm(request.POST, instance=batch)  # Bind the form to the batch instance
+        form = BatchForm(request.POST, instance=batch)  
         if form.is_valid():
             form.save()
-            return redirect('add-batch')  # Redirect to the batch list after saving
+            return redirect('add-batch')  
     else:
-        form = BatchForm(instance=batch)  # Prepopulate the form with the batch data
+        form = BatchForm(instance=batch)  
 
-    batches = Batch.objects.all()  # Include all batches for the list in the template
+    batches = Batch.objects.all()  
 
     view_context = {
         "form": form,
         "batches": batches,
-        "is_editing": True,  # Flag to indicate this is an edit operation
+        "is_editing": True,  
     }
     context = TemplateLayout.init(request, view_context)
 
@@ -159,10 +159,10 @@ def delete_batch_view(request, pk):
         batch.delete()  # Delete the batch
         return redirect('add-batch')  # Redirect to the batch list
 
-    batches = Batch.objects.all()
+    batch = Batch.objects.all()
 
     view_context = {
-        "batches": batches,
+        "batch": batch,
     }
     context = TemplateLayout.init(request, view_context)
 
