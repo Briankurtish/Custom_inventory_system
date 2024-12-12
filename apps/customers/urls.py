@@ -1,17 +1,16 @@
 from django.urls import path
-from .views import customerView
+from .views import ManageCustomerView, customer_view, delete_customer_view
 
 
 
 urlpatterns = [
     path(
-        "customers-list/",
-        customerView.as_view(template_name="customers.html"),
-        name="customers",
+        "customers-list/", ManageCustomerView, name="customers",
     ),
     path(
-        "add-customer/",
-        customerView.as_view(template_name="addCustomer.html"),
-        name="add-customers",
+        "add-customer/", customer_view, name="add-customers",
     ),
+    
+    path("edit-customer/<int:pk>/", customer_view, name="edit-customer"),
+    path("delete-customer/<int:pk>/", delete_customer_view, name="delete-customer"),
 ]

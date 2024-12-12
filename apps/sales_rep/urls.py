@@ -1,17 +1,19 @@
 from django.urls import path
-from .views import salesRepView
+from .views import ManageSalesRepView, add_salesRep_view, update_salesRep_view, delete_salesRep_view
 
 
 
 urlpatterns = [
     path(
         "sales-rep-list/",
-        salesRepView.as_view(template_name="sales-rep.html"),
+        ManageSalesRepView,
         name="sales-rep",
     ),
     path(
         "add-sales-rep/",
-        salesRepView.as_view(template_name="addSalesRep.html"),
+        add_salesRep_view,
         name="add-sales-rep",
     ),
+    path("edit-sales-rep/<int:pk>/", update_salesRep_view, name="edit-sales-rep"),
+    path("delete-sales-rep/<int:pk>/", delete_salesRep_view, name="delete-sales-rep"),
 ]

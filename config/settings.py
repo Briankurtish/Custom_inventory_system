@@ -203,3 +203,6 @@ THEME_VARIABLES = THEME_VARIABLES
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+MEDIA_ROOT = (BASE_DIR / 'media/')
+
+MEDIA_URL = '/media/'

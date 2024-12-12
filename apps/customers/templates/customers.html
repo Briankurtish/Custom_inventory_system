@@ -24,91 +24,45 @@
         <tr>
           <th>Client ID</th>
           <th>Name</th>
-          <th>Address</th>
-          <th>Phone Number</th>
+          <th>Postal Code</th>
+          <th>Contact Person</th>
+          <th>Telephone</th>
           <th>Email</th>
-          <th>Credit Score</th>
-          <th>Sales Rep ID</th>
+          <th>Agreement Number</th>
+          <th>Tax Payer Number</th>
+          <th>Location Plan</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-        <tr>
-          <td><span>CLT_001</span></td>
-          <td>John Phillip</td>
-          <td>Hopital General</td>
-          <td>654789865</td>
-          <td>Jthomas@gmail.com</td>
-          <td>230</td>
-          <td><span>2FA_01</span></td>
 
+        {% for customer in customers %}
+        <tr>
+          <td><span>{{customer.customer_id}}</span></td>
+          <td>{{customer.customer_name}}</td>
+          <td>{{customer.postal_code}}</td>
+          <td>{{customer.contact_person}}</td>
+          <td>{{customer.telephone}}</td>
+          <td>{{customer.email}}</td>
+          <td>{{customer.agreement_number}}</td>
+          <td>{{customer.tax_payer_number}}</td>
+          <td><a href="{{ customer.location_plan.url }}" target="_blank">View Location Plan</a></td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
+                <a class="dropdown-item" href="{% url 'edit-customer' customer.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                <a class="dropdown-item" href="{% url 'delete-customer' customer.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
               </div>
             </div>
           </td>
         </tr>
-        <tr>
-          <td><span>CLT_001</span></td>
-          <td>John Phillip</td>
-          <td>Hopital General</td>
-          <td>654789865</td>
-          <td>Jthomas@gmail.com</td>
-          <td>230</td>
-          <td><span>2FA_01</span></td>
+        {% comment %} {% empty %}
+        <div>
+          <p>No Customers yet</p>
+        </div> {% endcomment %}
 
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>CLT_001</span></td>
-          <td>John Phillip</td>
-          <td>Hopital General</td>
-          <td>654789865</td>
-          <td>Jthomas@gmail.com</td>
-          <td>230</td>
-          <td><span>2FA_01</span></td>
-
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>CLT_001</span></td>
-          <td>John Phillip</td>
-          <td>Hopital General</td>
-          <td>654789865</td>
-          <td>Jthomas@gmail.com</td>
-          <td>230</td>
-          <td><span>2FA_01</span></td>
-
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
