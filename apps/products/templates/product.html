@@ -7,6 +7,10 @@
 
 {% block content %}
 
+<button type="button" class="btn btn-outline-info" onclick="window.location.href='{% url 'add-batch' %}'">
+  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Batch Number
+</button>
+
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Product
 </button>
@@ -23,69 +27,35 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Product ID</th>
-          <th>Product Name</th>
+          <th>Product Code</th>
+          <th>Brand Name</th>
+          <th>Generic Name & Dosage</th>
+          <th>Pack Size</th>
           <th>Unit Price</th>
+          <th>Batch Number</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
+        {% for product in products %}
         <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200<small> Frs<small></td>
+          <td><span>{{product.product_code}}</span></td>
+          <td>{{product.brand_name}}</td>
+          <td>{{product.generic_name_dosage}}</td>
+          <td>{{product.pack_size}}</td>
+          <td>{{product.unit_price}}</td>
+          <td>{{ product.batch.batch_number }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
+                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                <a class="dropdown-item" href="{% url 'delete-product' product.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
               </div>
             </div>
           </td>
         </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200<small> Frs<small></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200<small> Frs<small></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200<small> Frs<small></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
