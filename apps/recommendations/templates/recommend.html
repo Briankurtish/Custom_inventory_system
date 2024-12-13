@@ -22,20 +22,25 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Address</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Reason</th>
+          <th>Date Created</th>
+          <th>Document</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
+        {% for recommendation in recommendation %}
         <tr>
-          <td> <span>B01_DLA</span></td>
-          <td>Douala Branch</td>
+          <td> <span>{{recommendation.product}}</span></td>
+          <td>{{recommendation.quantity}}</td> 
 
-          <td><span class="text  me-1">Douala</span></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
+          <td><span class="text  me-1">{{recommendation.reason}}</span></td>
+          <td><span class="text  me-1">{{recommendation.date_created}}</span></td>
+          <td><a href="{{ recommendation.recommendation_document.url }}" target="_blank">View Document</a></td>
+          <td><span class="badge bg-label-info me-1">{{recommendation.status}}</span></td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
@@ -46,39 +51,7 @@
             </div>
           </td>
         </tr>
-        <tr>
-          <td> <span>B02_YDE</span></td>
-          <td>Yaounde Branch</td>
-          
-          <td><span class="text me-1">Yaounde</span></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td> <span>B03_BFM</span></td>
-          <td>Bafoussam Branch</td>
-
-          <td><span class="text me-1">Bafoussam</span></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-
+        {% endfor %}
       </tbody>
     </table>
   </div>

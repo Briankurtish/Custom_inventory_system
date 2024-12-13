@@ -7,13 +7,28 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-info" onclick="window.location.href='{% url 'add-batch' %}'">
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Batch Number
 </button>
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Product
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Brand Name
 </button>
+
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Generic Name
+</button>
+
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Pack Size
+</button>
+
+<hr>
+<div class="mt-5">
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
+    <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Product
+  </button>
+</div>
 
 
 <hr class="my-8">

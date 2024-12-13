@@ -1,0 +1,124 @@
+from django import forms
+from django.contrib.auth.models import User
+from .models import Worker
+from apps.branches.models import Branch
+
+class UserCreationForm(forms.ModelForm):
+    first_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),
+        label="First Name"
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter last name'}),
+        label="Last Name"
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter email'}),
+        label="Email"
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}),
+        label="Password"
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password'}),
+        label="Confirm Password"
+    )
+    role = forms.ChoiceField(
+        choices=Worker.ROLE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Role"
+    )
+    branch = forms.ModelChoiceField(
+        queryset=Branch.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Branch (optional)"
+    )
+    telephone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
+        label="Telephone"
+    )
+    department = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
+        label="Department"
+    )
+    address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
+        label="Address"
+    )
+
+    class Meta:
+        model = Worker
+        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'role', 'branch', 'telephone', 'department', 'address']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            self.add_error('confirm_password', "Passwords do not match.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        """
+        Creates a user and an associated Worker profile.
+        """
+        cleaned_data = self.cleaned_data
+
+        # Temporarily use the email as a username during User creation
+        temporary_username = cleaned_data['email'][:150]  # Truncate to avoid exceeding max length
+
+        # Create the User first
+        user = User.objects.create_user(
+            username=temporary_username,
+            first_name=cleaned_data['first_name'],
+            last_name=cleaned_data['last_name'],
+            email=cleaned_data['email'],
+            password=cleaned_data['password']
+        )
+
+        # Create the Worker and generate the employee_id
+        worker = Worker(
+            user=user,
+            role=cleaned_data['role'],
+            branch=cleaned_data['branch'],
+            telephone=cleaned_data['telephone'],
+            department=cleaned_data['department'],
+            address=cleaned_data['address']
+        )
+        worker.save()
+
+        # Update the User's username to match the Worker's employee_id
+        user.username = worker.employee_id
+        user.save()
+
+        return user, worker
+
+
+class WorkerForm(forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ['role', 'branch', 'telephone', 'department', 'address']
+        widgets = {
+            'role': forms.Select(attrs={'class': 'form-control'}),
+            'branch': forms.Select(attrs={'class': 'form-control'}),
+            'telephone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
+            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
+        }
+        labels = {
+            'role': 'Worker Role',
+            'branch': 'Branch',
+            'telephone': 'Telephone',
+            'department': 'Department',
+            'address': 'Address',
+        }

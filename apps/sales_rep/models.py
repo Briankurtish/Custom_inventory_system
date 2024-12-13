@@ -4,8 +4,11 @@ class SalesAgent(models.Model):
     agent_id = models.CharField(
         max_length=50, unique=True, help_text="Sales Agent Identifier"
     )
-    agent_name = models.CharField(
-        max_length=255, help_text="Sales Agent Name"
+    agent_firstName = models.CharField(
+        max_length=255, help_text="Sales Agent First Name"
+    )
+    agent_lastName = models.CharField(
+        max_length=255, help_text="Sales Agent Last Name"
     )
     telephone = models.CharField(
         max_length=20, blank=True, null=True, help_text="Telephone"
@@ -16,6 +19,9 @@ class SalesAgent(models.Model):
     branch = models.ForeignKey(
         'branches.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='sales_agents',
         help_text="Branch the Sales Agent belongs to"
+    )
+    agent_manager = models.CharField(
+        max_length=255, help_text="Sales Agent Manager"
     )
 
     def __str__(self):

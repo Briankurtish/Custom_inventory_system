@@ -13,9 +13,12 @@ class Customer(models.Model):
     postal_code = models.CharField(
         max_length=20, blank=True, null=True, help_text="Code Postal"
     )
-    contact_person = models.ForeignKey(
+    sales_rep = models.ForeignKey(
     'sales_rep.SalesAgent', on_delete=models.SET_NULL, null=True, blank=True, related_name='customers',
         help_text="Assigned Sales Agent"
+    )
+    contact_person = models.CharField(
+        max_length=255, help_text="Contact Person"
     )
     telephone = models.CharField(
         max_length=20, blank=True, null=True, help_text="Telephone"
@@ -30,6 +33,9 @@ class Customer(models.Model):
         max_length=100, blank=True, null=True, help_text="Immatriculation"
     )
     location_plan = models.FileField(upload_to='location_plan/')
+    note = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Notes"
+    )
 
     def __str__(self):
         return f"{self.customer_id} - {self.customer_name}"

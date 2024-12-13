@@ -5,6 +5,7 @@ class Batch(models.Model):
         max_length=50, unique=True, help_text="Numéro de lot"
     )
     expiry_date = models.DateField(help_text="Date d’expiration")
+    
 
     def __str__(self):
         return f"Batch {self.batch_number} - Expiry: {self.expiry_date}"

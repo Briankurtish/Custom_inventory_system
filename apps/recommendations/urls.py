@@ -1,17 +1,17 @@
 from django.urls import path
-from .views import recommendationView
+from .views import ManageRecommedationView, add_recommend_view
 
 
 
 urlpatterns = [
     path(
         "recommendations/",
-        recommendationView.as_view(template_name="recommend.html"),
+        ManageRecommedationView,
         name="recommend",
     ),
     path(
         "new-recommendations/",
-        recommendationView.as_view(template_name="newRecommend.html"),
+        add_recommend_view,
         name="new-recommend",
     ),
     

@@ -1,17 +1,18 @@
 from django.urls import path
-from .views import workerView
+from .views import ManageWorkerView, add_worker_view, update_worker_view
 
 
 
 urlpatterns = [
     path(
         "workers-list/",
-        workerView.as_view(template_name="workers.html"),
+        ManageWorkerView,
         name="workers",
     ),
     path(
         "add-worker/",
-        workerView.as_view(template_name="addWorker.html"),
+        add_worker_view,
         name="add-workers",
     ),
+    path("edit-worker/<int:pk>/", update_worker_view, name="edit-worker"),
 ]
