@@ -93,6 +93,12 @@ urlpatterns = [
     # Recommendation Urls
     path("", include("apps.recommendations.urls")),
     
+    # Brand Name Urls
+    path("", include("apps.brandName.urls")),
+    
+    # Generic Name Urls
+    path("", include("apps.genericName.urls")),
+    
     
     
     

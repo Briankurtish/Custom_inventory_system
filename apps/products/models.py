@@ -1,4 +1,6 @@
 from django.db import models
+from django.db import IntegrityError
+
 
 class Batch(models.Model):
     batch_number = models.CharField(
@@ -11,9 +13,10 @@ class Batch(models.Model):
         return f"Batch {self.batch_number} - Expiry: {self.expiry_date}"
 
 
+
 class Product(models.Model):
     product_code = models.CharField(
-        max_length=50, unique=True, blank=True, help_text="Code produit"
+        max_length=50, blank=True, help_text="Code produit"
     )
     brand_name = models.CharField(
         max_length=255, help_text="Designation"
@@ -32,17 +35,27 @@ class Product(models.Model):
     )
 
     class Meta:
-        unique_together = ("product_code", "batch")
+        unique_together = ("brand_name", "batch")  # Ensure each brand_name and batch combination is unique
 
     def __str__(self):
         return f"{self.product_code} - {self.brand_name} ({self.generic_name_dosage}) - Batch {self.batch.batch_number}"
 
     def save(self, *args, **kwargs):
+        # Assign a product code only if it hasn't been set
         if not self.product_code:
-            last_product = Product.objects.order_by('id').last()
-            if last_product and last_product.product_code.startswith("GCP"):
-                last_number = int(last_product.product_code[3:])  # Extract the number part
-                self.product_code = f"GCP{last_number + 1:04d}"  # Increment and pad with zeros
+            # Check if a product with the same brand_name exists
+            existing_product = Product.objects.filter(brand_name=self.brand_name).first()
+            if existing_product:
+                # Reuse the product code from the existing product
+                self.product_code = existing_product.product_code
             else:
-                self.product_code = "GCP0001"  # Start from GCP0001
+                # Generate a new product code
+                last_product = Product.objects.order_by('id').last()
+                if last_product and last_product.product_code.startswith("GCP"):
+                    last_number = int(last_product.product_code[3:])  # Extract the numeric part
+                    self.product_code = f"GCP{last_number + 1:04d}"  # Increment and format
+                else:
+                    self.product_code = "GCP0001"  # Start from GCP0001
+
+        # Save the product instance
         super().save(*args, **kwargs)

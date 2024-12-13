@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     "tests.apps.TestsConfig",
     'apps.transfer_stock',
     'apps.recommendations',
+    'apps.brandName',
+    'apps.genericName',
     "crispy_forms",
     "crispy_bootstrap5",
 ]
