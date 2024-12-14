@@ -6,11 +6,14 @@ class Batch(models.Model):
     batch_number = models.CharField(
         max_length=50, unique=True, help_text="Numéro de lot"
     )
+    generic_name = models.CharField(
+        max_length=255, help_text="Generic Name"
+    )
     expiry_date = models.DateField(help_text="Date d’expiration")
     
 
     def __str__(self):
-        return f"Batch {self.batch_number} - Expiry: {self.expiry_date}"
+        return f"Batch: {self.batch_number} -- {self.generic_name} - Expiry: {self.expiry_date}"
 
 
 
@@ -18,14 +21,14 @@ class Product(models.Model):
     product_code = models.CharField(
         max_length=50, blank=True, help_text="Code produit"
     )
-    brand_name = models.CharField(
-        max_length=255, help_text="Designation"
+    brand_name = models.ForeignKey(
+        "brandName.BrandNameModel", on_delete=models.CASCADE, related_name="products", help_text="Brand Name associated with this product"
     )
-    generic_name_dosage = models.CharField(
-        max_length=255, help_text="DCI et Dosage"
+    generic_name_dosage = models.ForeignKey(
+        "genericName.GenericName", on_delete=models.CASCADE, related_name="products", help_text="Generic Name associated with this product"
     )
-    pack_size = models.CharField(
-        max_length=100, help_text="Conditionnement"
+    pack_size = models.ForeignKey(
+        "pack_size.PackSize", on_delete=models.CASCADE, related_name="products", help_text="Pack Size associated with this product"
     )
     unit_price = models.DecimalField(
         max_digits=10, decimal_places=2, help_text="Unit Price of the product"

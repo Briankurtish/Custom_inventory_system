@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Manage Generic Names{% endblock title %}
+{% block title %}Manage Pack Sizes{% endblock title %}
 
 {% block vendor_css %}
 {{ block.super }}
@@ -22,7 +22,7 @@
 
 {% block content %}
 <div class="row gy-6">
-  <h3 class=" mb-0 flex-wrap text-nowrap">Manage Generic Names</h3>
+  <h3 class=" mb-0 flex-wrap text-nowrap">Manage Pack Sizes</h3>
 
   <!-- Hoverable Table rows -->
 
@@ -31,13 +31,13 @@
       <div class="card text-center">
         <div class="card-body">
           <h5 class="card-title text-warning"> <span class="tf-icons ri-notification-fill text-warning ri-16px me-1_5"></span>Warning</h5>
-          <p class="card-text">Are you sure you want to delete {{branch.branch_name}}?</p>
+          <p class="card-text">Are you sure you want to delete {{pack_size.pack_size}}?</p>
           <form method="POST">
             {% csrf_token %}
             {% comment %} {{form}} {% endcomment %}
             <div class="row">
                 <div class="col-md-3">
-                    <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
+                    <a href="{% url 'add-packsize' %}" class="btn btn-secondary">Cancel</a>
                 </div>
                 <div class="col-md-3">
                     <button class="btn btn-danger" type="submit">Yes</button>

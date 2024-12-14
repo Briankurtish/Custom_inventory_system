@@ -99,6 +99,9 @@ urlpatterns = [
     # Generic Name Urls
     path("", include("apps.genericName.urls")),
     
+    # Pack Size Urls
+    path("", include("apps.pack_size.urls")),
+    
     
     
     

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ManageGenericView, add_generic_view, edit_generic_view
+from .views import ManageGenericView, add_generic_view, edit_generic_view, delete_generic_view
 
 
 urlpatterns = [
@@ -7,5 +7,5 @@ urlpatterns = [
         "add-genericName/", add_generic_view, name="add-genericName",
     ),
     path("edit-generic/<int:pk>/", edit_generic_view, name="edit-genericName"),
-    # path("delete-branch/<int:pk>/", delete_branch_view, name="delete-branch"),
+    path("delete-generic/<int:pk>/", delete_generic_view, name="delete-genericName"),
 ]

@@ -59,3 +59,20 @@ def edit_brand_view(request, pk):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'add_brandName.html', context)
+
+
+
+def delete_brand_view(request, pk):
+    brandName = get_object_or_404(BrandNameModel, pk=pk)  # Get the batch by ID
+    if request.method == "POST":
+        brandName.delete()  # Delete the batch
+        return redirect('add-brandName')  # Redirect to the batch list
+
+    brandName = BrandNameModel.objects.all()
+
+    view_context = {
+        "brandName": brandName,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'deleteBrandName.html', context)

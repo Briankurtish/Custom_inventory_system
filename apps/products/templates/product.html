@@ -19,7 +19,7 @@
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Generic Name
 </button>
 
-<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Pack Size
 </button>
 
@@ -48,6 +48,7 @@
           <th>Pack Size</th>
           <th>Unit Price</th>
           <th>Batch Number</th>
+          <th>Expiry Date</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -60,6 +61,7 @@
           <td>{{product.pack_size}}</td>
           <td>{{product.unit_price}}</td>
           <td>{{ product.batch.batch_number }}</td>
+          <td>{{ product.batch.expiry_date }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>

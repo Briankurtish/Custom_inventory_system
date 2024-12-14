@@ -59,3 +59,19 @@ def edit_generic_view(request, pk):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'add_genericName.html', context)
+
+
+def delete_generic_view(request, pk):
+    generic_name = get_object_or_404(GenericName, pk=pk)  # Get the batch by ID
+    if request.method == "POST":
+        generic_name.delete()  # Delete the batch
+        return redirect('add-genericName')  # Redirect to the batch list
+
+    generic_name = GenericName.objects.all()
+
+    view_context = {
+        "generic_name": generic_name,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'delete_genericName.html', context)

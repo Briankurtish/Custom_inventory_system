@@ -44,6 +44,7 @@
       <thead>
         <tr>
           <th>Batch Number</th>
+          <th>Generic Name</th>
           <th>Exipry Date</th>
           <th>Actions</th>
         </tr>
@@ -52,6 +53,7 @@
         {% for batch in batches %}
         <tr>
           <td><span>{{batch.batch_number}}</span></td>
+          <td><span>{{batch.generic_name}}</span></td>
           <td>{{batch.expiry_date}}</td>
           <td>
             <div class="dropdown">
