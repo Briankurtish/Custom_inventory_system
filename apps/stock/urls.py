@@ -1,17 +1,18 @@
 from django.urls import path
-from .views import stockView
+from .views import update_stock_view
 
 
 
 urlpatterns = [
+    path('search-products/', update_stock_view, name='search_products'),
     path(
         "stock/",
-        stockView.as_view(template_name="stock.html"),
+        update_stock_view,
         name="stock",
     ),
     path(
         "update-stock/",
-        stockView.as_view(template_name="updateStock.html"),
+        update_stock_view,
         name="update-stock",
     ),
 ]

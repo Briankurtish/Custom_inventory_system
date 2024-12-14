@@ -27,6 +27,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon/favicon.ico' %}" />
 
+
     <!-- Include the styles partial -->
     {% include "./partials/styles.html" %} {% block vendor_css %}{% endblock vendor_css %}
 
@@ -47,5 +48,10 @@
 
     <!--Page Javascript-->
     {% block page_js %} {% endblock page_js %}
+
+    {% block scripts %}
+      
+    {% endblock scripts %}
   </body>
+  
 </html>
