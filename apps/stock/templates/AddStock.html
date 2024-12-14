@@ -3,37 +3,14 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Update Stocks{% endblock %}
+{% block title %}Add Stocks{% endblock %}
 
 {% load crispy_forms_tags %}
-
-{% block page_css %}
-<style>
-  /* Adjust the height of the Select2 field */
-  .select2-container--bootstrap-5 .select2-selection {
-    height: 200px !important; /* Adjust the height as needed */
-    display: flex;
-    align-items: center; /* Center text vertically */
-  }
-
-  /* Adjust font size and padding for better appearance */
-  .select2-container--bootstrap-5 .select2-selection__rendered {
-    font-size: 16px; /* Adjust font size */
-    padding: 5px 15px; /* Adjust padding */
-  }
-
-  /* Adjust the dropdown for a consistent look */
-  .select2-container--bootstrap-5 .select2-dropdown {
-    border-radius: 0.25rem;
-    border: 2px solid #ddd;
-  }
-</style>
-{% endblock page_css %}
 
 {% block content %}
 
 <div class="container mt-4">
-  <h1 class="text-center">Update Stock</h1>
+  <h1 class="text-center">Add Stock</h1>
 
   <!-- Stock Form -->
   <form method="post">
@@ -92,8 +69,8 @@
   <div class="d-flex justify-content-center mt-4">
     <form method="post">
       {% csrf_token %}
-      <button type="submit" class="btn btn-secondary btn-lg" name="update_stock" value="true">
-        Update Stock
+      <button type="submit" class="btn btn-primary btn-lg" name="update_stock" value="true">
+        Add Stock
       </button>
     </form>
   </div>
@@ -112,16 +89,6 @@
       allowClear: true,
       width: "100%",
     });
-
-    // Adjust the style for the Select2 dropdown to make it look good
-    $("#id_product").on("select2:open", function () {
-      $(".select2-container--bootstrap-5 .select2-dropdown").css({
-        borderRadius: "0.25rem",
-        border: "2px solid #ddd",
-      });
-    });
-
-    
   });
 </script>
 
