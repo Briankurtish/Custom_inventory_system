@@ -1,18 +1,44 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.workers.models import Worker
 
+class DashboardsView(LoginRequiredMixin, TemplateView):
+    # Default fallback template
+    template_name = "dashboard_analytics.html"
+    
+    def get_template_names(self):
+        """
+        Dynamically select the template based on the worker's role.
+        """
+        if self.request.user.is_authenticated:
+            try:
+                # Retrieve the worker's role
+                worker = self.request.user.worker_profile
+                role_template_map = {
+                    'Director': 'dashboard_analytics.html',
+                    'Pharmacist': 'dashboard_pharmacist.html',
+                    'Marketing Director': 'dashboard_marketing.html',
+                    'Stock Manager': 'dashboard_cstm.html',
+                    'Stock Keeper': 'dashboard_stock_keeper.html',
+                    'Accountant': 'dashboard_accountant.html',
+                    'Cashier': 'dashboard_cashier.html',
+                    'Secretary': 'dashboard_sec.html',
+                    'Sales Rep': 'dashboard_cstm.html',
+                    'Driver': 'dashboard_driver.html',
+                    'Other': 'dashboard_other.html',
+                }
+                # Return the specific template for the role or the default
+                return [role_template_map.get(worker.role, self.template_name)]
+            except Worker.DoesNotExist:
+                # If no worker profile exists, fallback to default template
+                return [self.template_name]
+        return super().get_template_names()
 
-"""
-This file is a view controller for multiple pages as a module.
-Here you can override the page view layout.
-Refer to dashboards/urls.py file for more pages.
-"""
-
-
-class DashboardsView(TemplateView):
-    # Predefined function
     def get_context_data(self, **kwargs):
-        # A function to init the global layout. It is defined in web_project/__init__.py file
+        """
+        Add additional context data if needed.
+        """
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
-
+        context['role'] = getattr(self.request.user.worker_profile, 'role', 'Unknown')
         return context

@@ -206,6 +206,11 @@ THEME_VARIABLES = THEME_VARIABLES
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+LOGIN_REDIRECT_URL = 'index'
+
+LOGIN_URL = 'auth-login-basic'
+
 MEDIA_ROOT = (BASE_DIR / 'media/')
 
 MEDIA_URL = '/media/'

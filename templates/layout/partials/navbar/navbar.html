@@ -81,9 +81,12 @@
             <div class="dropdown-divider my-1"></div>
           </li>
           <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <i class="bx bx-power-off bx-md me-3"></i><span>Log Out</span>
-            </a>
+            <div class="d-grid px-4 pt-2 pb-1">
+              <a class="btn btn-danger d-flex" href="{% url 'logout' %}">
+                <small class="align-middle">Logout</small>
+                <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
+              </a>
+            </div>
           </li>
         </ul>
       </li>

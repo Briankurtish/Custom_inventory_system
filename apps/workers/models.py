@@ -12,6 +12,7 @@ class Worker(models.Model):
         ('Accountant', 'Accountant'),
         ('Cashier', 'Cashier'),
         ('Secretary', 'Secretary'),
+        ('Sales Rep', 'Sales Rep'),
         ('Driver', 'Driver'),
         ('Other', 'Other'),
     ]
@@ -49,12 +50,22 @@ class Worker(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.employee_id:
-            last_worker = Worker.objects.order_by('id').last()
-            if last_worker and last_worker.employee_id.startswith("GC-W"):
-                last_number = int(last_worker.employee_id[5:])  # Extract digits after "GC-W"
-                self.employee_id = f"GC-W{last_number + 1:04d}"
+            if self.role == 'Sales Rep':
+                # Generate an ID for Sales Reps starting with "2AP-"
+                last_worker = Worker.objects.filter(employee_id__startswith="2AP-").order_by('id').last()
+                if last_worker:
+                    last_number = int(last_worker.employee_id[4:])  # Extract digits after "2AP-"
+                    self.employee_id = f"2AP-{last_number + 1:03d}"
+                else:
+                    self.employee_id = "2AP-001"
             else:
-                self.employee_id = "GC-W0001"
+                # Generate a generic ID starting with "GC-W"
+                last_worker = Worker.objects.filter(employee_id__startswith="GC-W").order_by('id').last()
+                if last_worker:
+                    last_number = int(last_worker.employee_id[5:])  # Extract digits after "GC-W"
+                    self.employee_id = f"GC-W{last_number + 1:04d}"
+                else:
+                    self.employee_id = "GC-W0001"
         super().save(*args, **kwargs)
 
     class Meta:

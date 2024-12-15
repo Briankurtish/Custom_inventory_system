@@ -283,7 +283,7 @@
         </li>
       </ul>
     </li>
-    <!-- Auth -->
+    {% comment %} <!-- Auth -->
     <li class="menu-item {% if '/auth/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
@@ -306,7 +306,7 @@
           </a>
         </li>
       </ul>
-    </li>
+    </li> {% endcomment %}
     <!-- Misc -->
     {% comment %} <li class="menu-item {% if '/misc/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
