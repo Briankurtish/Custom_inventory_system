@@ -1,0 +1,72 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Track Stocks{% endblock %}
+
+{% block content %}
+<hr class="my-5">
+
+<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Stock
+</button>
+<button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
+</button>
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">
+    Stock Details
+    {% if user_branch_name %}
+    <small class="text-body float-end text-primary branch-name">{{ user_branch_name }}</small>
+    {% else %}
+    <small class="text-body float-end text-muted">No branch affiliated</small>
+    {% endif %}
+  </h5>
+  <div class="table-responsive text-nowrap">
+    {% if stocks %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Product Code</th>
+          <th>Branch Name</th>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stock-table-body" class="table-border-bottom-0">
+        {% for stock in stocks %}
+        <tr>
+          <td><span>{{ stock.product.product_code }}</span></td>
+          <td><span>{{ stock.branch.branch_name }}</span></td>
+          <td>{{ stock.product.generic_name_dosage }}</td>
+          <td class="fw-medium">{{ stock.quantity }}</td>
+          <td><span class="badge bg-label-success me-1">In Stock</span></td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item text-secondary" href="javascript:void(0);">
+                  <i class="bx bx-edit-alt me-1"></i> Request
+                </a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-4">
+      <p class="text-muted">No stock details available for this branch.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

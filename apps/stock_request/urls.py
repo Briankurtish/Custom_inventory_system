@@ -1,22 +1,22 @@
 from django.urls import path
-from .views import requestView
+from .views import stock_request_view, ManageRequestsView
 
 
 
 urlpatterns = [
     path(
         "request-list/",
-        requestView.as_view(template_name="requests.html"),
+        ManageRequestsView,
         name="requests",
     ),
     path(
         "create-request/",
-        requestView.as_view(template_name="createRequests.html"),
+        stock_request_view,
         name="create-request",
     ),
     path(
         "request-details/",
-        requestView.as_view(template_name="requestDetails.html"),
+        stock_request_view,
         name="request-details",
     ),
 ]

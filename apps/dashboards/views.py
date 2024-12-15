@@ -18,7 +18,7 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
                 role_template_map = {
                     'Director': 'dashboard_analytics.html',
                     'Pharmacist': 'dashboard_pharmacist.html',
-                    'Marketing Director': 'dashboard_marketing.html',
+                    'Marketing Director': 'dashboard_md.html',
                     'Central Stock Manager': 'dashboard_cstm.html',
                     'Stock Manager': 'dashboard_cstm.html',
                     'Stock Keeper': 'dashboard_stock_keeper.html',

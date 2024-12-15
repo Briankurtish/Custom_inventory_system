@@ -8,6 +8,8 @@ from apps.branches.models import Branch
 from .models import Stock, InventoryTransaction
 from django.utils.timezone import now  # To handle timestamps
 from django.http import JsonResponse
+from apps.workers.models import Worker
+from django.contrib.auth.decorators import login_required
 
 """
 This file is a view controller for multiple pages as a module.
@@ -33,12 +35,42 @@ def ManageStockView(request):
 
     return render(request, 'stock.html', context)
 
+@login_required
+def ManageStockBranchView(request):
+    try:
+        # Get the branch of the logged-in user from the Worker table
+        worker = Worker.objects.select_related('branch').get(user=request.user)
+        user_branch = worker.branch  # Get the branch instance
+    except Worker.DoesNotExist:
+        # Handle case where Worker profile does not exist
+        user_branch = None
+
+    if user_branch:
+        # Filter stocks for the user's branch
+        stocks = Stock.objects.filter(branch=user_branch)
+    else:
+        # No branch affiliated, show no stocks
+        stocks = []
+
+    # Create the context with filtered stocks
+    view_context = {
+        "stocks": stocks,
+        "user_branch_name": user_branch.branch_name if user_branch else None,
+    }
+
+    # Merge the context with the template layout
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'stock_branch.html', context)
+
 
 
 def add_stock_view(request):
-    global TEMP_STOCK_LIST
     form = StockUpdateForm()
-    
+
+    # Retrieve temporary stock list from session or create an empty list
+    temp_stock_list = request.session.get("TEMP_STOCK_LIST", [])
+
     if request.method == "POST":
         if "add_to_list" in request.POST:  # Handle adding to the temporary list
             form = StockUpdateForm(request.POST)
@@ -48,33 +80,37 @@ def add_stock_view(request):
                 branch = form.cleaned_data["branch"]
 
                 # Add item to temporary list
-                TEMP_STOCK_LIST.append({
+                temp_stock_list.append({
                     "product_code": product.product_code,
                     "product_name": product.generic_name_dosage,
                     "quantity": quantity,
                     "branch_id": branch.id,
                     "branch_name": branch.branch_name,
                 })
+                # Store the updated temporary list in session
+                request.session["TEMP_STOCK_LIST"] = temp_stock_list
                 messages.success(request, "Item added to temporary stock list.")
             else:
                 messages.error(request, "Invalid data. Please check the form.")
-        
+
         elif "remove_item" in request.POST:  # Handle removing from the temporary list
             product_code = request.POST.get("product_code")
             branch_id = request.POST.get("branch")
-            
+
             # Remove matching item from the temporary list
-            TEMP_STOCK_LIST = [
-                item for item in TEMP_STOCK_LIST 
+            temp_stock_list = [
+                item for item in temp_stock_list 
                 if not (item["product_code"] == product_code and item["branch_id"] == int(branch_id))
             ]
+            # Store the updated list in session
+            request.session["TEMP_STOCK_LIST"] = temp_stock_list
             messages.success(request, "Item removed from the temporary stock list.")
 
         elif "update_stock" in request.POST:  # Handle updating stock in the database
-            for item in TEMP_STOCK_LIST:
+            for item in temp_stock_list:
                 product = Product.objects.get(product_code=item["product_code"])
                 branch = Branch.objects.get(id=item["branch_id"])
-                
+
                 # Update or create stock entry
                 stock, created = Stock.objects.update_or_create(
                     product=product,
@@ -97,18 +133,20 @@ def add_stock_view(request):
                 else:
                     messages.info(request, f"Stock updated for product {product.generic_name_dosage}.")
 
-            TEMP_STOCK_LIST = []  # Clear the temporary list
+            # Clear the temporary list
+            del request.session["TEMP_STOCK_LIST"]
             messages.success(request, "Stock updated successfully.")
             return redirect("stock")  # Replace with the correct URL name
-        
+
     # Prepare context for rendering
     view_context = {
         "form": form,
-        "temp_stock": TEMP_STOCK_LIST,
+        "temp_stock": temp_stock_list,
     }
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'AddStock.html', context)
+
 
 
 def update_existing_stock_view(request):

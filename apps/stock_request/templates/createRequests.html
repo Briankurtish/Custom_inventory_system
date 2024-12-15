@@ -1,145 +1,93 @@
 {% extends layout_path %}
-
 {% load static %}
 {% load i18n %}
 
 {% block title %}Create Stock Request{% endblock %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
-<!-- Basic Layout -->
-<div class="row">
-  <div class="col-xl">
-    <div class="card mb-6">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Stock Request Details</h5> 
-      </div>
-      <div class="card-body">
-        <form>
-          {% csrf_token %}
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label" for="basic-default-fullname">Request ID</label>
-              <input type="text" class="form-control" id="basic-default-fullname" placeholder="REQ_01" disabled />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="exampleFormControlSelect1" class="form-label">Branch</label>
-              <select class="form-select" id="exampleFormControlSelect1" aria-label="Default select example">
-                <option selected>Select Branch</option>
-                <option value="1">B01_DLA</option>
-                <option value="2">B02_YDE</option>
-                <option value="3">B03_BFM</option>
-              </select>
-            </div>
-          </div>
-         
-          
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label" for="basic-default-fullname">Status</label>
-              <input type="text" class="form-control" id="basic-default-fullname" placeholder="Pending" disabled />
-            </div>
-          </div>
-
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-5 mb-3">
-                  <label class="form-label" for="basic-default-fullname">Product Code</label>
-                  <input type="text" class="form-control" id="basic-default-fullname" placeholder="Product Code" />
-                </div>
-                <div class="col-md-5 mb-3">
-                  <label class="form-label" for="basic-default-fullname">Quantity</label>
-                  <input type="text" class="form-control" id="basic-default-fullname" placeholder="Quantity" />
-                </div>
-                <div class="col-md-2 mb-3 d-flex align-items-end">
-                  <button type="button" class="btn btn-primary w-100">Add</button>
-                </div>
-              </div>
-          </div>
-          
-          <hr class="my-4">
-
-          <!-- Hoverable Table rows -->
+<!-- Stock Request Form -->
 <div class="card">
-  <h5 class="card-header">Product Details</h5>
-  <div class="table-responsive text-nowrap">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Product Code</th>
-          <th>Product Name</th>
-          <th>Unit Price</th>
-          <th>Quantity</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody class="table-border-bottom-0">
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200</td>
-          <td>50</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Remove</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200</td>
-          <td>50</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Remove</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200</td>
-          <td>50</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Remove</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>PRD_001</span></td>
-          <td>PARACETAMOL C500</td>
-          <td>200</td>
-          <td>50</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Remove</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-      
-    </table>
-    
-  </div>
-</div>
-          <button type="submit" class="btn btn-primary my-5">Send Request</button>
-        </form>
+
+  <div class="container mt-4 mb-6">
+    <h1 class="text-center">Create Stock Request</h1>
+  
+    <!-- Stock Request Form -->
+    <form method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+  
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-info" name="add_to_request_list" value="true">Add to Request List</button>
+      </div>
+    </form>
+  
+    <!-- Temporary Stock Request List -->
+    <div class="card mt-5">
+      <h5 class="card-header">Stock Request List</h5>
+      <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Product Code</th>
+              <th>Generic Name</th>
+              <th>Quantity</th>
+              <th>Branch</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if temp_stock_request %}
+              {% for item in temp_stock_request %}
+                <tr>
+                  <td>{{ item.product_code }}</td>
+                  <td>{{ item.product_name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.branch_name }}</td>
+                  <td>
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="product_code" value="{{ item.product_code }}" />
+                      <input type="hidden" name="branch" value="{{ item.branch_id }}" />
+                      <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center">No items in the request list.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
       </div>
     </div>
+  
+    <!-- Submit Stock Request -->
+    <div class="d-flex justify-content-center mt-4">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg" name="submit_request" value="true">
+          Submit Request
+        </button>
+      </form>
+    </div>
   </div>
- 
+
 </div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_product").select2({
+      placeholder: "Search for a product",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
 {% endblock %}
