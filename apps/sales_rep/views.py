@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import SalesAgent
 from .forms import SalesAgentForm
 from apps.branches.models import Branch
+from apps.workers.models import Worker
 
 
 """
@@ -14,7 +15,8 @@ Refer to tables/urls.py file for more pages.
 
 
 def ManageSalesRepView(request):
-    salesRep = SalesAgent.objects.all()
+    # Filter workers whose role is "Sales Rep" from the Worker table
+    salesRep = Worker.objects.filter(role__iexact="Sales Rep")  # Case-insensitive match for "Sales Rep"
 
     # Create a new context dictionary for this view 
     view_context = {
@@ -25,6 +27,7 @@ def ManageSalesRepView(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'sales-rep.html', context)
+
 
 
 def add_salesRep_view(request, pk=None):

@@ -2,9 +2,7 @@
 
 {% load static %}
 {% load i18n %}
-
 {% load crispy_forms_tags %}
-
 
 {% block title %}
   {% if is_editing %}
@@ -15,6 +13,22 @@
 {% endblock %}
 
 {% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">Manage Workers</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+      {% if is_editing %}
+        Edit Worker
+      {% else %}
+        Add Worker
+      {% endif %}
+    </li>
+  </ol>
+</nav>
+<!-- End Breadcrumbs -->
+
 <!-- Basic Layout -->
 <div class="row">
   <div class="col-xl">
@@ -27,8 +41,7 @@
         <form method="POST">
           {% csrf_token %}
 
-          {{form|crispy}}
-
+          {{ form|crispy }}
 
           <br>
           
@@ -43,6 +56,5 @@
       </div>
     </div>
   </div>
- 
 </div>
 {% endblock %}

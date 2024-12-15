@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-sales-rep' %}'">
+<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Sales Rep
 </button>
 
@@ -35,13 +35,13 @@
       <tbody class="table-border-bottom-0">
         {% for salesRep in salesRep %}
         <tr>
-          <td><span>{{salesRep.agent_id}}</span></td>
-          <td><span>{{salesRep.agent_firstName}}</span></td>
-          <td><span>{{salesRep.agent_lastName}}</span></td>
+          <td><span>{{salesRep.employee_id}}</span></td>
+          <td><span>{{salesRep.user.first_name}}</span></td>
+          <td><span>{{salesRep.user.last_name}}</span></td>
           <td>{{salesRep.telephone}}</td>
-          <td>{{salesRep.email}}</td>
+          <td>{{salesRep.user.email}}</td>
           <td>{{ salesRep.branch.branch_name }}</td>
-          <td>{{ salesRep.agent_manager }}</td>
+          <td>{{ salesRep.manager }}</td>
 
           <td>
             <div class="dropdown">
