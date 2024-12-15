@@ -20,6 +20,8 @@
 
   <ul class="menu-inner py-1">
 
+    {% if user.worker_profile.role == 'Central Stock Manager'%}
+
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link ">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
@@ -27,6 +29,53 @@
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
     </li>
+
+    <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
+      <a href="{% url 'products' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx bx-box"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Products</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+    <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
+      <a href="{% url 'stock' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx  bx-line-chart"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Track Stocks</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+    <li class="menu-item {% if 'transfer-stock' == request.resolver_match.url_name or '/transfer-stock-list/' in request.path %}active open{% endif %}">
+      <a href="{% url 'transfer-stock' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx bx-transfer"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Transferred Stock</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+
+    {% elif user.worker_profile.role == 'Pharmacist'%}
+    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
+      <a href="{% url 'index' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx bx-home-smile"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+    <li class="menu-item {% if 'recommend' == request.resolver_match.url_name or '/recommendations/' in request.path %}active open{% endif %}">
+      <a href="{% url 'recommend' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx bx-chat"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Recommendations</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+    <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
+      <a href="{% url 'requests' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx bx-paper-plane"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Stock Request</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+
+    {% else %}
     <li class="menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashbord-phar/' in request.path %}active open{% endif %}">
       <a href="{% url 'index-phar' %}" class="menu-link ">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
@@ -127,6 +176,8 @@
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
     </li>
+
+    {% endif %}
     
     {% comment %} <li class="menu-item {% if 'add' == request.resolver_match.url_name or '/add/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link ">
@@ -260,7 +311,7 @@
       </a>
     </li> {% endcomment %}
     <!-- Account -->
-    <li class="menu-item {% if '/account_settings/' in request.path %}active open{% endif %}">
+    {% comment %} <li class="menu-item {% if '/account_settings/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-dock-top"></i>
         <div class="text-truncate" data-i18n="Account Settings">Account Settings</div>
@@ -282,7 +333,7 @@
           </a>
         </li>
       </ul>
-    </li>
+    </li> {% endcomment %}
     {% comment %} <!-- Auth -->
     <li class="menu-item {% if '/auth/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">

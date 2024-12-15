@@ -19,6 +19,7 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
                     'Director': 'dashboard_analytics.html',
                     'Pharmacist': 'dashboard_pharmacist.html',
                     'Marketing Director': 'dashboard_marketing.html',
+                    'Central Stock Manager': 'dashboard_cstm.html',
                     'Stock Manager': 'dashboard_cstm.html',
                     'Stock Keeper': 'dashboard_stock_keeper.html',
                     'Accountant': 'dashboard_accountant.html',
@@ -26,7 +27,7 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
                     'Secretary': 'dashboard_sec.html',
                     'Sales Rep': 'dashboard_cstm.html',
                     'Driver': 'dashboard_driver.html',
-                    'Other': 'dashboard_other.html',
+                    'Other': 'dashboard_analytics.html',
                 }
                 # Return the specific template for the role or the default
                 return [role_template_map.get(worker.role, self.template_name)]

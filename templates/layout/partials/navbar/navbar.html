@@ -12,9 +12,9 @@
   {% endif %}
   <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
-    <small class="">Howdy </small>
+    <small class="">Welcome Back </small>
     &nbsp
-    <h6 class="mb-0 text-muted"> James Morgan</h6>
+    <h6 class="mb-0 text-primary">{{user.first_name}} {{user.last_name}}</h6>
 
     <!-- Search -->
     {% comment %} <div class="navbar-nav align-items-center">
@@ -26,8 +26,7 @@
     <!-- /Search -->
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">
-      <!-- Place this tag where you want the button to render. -->
-      <small class="">Super Admin </small>
+      <strong class="">{{user.worker_profile.role}}</strong>
     &nbsp
     &nbsp
     &nbsp

@@ -7,6 +7,7 @@ from apps.products.models import Product
 from apps.branches.models import Branch
 from .models import Stock, InventoryTransaction
 from django.utils.timezone import now  # To handle timestamps
+from django.http import JsonResponse
 
 """
 This file is a view controller for multiple pages as a module.
@@ -236,3 +237,40 @@ def update_stock_entry_view(request, stock_id):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, "update_stock_entry.html", context)
+
+
+
+def get_stock_data(request):
+    branch_id = request.GET.get('branch_id')
+
+    if not branch_id:
+        return JsonResponse({"error": "Branch ID not provided"}, status=400)
+
+    try:
+        branch = Branch.objects.get(id=branch_id)
+        stocks = Stock.objects.filter(branch=branch)
+        stock_data = [
+            {
+                "id": stock.id,
+                "product_code": stock.product.product_code,
+                "branch_id": stock.branch.branch_id,
+                "branch_name": stock.branch.branch_name,
+                "product_name": str(stock.product.generic_name_dosage),  # Ensure this is a string
+                "quantity": stock.quantity,
+            }
+            for stock in stocks
+        ]
+        return JsonResponse({"branch_name": branch.branch_name, "stocks": stock_data})
+    except Branch.DoesNotExist:
+        return JsonResponse({"error": "Branch not found"}, status=404)
+
+    
+
+
+def get_branches(request):
+    branches = Branch.objects.all()
+    branch_data = [
+        {"id": branch.id, "name": branch.branch_name}
+        for branch in branches
+    ]
+    return JsonResponse({"branches": branch_data})
