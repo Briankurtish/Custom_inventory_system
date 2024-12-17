@@ -2,7 +2,9 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Worker
-from .forms import UserCreationForm, WorkerForm
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import UserCreationForm, WorkerForm, WorkerPrivilegeForm, PrivilegeForm
 
 
 """
@@ -68,3 +70,50 @@ def update_worker_view(request, pk):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addWorker.html', context)
+
+
+
+@login_required
+def manage_worker_privileges(request, worker_id):
+    """
+    View for adding/removing privileges from a specific worker.
+    """
+    worker = get_object_or_404(Worker, id=worker_id)
+
+    if request.method == 'POST':
+        form = WorkerPrivilegeForm(request.POST, instance=worker)
+        if form.is_valid():
+            form.save()
+            return redirect('workers')  # Redirect to a list of workers or success page
+    else:
+        form = WorkerPrivilegeForm(instance=worker)
+        
+        view_context = {
+        "form": form,
+        "worker": worker,  
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'manage_privileges.html', context)
+
+
+def create_privilege(request):
+    """
+    View to allow the admin to create a new privilege.
+    """
+    if request.method == 'POST':
+        form = PrivilegeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Privilege created successfully!')
+            return redirect('create_privilege')
+        else:
+            messages.error(request, 'Error creating privilege. Please check the input.')
+    else:
+        form = PrivilegeForm()
+
+    view_context = {
+        "form": form,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'create_privilege.html', context)

@@ -20,37 +20,49 @@
 
   <ul class="menu-inner py-1">
 
-    {% if user.worker_profile.role == 'Central Stock Manager'%}
-
-    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-      <a href="{% url 'index' %}" class="menu-link ">
+{# Always display Dashboard if user role is Central Stock Manager #}
+{% if user.worker_profile.role == 'Central Stock Manager' %}
+    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active open{% endif %}">
+      <a href="{% url 'index' %}" class="menu-link">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
         <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
     </li>
+{% endif %}
 
-    <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
-      <a href="{% url 'products' %}" class="menu-link ">
-        <i class="menu-icon tf-icons bx bx-box"></i>
-        <div class="text-truncate" data-i18n="Dashboards">Products</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
-      </a>
-    </li>
-    <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
-      <a href="{% url 'stock' %}" class="menu-link ">
-        <i class="menu-icon tf-icons bx  bx-line-chart"></i>
-        <div class="text-truncate" data-i18n="Dashboards">Track Stocks</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
-      </a>
-    </li>
-    <li class="menu-item {% if 'approved-requests' == request.resolver_match.url_name or '/approved-requests/' in request.path %}active open{% endif %}">
-      <a href="{% url 'approved-requests' %}" class="menu-link ">
-        <i class="menu-icon tf-icons bx bx-check"></i>
-        <div class="text-truncate" data-i18n="Dashboards">Approved Request</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
-      </a>
-    </li>
+{# Dynamically display menus based on privileges #}
+{% if user.worker_profile.privileges.all %}
+    {% for privilege in user.worker_profile.privileges.all %}
+        {% if privilege.name == 'View Products' %}
+            <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
+              <a href="{% url 'products' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-box"></i>
+                <div class="text-truncate" data-i18n="Products">Products</div>
+              </a>
+            </li>
+        {% endif %}
+        
+        {% if privilege.name == 'View Stocks' %}
+            <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
+              <a href="{% url 'stock' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-line-chart"></i>
+                <div class="text-truncate" data-i18n="Track Stocks">Track Stocks</div>
+              </a>
+            </li>
+        {% endif %}
+        
+        {% if privilege.name == 'View Approved Requests' %}
+            <li class="menu-item {% if 'approved-requests' == request.resolver_match.url_name or '/approved-requests/' in request.path %}active open{% endif %}">
+              <a href="{% url 'approved-requests' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-check"></i>
+                <div class="text-truncate" data-i18n="Approved Requests">Approved Requests</div>
+              </a>
+            </li>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
     <li class="menu-item {% if 'transfer-stock' == request.resolver_match.url_name or '/transfer-stock-list/' in request.path %}active open{% endif %}">
       <a href="{% url 'transfer-stock' %}" class="menu-link ">
         <i class="menu-icon tf-icons bx bx-transfer"></i>
@@ -59,7 +71,7 @@
       </a>
     </li>
 
-    {% elif user.worker_profile.role == 'Pharmacist'%}
+    {% if user.worker_profile.role == 'Pharmacist'%}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link ">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
@@ -81,6 +93,7 @@
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
     </li>
+    
 
     {% elif user.worker_profile.role == 'Marketing Director'%}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">

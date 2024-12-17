@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Worker
+from .models import Worker, Privilege
 from apps.branches.models import Branch
 
 class UserCreationForm(forms.ModelForm):
@@ -121,4 +121,23 @@ class WorkerForm(forms.ModelForm):
             'telephone': 'Telephone',
             'department': 'Department',
             'address': 'Address',
+        }
+        
+        
+class WorkerPrivilegeForm(forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ['privileges']  # Only include privileges field
+        widgets = {
+            'privileges': forms.CheckboxSelectMultiple(attrs={'class': 'privileges-list'})
+        }
+        
+
+class PrivilegeForm(forms.ModelForm):
+    class Meta:
+        model = Privilege
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Privilege Name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Privilege Description', 'rows': 3}),
         }

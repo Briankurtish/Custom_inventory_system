@@ -82,7 +82,7 @@ def add_stock_view(request):
                 # Add item to temporary list
                 temp_stock_list.append({
                     "product_code": product.product_code,
-                    "product_name": product.generic_name_dosage,
+                    "product_name": str(product.generic_name_dosage),
                     "quantity": quantity,
                     "branch_id": branch.id,
                     "branch_name": branch.branch_name,
