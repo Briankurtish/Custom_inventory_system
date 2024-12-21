@@ -95,6 +95,13 @@
               {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
             </a>
           </li>
+          <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks-in-transit//' in request.path %}active open{% endif %}">
+            <a href="{% url 'stocks_in_transit' %}" class="menu-link ">
+              <i class="menu-icon tf-icons bx  bx-line-chart"></i>
+              <div class="text-truncate" data-i18n="Dashboards">Stock In Transit</div>
+              {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+            </a>
+          </li>
         {% endif %}
 
         {% if privilege.name == 'Transfer Stock'  %}
@@ -177,6 +184,13 @@
       <a href="{% url 'stock' %}" class="menu-link ">
         <i class="menu-icon tf-icons bx  bx-line-chart"></i>
         <div class="text-truncate" data-i18n="Dashboards">Track Stocks</div>
+        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+      </a>
+    </li>
+    <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks-in-transit//' in request.path %}active open{% endif %}">
+      <a href="{% url 'stocks_in_transit' %}" class="menu-link ">
+        <i class="menu-icon tf-icons bx  bx-line-chart"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Stock In Transit</div>
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
     </li>

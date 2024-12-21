@@ -9,6 +9,7 @@ from apps.stock.models import Stock
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db import transaction
+from django.http import HttpResponseForbidden
 from django.http import JsonResponse
 
 
@@ -240,7 +241,8 @@ def stock_received(request, request_id):
                 )
             
             # Mark the item as received in the in-transit table
-            transit_item.delete()  # Optionally, you can just update the status field here if you want to keep records.
+            transit_item.status = "Received"
+            transit_item.save()
 
         # Update the stock request status to "Received"
         stock_request.status = "Received"
@@ -258,3 +260,26 @@ def stock_received(request, request_id):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, 'requests.html', context)
+
+
+@login_required
+def stocks_in_transit(request):
+    # Get the worker profile of the logged-in user
+    worker = getattr(request.user, 'worker_profile', None)
+
+    # If the user is not a worker or doesn't belong to a branch, deny access
+    if not worker or not worker.branch:
+        return HttpResponseForbidden("You do not have access to view stocks in transit.")
+
+    # Retrieve the branch and in-transit stocks for the worker's branch
+    branch = worker.branch
+    stocks_in_transit = InTransit.objects.filter(destination=branch, status="In Transit")
+
+    view_context = {
+        'stocks_in_transit': stocks_in_transit,
+        'branch_name': branch.branch_name,  # Pass the branch name to the template
+    }
+
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'transit-requests.html', context)

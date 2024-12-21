@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import stock_request_view, ManageRequestsView, stock_request_details, approve_or_decline_request, stock_received
+from .views import stock_request_view, ManageRequestsView, stock_request_details, approve_or_decline_request, stock_received, stocks_in_transit
 
 urlpatterns = [
     path(
@@ -19,5 +19,6 @@ urlpatterns = [
     ),
     path('stock-request/<int:request_id>/', stock_request_details, name='stock_request_details'),
     path('stock-request/<int:request_id>/action/', approve_or_decline_request, name='approve_or_decline_request'),
-    path('stock-request/<int:request_id>/received/', stock_received, name='stock_received'),  # New URL pattern
+    path('stock-request/<int:request_id>/received/', stock_received, name='stock_received'), 
+    path('stocks-in-transit/', stocks_in_transit, name='stocks_in_transit'),
 ]
