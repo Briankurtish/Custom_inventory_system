@@ -34,15 +34,6 @@
         <hr> 
       </div>
       <div class="card-body">
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
-                    {{ message }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
         <form method="POST">
           {% csrf_token %}
 

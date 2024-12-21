@@ -10,6 +10,11 @@
 <div class="my-3" id="branch-buttons-container">
   <!-- Branch buttons will be loaded dynamically here -->
 </div>
+<div class="my-3" id="">
+  <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>All stock
+</button>
+</div>
 
 <hr class="my-5">
 {% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other"  %}
@@ -19,9 +24,7 @@
 <button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
   <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
 </button>
-<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>All Stock
-</button>
+
 {% endif %}
 <!-- Hoverable Table rows -->
 <div class="card">

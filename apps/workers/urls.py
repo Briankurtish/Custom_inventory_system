@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ManageWorkerView, add_worker_view, update_worker_view, manage_worker_privileges, create_privilege
+from .views import ManageWorkerView, add_worker_view, update_worker_view, manage_worker_privileges, create_privilege, get_roles_and_privileges
 
 
 
@@ -17,4 +17,5 @@ urlpatterns = [
     path("edit-worker/<int:pk>/", update_worker_view, name="edit-worker"),
     path('workers/<int:worker_id>/manage-privileges/', manage_worker_privileges, name='manage_worker_privileges'),
     path('create-privilege/', create_privilege, name='create_privilege'),
+    path('privileges/', get_roles_and_privileges, name='privileges'),
 ]

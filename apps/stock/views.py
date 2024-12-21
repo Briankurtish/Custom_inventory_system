@@ -279,26 +279,44 @@ def update_stock_entry_view(request, stock_id):
 
 
 def get_stock_data(request):
-    branch_id = request.GET.get('branch_id')
-
-    if not branch_id:
-        return JsonResponse({"error": "Branch ID not provided"}, status=400)
+    branch_id = request.GET.get("branch_id")
+    get_all = request.GET.get("all", "false").lower() == "true"  # Check for 'all=true'
 
     try:
-        branch = Branch.objects.get(id=branch_id)
-        stocks = Stock.objects.filter(branch=branch)
-        stock_data = [
-            {
-                "id": stock.id,
-                "product_code": stock.product.product_code,
-                "branch_id": stock.branch.branch_id,
-                "branch_name": stock.branch.branch_name,
-                "product_name": str(stock.product.generic_name_dosage),  # Ensure this is a string
-                "quantity": stock.quantity,
-            }
-            for stock in stocks
-        ]
-        return JsonResponse({"branch_name": branch.branch_name, "stocks": stock_data})
+        if get_all:  # Fetch all stock data
+            stocks = Stock.objects.all()
+            stock_data = [
+                {
+                    "id": stock.id,
+                    "product_code": stock.product.product_code,
+                    "branch_id": stock.branch.branch_id,
+                    "branch_name": stock.branch.branch_name,
+                    "product_name": str(stock.product.generic_name_dosage),
+                    "quantity": stock.quantity,
+                }
+                for stock in stocks
+            ]
+            return JsonResponse({"branch_name": "All Branches", "stocks": stock_data})
+        
+        elif branch_id:  # Fetch stock data for a specific branch
+            branch = Branch.objects.get(id=branch_id)
+            stocks = Stock.objects.filter(branch=branch)
+            stock_data = [
+                {
+                    "id": stock.id,
+                    "product_code": stock.product.product_code,
+                    "branch_id": stock.branch.branch_id,
+                    "branch_name": stock.branch.branch_name,
+                    "product_name": str(stock.product.generic_name_dosage),
+                    "quantity": stock.quantity,
+                }
+                for stock in stocks
+            ]
+            return JsonResponse({"branch_name": branch.branch_name, "stocks": stock_data})
+
+        else:  # No branch_id or 'all' parameter provided
+            return JsonResponse({"error": "Branch ID not provided"}, status=400)
+
     except Branch.DoesNotExist:
         return JsonResponse({"error": "Branch not found"}, status=404)
 
@@ -312,3 +330,15 @@ def get_branches(request):
         for branch in branches
     ]
     return JsonResponse({"branches": branch_data})
+
+
+def track_stocks(request):
+    # Fetch all stock data across all branches
+    all_stocks = Stock.objects.select_related('product', 'branch').all()
+    
+    view_context = {
+        "stocks": all_stocks,
+    }
+    context = TemplateLayout.init(request, view_context)
+    
+    return render(request, "stock_all.html", context)

@@ -10,8 +10,10 @@ def assign_default_privileges(sender, instance, created, **kwargs):
     if created:  # Only when a new Worker is created
         default_privileges = {
             'Director': ['Manage Users', 'View Reports', 'Manage Inventory'],
+            'Marketing Director': ['View Stocks', 'Request Stock'],
+            'Pharmacist': ['Recommend Medical Products', 'Prepare Customs Clearing Report', 'Creates Good Receipt Note', 'Accept or Decline Stock Requisition'],
             'Accountant': ['View Reports', 'Manage Finances'],
-            'Central Stock Manager': ['Manage Inventory', 'View Stocks', "View Products", "View Approved Requests"],
+            'Central Stock Manager': ['Manage Inventory', 'View Stocks', "View Products", "View Approved Requests", 'Transfer Stock'],
             'Stock Manager': ['Manage Inventory', 'View Stocks'],
             'Cashier': ['Process Payments'],
             'Sales Rep': ['View Orders', 'Create Orders'],

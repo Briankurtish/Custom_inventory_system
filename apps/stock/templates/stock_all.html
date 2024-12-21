@@ -1,0 +1,79 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}All Stocks{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'stock' %}">Stocks</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+      All Stock
+    </li>
+  </ol>
+</nav>
+<!-- En
+
+<hr class="my-5">
+{% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other"  %}
+<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Stock
+</button>
+<button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
+</button>
+<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>All Stock
+</button>
+{% endif %}
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">
+    Stock Details
+    <small class="text-body float-end text-primary branch-name">Douala Branch</small>
+  </h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Product Code</th>
+          <th>Branch ID</th>
+          <th>Branch Name</th>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stock-table-body" class="table-border-bottom-0">
+        <tbody id="stock-table-body">
+          {% for stock in stocks %}
+          <tr>
+            <td>{{ stock.product.product_code }}</td>
+            <td>{{ stock.branch.branch_id }}</td>
+            <td>{{ stock.branch.branch_name }}</td>
+            <td>{{ stock.product.generic_name_dosage }}</td>
+            <td>{{ stock.quantity }}</td>
+            <td>
+              {% if stock.quantity > 0 %}
+                <span class="badge bg-label-success">In Stock</span>
+              {% else %}
+                <span class="badge bg-label-danger">Out of Stock</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">No stock to display yet</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

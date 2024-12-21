@@ -1,0 +1,57 @@
+{% extends layout_path %}
+
+{% load crispy_forms_tags %}
+{% block title %}
+Roles and Privileges
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">Roles & Privileges</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Roles and Privileges</li>
+  </ol>
+</nav>
+
+<!-- Roles and Privileges Section -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Roles and Privileges</h5>
+  </div>
+  <div class="card-body">
+    <form method="GET" action="{% url 'privileges' %}">
+      <div class="row">
+        <div class="col-md-6">
+          <label for="role-select" class="form-label">Select Role</label>
+          <select id="role-select" name="role" class="form-select">
+            <option value="" disabled {% if not selected_role %}selected{% endif %}>Choose a role</option>
+            {% for role in roles %}
+              <option value="{{ role }}" {% if role == selected_role %}selected{% endif %}>
+                {{ role }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary">Get Privileges</button>
+        </div>
+      </div>
+    </form>
+
+    <hr>
+
+    <h5>Privileges for {{ selected_role|default:"Selected Role" }}</h5>
+    {% if privileges %}
+      <ul class="list-group">
+        {% for privilege in privileges %}
+          <li class="list-group-item">{{ privilege }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No privileges found for the selected role.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

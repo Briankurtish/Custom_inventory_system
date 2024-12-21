@@ -7,116 +7,100 @@
 
 {% block content %}
 
-
-  <h4 class="text">Stock Request Details</h4>
-
-
+<h4 class="text">Stock Request Details</h4>
 <hr class="my-8">
 
-
-
-<!-- Hoverable Table rows -->
 <div class="card">
     <div class="row">
-        <h5 class="text col-md-2 m-3 ">#REQ_01</h5> 
+        <h5 class="text col-md-2 m-3">#REQ_{{ stock_request.id }}</h5>
     </div>
     <hr>
 
-<div class="container">
-    <div class="row">
-        <!-- First Column -->
-        <div class="col-md-4">
-            <small class="text m-3">Branch ID </small>
-            <h6 class="text-info m-3">B01_DLA</h6>
-        </div>
-        
-        <!-- Second Column -->
-        <div class="col-md-4">
-            <small class="text m-3">Branch Name </small>
-            <h6 class="text-primary m-3">Douala Branch</h6>
-        </div>
-        
-        <!-- Third Column -->
-        <div class="col-md-4">
-            <small class="text m-3">Created By </small>
-            <h6 class="text-primary m-3">James Stephen</h6>
+    <div class="container">
+        <div class="row">
+            <!-- First Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Branch ID</small>
+                <h6 class="text-info m-3">{{ stock_request.branch.branch_id }}</h6>
+            </div>
+
+            <!-- Second Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Branch Name</small>
+                <h6 class="text-primary m-3">{{ stock_request.branch.branch_name }}</h6>
+            </div>
+
+            <!-- Third Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Created By</small>
+                <h6 class="text-primary m-3">{{ stock_request.requested_by.get_full_name }}</h6>
+            </div>
         </div>
     </div>
-</div>
-<hr>
+    <hr>
 
-<div class="container">
-    <div class="row">
-        
-        <!-- Third Column -->
-        <div class="col-md-4">
-            <small class="text m-3">Status </small>
-            <h6 class="text-warning m-3">Pending</h6>
+    <div class="container">
+        <div class="row">
+            <!-- Third Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Status</small>
+                <h6 class="text-warning m-3">{{ stock_request.status }}</h6>
+            </div>
         </div>
     </div>
-</div>
+    <hr>
 
-<hr>
-
-<div class="card">
-    <h5 class="card-header">Product Details</h5>
-    <div class="table-responsive text-nowrap">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Product Code</th>
-            <th>Product Name</th>
-            <th>Unit Price</th>
-            <th>Quantity</th>
-          </tr>
-        </thead>
-        <tbody class="table-border-bottom-0">
-          <tr>
-            <td><span>PRD_001</span></td>
-            <td>PARACETAMOL C500</td>
-            <td>200</td>
-            <td>50</td>
-            
-          </tr>
-          <tr>
-            <td><span>PRD_001</span></td>
-            <td>PARACETAMOL C500</td>
-            <td>200</td>
-            <td>50</td>
-            
-          </tr>
-          <tr>
-            <td><span>PRD_001</span></td>
-            <td>PARACETAMOL C500</td>
-            <td>200</td>
-            <td>50</td>
-            
-          </tr>
-          <tr>
-            <td><span>PRD_001</span></td>
-            <td>PARACETAMOL C500</td>
-            <td>200</td>
-            <td>50</td>
-            
-          </tr>
-        </tbody>
-        
-      </table>
-      
-    </div>
+    <div class="card">
+      <h5 class="card-header">Product Details</h5>
+      <div class="table-responsive text-nowrap">
+          <table class="table table-hover">
+              <thead>
+                  <tr>
+                      <th>Product Code</th>
+                      <th>Product Name</th>
+                      <th>Quantity</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for item in product_details %}
+                      <tr>
+                          <td>{{ item.product.product_code }}</td>
+                          <td>{{ item.product.generic_name_dosage }}</td>
+                          <td>{{ item.quantity }}</td>
+                      </tr>
+                  {% empty %}
+                      <tr>
+                          <td colspan="3" class="text-center">No products found for this request.</td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
   </div>
-
+  
 </div>
 
-<button type="button" class="btn btn-success my-5" onclick="window.location.href=''">
-    <span class="tf-icons bx bx-check bx-18px me-2"></span>Approve
-  </button> 
-  <button type="button" class="btn btn-danger my-5" onclick="window.location.href=''">
-    <span class="tf-icons bx bx-x bx-18px me-2"></span>Decline
-  </button>
-<!--/ Hoverable Table rows -->
+<div class="mt-3">
+  {% if stock_request.status == "Pending" %}
+    <!-- Approve or Decline Form -->
+    <form action="{% url 'approve_or_decline_request' request_id=stock_request.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" name="action" value="approve" class="btn btn-success">
+            <span class="tf-icons bx bx-check bx-18px me-2"></span> Approve
+        </button>
+        <button type="submit" name="action" value="decline" class="btn btn-danger">
+            <span class="tf-icons bx bx-x bx-18px me-2"></span> Decline
+        </button>
+    </form>
+  {% endif %}
 
-
-
+  <!-- Stock Received Form -->
+  <form action="{% url 'stock_received' request_id=stock_request.id %}" method="post">
+      {% csrf_token %}
+      <button type="submit" name="action" value="stock_received" class="btn btn-primary">
+        <span class="tf-icons bx bx-package bx-18px me-2"></span> Stock Received
+      </button>
+  </form>
+</div>
 
 {% endblock %}

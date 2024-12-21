@@ -25,6 +25,7 @@
           <th>Branch ID</th>
           <th>Branch Name</th>
           <th>Address</th>
+          <th>Type</th>
           {% comment %} <th>Status</th> {% endcomment %}
           <th>Actions</th>
         </tr>
@@ -36,6 +37,7 @@
           <td>{{branch.branch_name}}</td>
 
           <td><span class="text  me-1">{{branch.address}}</span></td>
+          <td>{{ branch.get_branch_type_display }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>

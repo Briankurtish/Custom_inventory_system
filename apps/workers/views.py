@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import get_object_or_404, render, redirect
@@ -117,3 +118,38 @@ def create_privilege(request):
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, 'create_privilege.html', context)
+
+def get_roles_and_privileges(request):
+    """
+    View to fetch all roles and their default privileges.
+    """
+    roles = [role[0] for role in Worker.ROLE_CHOICES]  # Extract roles from ROLE_CHOICES
+
+    if request.method == 'GET':
+        selected_role = request.GET.get('role', None)  # Role selected by the user
+        privileges = []
+
+        if selected_role:
+            # Fetch default privileges based on the selected role
+            default_privileges = {
+                'Director': ['Manage Users', 'View Reports', 'Manage Inventory'],
+                'Marketing Director': ['View Stocks', 'Request Stock'],
+                'Pharmacist': ['Recommend Medical Products', 'Prepare Customs Clearing Report', 'Creates Good Receipt Note', 'Accept or Decline Stock Requisition'],
+                'Accountant': ['View Reports', 'Manage Finances'],
+                'Central Stock Manager': ['Manage Inventory', 'View Stocks', "View Products", "View Approved Requests", 'Transfer Stock'],
+                'Stock Manager': ['Manage Inventory', 'View Stocks'],
+                'Cashier': ['Process Payments'],
+                'Sales Rep': ['View Orders', 'Create Orders'],
+            }
+            privileges = default_privileges.get(selected_role, [])
+
+        view_context = {
+            'roles': roles,
+            'privileges': privileges,
+            'selected_role': selected_role,
+        }
+
+        context = TemplateLayout.init(request, view_context)
+        return render(request, 'privilege_details.html', context)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
