@@ -14,7 +14,7 @@ def assign_default_privileges(sender, instance, created, **kwargs):
             'Pharmacist': ['Recommend Medical Products', 'Prepare Customs Clearing Report', 'Creates Good Receipt Note', 'Accept or Decline Stock Requisition'],
             'Accountant': ['View Reports', 'Manage Finances'],
             'Central Stock Manager': ['Manage Inventory', 'View Stocks', "View Products", "View Approved Requests", 'Transfer Stock'],
-            'Stock Manager': ['Manage Inventory', 'View Stocks'],
+            'Stock Manager': ['Manage Inventory', 'View Stocks', 'View Stock In Transit'],
             'Cashier': ['Process Payments'],
             'Sales Rep': ['View Orders', 'Create Orders'],
         }

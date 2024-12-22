@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.contrib import messages
+from django.db.models import Case, When, Value, IntegerField
 from .forms import StockRequestForm
 from apps.products.models import Product
 from apps.branches.models import Branch
@@ -23,33 +24,41 @@ TEMP_STOCK_REQUEST_LIST = []
 
 @login_required
 def stock_request_view(request):
-    # Initialize form and temporary list
-    form = StockRequestForm()
+    form = StockRequestForm(user=request.user)  # Pass the user to the form
+
+    # Temporary stock request list handling
     temp_stock_request_list = request.session.get("TEMP_STOCK_REQUEST_LIST", [])
 
     if request.method == "POST":
-        if "add_to_request_list" in request.POST:  # Handle adding to the temporary stock request list
-            form = StockRequestForm(request.POST)
+        if "add_to_request_list" in request.POST:
+            form = StockRequestForm(request.POST, user=request.user)  # Pass user when submitting form
             if form.is_valid():
                 product = form.cleaned_data["product"]
                 quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
 
-                # Add item to temporary stock request list
-                temp_stock_request_list.append({
-                    "product_code": product.product_code,
-                    "product_name": str(product.generic_name_dosage),
-                    "quantity": quantity,
-                    "branch_id": branch.id,
-                    "branch_name": branch.branch_name,
-                })
-                # Store the updated temporary list in session
+                # Check if the item already exists in the request list
+                existing_item = next((item for item in temp_stock_request_list if item["product_code"] == product.product_code and item["branch_id"] == branch.id), None)
+                
+                if existing_item:
+                    # If the item exists, update the quantity
+                    existing_item["quantity"] += quantity
+                else:
+                    # Add new item if it does not exist
+                    temp_stock_request_list.append({
+                        "product_code": product.product_code,
+                        "product_name": str(product.generic_name_dosage),
+                        "quantity": quantity,
+                        "branch_id": branch.id,
+                        "branch_name": branch.branch_name,
+                    })
+
                 request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
                 messages.success(request, "Item added to temporary stock request list.")
             else:
                 messages.error(request, "Invalid data. Please check the form.")
 
-        elif "remove_item" in request.POST:  # Handle removing from the temporary stock request list
+        elif "remove_item" in request.POST:
             product_code = request.POST.get("product_code")
             branch_id = request.POST.get("branch")
 
@@ -58,58 +67,79 @@ def stock_request_view(request):
                 item for item in temp_stock_request_list 
                 if not (item["product_code"] == product_code and item["branch_id"] == int(branch_id))
             ]
-            # Store the updated list in session
             request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
             messages.success(request, "Item removed from the temporary stock request list.")
 
-        elif "submit_request" in request.POST:  # Handle submitting the stock request
+        elif "submit_request" in request.POST:
             if temp_stock_request_list:
-                # Create the main stock request
                 branch = Branch.objects.get(id=temp_stock_request_list[0]["branch_id"])
-                stock_request = StockRequest.objects.create(
-                    branch=branch,
-                    requested_by=request.user
-                )
+                stock_request = StockRequest.objects.create(branch=branch, requested_by=request.user)
 
                 for item in temp_stock_request_list:
                     product = Product.objects.get(product_code=item["product_code"])
 
-                    # Add products to StockRequestProduct
-                    StockRequestProduct.objects.create(
-                        stock_request=stock_request,
-                        product=product,
-                        quantity=item["quantity"]
-                    )
+                    StockRequestProduct.objects.create(stock_request=stock_request, product=product, quantity=item["quantity"])
 
-                # Clear the temporary list after submitting the request
                 del request.session["TEMP_STOCK_REQUEST_LIST"]
                 messages.success(request, "Stock request submitted successfully.")
-                return redirect("requests")  # Replace with the correct URL name for success page
-            else:
-                messages.warning(request, "No items in the temporary stock request list to submit.")
+                return redirect("requests")  # Adjust this with your actual URL name
 
-    # Prepare context for rendering
     view_context = {
         "form": form,
         "temp_stock_request": temp_stock_request_list,
     }
+    # Initialize the template layout and merge the view context
     context = TemplateLayout.init(request, view_context)
+
 
     return render(request, 'createRequests.html', context)
 
 
 
 def ManageRequestsView(request):
+    # Get the user's worker profile and role
+    worker_profile = getattr(request.user, 'worker_profile', None)
+    
+    if not worker_profile:
+        return HttpResponseForbidden("You do not have access to manage stock requests.")
+    
+    user_role = worker_profile.role
     stock_requests = StockRequest.objects.all()
 
-    # Prepare the context dictionary with the main stock requests
+    # Check if the worker has the 'Request Stock' privilege
+    can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
+
+    # Filter stock requests based on the user's role and privileges
+    if user_role == "Marketing Director":
+        # If the worker is a Marketing Director, show only requests created by them
+        stock_requests = stock_requests.filter(requested_by=request.user)
+    elif can_request_stock:
+        # If the worker has the 'Request Stock' privilege, show only requests created by them
+        stock_requests = stock_requests.filter(requested_by=request.user)
+    elif user_role == "Stock Manager":
+        # If the worker is a 'Stock Manager', show only accepted requests (status: "in transit")
+        stock_requests = stock_requests.filter(status__iexact="in transit")
+
+    # Get the selected status filter, defaulting to empty (no filter)
+    status_filter = request.GET.get('status_filter', '')
+
+    # Apply the status filter if it's provided
+    if status_filter:
+        stock_requests = stock_requests.filter(status__iexact=status_filter)
+
+    # Order by requested_at to display the latest stock requests first
+    stock_requests = stock_requests.order_by("-requested_at")
+
+    # Prepare the context dictionary with the stock requests and privilege information
     view_context = {
         "stock_requests": stock_requests,
+        "can_request_stock": can_request_stock,  # Include the privilege info
     }
 
     # Initialize the template layout and merge the view context
     context = TemplateLayout.init(request, view_context)
 
+    # Render the page with the provided context
     return render(request, 'requests.html', context)
 
 
@@ -182,23 +212,17 @@ def approve_or_decline_request(request, request_id):
                 )
             
             # Update stock request status to "Accepted"
-            stock_request.status = "Accepted"
+            stock_request.status = "In Transit"
             stock_request.save()
 
-            return JsonResponse({
-                "success": True,
-                "message": "Stock request approved and items moved to in-transit."
-            })
+            return redirect("requests")
         
         elif action == "decline":
             # Update stock request status to "Rejected"
             stock_request.status = "Rejected"
             stock_request.save()
 
-            return JsonResponse({
-                "success": True,
-                "message": "Stock request declined."
-            })
+            return redirect("requests")
 
     return JsonResponse({
         "success": False,
@@ -214,7 +238,7 @@ def stock_received(request, request_id):
     """
     # Get the stock request by ID
     stock_request = get_object_or_404(StockRequest, id=request_id)
-    
+
     if request.method == "POST":
         # Get all in-transit items related to this stock request
         in_transit_items = InTransit.objects.filter(stock_request=stock_request)
@@ -250,7 +274,12 @@ def stock_received(request, request_id):
 
         # Return a success message
         messages.success(request, "Stock received and branch warehouse updated successfully.")
-        return redirect("requests")  # Redirect to the appropriate page, like the list of requests
+        return redirect("stock")  # Redirect to the appropriate page, like the list of requests
+
+    else:
+        # If not POST, show an error message or redirect
+        messages.error(request, "Invalid request method.")
+        return redirect("stock")
 
     # If not a POST request, render a confirmation page or similar
     

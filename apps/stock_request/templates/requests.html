@@ -7,11 +7,28 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
-  <span class="tf-icons bx bx-plus bx-18px me-2"></span>New Stock Request
-</button>
+{% if can_request_stock %}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
+    <span class="tf-icons bx bx-plus bx-18px me-2"></span>New Stock Request
+  </button>
+  <hr>
+{% endif %}
 
-<hr class="my-8">
+<!-- Filter Section with Improved Design -->
+<form method="get" action="" class="mb-3">
+  <div class="d-flex align-items-center justify-content-between">
+    <label for="status_filter" class="me-2 mb-0">Filter by Status:</label>
+    <div class="d-flex">
+      <select name="status_filter" id="status_filter" class="form-select form-select-sm" style="width: 180px;">
+        <option value="">All</option>
+        <option value="pending" {% if request.GET.status_filter == "pending" %}selected{% endif %}>Pending</option>
+        <option value="accepted" {% if request.GET.status_filter == "in transit" %}selected{% endif %}>In Transit</option>
+        <option value="rejected" {% if request.GET.status_filter == "rejected" %}selected{% endif %}>Rejected</option>
+      </select>
+      <button type="submit" class="btn btn-outline-primary btn-sm ms-2">Apply</button>
+    </div>
+  </div>
+</form>
 
 <!-- Hoverable Table rows -->
 <div class="card">
@@ -40,18 +57,19 @@
             <td>
               {% if request.status|lower == "pending" %}
                 <span class="badge bg-label-warning me-1">Pending</span>
-              {% elif request.status|lower == "accepted" %}
-                <span class="badge bg-label-success me-1">Accepted</span>
+              {% elif request.status|lower == "in transit" %}
+                <span class="badge bg-label-success me-1">In Transit</span>
               {% elif request.status|lower == "rejected" %}
                 <span class="badge bg-label-danger me-1">Rejected</span>
               {% else %}
-                <span class="badge bg-label-secondary me-1">{{ request.status }}</span> <!-- Default fallback -->
+                <span class="badge bg-label-info me-1">{{ request.status }}</span> <!-- Default fallback -->
               {% endif %}
             </td>
-            
             <td>
               <div class="dropdown">
-                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
                     <i class="bx bx-book-open me-1"></i> View

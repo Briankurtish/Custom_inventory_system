@@ -3,39 +3,46 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}All Stocks{% endblock %}
+{% block title %}Track Stocks{% endblock %}
 
 {% block content %}
-
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'stock' %}">Stocks</a></li>
-    <li class="breadcrumb-item active" aria-current="page">
-      All Stock
-    </li>
+    <li class="breadcrumb-item active" aria-current="page">Track Stocks</li>
   </ol>
 </nav>
-<!-- En
 
-<hr class="my-5">
-{% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other"  %}
-<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Stock
-</button>
-<button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
-</button>
-<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>All Stock
-</button>
-{% endif %}
-<!-- Hoverable Table rows -->
+<form method="get" action="" class="mb-4">
+    <!-- Branch Filter -->
+    <div class="d-flex align-items-center">
+      <label for="branch_filter" class="me-2 mb-0">Filter by Branch:</label>
+      <select name="branch_filter" id="branch_filter" class="form-select form-select-sm" style="width: 180px;">
+        <option value="">All</option>
+        {% for branch in branches %}
+          <option value="{{ branch.id }}" {% if branch.id == branch_filter %}selected{% endif %}>
+            {{ branch.branch_name }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-outline-primary btn-sm ms-2">Filter</button>
+    </div>
+</form>
+
+<!-- Filter Section with Select2 -->
+<div class="mb-3">
+  <label for="product-search" class="form-label">Search Product (Product Code or Generic Name)</label>
+  <select id="product-search" class="form-select" style="width: 100%;">
+    <option value="">Select Product</option>
+    {% for product in all_products %}
+      <option value="{{ product.product_code }}">{{ product.product_code }} - {{ product.generic_name_dosage }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<!-- Table displaying the stocks -->
 <div class="card">
-  <h5 class="card-header">
-    Stock Details
-    <small class="text-body float-end text-primary branch-name">Douala Branch</small>
-  </h5>
+  <h5 class="card-header">Stock Details</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
@@ -46,13 +53,11 @@
           <th>Product Name</th>
           <th>Quantity</th>
           <th>Status</th>
-          <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="stock-table-body" class="table-border-bottom-0">
-        <tbody id="stock-table-body">
-          {% for stock in stocks %}
-          <tr>
+      <tbody id="stock-table-body">
+        {% for stock in stocks %}
+          <tr data-product-code="{{ stock.product.product_code }}" data-generic-name="{{ stock.product.generic_name_dosage }}">
             <td>{{ stock.product.product_code }}</td>
             <td>{{ stock.branch.branch_id }}</td>
             <td>{{ stock.branch.branch_name }}</td>
@@ -66,14 +71,47 @@
               {% endif %}
             </td>
           </tr>
-          {% empty %}
+        {% empty %}
           <tr>
             <td colspan="6" class="text-center text-muted">No stock to display yet</td>
           </tr>
-          {% endfor %}
-        </tbody>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+{% endblock %}
+
+{% block page_js %}
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 for product search
+    $("#product-search").select2({
+      placeholder: "Search for a product",
+      allowClear: true,
+      width: "100%",
+    });
+
+    // On product selection, filter the table rows
+    $("#product-search").on('change', function() {
+      var searchQuery = $(this).val().toLowerCase();
+      
+      // Show all rows first, then filter them
+      $("#stock-table-body tr").each(function() {
+        var productCode = $(this).data('product-code').toLowerCase();
+        var genericName = $(this).data('generic-name').toLowerCase();
+
+        // Check if the row matches the search query (either product code or generic name)
+        if (productCode.includes(searchQuery) || genericName.includes(searchQuery)) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    });
+  });
+</script>
+
 {% endblock %}

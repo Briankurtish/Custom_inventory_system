@@ -69,12 +69,13 @@
         {% endif %}
         
         {% if privilege.name == 'View Approved Requests' %}
-            <li class="menu-item {% if 'approved-requests' == request.resolver_match.url_name or '/approved-requests/' in request.path %}active open{% endif %}">
-              <a href="{% url 'approved-requests' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-check"></i>
-                <div class="text-truncate" data-i18n="Approved Requests">Approved Requests</div>
-              </a>
-            </li>
+          <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
+            <a href="{% url 'requests' %}" class="menu-link ">
+              <i class="menu-icon tf-icons bx bx-paper-plane"></i>
+              <div class="text-truncate" data-i18n="Dashboards">Stock Request</div>
+              {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+            </a>
+          </li>
         {% endif %}
 
         {% if privilege.name == 'Recommend Medical Products'  %}
@@ -95,9 +96,11 @@
               {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
             </a>
           </li>
-          <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks-in-transit//' in request.path %}active open{% endif %}">
-            <a href="{% url 'stocks_in_transit' %}" class="menu-link ">
-              <i class="menu-icon tf-icons bx  bx-line-chart"></i>
+          {% endif %}
+          {% if privilege.name == 'View Stock In Transit' %}
+          <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
+            <a href="{% url 'requests' %}" class="menu-link ">
+              <i class="menu-icon tf-icons bx bx-paper-plane"></i>
               <div class="text-truncate" data-i18n="Dashboards">Stock In Transit</div>
               {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
             </a>

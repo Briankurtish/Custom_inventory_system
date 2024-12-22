@@ -19,6 +19,6 @@ urlpatterns = [
     ),
     path('stock-request/<int:request_id>/', stock_request_details, name='stock_request_details'),
     path('stock-request/<int:request_id>/action/', approve_or_decline_request, name='approve_or_decline_request'),
-    path('stock-request/<int:request_id>/received/', stock_received, name='stock_received'), 
+     path('stock-received/<int:request_id>/', stock_received, name='stock_received'),
     path('stocks-in-transit/', stocks_in_transit, name='stocks_in_transit'),
 ]

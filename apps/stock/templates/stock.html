@@ -1,131 +1,95 @@
 {% extends layout_path %}
 
-{% load static %}
-{% load i18n %}
-
 {% block title %}Track Stocks{% endblock %}
 
 {% block content %}
-<span class="text me-2">Select Branch to Load Stock Levels</span>
-<div class="my-3" id="branch-buttons-container">
-  <!-- Branch buttons will be loaded dynamically here -->
-</div>
-<div class="my-3" id="">
-  <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>All stock
-</button>
-</div>
+<div class="container">
+  <h4 class="mb-4">
+    {% if user.worker_profile.role == "Central Stock Manager" %}
+      Stock Levels
+      <div class="mt-3">
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
+          <span class="tf-icons bx bx-package bx-18px me-2"></span>All stock
+        </button>
+      </div>
+    {% else %}
+      Stock Levels for {{ user.worker_profile.branch.branch_name }}
+    {% endif %}
+  </h4>
 
-<hr class="my-5">
-{% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other"  %}
-<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Stock
-</button>
-<button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
-</button>
+  {% if user.worker_profile.role == "Central Stock Manager" %}
+  <p>Select which warehouse you want to view </p>
+  <div id="branch-buttons-container" class="mb-4"></div>
+  {% endif %}
 
-{% endif %}
-<!-- Hoverable Table rows -->
-<div class="card">
-  <h5 class="card-header">
-    Stock Details
-    <small class="text-body float-end text-primary branch-name">Douala Branch</small>
-  </h5>
-  <div class="table-responsive text-nowrap">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Product Code</th>
-          <th>Branch ID</th>
-          <th>Branch Name</th>
-          <th>Product Name</th>
-          <th>Quantity</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="stock-table-body" class="table-border-bottom-0">
-        <!-- Stock data will be dynamically loaded here -->
-      </tbody>
-    </table>
+  <div class="card">
+    <h5 class="card-header">
+      Stock Details
+      <small class="text-body float-end text-primary branch-name">
+        {% if user.worker_profile.role == "Central Stock Manager" %}
+          Central Warehouse
+        {% else %}
+          {{ user.worker_profile.branch.branch_name }}
+        {% endif %}
+      </small>
+    </h5>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Product Code</th>
+            <th>Branch Name</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="stock-table-body" class="table-border-bottom-0">
+          <tr>
+            <td colspan="6" class="text-center text-muted">Loading stock data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}
 
-{% block page_js %} 
-
+{% block page_js %}
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    const branchContainer = document.getElementById("branch-buttons-container");
     const tableBody = document.getElementById("stock-table-body");
     const branchNameElement = document.querySelector(".branch-name");
-  
-    try {
-      // Fetch branch data dynamically
-      const response = await fetch("/get-branches/");
-      const data = await response.json();
-  
-      // Generate branch buttons dynamically
-      branchContainer.innerHTML = data.branches.map(branch => `
-        <button type="button" class="btn btn-outline-primary me-2 branch-btn" data-branch-id="${branch.id}">
-          ${branch.name} Stocks
-        </button>
-      `).join("");
-  
-      // Find the central warehouse (assuming it's always present in the branches data)
-      const centralWarehouse = data.branches.find(branch => branch.name.toLowerCase() === "central warehouse");
-  
-      if (centralWarehouse) {
-        // Display central warehouse stock by default
-        displayStockForBranch(centralWarehouse.id, centralWarehouse.name);
-      }
-  
-      // Add event listeners to dynamically created buttons
-      const buttons = document.querySelectorAll(".branch-btn");
-      buttons.forEach(button => {
-        button.addEventListener("click", () => {
-          const branchId = button.getAttribute("data-branch-id");
-          const branchName = button.textContent.replace(" Stocks", "");
-          displayStockForBranch(branchId, branchName);
-  
-          // Highlight the clicked button
-          buttons.forEach(btn => btn.classList.remove("btn-primary"));
-          buttons.forEach(btn => btn.classList.add("btn-outline-primary"));
-          button.classList.remove("btn-outline-primary");
-          button.classList.add("btn-primary");
-        });
-      });
-    } catch (error) {
-      console.error("Error fetching branch data:", error);
-    }
-  
-    // Function to fetch and display stock for a specific branch
-    async function displayStockForBranch(branchId, branchName) {
+
+    {% if user.worker_profile.role != "Central Stock Manager" %}
+    // Fetch and display stock for worker's branch
+    const branchId = "{{ user.worker_profile.branch.id }}";
+    const branchName = "{{ user.worker_profile.branch.branch_name }}";
+
+    async function fetchStockForBranch(branchId) {
       try {
         const response = await fetch(`/get-stock-data/?branch_id=${branchId}`);
         const stockData = await response.json();
-  
-        // Update branch name
-        branchNameElement.textContent = `${branchName} Branch`;
-  
-        // Check if there is stock
+
         if (stockData.stocks.length === 0) {
           tableBody.innerHTML = `
             <tr>
-              <td colspan="7" class="text-center text-muted">No stock to display yet</td>
+              <td colspan="6" class="text-center text-muted">No stock to display yet</td>
             </tr>
           `;
         } else {
-          // Update the stock table
           tableBody.innerHTML = stockData.stocks.map(stock => `
             <tr>
-              <td><span>${stock.product_code}</span></td>
-              <td><span>${stock.branch_id}</span></td>
-              <td><span>${stock.branch_name}</span></td>
+              <td>${stock.product_code}</td>
+              <td>${stock.branch_name}</td>
               <td>${stock.product_name}</td>
-              <td class="fw-medium">${stock.quantity}</td>
-              <td><span class="badge bg-label-success me-1">In Stock</span></td>
+              <td>${stock.quantity}</td>
+              <td>
+                <span class="badge ${stock.status === 'In Stock' ? 'bg-label-success' : 'bg-label-warning'}">
+                  ${stock.status}
+                </span>
+              </td>
               <td>
                 <div class="dropdown">
                   <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -142,12 +106,95 @@
           `).join("");
         }
       } catch (error) {
-        console.error(`Error fetching stock data for branch ${branchId}:`, error);
+        console.error("Error fetching stock data:", error);
       }
     }
-  });
-  
-  
-</script>
 
-{% endblock page_js %}
+    await fetchStockForBranch(branchId);
+
+    {% else %}
+    const branchContainer = document.getElementById("branch-buttons-container");
+
+    async function loadBranches() {
+      try {
+        const response = await fetch("/get-branches/");
+        const data = await response.json();
+
+        branchContainer.innerHTML = data.branches.map(branch => `
+          <button type="button" class="btn btn-outline-primary me-2 branch-btn" data-branch-id="${branch.id}">
+            ${branch.name} Stocks
+          </button>
+        `).join("");
+
+        const centralWarehouse = data.branches.find(branch => branch.name.toLowerCase() === "central warehouse");
+        if (centralWarehouse) {
+          await fetchStockForBranch(centralWarehouse.id, centralWarehouse.name);
+        }
+
+        const buttons = document.querySelectorAll(".branch-btn");
+        buttons.forEach(button => {
+          button.addEventListener("click", async () => {
+            const branchId = button.getAttribute("data-branch-id");
+            const branchName = button.textContent.replace(" Stocks", "");
+            await fetchStockForBranch(branchId, branchName);
+
+            branchNameElement.textContent = `${branchName} Branch`;
+            buttons.forEach(btn => btn.classList.remove("btn-primary"));
+            button.classList.add("btn-primary");
+          });
+        });
+      } catch (error) {
+        console.error("Error fetching branch data:", error);
+      }
+    }
+
+    async function fetchStockForBranch(branchId, branchName = "Central Warehouse") {
+      try {
+        const response = await fetch(`/get-stock-data/?branch_id=${branchId}`);
+        const stockData = await response.json();
+
+        branchNameElement.textContent = `${branchName} Branch`;
+
+        if (stockData.stocks.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center text-muted">No stock to display yet</td>
+            </tr>
+          `;
+        } else {
+          tableBody.innerHTML = stockData.stocks.map(stock => `
+            <tr>
+              <td>${stock.product_code}</td>
+              <td>${stock.branch_name}</td>
+              <td>${stock.product_name}</td>
+              <td>${stock.quantity}</td>
+              <td>
+                <span class="badge ${stock.status === 'In Stock' ? 'bg-label-success' : 'bg-label-warning'}">
+                  ${stock.status}
+                </span>
+              </td>
+              <td>
+                <div class="dropdown">
+                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item text-secondary" href="javascript:void(0);">
+                      <i class="bx bx-edit-alt me-1"></i> Request
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `).join("");
+        }
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      }
+    }
+
+    await loadBranches();
+    {% endif %}
+  });
+</script>
+{% endblock %}

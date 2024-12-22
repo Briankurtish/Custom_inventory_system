@@ -9,6 +9,7 @@ from .models import Stock, InventoryTransaction
 from django.utils.timezone import now  # To handle timestamps
 from django.http import JsonResponse
 from apps.workers.models import Worker
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 
 """
@@ -333,12 +334,40 @@ def get_branches(request):
 
 
 def track_stocks(request):
+    # Get all branches for the branch filter dropdown
+    branches = Branch.objects.all()
+
+    # Get the branch filter and search query from the GET request
+    branch_filter = request.GET.get('branch_filter', '')
+    search_query = request.GET.get('search_query', '')
+
     # Fetch all stock data across all branches
-    all_stocks = Stock.objects.select_related('product', 'branch').all()
-    
+    all_stocks = Stock.objects.select_related('product', 'branch')
+
+    # Apply branch filter if provided
+    if branch_filter:
+        all_stocks = all_stocks.filter(branch__id=branch_filter)
+
+    # Apply search filter if provided (search by product code or generic name)
+    if search_query:
+        all_stocks = all_stocks.filter(
+            Q(product__product_code__icontains=search_query) |
+            Q(product__generic_name_dosage__icontains=search_query)  # Ensure this field exists
+        )
+
+    # Get all products for the Select2 dropdown
+    all_products = Product.objects.all()
+
+    # Prepare context
     view_context = {
         "stocks": all_stocks,
+        "branches": branches,  # Pass the branches for the filter dropdown
+        "search_query": search_query,  # Include the search query to pre-populate the search input
+        "branch_filter": branch_filter,  # Include the selected branch filter value
+        "all_products": all_products,  # Pass the products for the Select2 dropdown
     }
+
     context = TemplateLayout.init(request, view_context)
     
+    # Render the page with context
     return render(request, "stock_all.html", context)
