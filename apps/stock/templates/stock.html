@@ -11,6 +11,12 @@
         <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
           <span class="tf-icons bx bx-package bx-18px me-2"></span>All stock
         </button>
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
+          <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Stock
+        </button>
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
+          <span class="tf-icons bx bx-package bx-18px me-2"></span>Update Stock
+        </button>
       </div>
     {% else %}
       Stock Levels for {{ user.worker_profile.branch.branch_name }}

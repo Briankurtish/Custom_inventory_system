@@ -43,4 +43,40 @@
     </div>
   </div>
 </div>
+
+<script type="text/javascript">
+  // This function will auto-populate the brand name based on the selected generic name
+  document.addEventListener("DOMContentLoaded", function () {
+      // Get the generic_name dropdown and brand_name input
+      const genericNameSelect = document.getElementById("id_generic_name_dosage");
+      const brandNameInput = document.getElementById("id_brand_name");
+
+      // Listen for changes to the generic name dropdown
+      genericNameSelect.addEventListener("change", function () {
+          // Get the selected option
+          const selectedGenericNameId = genericNameSelect.value;
+
+          // Make an AJAX request to get the brand name for the selected generic name
+          if (selectedGenericNameId) {
+              fetch(`/get-brand-name/${selectedGenericNameId}/`)
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.brand_name) {
+                          // If a brand name exists, set it to the input field
+                          brandNameInput.value = data.brand_name;
+                      } else {
+                          // If no brand name exists, leave the input empty
+                          brandNameInput.value = '';
+                      }
+                  })
+                  .catch(error => console.error('Error fetching brand name:', error));
+          } else {
+              // If no generic name is selected, clear the brand name field
+              brandNameInput.value = '';
+          }
+      });
+  });
+</script>
+
+
 {% endblock %}

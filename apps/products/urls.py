@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import delete_batch_view, delete_product_view, update_product_view, add_product_view, ManageProductView, add_batch_view, edit_batch_view
+from .views import delete_batch_view, delete_product_view, update_product_view, add_product_view, ManageProductView, add_batch_view, edit_batch_view, get_brand_name
 
 
 
@@ -20,4 +20,6 @@ urlpatterns = [
     path("delete-product/<int:pk>/", delete_product_view, name="delete-product"),
 
     path("delete-batch/<int:pk>/", delete_batch_view, name="delete-batch"),
+    
+    path('get-brand-name/<int:generic_name_id>/', get_brand_name, name='get-brand-name'),
 ]

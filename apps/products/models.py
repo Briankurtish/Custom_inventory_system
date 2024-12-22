@@ -1,19 +1,19 @@
 from django.db import models
 from django.db import IntegrityError
+from apps.genericName.models import GenericName
 
 
 class Batch(models.Model):
     batch_number = models.CharField(
-        max_length=50, unique=True, help_text="Numéro de lot"
+        max_length=50, unique=True, help_text="Batch Number"
     )
-    generic_name = models.CharField(
-        max_length=255, help_text="Generic Name"
+    generic_name = models.ForeignKey(
+        GenericName, on_delete=models.CASCADE, related_name='batches', help_text="Generic Name"
     )
-    expiry_date = models.DateField(help_text="Date d’expiration")
+    expiry_date = models.DateField(help_text="Expiry Date")
     
-
     def __str__(self):
-        return f"Batch: {self.batch_number} -- {self.generic_name} - Expiry: {self.expiry_date}"
+        return f"Batch: {self.batch_number} -- {self.generic_name.generic_name} - Expiry: {self.expiry_date}"
 
 
 
@@ -22,10 +22,10 @@ class Product(models.Model):
         max_length=50, blank=True, help_text="Code produit"
     )
     brand_name = models.ForeignKey(
-        "brandName.BrandNameModel", on_delete=models.CASCADE, related_name="products", help_text="Brand Name associated with this product"
+        GenericName, on_delete=models.CASCADE, related_name="brand_products", help_text="Brand Name associated with this product"
     )
     generic_name_dosage = models.ForeignKey(
-        "genericName.GenericName", on_delete=models.CASCADE, related_name="products", help_text="Generic Name associated with this product"
+        GenericName, on_delete=models.CASCADE, related_name="dosage_products", help_text="Generic Name associated with this product", null=True, blank=True
     )
     pack_size = models.ForeignKey(
         "pack_size.PackSize", on_delete=models.CASCADE, related_name="products", help_text="Pack Size associated with this product"
@@ -41,7 +41,7 @@ class Product(models.Model):
         unique_together = ("brand_name", "batch")  # Ensure each brand_name and batch combination is unique
 
     def __str__(self):
-        return f"{self.product_code} - {self.brand_name} ({self.generic_name_dosage}) - Batch {self.batch.batch_number}"
+        return f"{self.product_code} - {self.brand_name.generic_name} ({self.generic_name_dosage}) - Batch {self.batch.batch_number}"
 
     def save(self, *args, **kwargs):
         # Assign a product code only if it hasn't been set

@@ -1,8 +1,10 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Batch, Product
 from .forms import BatchForm, ProductForm
+from apps.genericName.models import GenericName
 
 
 """
@@ -28,14 +30,23 @@ def ManageProductView(request):
 
 
 def ManageBatchView(request):
-    batch = Batch.objects.all()
-
-    # Create a new context dictionary for this view 
+    batch = Batch.objects.all()  # Fetch all batches
+    
+    # Handle form submission
+    if request.method == "POST":
+        form = BatchForm(request.POST)
+        if form.is_valid():
+            form.save()  # Save the batch object
+            return redirect('add-batch')  # Redirect after successful form submission
+    else:
+        form = BatchForm()  # Create an empty form instance for GET request
+    
+    # Create a context to pass to the template
     view_context = {
         "batch": batch,
+        "form": form,  # Pass the form to the template
     }
-
-    # Initialize the template layout and merge the view context
+    
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'add_batchNumber.html', context)
@@ -60,6 +71,19 @@ def add_batch_view(request):
     return render(request, 'add_batchNumber.html', context)
 
 
+def get_brand_name(request, generic_name_id):
+    try:
+        # Get the GenericName object
+        generic_name = GenericName.objects.get(id=generic_name_id)
+        
+        # Return the brand_name as JSON
+        brand_name = generic_name.brand_name or ''  # Return an empty string if no brand_name is set
+        return JsonResponse({'brand_name': brand_name})
+
+    except GenericName.DoesNotExist:
+        return JsonResponse({'brand_name': ''}, status=404)
+
+
 def add_product_view(request, pk=None):
     batches = Batch.objects.all()  # Fetch all batches for the dropdown
     
@@ -73,7 +97,15 @@ def add_product_view(request, pk=None):
     # Handle the POST request (form submission)
     if request.method == "POST":
         if form.is_valid():
-            form.save()  # Save the product (create or update based on `pk`)
+            # Ensure brand_name is set correctly before saving the product
+            generic_name_dosage = form.cleaned_data.get('generic_name_dosage')
+            if generic_name_dosage:
+                # If brand_name is not provided, get it from generic_name_dosage
+                if not form.cleaned_data.get('brand_name'):
+                    form.cleaned_data['brand_name'] = generic_name_dosage  # Assign the GenericName instance
+
+            # Save the product (create or update based on `pk`)
+            form.save()
             return redirect('products')  # Redirect to the product list after saving
 
     view_context = {
@@ -82,9 +114,11 @@ def add_product_view(request, pk=None):
         "product": product,  # Pass the product object for reference in the template
         "is_editing": bool(pk),  # Flag to indicate if we are editing
     }
+    
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addProduct.html', context)
+
 
 
 

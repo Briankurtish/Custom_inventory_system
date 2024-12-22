@@ -11,10 +11,6 @@
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Batch Number
 </button>
 
-<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-brandName' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Brand Name
-</button>
-
 <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
   <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Generic Name
 </button>
@@ -56,8 +52,8 @@
         {% for product in products %}
         <tr>
           <td><span>{{product.product_code}}</span></td>
-          <td>{{product.brand_name}}</td>
-          <td>{{product.generic_name_dosage}}</td>
+          <td>{{ product.brand_name.brand_name }}</td>
+          <td>{{ product.generic_name_dosage.generic_name }}</td>
           <td>{{product.pack_size}}</td>
           <td>{{product.unit_price}}</td>
           <td>{{ product.batch.batch_number }}</td>
