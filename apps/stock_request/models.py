@@ -8,6 +8,7 @@ class StockRequest(models.Model):
     requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default="Pending")
+    picking_list = models.FileField(upload_to='picking_lists/', null=True, blank=True)
 
     def __str__(self):
         return f"Stock Request #{self.id} by {self.requested_by}"

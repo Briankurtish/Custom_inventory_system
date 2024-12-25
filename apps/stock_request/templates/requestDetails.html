@@ -97,6 +97,12 @@
     {% endif %}
   {% endif %}
 
+  {% if stock_request.picking_list %}
+  <a href="{{ stock_request.picking_list.url }}" target="_blank">Download Picking List</a>
+  {% else %}
+    <p>No Picking List</p>
+  {% endif %}
+
   <!-- Stock Received Form -->
   {% if user.worker_profile.role == "Stock Manager" %}
   <form action="{% url 'stock_received' request_id=stock_request.id %}" method="post">

@@ -12,7 +12,14 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.db import transaction
 from django.http import HttpResponseForbidden
 from django.http import JsonResponse
-
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+import io
+from django.core.files import File
 
 """
 This file is a view controller for multiple pages as a module.
@@ -170,7 +177,7 @@ def approve_or_decline_request(request, request_id):
     Approve or decline a stock request. The central warehouse is treated as a special branch.
     """
     stock_request = get_object_or_404(StockRequest, id=request_id)
-    
+
     if request.method == "POST":
         action = request.POST.get("action")  # 'approve' or 'decline'
 
@@ -181,11 +188,12 @@ def approve_or_decline_request(request, request_id):
             return JsonResponse({
                 "success": False,
                 "message": "Central warehouse not found. Please ensure it exists."
-            })
+            }, status=400)
 
         if action == "approve":
             product_details = StockRequestProduct.objects.filter(stock_request=stock_request)
-            
+            insufficient_stock = []
+
             for detail in product_details:
                 product = detail.product
                 quantity = detail.quantity
@@ -193,10 +201,8 @@ def approve_or_decline_request(request, request_id):
                 # Check stock in the central warehouse
                 central_stock = central_warehouse.stocks.filter(product=product).first()
                 if not central_stock or central_stock.quantity < quantity:
-                    return JsonResponse({
-                        "success": False,
-                        "message": f"Not enough stock for {product.generic_name_dosage} in the central warehouse."
-                    })
+                    insufficient_stock.append(f"{product.generic_name_dosage} (Requested: {quantity}, Available: {central_stock.quantity if central_stock else 0})")
+                    continue
 
                 # Deduct stock from central warehouse
                 central_stock.quantity -= quantity
@@ -210,24 +216,42 @@ def approve_or_decline_request(request, request_id):
                     destination=stock_request.branch,
                     stock_request=stock_request  # Link the in-transit item to the stock request
                 )
-            
+
+            # Handle insufficient stock
+            if insufficient_stock:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Some items have insufficient stock.",
+                    "details": insufficient_stock,
+                }, status=400)
+
+            # Generate and save picking list
+            picking_list_buffer = generate_picking_list(stock_request)
+            stock_request.picking_list.save(f"picking_list_{stock_request.id}.pdf", picking_list_buffer)
+
             # Update stock request status to "Accepted"
             stock_request.status = "In Transit"
             stock_request.save()
 
-            return redirect("requests")
-        
+            return JsonResponse({
+                "success": True,
+                "message": "Stock request approved. Picking list generated and stocks updated."
+            })
+
         elif action == "decline":
             # Update stock request status to "Rejected"
             stock_request.status = "Rejected"
             stock_request.save()
 
-            return redirect("requests")
+            return JsonResponse({
+                "success": True,
+                "message": "Stock request declined."
+            })
 
     return JsonResponse({
         "success": False,
         "message": "Invalid request."
-    })
+    }, status=400)
 
 
 @login_required
@@ -312,3 +336,70 @@ def stocks_in_transit(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'transit-requests.html', context)
+
+
+def generate_picking_list(stock_request):
+    # Create a BytesIO buffer
+    buffer = io.BytesIO()
+
+    # Create a PDF canvas
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    pdf.setTitle(f"Picking List for Request #{stock_request.id}")
+
+    # Add a logo (replace with the actual path to your logo)
+    logo_path = "apps/gcpharma.jpg"  # Update with your logo file path
+    try:
+        pdf.drawImage(logo_path, 50, 750, width=100, height=50)  # Adjust size and position
+    except:
+        pdf.drawString(50, 770, "LOGO PLACEHOLDER")  # Placeholder if logo not found
+
+    # Header text
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(200, 780, f"Picking List for Stock Request #{stock_request.id}")
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, 720, f"Requested by: {stock_request.requested_by}")
+    pdf.drawString(50, 700, f"Requested at: {stock_request.requested_at.strftime('%Y-%m-%d %H:%M')}")
+
+    # Add a styled table for the products
+    data = [["Generic Name", "Quantity"]]  # Table header
+    for product_detail in stock_request.stockrequestproduct_set.all():
+        data.append([
+            str(product_detail.product.generic_name_dosage), 
+            str(product_detail.quantity)
+        ])
+
+    # Create the table
+    table = Table(data, colWidths=[3 * inch, 1.5 * inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    # Get the table size and position it manually
+    table_width, table_height = table.wrap(450, 400)
+    table.drawOn(pdf, 50, 550 - table_height)  # Position table below the header
+
+    # Footer text
+    pdf.setFont("Helvetica-Oblique", 10)
+    pdf.drawString(50, 50, "This document was automatically generated.")
+    pdf.drawString(50, 35, f"Tracking ID: {stock_request.id}")
+
+    # Finalize PDF
+    pdf.showPage()
+    pdf.save()
+
+    # Save the PDF to a FileField or return it as a response
+    buffer.seek(0)
+    return buffer
+
+
+def save_picking_list(stock_request):
+    buffer = generate_picking_list(stock_request)
+    stock_request.picking_list.save(f"picking_list_{stock_request.id}.pdf", File(buffer))
+    buffer.close()

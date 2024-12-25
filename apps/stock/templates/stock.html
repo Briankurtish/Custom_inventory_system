@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
   <h4 class="mb-4">
-    {% if user.worker_profile.role == "Central Stock Manager" %}
+    {% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other" %}
       Stock Levels
       <div class="mt-3">
         <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
@@ -23,7 +23,7 @@
     {% endif %}
   </h4>
 
-  {% if user.worker_profile.role == "Central Stock Manager" %}
+  {% if user.worker_profile.role == "Central Stock Manager"%}
   <p>Select which warehouse you want to view </p>
   <div id="branch-buttons-container" class="mb-4"></div>
   {% endif %}
@@ -32,7 +32,7 @@
     <h5 class="card-header">
       Stock Details
       <small class="text-body float-end text-primary branch-name">
-        {% if user.worker_profile.role == "Central Stock Manager" %}
+        {% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other" %}
           Central Warehouse
         {% else %}
           {{ user.worker_profile.branch.branch_name }}
