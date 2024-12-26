@@ -1,5 +1,5 @@
 from django.db import models
-
+from apps.workers.models import Worker
 
 # Create your models here.
 
@@ -14,7 +14,12 @@ class Customer(models.Model):
         max_length=20, blank=True, null=True, help_text="Code Postal"
     )
     sales_rep = models.ForeignKey(
-    'sales_rep.SalesAgent', on_delete=models.SET_NULL, null=True, blank=True, related_name='customers',
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='customers',
+        limit_choices_to={'role': 'Sales Rep'},  # Only include workers with role "Sales Rep"
         help_text="Assigned Sales Agent"
     )
     contact_person = models.CharField(

@@ -25,7 +25,7 @@ class SalesAgent(models.Model):
     )
 
     def __str__(self):
-        return f"{self.agent_id} - {self.agent_name}"
+        return f"{self.agent_id} - {self.agent_firstName} - {self.agent_lastName}"
 
     def save(self, *args, **kwargs):
         if not self.agent_id:

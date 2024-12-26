@@ -233,25 +233,32 @@ def approve_or_decline_request(request, request_id):
             stock_request.status = "In Transit"
             stock_request.save()
 
-            return JsonResponse({
-                "success": True,
-                "message": "Stock request approved. Picking list generated and stocks updated."
-            })
+            # return JsonResponse({
+            #     "success": True,
+            #     "message": "Stock request approved. Picking list generated and stocks updated."
+            # })
+            
+            messages.success(request, "Stock request approved. Picking list generated and stocks updated.")
+            return redirect("requests")  # Redirect to the appropriate page, like the list of requests
 
         elif action == "decline":
             # Update stock request status to "Rejected"
             stock_request.status = "Rejected"
             stock_request.save()
 
-            return JsonResponse({
-                "success": True,
-                "message": "Stock request declined."
-            })
+            # return JsonResponse({
+            #     "success": True,
+            #     "message": "Stock request declined."
+            # })
+            messages.success(request, "Stock request declined.")
+            return redirect("requests")
 
-    return JsonResponse({
-        "success": False,
-        "message": "Invalid request."
-    }, status=400)
+    # return JsonResponse({
+    #     "success": False,
+    #     "message": "Invalid request."
+    # }, status=400)
+    messages.success(request, "Invalid request.")
+    return redirect("requests")
 
 
 @login_required
@@ -349,13 +356,13 @@ def generate_picking_list(stock_request):
     # Add a logo (replace with the actual path to your logo)
     logo_path = "apps/gcpharma.jpg"  # Update with your logo file path
     try:
-        pdf.drawImage(logo_path, 50, 750, width=100, height=50)  # Adjust size and position
+        pdf.drawImage(logo_path, 250, 780, width=100, height=50)  # Center the logo at the top
     except:
-        pdf.drawString(50, 770, "LOGO PLACEHOLDER")  # Placeholder if logo not found
+        pdf.drawString(250, 790, "LOGO PLACEHOLDER")  # Placeholder if logo not found
 
     # Header text
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(200, 780, f"Picking List for Stock Request #{stock_request.id}")
+    pdf.drawCentredString(300, 750, f"Picking List for Stock Request #{stock_request.id}")
     pdf.setFont("Helvetica", 12)
     pdf.drawString(50, 720, f"Requested by: {stock_request.requested_by}")
     pdf.drawString(50, 700, f"Requested at: {stock_request.requested_at.strftime('%Y-%m-%d %H:%M')}")
@@ -364,26 +371,29 @@ def generate_picking_list(stock_request):
     data = [["Generic Name", "Quantity"]]  # Table header
     for product_detail in stock_request.stockrequestproduct_set.all():
         data.append([
-            str(product_detail.product.generic_name_dosage), 
-            str(product_detail.quantity)
+            str(product_detail.product.generic_name_dosage),
+            str(product_detail.quantity),
         ])
 
     # Create the table
-    table = Table(data, colWidths=[3 * inch, 1.5 * inch])
+    table = Table(data, colWidths=[3.5 * inch, 1.5 * inch])
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.orange),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 12),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.darkblue),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
     ]))
 
-    # Get the table size and position it manually
+    # Calculate table position to center it
     table_width, table_height = table.wrap(450, 400)
-    table.drawOn(pdf, 50, 550 - table_height)  # Position table below the header
+    x_position = (A4[0] - table_width) / 2
+    y_position = 600 - table_height  # Adjusted to reduce space between table and header
+    table.drawOn(pdf, x_position, y_position)
 
     # Footer text
     pdf.setFont("Helvetica-Oblique", 10)
