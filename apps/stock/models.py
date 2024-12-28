@@ -25,7 +25,7 @@ class Stock(models.Model):
         unique_together = ("product", "branch")  # Ensure one record per product per branch
 
     def __str__(self):
-        return f"{self.product.product_code} at {self.branch.name} - {self.quantity} units"
+        return f"{self.product.product_code} at {self.branch.branch_name} - {self.quantity} units"
 
 
 class InventoryTransaction(models.Model):
@@ -61,4 +61,4 @@ class InventoryTransaction(models.Model):
     )
 
     def __str__(self):
-        return f"{self.get_transaction_type_display()} - {self.product.product_code} at {self.branch.name} ({self.quantity})"
+        return f"{self.get_transaction_type_display()} - {self.product.product_code} at {self.branch.branch_name} ({self.quantity})"

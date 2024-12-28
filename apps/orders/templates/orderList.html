@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Tables - Basic Tables{% endblock %}
+{% block title %}Order List{% endblock %}
 
 {% block content %}
 
@@ -12,8 +12,6 @@
 </button>
 
 <hr class="my-8">
-
-
 
 <!-- Hoverable Table rows -->
 <div class="card">
@@ -24,9 +22,9 @@
         <tr>
           <th>Order ID</th>
           <th>Branch ID</th>
-          <th>Worker ID</th>
-          <th>Client ID</th>
-          <th>Sales Rep ID</th>
+          <th>Created By</th>
+          <th>Client</th>
+          <th>Sales Rep</th>
           <th>Total Amount</th>
           <th>Order Status</th>
           <th>Created At</th>
@@ -34,89 +32,57 @@
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
+        {% for order in orders %}
         <tr>
-          <td><span>ORD_019</span></td>
-          <td>B01_DLA</td>
-          <td><span>CG24_01</span></td>
-          <td>CLT_001</td>
-          <td><span>2FA_01</span></td>
-          <td>200<small> Frs<small></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>12-03-2024</td>
+          <td><span>{{ order.id }}</span></td>
+          <td>{{ order.branch.branch_id }}</td>
+          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }} </span></td>
+          <td>{{ order.customer.customer_name }}</td>
+          <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
+          <td>{{ order.grand_total }}<small> Frs</small></td>
+          <td>
+            <span class="badge 
+              {% if order.status == 'Verified' %}bg-label-info
+              {% elif order.status == 'Pending' %}bg-label-warning
+              {% else %}bg-label-danger{% endif %} me-1">
+              {{ order.status }}
+            </span>
+          </td>
+          <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order-detail' %}"><i class="bx bx-book-open me-1"></i> View</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
+                {% comment %} <a class="dropdown-item" href="{% url 'order-detail' order.id %}">
+                  <i class="bx bx-book-open me-1"></i> View
+                </a> {% endcomment %}
+                {% comment %} <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
+                  <i class="bx bx-trash me-1"></i> Delete
+                </a> {% endcomment %}
               </div>
             </div>
           </td>
         </tr>
+        {% empty %}
         <tr>
-          <td><span>ORD_019</span></td>
-          <td>B01_DLA</td>
-          <td><span>CG24_01</span></td>
-          <td>CLT_001</td>
-          <td><span>2FA_01</span></td>
-          <td>200<small> Frs<small></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>12-03-2024</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order-detail' %}"><i class="bx bx-book-open me-1"></i> View</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
+          <td colspan="9" class="text-center">No orders available</td>
         </tr>
-        <tr>
-          <td><span>ORD_019</span></td>
-          <td>B01_DLA</td>
-          <td><span>CG24_01</span></td>
-          <td>CLT_001</td>
-          <td><span>2FA_01</span></td>
-          <td>200<small> Frs<small></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>12-03-2024</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order-detail' %}"><i class="bx bx-book-open me-1"></i> View</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><span>ORD_019</span></td>
-          <td>B01_DLA</td>
-          <td><span>CG24_01</span></td>
-          <td>CLT_001</td>
-          <td><span>2FA_01</span></td>
-          <td>200<small> Frs<small></td>
-          <td><span class="badge bg-label-info me-1">Verified</span></td>
-          <td>12-03-2024</td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order-detail' %}"><i class="bx bx-book-open me-1"></i> View</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
-              </div>
-            </div>
-          </td>
-        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
 <!--/ Hoverable Table rows -->
 
-
-
+{% comment %} <script>
+  function confirmDelete(orderId) {
+    if (confirm("Are you sure you want to delete this order?")) {
+      // Redirect or make an AJAX call to delete the order
+      window.location.href = `{% url 'delete-order' %}?id=${orderId}`;
+    }
+  }
+</script> {% endcomment %}
 
 {% endblock %}

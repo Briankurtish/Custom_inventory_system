@@ -151,6 +151,7 @@ def add_stock_view(request):
 
 
 def update_existing_stock_view(request):
+    
     global TEMP_UPDATE_LIST
     form = StockUpdateForm()  # Initialize form without binding data
 
@@ -197,15 +198,28 @@ def update_existing_stock_view(request):
 
             return redirect(request.path)
 
-        elif "remove_item" in request.POST:  # Remove stock from the temporary list
-            product_id = request.POST.get("product_id")
-            branch_id = request.POST.get("branch_id")
+        # elif "remove_item" in request.POST:  # Remove stock from the temporary list
+        #     product_id = request.POST.get("product_code")
+        #     branch_id = request.POST.get("branch")
 
+        #     TEMP_UPDATE_LIST = [
+        #         item for item in TEMP_UPDATE_LIST
+        #         if not (item["product_id"] == int(product_id) and item["branch_id"] == int(branch_id))
+        #     ]
+        #     messages.success(request, "Item removed from the update list.")
+            
+        elif "remove_item" in request.POST:  # Handle removing from the temporary list
+            product_code = request.POST.get("product_code")
+            branch_id = request.POST.get("branch")
+
+            # Remove matching item from the temporary list
             TEMP_UPDATE_LIST = [
-                item for item in TEMP_UPDATE_LIST
-                if not (item["product_id"] == int(product_id) and item["branch_id"] == int(branch_id))
+                item for item in TEMP_UPDATE_LIST 
+                if not (item["product_code"] == product_code and item["branch_id"] == int(branch_id))
             ]
-            messages.success(request, "Item removed from the update list.")
+            # Store the updated list in session
+            # request.session["TEMP_UPDATE_LIST"] = TEMP_UPDATE_LIST
+            messages.success(request, "Item removed from the temporary stock list.")
 
         elif "update_stock" in request.POST:  # Apply updates to the database
             if not TEMP_UPDATE_LIST:

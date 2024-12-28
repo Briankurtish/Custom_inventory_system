@@ -1,22 +1,20 @@
 from django.urls import path
-from .views import orderView
-
-
+from .views import order_list, create_purchase_order, add_order_items
 
 urlpatterns = [
     path(
-        "orders-list/",
-        orderView.as_view(template_name="orderList.html"),
-        name="orders",
+        "orders-list/",  # Path for listing orders
+        order_list,  # View function for listing orders
+        name="orders",  # URL name for this path
     ),
     path(
-        "create-order/",
-        orderView.as_view(template_name="createOrder.html"),
-        name="create-order",
+        "create-order/",  # Path for creating a new order
+        create_purchase_order,  # View function for creating orders
+        name="create-order",  # URL name for this path
     ),
     path(
-        "order-detail/",
-        orderView.as_view(template_name="orderDetails.html"),
-        name="order-detail",
+        "add-order-items/",  # Path for adding items to an order
+        add_order_items,  # View function for adding items
+        name="add_order_items",  # URL name for this path
     ),
 ]
