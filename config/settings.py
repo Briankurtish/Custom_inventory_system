@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'apps.brandName',
     'apps.genericName',
     'apps.pack_size',
+    'apps.oldinvoice',
     "crispy_forms",
     "crispy_bootstrap5",
 ]

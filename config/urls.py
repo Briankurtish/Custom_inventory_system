@@ -103,6 +103,9 @@ urlpatterns = [
     path("", include("apps.pack_size.urls")),
     
     
+    # Old Invoice Urls
+    path("", include("apps.oldinvoice.urls")),
+    
     
     
     

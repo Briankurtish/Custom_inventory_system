@@ -3,30 +3,31 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Order List{% endblock %}
+{% block title %}Old Invoice{% endblock %}
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
+<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Invoice
 </button>
 
 <hr class="my-8">
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Order List</h5>
+  <h5 class="card-header">Invoice List</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Order ID</th>
+          <th>Invoice ID</th>
           <th>Branch ID</th>
           <th>Created By</th>
           <th>Client</th>
           <th>Sales Rep</th>
           <th>Total Amount</th>
-          <th>Order Status</th>
+          <th>Amount Paid</th>
+          <th>Amount Due</th>
           <th>Created At</th>
           <th>Actions</th>
         </tr>
@@ -36,18 +37,13 @@
         <tr>
           <td><span>{{ order.id }}</span></td>
           <td>{{ order.branch.branch_id }}</td>
-          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }} </span></td>
+          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-          <td>{{ order.grand_total }}<small> Frs</small></td>
-          <td>
-            <span class="badge 
-              {% if order.status == 'Verified' %}bg-label-info
-              {% elif order.status == 'Pending' %}bg-label-warning
-              {% else %}bg-label-danger{% endif %} me-1">
-              {{ order.status }}
-            </span>
-          </td>
+          <td><strong>{{ order.grand_total }}<small> Frs</small></strong></td>
+          <td class="text-success"><strong>{{ order.amount_paid }}<small> Frs</small></strong></td>
+          <td class="text-danger"><strong>{{ order.amount_due|floatformat:2 }}<small> Frs</small></strong></td>
+          
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
             <div class="dropdown">
@@ -55,34 +51,29 @@
                 <i class="bx bx-dots-vertical-rounded"></i>
               </button>
               <div class="dropdown-menu">
-                {% comment %} <a class="dropdown-item" href="{% url 'order-detail' order.id %}">
+                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
                   <i class="bx bx-book-open me-1"></i> View
-                </a> {% endcomment %}
-                {% comment %} <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
+                </a>
+                {% comment %} 
+                <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
                   <i class="bx bx-trash me-1"></i> Delete
-                </a> {% endcomment %}
+                </a> 
+                {% endcomment %}
               </div>
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="9" class="text-center">No orders available</td>
+          <td colspan="11" class="text-center">No Invoices available</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  
 </div>
 <!--/ Hoverable Table rows -->
 
-{% comment %} <script>
-  function confirmDelete(orderId) {
-    if (confirm("Are you sure you want to delete this order?")) {
-      // Redirect or make an AJAX call to delete the order
-      window.location.href = `{% url 'delete-order' %}?id=${orderId}`;
-    }
-  }
-</script> {% endcomment %}
 
 {% endblock %}

@@ -4,25 +4,27 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block title %}Create Purchase Order{% endblock %}
+{% block title %}Add Old Invoice{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Create Purchase Order/ Bon de Commande</h5>
+        <h5 class="mb-0">Old Invoice</h5>
       </div>
+      <br>
       <div class="card-body">
         <form method="post">
           {% csrf_token %}
           <!-- Purchase Order Form -->
-          {{ po_form|crispy }}
+          {{ invoice_form|crispy }}
 
+          <br>
           <button type="submit" class="btn btn-primary">Next: Add Items</button>
           
         </form>
-        
+
       </div>
     </div>
   </div>
