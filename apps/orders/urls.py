@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import order_list, create_purchase_order, add_order_items, order_details
+from .views import order_list, create_purchase_order, add_order_items, order_details, credit_report, get_credit_report
 
 urlpatterns = [
     path(
@@ -19,4 +19,6 @@ urlpatterns = [
     ),
     
      path('order/<int:order_id>/', order_details, name='order_details'),
+     
+     path('credit-report/<int:customer_id>/', get_credit_report, name='credit_report'),
 ]

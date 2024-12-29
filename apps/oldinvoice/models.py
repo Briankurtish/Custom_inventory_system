@@ -3,6 +3,8 @@ from apps.branches.models import Branch
 from apps.customers.models import Customer
 from apps.workers.models import Worker
 from apps.stock.models import Stock
+from datetime import timedelta
+from django.utils.timezone import now
 
 
 class OldInvoiceOrder(models.Model):
@@ -48,6 +50,7 @@ class OldInvoiceOrder(models.Model):
         max_digits=12, decimal_places=2, default=0.00,
         help_text="Amount remaining to be paid"
     )
+   
 
     def __str__(self):
         return f"Order #{self.id} - {self.branch.branch_name} by {self.created_by.user.username if self.created_by else 'Unknown'}"
@@ -65,6 +68,7 @@ class OldInvoiceOrder(models.Model):
     def save(self, *args, **kwargs):
         # Calculate amount due
         self.amount_due = self.grand_total - self.amount_paid
+
         super().save(*args, **kwargs)
 
 

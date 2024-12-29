@@ -1,3 +1,4 @@
+from datetime import datetime
 from django import forms
 from apps.oldinvoice.models import OldInvoiceOrder, OldInvoiceOrderItem
 from apps.stock.models import Stock
@@ -17,7 +18,7 @@ class OldInvoiceOrderForm(forms.ModelForm):
         widgets = {
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'created_at': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),  # Date input widget
+            'created_at': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
         labels = {
             'branch': 'Branch',
@@ -33,15 +34,15 @@ class OldInvoiceOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user_branch:
-            # Filter branches by the user's branch and set it as read-only
+            # Filter branches by the user's branch
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
             self.fields['branch'].widget.attrs.update({
                 'class': 'form-control',
                 'readonly': False,
                 'disabled': False,
             })
-            
-            # Filter sales reps based on the user's branch and role
+
+            # Filter sales reps based on the user's branch
             self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role="Sales Rep")
 
         # Set the customer queryset to all customers
@@ -49,7 +50,7 @@ class OldInvoiceOrderForm(forms.ModelForm):
 
         # Apply the form-control class to all fields for styling
         for field in self.fields:
-            if field not in ['payment_method', 'created_at']:  # Already styled
+            if field not in ['payment_method', 'created_at', 'due_date']:  # Already styled
                 self.fields[field].widget.attrs.update({'class': 'form-control'})
 
     def clean_amount_paid(self):
@@ -58,6 +59,7 @@ class OldInvoiceOrderForm(forms.ModelForm):
         if amount_paid and grand_total and amount_paid > grand_total:
             raise forms.ValidationError("Amount paid cannot exceed the grand total.")
         return amount_paid
+
 
 
 

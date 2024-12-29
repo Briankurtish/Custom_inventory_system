@@ -8,9 +8,13 @@ from django.contrib import messages
 from .forms import PurchaseOrderForm, PurchaseOrderItemForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
+from django.db.models import F, Sum, ExpressionWrapper, DecimalField
+from django.utils.timezone import now
+from datetime import timedelta
 from apps.customers.models import Customer
 from apps.branches.models import Branch
 from apps.workers.models import Worker
+from apps.oldinvoice.models import OldInvoiceOrder
 
 
 """
@@ -70,6 +74,21 @@ def order_details(request, order_id):
     
     return render(request, "orderDetails.html", context)
 
+
+@login_required
+def credit_report(request, order_id):
+    # Fetch the purchase order and related items
+    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+
+    order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
+
+    view_context = {
+        "order": order,
+        "order_items": order_items,
+    }
+    context = TemplateLayout.init(request, view_context)
+    
+    return render(request, "customerCreditReport.html", context)
 
 
 @login_required
@@ -230,6 +249,38 @@ def add_order_items(request):
 
 
 
+
+@login_required
+def get_credit_report(request, customer_id):
+    """
+    View to retrieve and display a specific customer's credit history from OldInvoiceOrder.
+    """
+    # Get the customer object
+    customer = get_object_or_404(Customer, id=customer_id)
+
+    # Fetch all orders for the customer where payment is credit
+    credit_orders = OldInvoiceOrder.objects.filter(
+        customer=customer, payment_method="Credit"
+    ).annotate(
+        calculated_amount_due=F("grand_total") - F("amount_paid"),  # Renamed annotation
+    ).order_by("-created_at")
+
+    # Current invoice: the latest one
+    current_invoice = credit_orders.first()
+
+    # Calculate total due
+    total_due = credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+
+    view_context = {
+        "customer": customer,
+        "credit_orders": credit_orders,
+        "total_due": total_due,
+        "current_invoice": current_invoice,  # Pass the current invoice
+    }
+
+    # Use TemplateLayout for consistent UI
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "customerCreditReport.html", context)
 
 
 

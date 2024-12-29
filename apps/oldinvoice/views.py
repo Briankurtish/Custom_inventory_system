@@ -89,6 +89,7 @@ def create_invoice_order(request):
             # Convert the created_at datetime to string for JSON serialization
             created_at = invoice_form.cleaned_data["created_at"]
             created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+            
 
             # Save form data to the session
             request.session["invoice_order_details"] = {
