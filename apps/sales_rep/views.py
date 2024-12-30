@@ -8,6 +8,7 @@ from apps.workers.models import Worker
 from django.contrib.auth.decorators import login_required
 from apps.oldinvoice.models import OldInvoiceOrder
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
+from django.core.paginator import Paginator
 
 
 """
@@ -22,9 +23,15 @@ def ManageSalesRepView(request):
     salesRep = Worker.objects.filter(role__iexact="Sales Rep")  # Case-insensitive match for "Sales Rep"
     worker = request.user.worker_profile
     worker_privileges = worker.privileges.values_list('name', flat=True)
+    
+    
+    paginator = Paginator(salesRep, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_slaes_rep = paginator.get_page(page_number)
+    
     # Create a new context dictionary for this view 
     view_context = {
-        "salesRep": salesRep,
+        "salesRep": paginated_slaes_rep,
         'worker_privileges': worker_privileges,
     }
 

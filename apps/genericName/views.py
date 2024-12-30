@@ -4,8 +4,11 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import GenericName
 from django.contrib import messages
 from .forms import GenericNameForm
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
+@login_required
 def ManageGenericView(request):
     genericName = GenericName.objects.all()
 
@@ -21,6 +24,7 @@ def ManageGenericView(request):
 
 
 
+@login_required
 def add_generic_name(request):
     # Fetch all generic names from the database
     generic_names = GenericName.objects.all()
@@ -47,6 +51,8 @@ def add_generic_name(request):
     # Render the page with the updated context
     return render(request, 'add_genericName.html', context)
 
+
+@login_required
 def edit_generic_view(request, pk):
     # Retrieve the GenericName instance or raise 404
     generic_name = get_object_or_404(GenericName, pk=pk)
@@ -79,6 +85,7 @@ def edit_generic_view(request, pk):
     return render(request, 'add_genericName.html', context)
 
 
+@login_required
 def delete_generic_view(request, pk):
     # Retrieve the GenericName instance or raise 404
     generic_name = get_object_or_404(GenericName, pk=pk)

@@ -5,6 +5,7 @@ from .models import Customer
 from .forms import CustomerForm
 from django.contrib.auth.decorators import login_required
 from apps.oldinvoice.models import OldInvoiceOrder
+from django.core.paginator import Paginator
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
 
 
@@ -20,9 +21,13 @@ def ManageCustomerView(request):
     worker = request.user.worker_profile
     worker_privileges = worker.privileges.values_list('name', flat=True)
 
+    paginator = Paginator(customers, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_customers = paginator.get_page(page_number)
+    
     # Create a new context dictionary for this view 
     view_context = {
-        "customers": customers,
+        "customers": paginated_customers,
         'worker_privileges': worker_privileges,
     }
 

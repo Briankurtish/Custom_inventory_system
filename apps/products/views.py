@@ -5,6 +5,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import Batch, Product
 from .forms import BatchForm, ProductForm
 from apps.genericName.models import GenericName
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+
 
 
 """
@@ -13,13 +16,19 @@ Here you can override the page view layout.
 Refer to tables/urls.py file for more pages.
 """
 
+
+@login_required
 def ManageProductView(request):
     products = Product.objects.all()
     batches = Batch.objects.all()
 
+    paginator = Paginator(products, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_products = paginator.get_page(page_number)
+    
     # Create a new context dictionary for this view 
     view_context = {
-        "products": products,
+        "products": paginated_products,
         "batches": batches,
     }
 
@@ -29,6 +38,8 @@ def ManageProductView(request):
     return render(request, 'product.html', context)
 
 
+
+@login_required
 def ManageBatchView(request):
     batch = Batch.objects.all()  # Fetch all batches
     
@@ -51,6 +62,8 @@ def ManageBatchView(request):
 
     return render(request, 'add_batchNumber.html', context)
 
+
+@login_required
 def add_batch_view(request):
     
     batches = Batch.objects.all()
@@ -71,6 +84,7 @@ def add_batch_view(request):
     return render(request, 'add_batchNumber.html', context)
 
 
+@login_required
 def get_brand_name(request, generic_name_id):
     try:
         # Get the GenericName object
@@ -84,6 +98,8 @@ def get_brand_name(request, generic_name_id):
         return JsonResponse({'brand_name': ''}, status=404)
 
 
+
+@login_required
 def add_product_view(request, pk=None):
     batches = Batch.objects.all()  # Fetch all batches for the dropdown
     
@@ -121,7 +137,7 @@ def add_product_view(request, pk=None):
 
 
 
-
+@login_required
 def update_product_view(request, pk):
     product = get_object_or_404(Product, pk=pk)  # Get the product by ID
 
@@ -147,6 +163,7 @@ def update_product_view(request, pk):
     return render(request, 'addProduct.html', context)
 
 
+@login_required
 def delete_product_view(request, pk):
     """
     Handles deleting a crypto wallet.
@@ -164,6 +181,7 @@ def delete_product_view(request, pk):
     return render(request, 'deleteProduct.html', context)
 
 
+@login_required
 def edit_batch_view(request, pk):
     batch = get_object_or_404(Batch, pk=pk)  
     
@@ -187,6 +205,7 @@ def edit_batch_view(request, pk):
     return render(request, 'add_batchNumber.html', context)
 
 
+@login_required
 def delete_batch_view(request, pk):
     batch = get_object_or_404(Batch, pk=pk)  # Get the batch by ID
     if request.method == "POST":

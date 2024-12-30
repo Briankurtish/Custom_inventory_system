@@ -57,7 +57,34 @@
 </div>
 <!--/ Hoverable Table rows -->
 
-
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if branch.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ branch.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+      
+      {% for num in branch.paginator.page_range %}
+      <li class="page-item {% if branch.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      
+      {% if branch.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ branch.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
 
 
 {% endblock %}

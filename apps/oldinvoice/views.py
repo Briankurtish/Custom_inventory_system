@@ -12,6 +12,8 @@ from apps.customers.models import Customer
 from apps.branches.models import Branch
 from apps.workers.models import Worker
 from datetime import datetime
+from django.core.paginator import Paginator
+
 
 
 """
@@ -46,10 +48,14 @@ def invoice_list(request):
 
     # Fetch orders only for the user's branch
     orders = OldInvoiceOrder.objects.filter(branch=user_branch)
+    
+    paginator = Paginator(orders, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_orders = paginator.get_page(page_number)
 
     # Prepare context for rendering
     view_context = {
-        "orders": orders,
+        "orders": paginated_orders,
     }
     context = TemplateLayout.init(request, view_context)
     

@@ -11,6 +11,10 @@ from django.http import JsonResponse
 from apps.workers.models import Worker
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+
+
 
 """
 This file is a view controller for multiple pages as a module.
@@ -22,13 +26,17 @@ Refer to tables/urls.py file for more pages.
 TEMP_STOCK_LIST = []  
 TEMP_UPDATE_LIST = []  # Temporary list for selected stocks
 
-
+@login_required
 def ManageStockView(request):
     stocks = Stock.objects.all()
+    
+    paginator = Paginator(stocks, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_stocks = paginator.get_page(page_number)
 
     # Create a new context dictionary for this view 
     view_context = {
-        "stocks": stocks,
+        "stocks": paginated_stocks,
     }
 
     # Initialize the template layout and merge the view context
@@ -149,7 +157,7 @@ def add_stock_view(request):
     return render(request, 'AddStock.html', context)
 
 
-
+@login_required
 def update_existing_stock_view(request):
     
     global TEMP_UPDATE_LIST
@@ -263,7 +271,7 @@ def update_existing_stock_view(request):
 
 
 
-
+@login_required
 def update_stock_entry_view(request, stock_id):
     # Get the stock entry by ID
     stock = get_object_or_404(Stock, id=stock_id)
@@ -292,7 +300,7 @@ def update_stock_entry_view(request, stock_id):
     return render(request, "update_stock_entry.html", context)
 
 
-
+@login_required
 def get_stock_data(request):
     branch_id = request.GET.get("branch_id")
     get_all = request.GET.get("all", "false").lower() == "true"  # Check for 'all=true'
@@ -337,7 +345,7 @@ def get_stock_data(request):
 
     
 
-
+@login_required
 def get_branches(request):
     branches = Branch.objects.all()
     branch_data = [
@@ -346,7 +354,7 @@ def get_branches(request):
     ]
     return JsonResponse({"branches": branch_data})
 
-
+@login_required
 def track_stocks(request):
     # Get all branches for the branch filter dropdown
     branches = Branch.objects.all()
@@ -357,6 +365,10 @@ def track_stocks(request):
 
     # Fetch all stock data across all branches
     all_stocks = Stock.objects.select_related('product', 'branch')
+    
+    paginator = Paginator(all_stocks, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_all_stocks = paginator.get_page(page_number)
 
     # Apply branch filter if provided
     if branch_filter:
@@ -374,7 +386,7 @@ def track_stocks(request):
 
     # Prepare context
     view_context = {
-        "stocks": all_stocks,
+        "stocks": paginated_all_stocks,
         "branches": branches,  # Pass the branches for the filter dropdown
         "search_query": search_query,  # Include the search query to pre-populate the search input
         "branch_filter": branch_filter,  # Include the selected branch filter value

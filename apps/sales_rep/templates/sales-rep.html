@@ -7,9 +7,7 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Sales Rep
-</button>
+
 
 <hr class="my-8">
 
@@ -63,6 +61,34 @@
 <!--/ Hoverable Table rows -->
 
 
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      {% if salesRep.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ salesRep.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+      
+      {% for num in salesRep.paginator.page_range %}
+      <li class="page-item {% if salesRep.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      
+      {% if salesRep.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ salesRep.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
 
 
 {% endblock %}

@@ -15,12 +15,12 @@ Here you can override the page view layout.
 Refer to tables/urls.py file for more pages.
 """
 
-
+@login_required
 def ManageWorkerView(request):
     workers = Worker.objects.all()
     
     # Paginate workers: Show 10 workers per page
-    paginator = Paginator(workers, 5) 
+    paginator = Paginator(workers, 10) 
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_workers = paginator.get_page(page_number)  # Get the page object
     
@@ -34,7 +34,7 @@ def ManageWorkerView(request):
 
     return render(request, 'workers.html', context)
 
-
+@login_required
 def add_worker_view(request, pk=None):
     
     if pk:
@@ -58,7 +58,7 @@ def add_worker_view(request, pk=None):
 
     return render(request, 'addWorker.html', context)
 
-
+@login_required
 def update_worker_view(request, pk):
     worker = get_object_or_404(Worker, pk=pk)  # Get the product by ID
 

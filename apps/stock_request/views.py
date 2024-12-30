@@ -20,6 +20,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 import io
 from django.core.files import File
+from django.core.paginator import Paginator
+
 
 """
 This file is a view controller for multiple pages as a module.
@@ -102,7 +104,7 @@ def stock_request_view(request):
     return render(request, 'createRequests.html', context)
 
 
-
+@login_required
 def ManageRequestsView(request):
     # Get the user's worker profile and role
     worker_profile = getattr(request.user, 'worker_profile', None)
@@ -112,6 +114,10 @@ def ManageRequestsView(request):
     
     user_role = worker_profile.role
     stock_requests = StockRequest.objects.all()
+    
+    paginator = Paginator(stock_requests, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_request = paginator.get_page(page_number)
 
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
@@ -139,7 +145,7 @@ def ManageRequestsView(request):
 
     # Prepare the context dictionary with the stock requests and privilege information
     view_context = {
-        "stock_requests": stock_requests,
+        "stock_requests": paginated_request,
         "can_request_stock": can_request_stock,  # Include the privilege info
     }
 

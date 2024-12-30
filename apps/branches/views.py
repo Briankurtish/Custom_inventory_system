@@ -3,6 +3,10 @@ from web_project import TemplateLayout
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Branch
 from .forms import BranchForm
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+
+
 
 
 """
@@ -12,12 +16,16 @@ Refer to tables/urls.py file for more pages.
 """
 
 
+@login_required
 def ManageBranchView(request):
     branch = Branch.objects.all()
+    paginator = Paginator(branch, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_branch = paginator.get_page(page_number)  # Get the page object
 
     # Create a new context dictionary for this view 
     view_context = {
-        "branch": branch,
+        "branch": paginated_branch,
     }
 
     # Initialize the template layout and merge the view context
@@ -25,6 +33,9 @@ def ManageBranchView(request):
 
     return render(request, 'branches.html', context)
 
+
+
+@login_required
 def add_branch_view(request, pk=None):
     # branches = Branch.objects.all() 
     
@@ -49,6 +60,8 @@ def add_branch_view(request, pk=None):
 
     return render(request, 'addBranch.html', context)
 
+
+@login_required
 def update_branch_view(request, pk):
     branch = get_object_or_404(Branch, pk=pk)  # Get the product by ID
 
@@ -71,6 +84,8 @@ def update_branch_view(request, pk):
 
     return render(request, 'addBranch.html', context)
 
+
+@login_required
 def delete_branch_view(request, pk):
     """
     Handles deleting a crypto wallet.
