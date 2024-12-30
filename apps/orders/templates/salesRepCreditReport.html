@@ -1,0 +1,116 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Sales Rep Credit report{% endblock %}
+
+{% block content %}
+
+
+<h4 class="text">Sales RepCredit Status/ Credit Report</h4>
+
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'orders' %}">Orders</a></li>
+      <li class="breadcrumb-item active"><a href="{{ request.META.HTTP_REFERER|default:'#' }}">Order Details</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Sales Rep Credit Report</li>
+    </ol>
+  </nav>
+    
+
+<hr class="my-8">
+<a href="{{ request.META.HTTP_REFERER|default:'#' }}" class="btn btn-outline-secondary mb-4">
+    ← Back
+</a>
+
+<br>
+
+<div class="card">
+    <div class="row">
+        <h5 class="text col-md-2 m-3">
+            Credit History
+        </h5>
+    </div>
+    <hr>
+
+    <div class="container">
+        <div class="row">
+            <!-- First Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Sales Rep</small>
+                <h6 class="m-3">{{ worker.user.first_name }}</h6>
+            </div>
+
+            <!-- Second Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Sale Rep Code</small>
+                <h6 class="m-3">{{ worker.employee_id }}</h6>
+            </div>
+
+            <!-- Third Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Report Date</small>
+                <h6 class=" m-3">
+                    {% if credit_invoices %}
+                        {{ current_invoice.created_at|date:"Y-m-d" }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h6>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- First Column -->
+            <div class="col-md-4">
+                <small class="text m-3">Total Due</small>
+                <h6 class="m-3 text-danger">{{ total_due|floatformat:0 }} <small>CFA</small></h6>
+            </div>
+            
+        </div>
+    </div>
+    <hr>
+
+   
+
+    <div class="card">
+        <h5 class="card-header">Past Invoices</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Invoice Number</th>
+                        <th>Invoice Date</th>
+                        <th>Total Amount</th>
+                        <th>Paid Amount</th>
+                        <th>Amount Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in credit_invoices %}
+                        <tr>
+                            <td>#INV_{{ order.id }}</td>
+                            <td>{{ order.created_at|date:"Y-m-d" }}</td>
+                            <td>{{ order.grand_total|floatformat:0 }} <small>CFA</small></td>
+                            <td class="text-success">{{ order.amount_paid|floatformat:0 }} <small>CFA</small></td>
+                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:0 }} <small>CFA</small></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No credit history found for this Sale Rep.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        </div>
+        
+    </div>
+</div>
+
+
+{% endblock %}

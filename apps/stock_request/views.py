@@ -230,7 +230,7 @@ def approve_or_decline_request(request, request_id):
             stock_request.picking_list.save(f"picking_list_{stock_request.id}.pdf", picking_list_buffer)
 
             # Update stock request status to "Accepted"
-            stock_request.status = "In Transit"
+            stock_request.status = "Accepted"
             stock_request.save()
 
             # return JsonResponse({
@@ -333,7 +333,7 @@ def stocks_in_transit(request):
 
     # Retrieve the branch and in-transit stocks for the worker's branch
     branch = worker.branch
-    stocks_in_transit = InTransit.objects.filter(destination=branch, status="In Transit")
+    stocks_in_transit = InTransit.objects.filter(destination=branch, status="Accepted")
 
     view_context = {
         'stocks_in_transit': stocks_in_transit,

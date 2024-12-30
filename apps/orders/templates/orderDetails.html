@@ -64,14 +64,18 @@
             <div class="col-md-4">
                 <small class="text m-3">Sales Representative</small>
                 <h6 class=" m-3">{{ order.sales_rep.user.get_full_name }}</h6>
-                <a class="m-3 text-secondary " href="">Get Credit Report</a>
+                <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
+                    </button>
+                </form>
 
             </div>
 
             <!-- Third Column -->
             <div class="col-md-4">
                 <small class="text m-3">Payment Method</small>
-                <h6 class=" m-3">{{ order.payment_method }}</h6>
+                <h6 class=" m-3 text-primary">{{ order.payment_method }}</h6>
             </div>
         </div>
     </div>

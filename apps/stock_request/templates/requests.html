@@ -49,7 +49,7 @@
       <tbody class="table-border-bottom-0">
         {% for request in stock_requests %}
           <tr>
-            <td><span>{{ request.id }}</span></td>
+            <td><span>{{ request.request_number }}</span></td>
             <td><span>{{ request.branch.branch_id }}</span></td>
             <td><span>{{ request.branch.branch_name }}</span></td>
             <td><span>{{ request.requested_by.get_full_name }}</span></td>
