@@ -244,7 +244,7 @@ def add_invoice_items(request):
                     request.session["order_items"] = []
                     request.session["invoice_order_details"] = {}
                     request.session.modified = True
-                    messages.success(request, "Invoice order submitted successfully.")
+                    messages.success(request, "Old Invoice Created Successfully.")
                     return redirect("old-invoice")
                 except Exception as e:
                     messages.error(request, f"Error submitting the invoice: {e}")
