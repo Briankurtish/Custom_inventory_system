@@ -47,8 +47,10 @@
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'edit-sales-rep' salesRep.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="{% url 'delete-sales-rep' salesRep.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
+                {% if 'View Customer Credits' in worker_privileges %}
+                  <a class="dropdown-item" href="{% url 'sales_rep_credit_history' worker_id=salesRep.id %}"><i class="bx bx-credit-card me-1"></i> View Credits</a>
+                {% endif %}
+                
               </div>
             </div>
           </td>

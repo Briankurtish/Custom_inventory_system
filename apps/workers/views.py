@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Worker
 from django.contrib import messages
@@ -16,11 +17,16 @@ Refer to tables/urls.py file for more pages.
 
 
 def ManageWorkerView(request):
-    worker = Worker.objects.all()
-
-    # Create a new context dictionary for this view 
+    workers = Worker.objects.all()
+    
+    # Paginate workers: Show 10 workers per page
+    paginator = Paginator(workers, 5) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_workers = paginator.get_page(page_number)  # Get the page object
+    
+    # Create a new context dictionary for this view
     view_context = {
-        "worker": worker,
+        "workers": paginated_workers,  # Pass the paginated workers to the template
     }
 
     # Initialize the template layout and merge the view context

@@ -52,11 +52,14 @@
             <div class="col-md-4">
                 <small class="text m-3">Customer Name</small>
                 <h6 class="m-3">{{ order.customer.customer_name }}</h6>
-                <form action="{% url 'credit_report' customer_id=order.customer.id %}" method="get">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
-                    </button>
-                </form>
+                {% if 'View Customer Credits' in worker_privileges %}
+                    <form action="{% url 'credit_report' customer_id=order.customer.id %}" method="get">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
+                        </button>
+                    </form>
+                {% endif %}
+                
                 {% comment %} <a class="m-3 text-secondary " href="{% url 'credit_report' order.id %}">Get Credit Report</a> {% endcomment %}
             </div>
 
@@ -64,11 +67,14 @@
             <div class="col-md-4">
                 <small class="text m-3">Sales Representative</small>
                 <h6 class=" m-3">{{ order.sales_rep.user.get_full_name }}</h6>
-                <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
-                    </button>
-                </form>
+                {% if 'View Sales Rep Credits' in worker_privileges %}
+                    <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
+                        </button>
+                    </form>
+                {% endif %}
+                
 
             </div>
 

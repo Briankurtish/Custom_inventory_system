@@ -65,10 +65,14 @@ def order_details(request, order_id):
     order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
 
     order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
+    
+    worker = request.user.worker_profile
+    worker_privileges = worker.privileges.values_list('name', flat=True)
 
     view_context = {
         "order": order,
         "order_items": order_items,
+        'worker_privileges': worker_privileges,
     }
     context = TemplateLayout.init(request, view_context)
     

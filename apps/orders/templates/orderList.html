@@ -7,9 +7,15 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
-</button>
+{% if user.worker_profile.privileges.all %}
+    {% for privilege in user.worker_profile.privileges.all %}
+        {% if privilege.name == 'Create Orders' %}
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
+            <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
+          </button>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 <hr class="my-8">
 

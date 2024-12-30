@@ -16,8 +16,6 @@
 
 <hr class="my-8">
 
-
-
 <!-- Hoverable Table rows -->
 <div class="card">
   <h5 class="card-header">Employee List</h5>
@@ -36,39 +34,41 @@
           <th>Department</th>
           <th>Address</th>
           <th>Actions</th>
-
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
 
-        {% for worker in worker %}
+        {% for worker in workers %}
         <tr>
-          <td><span>{{worker.employee_id}}</span></td>
-          <td><span>{{worker.branch.branch_name}}</span></td>
-          <td>{{worker.user.first_name}}</td>
-          <td>{{worker.user.last_name}}</td>
-          <td>{{worker.user.username}}</td>
-          <td>{{worker.user.email}}</td>
-          <td>{{worker.role}}</td>
-          <td>{{worker.telephone}}</td>
-          <td>{{worker.department}}</td>
-          <td>{{worker.address}}</td>
-
-          {% comment %} <td><span class="badge bg-label-primary me-1">Active</span></td> {% endcomment %}
+          <td><span>{{ worker.employee_id }}</span></td>
+          <td><span>{{ worker.branch.branch_name }}</span></td>
+          <td>{{ worker.user.first_name }}</td>
+          <td>{{ worker.user.last_name }}</td>
+          <td>{{ worker.user.username }}</td>
+          <td>{{ worker.user.email }}</td>
+          <td>{{ worker.role }}</td>
+          <td>{{ worker.telephone }}</td>
+          <td>{{ worker.department }}</td>
+          <td>{{ worker.address }}</td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
               <div class="dropdown-menu">
                 <a href="{% url 'manage_worker_privileges' worker.id %}" class="btn btn-sm btn-primary">
                   Manage Privileges
-              </a>
-                <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Delete</a>
+                </a>
+                <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
+                  <i class="bx bx-edit-alt me-1"></i> Edit
+                </a>
+                <a class="dropdown-item" href="javascript:void(0);">
+                  <i class="bx bx-trash me-1"></i> Delete
+                </a>
               </div>
             </div>
           </td>
         </tr>
-
         {% endfor %}
       </tbody>
     </table>
@@ -76,7 +76,33 @@
 </div>
 <!--/ Hoverable Table rows -->
 
-
-
+<!-- Pagination -->
+<div class="pagination">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if workers.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ workers.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+      
+      {% for num in workers.paginator.page_range %}
+      <li class="page-item {% if workers.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      
+      {% if workers.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ workers.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
 
 {% endblock %}
