@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import invoice_list, create_invoice_order, add_invoice_items
+from .views import invoice_list, create_invoice_order, add_invoice_items, old_invoice_details, add_invoice_payment, payment_history
 
 urlpatterns = [
     path(
@@ -18,5 +18,9 @@ urlpatterns = [
         name="add_invoice_items",  # URL name for this path
     ),
     
-    #  path('order/<int:order_id>/', order_details, name='order_details'),
+     path('invoice-details/<int:invoice_id>/', old_invoice_details, name='invoice_details'),
+     
+      path('invoice/<int:invoice_id>/add-payment/', add_invoice_payment, name='add_invoice_payment'),
+      
+      path('invoice/<int:invoice_id>/payment-history/', payment_history, name='payment_history'),
 ]

@@ -1,6 +1,6 @@
 from datetime import datetime
 from django import forms
-from apps.oldinvoice.models import OldInvoiceOrder, OldInvoiceOrderItem
+from apps.oldinvoice.models import OldInvoiceOrder, OldInvoiceOrderItem, InvoicePaymentHistory
 from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
@@ -93,3 +93,35 @@ class OldInvoiceOrderItemForm(forms.ModelForm):
 
         
         return quantity
+
+
+
+class InvoicePaymentHistoryForm(forms.ModelForm):
+    class Meta:
+        model = InvoicePaymentHistory
+        fields = ['payment_date', 'payment_number', 'amount_paid', 'payment_mode', 'account_paid_to']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'payment_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'payment_mode': forms.Select(attrs={'class': 'form-control'}),
+            'account_paid_to': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.invoice = kwargs.pop('invoice', None)  # Pass the invoice instance to the form
+        super().__init__(*args, **kwargs)
+
+    def clean_amount_paid(self):
+        """
+        Ensure the amount paid does not exceed the grand total or the amount due.
+        """
+        amount_paid = self.cleaned_data.get('amount_paid')
+
+        if self.invoice:
+            if amount_paid > self.invoice.grand_total:
+                raise forms.ValidationError("Amount paid cannot exceed the invoice's grand total.")
+            if amount_paid > self.invoice.amount_due:
+                raise forms.ValidationError("Amount paid cannot exceed the remaining amount due.")
+
+        return amount_paid

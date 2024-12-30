@@ -1,0 +1,88 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Old Invoice{% endblock %}
+
+{% block content %}
+
+
+
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">Payment History for Invoice #{{ invoice.id }}</h5>
+  <h5 class="card-header"><strong>Customer:</strong> {{ invoice.customer.customer_name }}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover table-striped mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Payment Date</th>
+          <th>Amount Paid</th>
+          <th>Payment Method</th>
+          <th>Account Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in payment_history %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
+          <td class="text-success"><strong>{{ payment.amount_paid }}<small> Frs</small></strong></td>
+          <td>{{ payment.payment_mode }}</td>
+          <td>{{ payment.account_paid_to }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No payment history available for this invoice.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+</div>
+{% comment %} 
+<div class="row">
+  <div class="col-md-4">
+    <a href="{% url 'invoice_details' invoice.id %}" class="btn btn-secondary mt-3">Back to Invoice Details</a>
+  </div>
+</div> {% endcomment %}
+<!--/ Hoverable Table rows -->
+
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if orders.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+      
+      {% for num in orders.paginator.page_range %}
+      <li class="page-item {% if orders.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      
+      {% if orders.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+
+{% endblock %}

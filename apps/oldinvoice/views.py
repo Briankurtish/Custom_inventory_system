@@ -2,10 +2,10 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import OldInvoiceOrder, OldInvoiceOrderItem
+from .models import OldInvoiceOrder, OldInvoiceOrderItem, InvoicePaymentHistory
 from apps.stock.models import Stock
 from django.contrib import messages
-from .forms import OldInvoiceOrderForm, OldInvoiceOrderItemForm
+from .forms import OldInvoiceOrderForm, OldInvoiceOrderItemForm, InvoicePaymentHistoryForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
 from apps.customers.models import Customer
@@ -47,15 +47,15 @@ def invoice_list(request):
     user_branch = request.user.worker_profile.branch
 
     # Fetch orders only for the user's branch
-    orders = OldInvoiceOrder.objects.filter(branch=user_branch)
+    old_invoice = OldInvoiceOrder.objects.filter(branch=user_branch)
     
-    paginator = Paginator(orders, 10) 
+    paginator = Paginator(old_invoice, 10) 
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_orders = paginator.get_page(page_number)
 
     # Prepare context for rendering
     view_context = {
-        "orders": paginated_orders,
+        "old_invoice": paginated_orders,
     }
     context = TemplateLayout.init(request, view_context)
     
@@ -76,6 +76,33 @@ def invoice_list(request):
 #     context = TemplateLayout.init(request, view_context)
     
 #     return render(request, "orderDetails.html", context)
+
+
+@login_required
+def old_invoice_details(request, invoice_id):
+    # Get the worker's branch to ensure they can access the invoice
+    worker_branch = request.user.worker_profile.branch
+
+    # Fetch the invoice order based on ID and the worker's branch
+    old_invoice = get_object_or_404(OldInvoiceOrder, id=invoice_id, branch=worker_branch)
+
+    # Fetch the items associated with this invoice order
+    invoice_items = OldInvoiceOrderItem.objects.filter(invoice_order=old_invoice)
+
+    # Fetch the worker's privileges
+    worker = request.user.worker_profile
+    worker_privileges = worker.privileges.values_list('name', flat=True)
+
+    # Context for the template
+    view_context = {
+        "old_invoice": old_invoice,
+        "invoice_items": invoice_items,
+        "worker_privileges": worker_privileges,
+    }
+
+    # Pass the context to the template layout and render the response
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "invoiceDetails.html", context)
 
 
 
@@ -238,10 +265,71 @@ def add_invoice_items(request):
     )
     return render(request, "addOrderItems.html", context)
 
+@login_required
+def add_invoice_payment(request, invoice_id):
+    """
+    Handles adding payment history for a specific invoice.
+    """
+    # Get the invoice instance
+    invoice = get_object_or_404(OldInvoiceOrder, id=invoice_id)
+
+    if request.method == 'POST':
+        form = InvoicePaymentHistoryForm(request.POST)
+        if form.is_valid():
+            payment_amount = form.cleaned_data['amount_paid']
+
+            # Check if the payment exceeds the grand total
+            if payment_amount > invoice.grand_total:
+                form.add_error('amount_paid', "Payment amount cannot exceed the invoice's grand total.")
+            # Check if the payment exceeds the amount due
+            elif payment_amount > invoice.amount_due:
+                form.add_error('amount_paid', "Payment amount cannot exceed the remaining amount due.")
+            else:
+                with transaction.atomic():  # Ensure atomicity for the payment update process
+                    # Save the payment
+                    payment = form.save(commit=False)
+                    payment.invoice = invoice  # Associate payment with the invoice
+                    payment.invoice_total = invoice.grand_total  # Fetch invoice total
+                    payment.save()
+
+                    # Update the invoice's amount paid and amount due
+                    invoice.amount_paid += payment.amount_paid
+                    invoice.amount_due = max(invoice.grand_total - invoice.amount_paid, 0)
+                    invoice.save()
+
+                messages.success(request, "Payment added successfully!")
+                return redirect('old-invoice')
+        else:
+            messages.error(request, "Error adding payment. Please check the form.")
+    else:
+        form = InvoicePaymentHistoryForm()
+
+    context = TemplateLayout.init(
+        request,
+        {
+            'invoice': invoice,
+            'form': form,
+        }
+    )
+    return render(request, 'addPayment.html', context)
 
 
+@login_required
+def payment_history(request, invoice_id):
+    """
+    View to display the payment history for a specific invoice.
+    """
+    invoice = get_object_or_404(OldInvoiceOrder, id=invoice_id)
+    payment_history = InvoicePaymentHistory.objects.filter(invoice=invoice).order_by('-payment_date')
 
-
+    context = TemplateLayout.init(
+        request,
+        {
+            'invoice': invoice,
+            'payment_history': payment_history,
+        }
+    )
+    return render(request, 'paymentHistory.html', context)
 
 
 

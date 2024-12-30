@@ -33,7 +33,7 @@
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-        {% for order in orders %}
+        {% for order in old_invoice %}
         <tr>
           <td><span>{{ order.id }}</span></td>
           <td>{{ order.branch.branch_id }}</td>
@@ -51,14 +51,17 @@
                 <i class="bx bx-dots-vertical-rounded"></i>
               </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
+                <a class="dropdown-item" href="{% url 'invoice_details' order.id %}">
                   <i class="bx bx-book-open me-1"></i> View
                 </a>
-                {% comment %} 
-                <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
-                  <i class="bx bx-trash me-1"></i> Delete
-                </a> 
-                {% endcomment %}
+                <a 
+                  class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
+                  href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
+                  <i class="bx bx-credit-card me-1"></i> Add Payment
+                </a>
+                <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
+                  <i class="bx bx-history me-1"></i> Payment History
+                </a>
               </div>
             </div>
           </td>

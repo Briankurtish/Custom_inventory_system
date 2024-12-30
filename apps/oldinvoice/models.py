@@ -95,3 +95,28 @@ class OldInvoiceOrderItem(models.Model):
         Returns the total price for the quantity of this item.
         """
         return self.get_unit_price() * self.quantity
+
+
+
+class InvoicePaymentHistory(models.Model):
+    PAYMENT_MODES = [
+        ('Cash', 'Cash'),
+        ('Mobile Money', 'Mobile Money'),
+        ('Bank Transfer', 'Bank Transfer'),
+    ]
+
+    invoice = models.ForeignKey(
+        OldInvoiceOrder, 
+        on_delete=models.CASCADE, 
+        related_name="payment_history",
+        help_text="The invoice associated with this payment"
+    )
+    payment_date = models.DateTimeField( null=True, blank=True, help_text="Date and time of the payment")
+    payment_number = models.CharField(max_length=100, help_text="Unique identifier for the payment")
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, help_text="Amount paid in this transaction")
+    payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODES, help_text="Mode of payment used")
+    account_paid_to = models.CharField(max_length=255, help_text="Account or entity where the payment was sent")
+    invoice_total = models.DecimalField(max_digits=12, decimal_places=2, help_text="Total amount of the invoice")
+
+    def __str__(self):
+        return f"Payment #{self.payment_number} for Invoice #{self.invoice.id}"
