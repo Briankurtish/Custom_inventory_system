@@ -26,21 +26,27 @@
     <div class="container">
         <div class="row">
             <!-- First Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Branch ID</small>
                 <h6 class="m-3">{{ order.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Branch Name</small>
                 <h6 class="m-3">{{ order.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Created By</small>
                 <h6 class=" m-3">{{ order.created_by.user.get_full_name }}</h6>
+            </div>
+
+             <!-- Date Column -->
+             <div class="col-md-3">
+                <small class="text m-3">Date Created</small>
+                <h6 class=" m-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
     </div>
@@ -49,7 +55,7 @@
     <div class="container">
         <div class="row">
             <!-- First Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Customer Name</small>
                 <h6 class="m-3">{{ order.customer.customer_name }}</h6>
                 {% if 'View Customer Credits' in worker_privileges %}
@@ -64,7 +70,7 @@
             </div>
 
             <!-- Second Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Sales Representative</small>
                 <h6 class=" m-3">{{ order.sales_rep.user.get_full_name }}</h6>
                 {% if 'View Sales Rep Credits' in worker_privileges %}
@@ -79,32 +85,15 @@
             </div>
 
             <!-- Third Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Payment Method</small>
                 <h6 class=" m-3 text-primary">{{ order.payment_method }}</h6>
             </div>
-        </div>
-    </div>
-    <hr>
 
-    <div class="container">
-        <div class="row">
             <!-- Status Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Status</small>
                 <h6 class="text-warning m-3">{{ order.status }}</h6>
-            </div>
-
-            <!-- Grand Total Column -->
-            <div class="col-md-4">
-                <small class="text m-3">Grand Total</small>
-                <h6 class="m-3">{{ order.grand_total|floatformat:2 }} CFA</h6>
-            </div>
-
-            <!-- Date Column -->
-            <div class="col-md-4">
-                <small class="text m-3">Date Created</small>
-                <h6 class=" m-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
     </div>
@@ -128,9 +117,9 @@
                         <tr>
                             <td>{{ item.stock.product.product_code }}</td>
                             <td>{{ item.stock.product.generic_name_dosage }}</td>
-                            <td>{{ item.stock.product.unit_price|floatformat:2 }}</td>
+                            <td>{{ item.stock.product.unit_price|floatformat:0 }} CFA</td>
                             <td>{{ item.quantity }}</td>
-                            <td>{{ item.quantity|floatformat:2|floatformat:2 }}</td>
+                            <td>{{ item.total_price|floatformat:0 }} <small>CFA</small></td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -140,6 +129,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="col-md-4 mt-4">
+        <h6 class="text m-3">Grand Total</h6>
+        <h3 class="text m-3">{{ order.grand_total|floatformat:0 }} <small>CFA</small></h3>
     </div>
 </div>
 

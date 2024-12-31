@@ -42,7 +42,7 @@
                   <td>{{ item.unit_price }}</td>
                   <td>{{ item.total_price|floatformat:2 }}</td>
                   <td>
-                    <form method="POST" action="{% url 'add_order_items' %}">
+                    <form method="POST" action="{% url 'add_invoice_items' %}">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="remove_item">
                       <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">  <!-- Pass the item index -->

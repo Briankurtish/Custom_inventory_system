@@ -16,6 +16,7 @@ from apps.branches.models import Branch
 from apps.workers.models import Worker
 from apps.oldinvoice.models import OldInvoiceOrder
 from django.core.paginator import Paginator
+from django.db.models import F, ExpressionWrapper, FloatField
 
 
 
@@ -70,11 +71,16 @@ def order_details(request, order_id):
     # Fetch the purchase order and related items
     order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
 
-    order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
+    # Annotate the total price for each item (quantity * unit price)
+    order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
+        total_price=ExpressionWrapper(F('quantity') * F('stock__product__unit_price'), output_field=FloatField())
+    )
     
+    # Fetch the worker's privileges
     worker = request.user.worker_profile
     worker_privileges = worker.privileges.values_list('name', flat=True)
 
+    # Context for the template
     view_context = {
         "order": order,
         "order_items": order_items,

@@ -13,6 +13,7 @@ import os
 import random
 import string
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
 
 from dotenv import load_dotenv
 
@@ -168,7 +169,18 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('French')),
+]
+
+
 LANGUAGE_CODE = "en"
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale')
+]
 
 TIME_ZONE = "UTC"
 

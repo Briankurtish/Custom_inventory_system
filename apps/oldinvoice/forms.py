@@ -66,13 +66,14 @@ class OldInvoiceOrderForm(forms.ModelForm):
 class OldInvoiceOrderItemForm(forms.ModelForm):
     class Meta:
         model = OldInvoiceOrderItem
-        fields = ['stock', 'quantity']
+        fields = ['stock', 'quantity', 'price']
         widgets = {
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
         labels = {
             'stock': 'Product',
             'quantity': 'Quantity',
+            'price': 'Price',
         }
 
     def __init__(self, *args, **kwargs):

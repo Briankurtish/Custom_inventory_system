@@ -44,7 +44,7 @@
           <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-          <td><strong>{{ order.grand_total }}<small> Frs</small></strong></td>
+          <td><strong>{{ order.grand_total|floatformat:0 }}<small> CFA</small></strong></td>
           
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>

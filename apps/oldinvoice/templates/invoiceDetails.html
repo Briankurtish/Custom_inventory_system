@@ -19,21 +19,26 @@
     <div class="container">
         <div class="row">
             <!-- First Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Branch ID</small>
                 <h6 class="m-3">{{ old_invoice.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Branch Name</small>
                 <h6 class="m-3">{{ old_invoice.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">Created By</small>
                 <h6 class=" m-3">{{ old_invoice.created_by.user.get_full_name }}</h6>
+            </div>
+            <!-- Date Column -->
+            <div class="col-md-3">
+                <small class="text m-3">Date Created</small>
+                <h6 class=" m-3">{{ old_invoice.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
     </div>
@@ -63,25 +68,6 @@
     </div>
     <hr>
 
-    <div class="container">
-        <div class="row">
-            
-
-            <!-- Grand Total Column -->
-            <div class="col-md-4">
-                <small class="text m-3">Grand Total</small>
-                <h6 class="m-3">{{ old_invoice.grand_total|floatformat:2 }} CFA</h6>
-            </div>
-
-            <!-- Date Column -->
-            <div class="col-md-4">
-                <small class="text m-3">Date Created</small>
-                <h6 class=" m-3">{{ old_invoice.created_at|date:"M d, Y H:i" }}</h6>
-            </div>
-        </div>
-    </div>
-    <hr>
-
     <div class="card">
         <h5 class="card-header">Order Items</h5>
         <div class="table-responsive text-nowrap">
@@ -100,9 +86,9 @@
                         <tr>
                             <td>{{ item.stock.product.product_code }}</td>
                             <td>{{ item.stock.product.generic_name_dosage }}</td>
-                            <td>{{ item.stock.product.unit_price|floatformat:2 }}</td>
+                            <td>{{ item.price|floatformat:2 }} CFA</td>
                             <td>{{ item.quantity }}</td>
-                            <td>{{ item.quantity|floatformat:2|floatformat:2 }}</td>
+                            <td>{{ item.total_price|floatformat:0 }} CFA</td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -113,7 +99,13 @@
             </table>
         </div>
     </div>
+    <br>
+    <div class="col-md-4">
+        <h6 class="text m-3">Grand Total</h6>
+        <h3 class="text m-3">{{ old_invoice.grand_total|floatformat:2 }} <small>CFA</small></h3>
+    </div>
 </div>
+
 
 <div class="mt-3">
     {% if order.status == "Pending" %}

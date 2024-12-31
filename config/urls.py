@@ -106,6 +106,8 @@ urlpatterns = [
     # Old Invoice Urls
     path("", include("apps.oldinvoice.urls")),
     
+    path('i18n/', include('django.conf.urls.i18n')),
+    
     
     
     

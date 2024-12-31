@@ -80,21 +80,16 @@ class OldInvoiceOrderItem(models.Model):
     )
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+    price = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"
-
-    def get_unit_price(self):
-        """
-        Returns the unit price of the associated product.
-        """
-        return self.stock.product.unit_price
 
     def get_total_price(self):
         """
         Returns the total price for the quantity of this item.
         """
-        return self.get_unit_price() * self.quantity
+        return self.price() * self.quantity
 
 
 

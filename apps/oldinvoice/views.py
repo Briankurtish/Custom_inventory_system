@@ -13,6 +13,7 @@ from apps.branches.models import Branch
 from apps.workers.models import Worker
 from datetime import datetime
 from django.core.paginator import Paginator
+from django.db.models import F, ExpressionWrapper, FloatField
 
 
 
@@ -87,7 +88,9 @@ def old_invoice_details(request, invoice_id):
     old_invoice = get_object_or_404(OldInvoiceOrder, id=invoice_id, branch=worker_branch)
 
     # Fetch the items associated with this invoice order
-    invoice_items = OldInvoiceOrderItem.objects.filter(invoice_order=old_invoice)
+    invoice_items = OldInvoiceOrderItem.objects.filter(invoice_order=old_invoice).annotate(
+        total_price=ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField())
+    )
 
     # Fetch the worker's privileges
     worker = request.user.worker_profile
@@ -166,15 +169,16 @@ def add_invoice_items(request):
             if item_form.is_valid():
                 stock = item_form.cleaned_data["stock"]
                 quantity = item_form.cleaned_data["quantity"]
+                price = item_form.cleaned_data["price"]
 
                 # Add item to session without checking stock levels
                 order_items = request.session["order_items"]
                 order_items.append({
                     "stock_id": stock.id,
                     "stock_name": str(stock.product.generic_name_dosage),
-                    "unit_price": float(stock.product.unit_price),  # Convert Decimal to float
+                    "price": price,  # Convert Decimal to float
                     "quantity": quantity,
-                    "total_price": float(stock.product.unit_price * quantity),
+                    "total_price": float(price * quantity),
                 })
                 request.session.modified = True
                 messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
@@ -238,6 +242,7 @@ def add_invoice_items(request):
                             invoice_order=invoice_order,
                             stock=stock,
                             quantity=item["quantity"],
+                            price=item['price'],
                         )
 
                     # Clear session data
@@ -263,7 +268,7 @@ def add_invoice_items(request):
             "grand_total": grand_total,
         }
     )
-    return render(request, "addOrderItems.html", context)
+    return render(request, "addInvoiceOrderItems.html", context)
 
 @login_required
 def add_invoice_payment(request, invoice_id):
