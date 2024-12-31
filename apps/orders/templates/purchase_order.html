@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice / Facture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center; /* Ensures logo and title align on the same line */
+      margin-bottom: 20px;
+    }
+
+    .header .title {
+      flex: 2;
+      text-align: left;
+    }
+
+    .header .title h3 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+
+    .header .logo {
+      text-align: right;
+      flex: 1;
+    }
+
+    .header .logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .company-details {
+      text-align: right;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .bill-to {
+      width: 48%;
+    }
+
+    .bill-to p {
+      margin: 5px 0;
+    }
+
+    .payment-info {
+      width: 48%;
+      text-align: left;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #000;
+    }
+
+    table th {
+      background-color: #f0f0f0;
+    }
+
+    table td {
+      text-align: center; /* Center-aligns numeric values for better readability */
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <div class="header">
+    <div class="title">
+      <h3>Purchase Order / Bon de Commande</h3>
+      <p><strong>Order No:</strong> {{ order.id }}</p>
+      <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+    <div class="logo">
+      <img src="apps/gcpharma.jpg" alt="Company Logo">
+      <div class="company-details">
+        <p><strong>Global Distributors of Pharmaceutical Products</strong></p>
+        <p>BP 7761 Douala-Cameroon, Carrefour Diderot Ahala</p>
+        <p><strong>Email:</strong> info@gcpharma.org</p>
+        <p><strong>Tel:</strong> 222-316-754</p>
+        <p><strong>Bank Name:</strong> NFC Bank</p>
+        <p><strong>Bank Account:</strong> 17201081794</p>
+        <p><strong>Momo:</strong> 672463345</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="bill-to">
+      <p><strong>Bill To:</strong></p>
+      <p><strong>Customer ID:</strong> {{ order.customer.customer_id }}</p>
+      <p><strong>Customer Name:</strong> {{ order.customer.customer_name }}</p>
+      <p><strong>Address:</strong> {{ order.customer.address }}</p>
+      <p><strong>Phone No:</strong> {{ order.customer.telephone }}</p>
+    </div>
+    <div class="payment-info">
+      <p><strong>Currency:</strong> XAF</p>
+      <p><strong>Payment Terms:</strong> Credit / Cash / Electronic</p>
+      <p><strong>No of Payments:</strong> 3</p>
+      <p><strong>Due Date:</strong> Date...</p>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <table>
+    <thead>
+      <tr>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ item.stock.product.product_code }}</td>
+            <td>{{ item.stock.product.generic_name_dosage.generic_name }}</td>
+            <td>{{ item.get_effective_price|floatformat:0 }} CFA</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price|floatformat:0 }} CFA</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No items found for this order.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Footer Section -->
+  <div class="footer">
+    <p>Thank you for your business!</p>
+    <p>Please contact us for any queries or concerns regarding this purchase order.</p>
+  </div>
+</body>
+</html>

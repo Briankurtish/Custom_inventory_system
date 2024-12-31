@@ -16,7 +16,12 @@ from apps.branches.models import Branch
 from apps.workers.models import Worker
 from apps.oldinvoice.models import OldInvoiceOrder
 from django.core.paginator import Paginator
-from django.db.models import F, ExpressionWrapper, FloatField
+from django.db.models import F, FloatField, ExpressionWrapper, Case, When, Value
+from django.urls import reverse
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from io import BytesIO
 
 
 
@@ -71,10 +76,18 @@ def order_details(request, order_id):
     # Fetch the purchase order and related items
     order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
 
-    # Annotate the total price for each item (quantity * unit price)
+     # Annotate the total price for each item (quantity * temp price or unit price)
     order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
-        total_price=ExpressionWrapper(F('quantity') * F('stock__product__unit_price'), output_field=FloatField())
+        effective_price=Case(
+            When(temp_price__isnull=False, then=F('temp_price')),
+            default=F('stock__product__unit_price'),
+            output_field=FloatField()
+        ),
+        total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
     )
+    
+     # Calculate total quantity
+    total_quantity = order_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     
     # Fetch the worker's privileges
     worker = request.user.worker_profile
@@ -84,6 +97,7 @@ def order_details(request, order_id):
     view_context = {
         "order": order,
         "order_items": order_items,
+         "total_quantity": total_quantity,
         'worker_privileges': worker_privileges,
     }
     context = TemplateLayout.init(request, view_context)
@@ -264,6 +278,131 @@ def add_order_items(request):
     return render(request, "addOrderItems.html", context)
 
 
+@login_required
+def approve_order(request, order_id):
+    # Fetch the order
+    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+
+    # Check if the order is already approved or rejected
+    if order.status != 'Pending':
+        messages.error(request, "This order has already been processed.")
+        return redirect(reverse('order_details', args=[order_id]))
+
+    # Update order status and approved_by
+    order.status = 'Approved'
+    order.approved_by = request.user.worker_profile
+    order.save()
+
+    messages.success(request, "Order approved successfully.")
+    return redirect(reverse('order_details', args=[order_id]))
+
+
+@login_required
+def generate_purchase_order_pdf(request, order_id):
+    order = get_object_or_404(PurchaseOrder, id=order_id)
+    # order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
+    
+     # Annotate the total price for each item (quantity * temp price or unit price)
+    order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
+        effective_price=Case(
+            When(temp_price__isnull=False, then=F('temp_price')),
+            default=F('stock__product__unit_price'),
+            output_field=FloatField()
+        ),
+        total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
+    )
+
+    # Prepare data for the template
+    context = {
+        "order": order,
+        "order_items": order_items,
+    }
+
+    # Render the HTML template to a string
+    html_content = render_to_string("purchase_order.html", context)
+
+    # Create a PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_content.encode("UTF-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    else:
+        return HttpResponse("Error generating PDF", status=400)
+
+
+@login_required
+def reject_order(request, order_id):
+    # Fetch the order
+    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+
+    # Check if the order is already approved or rejected
+    if order.status != 'Pending':
+        messages.error(request, "This order has already been processed.")
+        return redirect(reverse('order_details', args=[order_id]))
+
+    if request.method == 'POST':
+        # Get the rejection reason
+        notes = request.POST.get('notes', '').strip()
+        if not notes:
+            messages.error(request, "Rejection notes are required.")
+            return redirect(reverse('order_details', args=[order_id]))
+
+        # Update order status and notes
+        order.status = 'Rejected'
+        order.notes = notes
+        order.save()
+
+        messages.success(request, "Order rejected successfully.")
+        return redirect(reverse('order_details', args=[order_id]))
+    
+    # If not POST, return error response
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+@login_required
+def edit_prices(request, order_id):
+    if request.method == "POST":
+        # Fetch the order items for the given order
+        order_items = PurchaseOrderItem.objects.filter(purchase_order_id=order_id)
+        order = get_object_or_404(PurchaseOrder, id=order_id)
+
+        try:
+            with transaction.atomic():
+                for item in order_items:
+                    # Extract and update the temporary price for each item
+                    new_price = request.POST.get(f"prices[{item.id}]")
+                    if new_price:
+                        new_price = float(new_price)
+                        if new_price < 0:
+                            raise ValueError(f"Price for item {item.id} cannot be negative.")
+                        item.temp_price = new_price
+                        item.save()
+
+                # Recalculate the grand total for the order
+                grand_total = order_items.annotate(
+                    effective_price=Case(
+                        When(temp_price__isnull=False, then=F('temp_price')),
+                        default=F('stock__product__unit_price'),
+                        output_field=FloatField()
+                    ),
+                    total_price=F('quantity') * F('effective_price')
+                ).aggregate(total=Sum('total_price'))['total']
+
+                # Update the grand total in the order
+                order.grand_total = grand_total
+                order.save()
+
+                messages.success(request, "Prices and grand total updated successfully for this order.")
+        except Exception as e:
+            messages.error(request, f"An error occurred while updating prices: {e}")
+
+        return redirect("order_details", order_id=order_id)
+    else:
+        return redirect("orders")
+
+
 
 
 @login_required
@@ -296,7 +435,7 @@ def get_credit_report(request, customer_id):
 
     # Use TemplateLayout for consistent UI
     context = TemplateLayout.init(request, view_context)
-    return render(request, "customerCreditReport.html", context)
+    return render(request, "CustomerCreditReport.html", context)
 
 
 

@@ -56,7 +56,7 @@
                 <i class="bx bx-dots-vertical-rounded"></i>
               </button>
               <div class="dropdown-menu">
-                <a href="{% url 'manage_worker_privileges' worker.id %}" class="btn btn-sm btn-primary">
+                <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
                   Manage Privileges
                 </a>
                 <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">

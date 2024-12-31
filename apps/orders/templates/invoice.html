@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice / Facture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header .title {
+      text-align: left; /* Align title to the left */
+      display: flex; /* Use flexbox for alignment */
+      align-items: center; /* Vertically align items */
+    }
+
+    .header .title h1 {
+      margin: 0 10px 0 0; /* Remove default margin and add right margin */
+      font-size: 1.5em; /* Adjust font size as needed */
+    }
+
+    .header .logo {
+      width: 50px; /* Adjust logo size as needed */
+      height: 50px;
+      flex-shrink: 0; /* Prevent logo from shrinking */
+    }
+        .header .logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+
+    .header .company-details {
+      text-align: right;
+      font-size: 0.9rem;
+    }
+
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .bill-to {
+      width: 48%;
+    }
+
+    .company-details {
+      width: 48%;
+      text-align: right;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #000;
+    }
+
+    table th {
+      background-color: #f0f0f0;
+    }
+
+    .total-table th, .total-table td {
+      text-align: right;
+    }
+
+    .footer {
+      margin-top: 20px;
+    }
+
+    .footer p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">
+      <img class="logo" src="apps/gcpharma.jpg" alt="Company Logo">
+      <h1>Invoice / Facture</h1>
+      <div>
+        <p><strong>Invoice No:</strong> GC10111</p>
+        <p><strong>Date:</strong> Dec 27, 2024</p>
+      </div>
+    </div>
+    <div class="company-details">
+      <p><strong>Global Distributors of Pharmaceutical Products</strong></p>
+      <p>BP 7761 Douala-Cameroon, Carrefour Diderot Ahala</p>
+      <p><strong>Email:</strong> info@gcpharma.org</p>
+      <p><strong>Tel:</strong> 222-316-754</p>
+      <p><strong>Bank Name:</strong> NFC Bank</p>
+      <p><strong>Bank Account:</strong> 17201081794</p>
+      <p><strong>Momo:</strong> 672463345</p>
+    </div>
+  </div>
+
+  <div class="top-section">
+    <div class="bill-to">
+      <p><strong>Bill To:</strong></p>
+      <p><strong>Customer ID:</strong> 1</p>
+      <p><strong>Customer Name:</strong> RECEPTION DE L'AGENCE DE BAFOUSSAM</p>
+      <p><strong>Address:</strong> Bonanjo, BP...</p>
+      <p><strong>Phone No:</strong> +237 7...</p>
+      <p><strong>Currency:</strong> XAF</p>
+      <p><strong>Payment Terms:</strong> Credit / Cash / Electronic</p>
+      <p><strong>No of Payments:</strong> 3</p>
+      <p><strong>Due Date:</strong> Date...</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Date</th>
+        <th>Product ID</th>
+        <th>Description</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Grand Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>11-Nov</td>
+        <td>gc111</td>
+        <td>Lartesun inj</td>
+        <td>3</td>
+        <td>4,000</td>
+        <td>12,000</td>
+        <td>12,000</td>
+      </tr>
+        <tr>
+        <td>2</td>
+        <td>11-Nov</td>
+        <td>gc112</td>
+        <td>Artegan</td>
+        <td>5</td>
+        <td>100,000</td>
+        <td>500,000</td>
+        <td>500,000</td>
+      </tr>
+        <tr>
+        <td>3</td>
+        <td>11-Nov</td>
+        <td>gc113</td>
+        <td>Ipramax</td>
+        <td>7</td>
+        <td>3,000</td>
+        <td>21,000</td>
+        <td>21,000</td>
+      </tr>
+        <tr>
+        <td>4</td>
+        <td>11-Nov</td>
+        <td>gc114</td>
+        <td>Acetf</td>
+        <td>9</td>
+        <td>200</td>
+        <td>1,800</td>
+        <td>1,800</td>
+      </tr>
+        <tr>
+        <td>5</td>
+        <td>11-Nov</td>
+        <td>gc115</td>
+        <td>Neosyein SP</td>
+        <td>11</td>
+        <td>1,000</td>
+        <td>11,000</td>
+        <td>11,000</td>
+      </tr>
+        <tr>
+        <td>6</td>
+        <td>11-Nov</td>
+        <td>gc116</td>
+        <td>Flucozine SP</td>
+        <td>13</td>
+        <td>90,000</td>
+        <td>1,170,000</td>
+        <td>1,182,000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="total-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Base</th>
+        <th>Escompte</th>
+        <th>THT</th>
+        <th>Tax</th>
+        <th>TVA</th>
+        <th>Total TTC</th>
+        <th>Advance</th>
+        <th>Net à Payer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>???</td>
+        <td>1,182,000</td>
+        <td>-4,000</td>
+        <td>1,178,000</td>
+        <td>23,560</td>
+        <td>0</td>
+        <td>1,201,560</td>
+        <td>100,000</td>
+        <td>1,101,560</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p><strong>Amount in words:</strong> ________________________________________</p>
+    <p><strong>Payment Schedule:</strong></p>
+    <ul>
+      <li>Immediately</li>
+      <li>15 Days</li>
+      <li>30 Days</li>
+      <li>45 Days</li>
+      <li>60 Days</li>
+      <li>90 Days</li>
+    </ul>
+    <p>NIU: M2022014416253M | Reg No: RC/YAO/2020/B/239</p>
+  </div>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice / Facture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center; /* Ensures logo and title align on the same line */
+      margin-bottom: 20px;
+    }
+
+    .header .title {
+      flex: 1;
+      text-align: left;
+    }
+
+    .header .title h3 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+
+    .header .logo {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .header .logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      vertical-align: middle; /* Ensures logo aligns vertically with text */
+    }
+
+    .company-details {
+      text-align: right;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .bill-to {
+      width: 48%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #000;
+    }
+
+    table th {
+      background-color: #f0f0f0;
+    }
+
+    .footer {
+      margin-top: 20px;
+    }
+
+    .footer p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">
+      <h3>Purchase Order / Bon de Commande</h3>
+      <div>
+        <p><strong>Order No:</strong> {{ order.id }}</p>
+        <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+      </div>
+    </div>
+    <div class="logo">
+      <img src="apps/gcpharma.jpg" alt="Company Logo">
+      <div class="company-details">
+        <p><strong>Global Distributors of Pharmaceutical Products</strong></p>
+        <p>BP 7761 Douala-Cameroon, Carrefour Diderot Ahala</p>
+        <p><strong>Email:</strong> info@gcpharma.org</p>
+        <p><strong>Tel:</strong> 222-316-754</p>
+        <p><strong>Bank Name:</strong> NFC Bank</p>
+        <p><strong>Bank Account:</strong> 17201081794</p>
+        <p><strong>Momo:</strong> 672463345</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-section">
+    <div class="bill-to">
+      <p><strong>Bill To:</strong></p>
+      <p><strong>Customer ID:</strong> {{ order.customer.customer_id }}</p>
+      <p><strong>Customer Name:</strong> {{ order.customer.customer_name }}</p>
+      <p><strong>Address:</strong> {{ order.customer.address }}</p>
+      <p><strong>Phone No:</strong> {{ order.customer.telephone }}</p>
+      <hr>
+      <p><strong>Currency:</strong> XAF</p>
+      <p><strong>Payment Terms:</strong> Credit / Cash / Electronic</p>
+      <p><strong>No of Payments:</strong> 3</p>
+      <p><strong>Due Date:</strong> Date...</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ item.stock.product.product_code }}</td>
+            <td>{{ item.stock.product.generic_name_dosage.generic_name }}</td>
+            <td>{{ item.get_effective_price|floatformat:0 }} CFA</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price|floatformat:0 }} <small>CFA</small></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No items found for this order.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

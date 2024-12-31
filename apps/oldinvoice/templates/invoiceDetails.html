@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load i18n %}
+{% load humanize %}
 
 {% block title %}Order Details{% endblock %}
 
@@ -21,24 +22,24 @@
             <!-- First Column -->
             <div class="col-md-3">
                 <small class="text m-3">Branch ID</small>
-                <h6 class="m-3">{{ old_invoice.branch.branch_id }}</h6>
+                <h6 class="mx-3">{{ old_invoice.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-3">
                 <small class="text m-3">Branch Name</small>
-                <h6 class="m-3">{{ old_invoice.branch.branch_name }}</h6>
+                <h6 class="mx-3">{{ old_invoice.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
             <div class="col-md-3">
                 <small class="text m-3">Created By</small>
-                <h6 class=" m-3">{{ old_invoice.created_by.user.get_full_name }}</h6>
+                <h6 class=" mx-3">{{ old_invoice.created_by.user.get_full_name }}</h6>
             </div>
             <!-- Date Column -->
             <div class="col-md-3">
                 <small class="text m-3">Date Created</small>
-                <h6 class=" m-3">{{ old_invoice.created_at|date:"M d, Y H:i" }}</h6>
+                <h6 class=" mx-3">{{ old_invoice.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
     </div>
@@ -49,20 +50,20 @@
             <!-- First Column -->
             <div class="col-md-4">
                 <small class="text m-3">Customer Name</small>
-                <h6 class="m-3">{{ old_invoice.customer.customer_name }}</h6>
+                <h6 class="mx-3">{{ old_invoice.customer.customer_name }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-4">
                 <small class="text m-3">Sales Representative</small>
-                <h6 class=" m-3">{{ old_invoice.sales_rep.user.get_full_name }}</h6>
+                <h6 class="mx-3">{{ old_invoice.sales_rep.user.get_full_name }}</h6>
 
             </div>
 
             <!-- Third Column -->
             <div class="col-md-4">
                 <small class="text m-3">Payment Method</small>
-                <h6 class=" m-3">{{ old_invoice.payment_method }}</h6>
+                <h6 class=" mx-3">{{ old_invoice.payment_method }}</h6>
             </div>
         </div>
     </div>
@@ -86,24 +87,29 @@
                         <tr>
                             <td>{{ item.stock.product.product_code }}</td>
                             <td>{{ item.stock.product.generic_name_dosage }}</td>
-                            <td>{{ item.price|floatformat:2 }} CFA</td>
+                            <td>{{ item.price|floatformat:0|intcomma }} CFA</td>
                             <td>{{ item.quantity }}</td>
-                            <td>{{ item.total_price|floatformat:0 }} CFA</td>
+                            <td>{{ item.total_price|floatformat:0|intcomma }} CFA</td>
                         </tr>
                     {% empty %}
                         <tr>
                             <td colspan="5" class="text-center">No items found for this order.</td>
                         </tr>
                     {% endfor %}
+                    <tr>
+                        <td colspan="3"><strong><h4>Grand Total</h4></strong></td>
+                        <td><strong><h6>{{total_quantity}}</h6></strong></td>
+                        <td class="text-primary"><strong>{{ old_invoice.grand_total|floatformat:0|intcomma }} CFA</strong></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
-    <br>
+    {% comment %} <br>
     <div class="col-md-4">
         <h6 class="text m-3">Grand Total</h6>
         <h3 class="text m-3">{{ old_invoice.grand_total|floatformat:2 }} <small>CFA</small></h3>
-    </div>
+    </div> {% endcomment %}
 </div>
 
 

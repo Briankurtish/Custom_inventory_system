@@ -13,7 +13,7 @@ from apps.branches.models import Branch
 from apps.workers.models import Worker
 from datetime import datetime
 from django.core.paginator import Paginator
-from django.db.models import F, ExpressionWrapper, FloatField
+from django.db.models import F, Sum, ExpressionWrapper, DecimalField, FloatField
 
 
 
@@ -91,6 +91,8 @@ def old_invoice_details(request, invoice_id):
     invoice_items = OldInvoiceOrderItem.objects.filter(invoice_order=old_invoice).annotate(
         total_price=ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField())
     )
+    
+    total_quantity = invoice_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
 
     # Fetch the worker's privileges
     worker = request.user.worker_profile
@@ -100,6 +102,7 @@ def old_invoice_details(request, invoice_id):
     view_context = {
         "old_invoice": old_invoice,
         "invoice_items": invoice_items,
+        "total_quantity": total_quantity,
         "worker_privileges": worker_privileges,
     }
 
@@ -327,11 +330,21 @@ def payment_history(request, invoice_id):
     invoice = get_object_or_404(OldInvoiceOrder, id=invoice_id)
     payment_history = InvoicePaymentHistory.objects.filter(invoice=invoice).order_by('-payment_date')
 
+    # Calculate percentages
+    if invoice.grand_total > 0:  # Avoid division by zero
+        percentage_paid = (invoice.amount_paid / invoice.grand_total) * 100
+        percentage_left = (invoice.amount_due / invoice.grand_total) * 100
+    else:
+        percentage_paid = 0
+        percentage_left = 0
+
     context = TemplateLayout.init(
         request,
         {
             'invoice': invoice,
             'payment_history': payment_history,
+            'percentage_paid': round(percentage_paid, 2),  # Rounded to 2 decimal places
+            'percentage_left': round(percentage_left, 2),  # Rounded to 2 decimal places
         }
     )
     return render(request, 'paymentHistory.html', context)

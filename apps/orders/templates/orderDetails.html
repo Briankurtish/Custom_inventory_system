@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load i18n %}
+{% load humanize %}
 
 {% block title %}Order Details{% endblock %}
 
@@ -14,7 +15,7 @@
       <li class="breadcrumb-item active"><a href="{% url 'orders' %}">Orders</a></li>
       <li class="breadcrumb-item active" aria-current="page">Order Details</li>
     </ol>
-  </nav>
+</nav>
 <hr class="my-8">
 
 <div class="card">
@@ -24,40 +25,34 @@
     <hr>
 
     <div class="container">
+        <!-- Order Information -->
         <div class="row">
-            <!-- First Column -->
             <div class="col-md-3">
                 <small class="text m-3">Branch ID</small>
-                <h6 class="m-3">{{ order.branch.branch_id }}</h6>
+                <h6 class="mx-3">{{ order.branch.branch_id }}</h6>
             </div>
-
-            <!-- Second Column -->
             <div class="col-md-3">
                 <small class="text m-3">Branch Name</small>
-                <h6 class="m-3">{{ order.branch.branch_name }}</h6>
+                <h6 class="mx-3">{{ order.branch.branch_name }}</h6>
             </div>
-
-            <!-- Third Column -->
             <div class="col-md-3">
                 <small class="text m-3">Created By</small>
-                <h6 class=" m-3">{{ order.created_by.user.get_full_name }}</h6>
+                <h6 class="mx-3">{{ order.created_by.user.get_full_name }}</h6>
             </div>
-
-             <!-- Date Column -->
-             <div class="col-md-3">
+            <div class="col-md-3">
                 <small class="text m-3">Date Created</small>
-                <h6 class=" m-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
+                <h6 class="mx-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
     </div>
     <hr>
 
     <div class="container">
+        <!-- More Order Information -->
         <div class="row">
-            <!-- First Column -->
             <div class="col-md-3">
                 <small class="text m-3">Customer Name</small>
-                <h6 class="m-3">{{ order.customer.customer_name }}</h6>
+                <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
                 {% if 'View Customer Credits' in worker_privileges %}
                     <form action="{% url 'credit_report' customer_id=order.customer.id %}" method="get">
                         <button type="submit" class="btn btn-primary">
@@ -65,14 +60,10 @@
                         </button>
                     </form>
                 {% endif %}
-                
-                {% comment %} <a class="m-3 text-secondary " href="{% url 'credit_report' order.id %}">Get Credit Report</a> {% endcomment %}
             </div>
-
-            <!-- Second Column -->
             <div class="col-md-3">
                 <small class="text m-3">Sales Representative</small>
-                <h6 class=" m-3">{{ order.sales_rep.user.get_full_name }}</h6>
+                <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
                 {% if 'View Sales Rep Credits' in worker_privileges %}
                     <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
                         <button type="submit" class="btn btn-primary">
@@ -80,77 +71,194 @@
                         </button>
                     </form>
                 {% endif %}
-                
-
             </div>
-
-            <!-- Third Column -->
             <div class="col-md-3">
                 <small class="text m-3">Payment Method</small>
-                <h6 class=" m-3 text-primary">{{ order.payment_method }}</h6>
+                <h6 class="mx-3 text-primary">{{ order.payment_method }}</h6>
             </div>
-
-            <!-- Status Column -->
             <div class="col-md-3">
-                <small class="text m-3">Status</small>
-                <h6 class="text-warning m-3">{{ order.status }}</h6>
+                <small class="text mx-3">Status</small>
+                <h6 class="text-warning mx-3">
+                    {% if order.status|lower == "pending" %}
+                    <span class="badge bg-label-warning me-1">Pending</span>
+                    {% elif order.status|lower == "approved" %}
+                    <span class="badge bg-label-success me-1">Approved</span>
+                    {% elif order.status|lower == "rejected" %}
+                    <span class="badge bg-label-danger me-1">Rejected</span>
+                    {% else %}
+                    <span class="badge bg-label-info me-1">{{ order.status }}</span>
+                    {% endif %}
+                </h6>
             </div>
         </div>
     </div>
+
+    <hr>
+    {% if order.status == "Rejected" %}
+    <div class="container">
+        <!-- Order Information -->
+        <div class="row">
+            
+            <div class="col-md-3">
+                <small class="text m-3">Rejection Reason</small>
+                <h6 class="m-3">{{ order.notes }}</h6>
+            </div>
+            
+            
+        </div>
+    </div>
+    {% endif %}
+
     <hr>
 
-    <div class="card">
-        <h5 class="card-header">Order Items</h5>
-        <div class="table-responsive text-nowrap">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
-                        <th>Unit Price</th>
-                        <th>Quantity</th>
-                        <th>Total Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in order_items %}
-                        <tr>
-                            <td>{{ item.stock.product.product_code }}</td>
-                            <td>{{ item.stock.product.generic_name_dosage }}</td>
-                            <td>{{ item.stock.product.unit_price|floatformat:0 }} CFA</td>
-                            <td>{{ item.quantity }}</td>
-                            <td>{{ item.total_price|floatformat:0 }} <small>CFA</small></td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center">No items found for this order.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<!-- Order Items -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Order Items</h5>
+        {% if order.status == "Pending" and 'Edit Order Prices' in worker_privileges %}
+            <!-- Edit Prices Button -->
+            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">Edit Prices</a>
+
+            <!-- Modal -->
+            <div class="modal fade" id="editPricesModal" tabindex="-1" aria-labelledby="editPricesModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form action="{% url 'edit_prices' order.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editPricesModalLabel">Edit Prices for Order #ORD_{{ order.id }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive text-nowrap">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Product Code</th>
+                                                <th>Product Name</th>
+                                                <th>Current Price</th>
+                                                <th>New Temporary Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in order_items %}
+                                            <tr>
+                                                <td>{{ item.stock.product.product_code }}</td>
+                                                <td>{{ item.stock.product.generic_name_dosage }}</td>
+                                                <td>{{ item.effective_price|floatformat:0|intcomma }} CFA</td>
+                                                <td>
+                                                    <input type="number" name="prices[{{ item.id }}]" class="form-control" step="0.01" min="0" value="{{ item.temp_price|default:item.stock.product.unit_price }}">
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No items found for this order.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+       
     </div>
+    <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td>{{ item.stock.product.product_code }}</td>
+                    <td>{{ item.stock.product.generic_name_dosage }}</td>
+                    <td>{{ item.get_effective_price|floatformat:0|intcomma }} CFA</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.total_price|floatformat:0|intcomma }} <small>CFA</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No items found for this order.</td>
+                </tr>
+                {% endfor %}
+                <!-- Grand Total Row -->
+                <tr>
+                    <td colspan="3"><strong><h4>Grand Total</h4></strong></td>
+                    <td><strong><h6>{{total_quantity}}</h6></strong></td>
+                    <td class="text-primary"><strong>{{ order.grand_total|floatformat:0|intcomma }} CFA</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+
+    {% comment %} <!-- Grand Total -->
     <div class="col-md-4 mt-4">
         <h6 class="text m-3">Grand Total</h6>
         <h3 class="text m-3">{{ order.grand_total|floatformat:0 }} <small>CFA</small></h3>
-    </div>
+    </div> {% endcomment %}
+</div>
+
+<!-- Action Buttons -->
+<div class="mt-3">
+    {% if order.status == "Pending" and 'Approve or decline Orders' in worker_privileges %}
+        <form action="{% url 'approve_order' order.id %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Approve</button>
+        </form>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+            Reject
+        </button>
+    {% endif %}
 </div>
 
 <div class="mt-3">
-    {% if order.status == "Pending" %}
-        <!-- Approve or Decline Form -->
-        {% if user.worker_profile.role == "Sales Manager" %}
-        <form action="{% url 'approve_or_decline_order' order_id=order.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit" name="action" value="approve" class="btn btn-success">
-                <span class="tf-icons bx bx-check bx-18px me-2"></span> Approve
-            </button>
-            <button type="submit" name="action" value="decline" class="btn btn-danger">
-                <span class="tf-icons bx bx-x bx-18px me-2"></span> Decline
-            </button>
-        </form>
-        {% endif %}
+    {% if order.status == "Approved" and 'Generate Purchase Order' in worker_privileges %}
+        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">Download Purchase Order PDF</a>
     {% endif %}
+</div>
+
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">Reject Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'reject_order' order.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Rejection Notes</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

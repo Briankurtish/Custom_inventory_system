@@ -2,18 +2,60 @@
 
 {% load static %}
 {% load i18n %}
+{% load humanize %}
 
 {% block title %}Old Invoice{% endblock %}
 
 {% block content %}
-
-
-
-
 <!-- Hoverable Table rows -->
 <div class="card">
   <h5 class="card-header">Payment History for Invoice #{{ invoice.id }}</h5>
-  <h5 class="card-header"><strong>Customer:</strong> {{ invoice.customer.customer_name }}</h5>
+  
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h5><strong>Customer:</strong> {{ invoice.customer.customer_name }}</h5>
+      </div>
+      <div class="col-md-4 text-end">
+        <h5><strong>Date:</strong> {{ invoice.created_at|date:"M d, Y" }}</h5>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+        <!-- First Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Invoice Total</small>
+            <h5 class="mx-3">{{ invoice.grand_total|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Second Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Total Amount Paid</small>
+            <h5 class="mx-3">{{ invoice.amount_paid|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Third Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Total Amount Due</small>
+            <h5 class=" mx-3">{{ invoice.amount_due|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Fourth Column -->
+        <div class="col-md-2">
+          <small class="text m-3">Percentage Paid</small>
+          <h5 class=" mx-3">{{ percentage_paid|intcomma }}%</h5>
+        </div>
+
+        <!-- Fifth Column -->
+        <div class="col-md-2">
+          <small class="text m-3">Percentage Left</small>
+          <h5 class=" mx-3">{{ percentage_left|intcomma }}%</h5>
+        </div>
+    </div>
+  </div>
+
   <div class="table-responsive text-nowrap">
     <table class="table table-hover table-striped mt-3">
       <thead>
@@ -30,7 +72,7 @@
         <tr>
           <td>{{ forloop.counter }}</td>
           <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
-          <td class="text-success"><strong>{{ payment.amount_paid }}<small> Frs</small></strong></td>
+          <td class="text-success"><strong>{{ payment.amount_paid|intcomma }}<small> Frs</small></strong></td>
           <td>{{ payment.payment_mode }}</td>
           <td>{{ payment.account_paid_to }}</td>
         </tr>
@@ -42,47 +84,5 @@
       </tbody>
     </table>
   </div>
-  
-
-  
 </div>
-{% comment %} 
-<div class="row">
-  <div class="col-md-4">
-    <a href="{% url 'invoice_details' invoice.id %}" class="btn btn-secondary mt-3">Back to Invoice Details</a>
-  </div>
-</div> {% endcomment %}
-<!--/ Hoverable Table rows -->
-
-
-<!-- Pagination -->
-<div class="d-flex justify-content-center mt-3">
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center mt-3">
-      {% if orders.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-      {% endif %}
-      
-      {% for num in orders.paginator.page_range %}
-      <li class="page-item {% if orders.number == num %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-      </li>
-      {% endfor %}
-      
-      {% if orders.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </nav>
-</div>
-
-
 {% endblock %}

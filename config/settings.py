@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'apps.oldinvoice',
     "crispy_forms",
     "crispy_bootstrap5",
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [

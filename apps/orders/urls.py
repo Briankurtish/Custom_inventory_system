@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import order_list, create_purchase_order, add_order_items, order_details, credit_report, get_credit_report, get_sales_rep_credit_history
+from .views import order_list, create_purchase_order, add_order_items, order_details, credit_report, get_credit_report, get_sales_rep_credit_history, approve_order, reject_order, edit_prices, generate_purchase_order_pdf
 
 urlpatterns = [
     path(
@@ -18,9 +18,14 @@ urlpatterns = [
         name="add_order_items",  # URL name for this path
     ),
     
-     path('order/<int:order_id>/', order_details, name='order_details'),
-     
-     path('credit-report/<int:customer_id>/', get_credit_report, name='credit_report'),
-     
-     path("worker/<int:worker_id>/credit-history/", get_sales_rep_credit_history, name="sales_rep_credit_history"),
+    path('order/<int:order_id>/', order_details, name='order_details'),
+    
+    path('credit-report/<int:customer_id>/', get_credit_report, name='credit_report'),
+    
+    path("worker/<int:worker_id>/credit-history/", get_sales_rep_credit_history, name="sales_rep_credit_history"),
+    
+    path('order/<int:order_id>/approve/', approve_order, name='approve_order'),
+    path('order/<int:order_id>/reject/', reject_order, name='reject_order'),
+    path('orders/<int:order_id>/edit-prices/', edit_prices, name='edit_prices'),
+     path('order/<int:order_id>/pdf/', generate_purchase_order_pdf, name='generate_purchase_order_pdf'),
 ]
