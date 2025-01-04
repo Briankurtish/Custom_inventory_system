@@ -31,6 +31,12 @@ class UserCreationForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label="Role"
     )
+    company = forms.ChoiceField(
+        choices=[('GC Pharma', 'GC Pharma'), ('2A-Promo', '2A-Promo')],
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'company'}),
+        label="Company",
+        required=False
+    )
     branch = forms.ModelChoiceField(
         queryset=Branch.objects.all(),
         required=False,
@@ -60,11 +66,16 @@ class UserCreationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        role = cleaned_data.get("role")
+        company = cleaned_data.get("company")
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
         if password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
+        
+        if role == 'Sales Rep' and not company:
+            self.add_error('company', "Company is required for Sales Rep role.")
 
         return cleaned_data
 
@@ -95,6 +106,7 @@ class UserCreationForm(forms.ModelForm):
             department=cleaned_data['department'],
             address=cleaned_data['address']
         )
+        worker.company = cleaned_data.get('company')
         worker.save()
 
         # Update the User's username to match the Worker's employee_id

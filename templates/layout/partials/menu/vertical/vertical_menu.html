@@ -61,6 +61,15 @@
       {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
     </a>
   </li>
+
+  {% elif user.worker_profile.role == 'Cashier'%}
+  <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
+    <a href="{% url 'index' %}" class="menu-link ">
+      <i class="menu-icon tf-icons bx bx-home-smile"></i>
+      <div class="text-truncate" data-i18n="Dashboards">Home</div>
+      {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+    </a>
+  </li>
   
 {% endif %}
 
@@ -159,7 +168,9 @@
           <a href="{% url 'orders' %}" class="menu-link ">
             <i class="menu-icon tf-icons bx bx-package"></i>
             <div class="text-truncate" data-i18n="Dashboards">Orders</div>
-            {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+            {% if pending_orders_count > 0 %}
+            <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+            {% endif %}
           </a>
         </li>
         {% endif %}
@@ -174,6 +185,19 @@
           </a>
         </li>
         {% endif %}
+
+        {% if privilege.name == 'Process Payments' %}
+        <li class="menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active open{% endif %}">
+          <a href="{% url 'invoices' %}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-money"></i>
+            <div class="text-truncate" data-i18n="Dashboards">Invoices</div>
+            {% if unpaid_invoices_count > 0 %}
+            <span class="badge bg-warning rounded-pill ms-auto">{{ unpaid_invoices_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+        {% endif %}
+
     {% endfor %}
 {% endif %}
 

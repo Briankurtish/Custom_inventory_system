@@ -5,13 +5,14 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = [
-            'customer_name', 'postal_code', 'sales_rep', 'contact_person',
+            'customer_name', 'postal_code', 'branch', 'sales_rep', 'contact_person',
             'telephone', 'email', 'agreement_number',
             'tax_payer_number', 'location_plan', 'note',
         ]
         widgets = {
             'customer_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter customer name'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter postal code'}),
+            'branch': forms.Select(attrs={'class': 'form-control'}),
             'sales_rep': forms.Select(attrs={'class': 'form-control'}),
             'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Contact Person Name'}),
             'telephone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
@@ -23,6 +24,7 @@ class CustomerForm(forms.ModelForm):
         labels = {
             'customer_name': 'Customer Name',
             'postal_code': 'Postal Code',
+            'branch': 'Branch',
             'sales_rep': 'Sales Rep',
             'contact_person': 'Contact Person',
             'telephone': 'Telephone',

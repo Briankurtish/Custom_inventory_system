@@ -1,7 +1,6 @@
 from django.db import models
 from apps.workers.models import Worker
-
-# Create your models here.
+from apps.branches.models import Branch
 
 class Customer(models.Model):
     customer_id = models.CharField(
@@ -9,6 +8,14 @@ class Customer(models.Model):
     )
     customer_name = models.CharField(
         max_length=255, help_text="Noms du client"
+    )
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='customers',
+        help_text="Branch associated with the customer"
     )
     postal_code = models.CharField(
         max_length=20, blank=True, null=True, help_text="Code Postal"
@@ -47,10 +54,24 @@ class Customer(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.customer_id:
-            last_customer = Customer.objects.order_by('id').last()
-            if last_customer and last_customer.customer_id.startswith("GCL"):
-                last_number = int(last_customer.customer_id[3:])  # Extract the number part
-                self.customer_id = f"GCL{last_number + 1:04d}"  # Increment and pad with zeros
+            if self.branch and isinstance(self.branch.branch_id, str):
+                # Extract the REG from the branch ID (first 3 letters of branch_id)
+                reg = self.branch.branch_id[:3].upper()
             else:
-                self.customer_id = "GCL0001"  # Start from GCL0001
+                reg = "UNK"  # Fallback if branch is not set or invalid
+
+            # Get the last customer with the same REG
+            last_customer = Customer.objects.filter(customer_id__startswith=f"CUST-{reg}-").order_by('id').last()
+
+            if last_customer:
+                # Extract the numerical part from the last customer ID and increment it
+                last_number = int(last_customer.customer_id.split('-')[-1])
+                new_number = f"{last_number + 1:04d}"
+            else:
+                # Start from 0001
+                new_number = "0001"
+
+            # Construct the customer ID
+            self.customer_id = f"CUST-{reg}-{new_number}"
+
         super().save(*args, **kwargs)

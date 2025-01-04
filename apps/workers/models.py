@@ -68,30 +68,37 @@ class Worker(models.Model):
         return f"{self.employee_id} - {self.user.get_full_name()}"
 
     def save(self, *args, **kwargs):
-        
         if not self.employee_id:
             if self.role == 'Sales Rep':
-                # Generate an ID for Sales Reps starting with "2AP-"
-                last_worker = Worker.objects.filter(employee_id__startswith="2AP-").order_by('id').last()
-                if last_worker:
-                    last_number = int(last_worker.employee_id[4:])  # Extract digits after "2AP-"
-                    self.employee_id = f"2AP-{last_number + 1:03d}"
+                # Prompt for company and determine the prefix
+                company = getattr(self, 'company', None)  # Assume 'company' is passed during form handling
+                if company == 'GC Pharma':
+                    prefix = "GCP-SR"
+                elif company == '2A-Promo':
+                    prefix = "2AP-SR"
                 else:
-                    self.employee_id = "2AP-001"
+                    raise ValueError("Company must be either 'GC Pharma' or '2A-Promo' for Sales Reps.")
+
+                # Generate the next ID for the selected prefix
+                last_worker = Worker.objects.filter(employee_id__startswith=f"{prefix}-").order_by('id').last()
+                if last_worker:
+                    last_number = int(last_worker.employee_id.split('-')[-1])
+                    self.employee_id = f"{prefix}-{last_number + 1:04d}"
+                else:
+                    self.employee_id = f"{prefix}-0001"
             else:
-                # Generate a generic ID starting with "GC-W"
-                last_worker = Worker.objects.filter(employee_id__startswith="GC-W").order_by('id').last()
+                # Generate generic ID for other roles
+                prefix = "GCP"
+                last_worker = Worker.objects.filter(employee_id__startswith=f"{prefix}-").order_by('id').last()
                 if last_worker:
-                    last_number = int(last_worker.employee_id[5:])  # Extract digits after "GC-W"
-                    self.employee_id = f"GC-W{last_number + 1:04d}"
+                    last_number = int(last_worker.employee_id.split('-')[-1])
+                    self.employee_id = f"{prefix}-{last_number + 1:04d}"
                 else:
-                    self.employee_id = "GC-W0001"
-        
-        """
-        Automatically assign default privileges based on the worker's role.
-        """
-        is_new = self._state.adding  # Check if the instance is being created
-        super().save(*args, **kwargs)  # Save the worker instance first
+                    self.employee_id = f"{prefix}-0001"
+                    
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+    # Save the worker instance first
 
         if is_new:
             # Assign default privileges based on role

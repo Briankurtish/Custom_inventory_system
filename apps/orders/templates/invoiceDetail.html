@@ -4,23 +4,23 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Order Details{% endblock %}
+{% block title %}Invoice Detail{% endblock %}
 
 {% block content %}
 
-<h4 class="text">Order Details</h4>
+<h4 class="text">Invoice Details</h4>
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-      <li class="breadcrumb-item active"><a href="{% url 'orders' %}">Orders</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Order Details</li>
+      <li class="breadcrumb-item active"><a href="{% url 'invoices' %}">invoice</a></li>
+      <li class="breadcrumb-item active" aria-current="page">invoice Details</li>
     </ol>
 </nav>
 <hr class="my-8">
 
 <div class="card">
     <div class="row">
-        <h5 class="text col-md-4 m-3">{{ order.purchase_order_id }}</h5>
+        <h5 class="text col-md-4 m-3">{{ order.invoice_id }}</h5>
     </div>
     <hr>
 
@@ -53,24 +53,12 @@
             <div class="col-md-3">
                 <small class="text m-3">Customer Name</small>
                 <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
-                {% if 'View Customer Credits' in worker_privileges %}
-                    <form action="{% url 'credit_report' customer_id=order.customer.id %}" method="get">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
-                        </button>
-                    </form>
-                {% endif %}
+                
             </div>
             <div class="col-md-3">
                 <small class="text m-3">Sales Representative</small>
                 <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
-                {% if 'View Sales Rep Credits' in worker_privileges %}
-                    <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
-                        </button>
-                    </form>
-                {% endif %}
+                
             </div>
             <div class="col-md-3">
                 <small class="text m-3">Payment Method</small>
@@ -79,95 +67,25 @@
             <div class="col-md-3">
                 <small class="text mx-3">Status</small>
                 <h6 class="text-warning mx-3">
-                    {% if order.status|lower == "pending" %}
-                    <span class="badge bg-label-warning me-1">Pending</span>
-                    {% elif order.status|lower == "approved" %}
-                    <span class="badge bg-label-success me-1">Approved</span>
-                    {% elif order.status|lower == "rejected" %}
-                    <span class="badge bg-label-danger me-1">Rejected</span>
+                    {% if order.status|lower == "unpaid" %}
+                    <span class="badge bg-label-warning me-1">UnPaid</span>
+                    {% elif order.status|lower == "payment ongoing" %}
+                    <span class="badge bg-label-success me-1">Payment Ongoing</span>
+                    {% elif order.status|lower == "payment completed" %}
+                    <span class="badge bg-label-danger me-1">Payment Completed</span>
                     {% else %}
-                    <span class="badge bg-label-info me-1">{{ order.status }}</span>
+                    <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
                     {% endif %}
                 </h6>
             </div>
         </div>
     </div>
 
-    <hr>
-    {% if order.status == "Rejected" %}
-    <div class="container">
-        <!-- Order Information -->
-        <div class="row">
-            
-            <div class="col-md-3">
-                <small class="text m-3">Rejection Reason</small>
-                <h6 class="m-3">{{ order.notes }}</h6>
-            </div>
-            
-            
-        </div>
-    </div>
-    {% endif %}
-
 
 <!-- Order Items -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Order Items</h5>
-        {% if order.status == "Pending" and 'Edit Order Prices' in worker_privileges %}
-            <!-- Edit Prices Button -->
-            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">Edit Prices</a>
-
-            <!-- Modal -->
-            <div class="modal fade" id="editPricesModal" tabindex="-1" aria-labelledby="editPricesModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form action="{% url 'edit_prices' order.id %}" method="post">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editPricesModalLabel">Edit Prices for Order #ORD_{{ order.id }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="table-responsive text-nowrap">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Product Code</th>
-                                                <th>Product Name</th>
-                                                <th>Current Price</th>
-                                                <th>New Temporary Price</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item in order_items %}
-                                            <tr>
-                                                <td>{{ item.stock.product.product_code }}</td>
-                                                <td>{{ item.stock.product.generic_name_dosage }}</td>
-                                                <td>{{ item.effective_price|floatformat:0|intcomma }} CFA</td>
-                                                <td>
-                                                    <input type="number" name="prices[{{ item.id }}]" class="form-control" step="0.01" min="0" value="{{ item.temp_price|default:item.stock.product.unit_price }}">
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="4" class="text-center">No items found for this order.</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-success">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-        {% endif %}
        
     </div>
     <div class="table-responsive text-nowrap">

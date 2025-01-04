@@ -2,10 +2,10 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import PurchaseOrder, PurchaseOrderItem
+from .models import PurchaseOrder, PurchaseOrderItem, TemporaryStock, InvoiceOrderItem, Invoice
 from apps.stock.models import Stock
 from django.contrib import messages
-from .forms import PurchaseOrderForm, PurchaseOrderItemForm
+from .forms import PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
@@ -70,6 +70,30 @@ def order_list(request):
     
     return render(request, "orderList.html", context)
 
+@login_required
+def invoice_list(request):
+    # Fetch the user's branch
+    user_branch = request.user.worker_profile.branch
+
+    # Fetch orders only for the user's branch
+    invoices = Invoice.objects.filter(branch=user_branch)
+    
+    # Count unpaid invoices
+    
+    
+    paginator = Paginator(invoices, 10) 
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_invoice = paginator.get_page(page_number)
+
+    # Prepare context for rendering
+    view_context = {
+        "invoices": paginated_invoice,
+        
+    }
+    context = TemplateLayout.init(request, view_context)
+    
+    return render(request, "invoiceList.html", context)
+
 
 @login_required
 def order_details(request, order_id):
@@ -103,6 +127,7 @@ def order_details(request, order_id):
     context = TemplateLayout.init(request, view_context)
     
     return render(request, "orderDetails.html", context)
+
 
 
 @login_required
@@ -250,9 +275,6 @@ def add_order_items(request):
                             stock=stock,
                             quantity=item["quantity"],
                         )
-                        # Update stock quantity
-                        stock.quantity -= item["quantity"]
-                        stock.save()
 
                     # Clear session data and redirect
                     request.session["order_items"] = []
@@ -278,7 +300,9 @@ def add_order_items(request):
     return render(request, "addOrderItems.html", context)
 
 
-@login_required
+from decimal import Decimal
+from django.db import transaction
+
 def approve_order(request, order_id):
     # Fetch the order
     order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
@@ -288,13 +312,70 @@ def approve_order(request, order_id):
         messages.error(request, "This order has already been processed.")
         return redirect(reverse('order_details', args=[order_id]))
 
-    # Update order status and approved_by
-    order.status = 'Approved'
-    order.approved_by = request.user.worker_profile
-    order.save()
+    try:
+        with transaction.atomic():
+            # Deduct stock and move items to TemporaryStock
+            for item in order.items.all():
+                stock = item.stock
+                item_quantity = item.quantity
+                item_effective_price = item.get_effective_price()
 
-    messages.success(request, "Order approved successfully.")
-    return redirect(reverse('order_details', args=[order_id]))
+                # Check if there is enough stock to fulfill the order
+                if stock.quantity < item_quantity:
+                    messages.error(request, f"Insufficient stock for {stock.product.product_code}.")
+                    return redirect(reverse('order_details', args=[order_id]))
+
+                # Deduct stock
+                stock.quantity -= item_quantity
+                stock.save()
+
+                # Add the item to the temporary stock
+                TemporaryStock.objects.create(
+                    purchase_order=order,
+                    stock=stock,
+                    ordered_quantity=item_quantity
+                )
+
+            # Update the status of the order to 'Approved'
+            order.status = 'Approved'
+            order.approved_by = request.user.worker_profile  # Assign Worker instance to approved_by
+            order.save()
+
+            # Generate an invoice for the approved order
+            invoice = Invoice.objects.create(
+                branch=order.branch,
+                customer=order.customer,
+                sales_rep=order.sales_rep,
+                payment_method=order.payment_method,
+                created_by=request.user.worker_profile,  # Assign Worker instance to created_by
+                purchase_order=order,
+                grand_total=order.grand_total,  # The total amount from the purchase order
+                amount_paid=Decimal('0.00'),  # Assuming no payment is made at this point
+                amount_due=order.grand_total  # Assuming the full amount is due at this point
+            )
+
+            # Create invoice items
+            for item in order.items.all():
+                InvoiceOrderItem.objects.create(
+                    invoice_order=invoice,
+                    stock=item.stock,
+                    quantity=item.quantity,
+                    price=item.get_effective_price()  # Use the effective price (temp price or regular price)
+                )
+
+            messages.success(request, "Order approved and invoice generated successfully.")
+            return redirect(reverse('order_details', args=[order_id]))
+
+    except Exception as e:
+        # Handle any unexpected exceptions and roll back the transaction
+        transaction.rollback()
+        messages.error(request, f"An error occurred while approving the order: {str(e)}")
+        return redirect(reverse('order_details', args=[order_id]))
+
+
+
+
+
 
 
 @login_required
@@ -358,6 +439,50 @@ def reject_order(request, order_id):
     
     # If not POST, return error response
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+def cancel_order(request, order_id):
+    # Fetch the order
+    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+
+    # Ensure the order is approved before allowing cancellation
+    if order.status != 'Approved':
+        messages.error(request, "Only approved orders can be canceled.")
+        return redirect(reverse('order_details', args=[order_id]))
+
+    # Perform cancellation
+    if request.method == 'POST':
+        try:
+            # Iterate through the items in the order
+            order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
+            for item in order_items:
+                stock = item.stock
+
+                # Restore the stock quantity
+                stock.quantity += item.quantity
+                stock.save()
+
+                # Remove the item from the TemporaryStock table
+                TemporaryStock.objects.filter(
+                    purchase_order=order,
+                    stock=stock
+                ).delete()
+
+            # Update the order status to "Canceled"
+            order.status = 'Canceled'
+            order.save()
+
+            messages.success(request, "Order canceled and stock levels restored successfully.")
+            return redirect(reverse('order_details', args=[order_id]))
+
+        except Exception as e:
+            messages.error(request, f"An error occurred while canceling the order: {e}")
+            return redirect(reverse('order_details', args=[order_id]))
+
+    # If not POST, return an error response
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 
 
@@ -475,6 +600,61 @@ def get_sales_rep_credit_history(request, worker_id):
     return render(request, "salesRepCreditReport.html", context)
 
 
+@login_required
+def add_invoice_payment(request, invoice_id):
+    """
+    Handles adding payment history for a specific invoice.
+    """
+    # Get the invoice instance
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+
+    if request.method == 'POST':
+        form = InvoicePaymentForm(request.POST)
+        if form.is_valid():
+            payment_amount = form.cleaned_data['amount_paid']
+
+            # Validate payment amount
+            if payment_amount > invoice.grand_total:
+                form.add_error('amount_paid', "Payment amount cannot exceed the invoice's grand total.")
+            elif payment_amount > invoice.amount_due:
+                form.add_error('amount_paid', "Payment amount cannot exceed the remaining amount due.")
+            else:
+                with transaction.atomic():  # Ensure atomicity for the payment update process
+                    # Save the payment
+                    payment = form.save(commit=False)
+                    payment.invoice = invoice  # Associate payment with the invoice
+                    payment.invoice_total = invoice.grand_total  # Fetch invoice total
+                    payment.save()
+
+                    # Update the invoice's amount paid and amount due
+                    invoice.amount_paid += payment.amount_paid
+                    invoice.amount_due = max(invoice.grand_total - invoice.amount_paid, 0)
+
+                    # Update the invoice status based on payment progress
+                    if invoice.amount_paid == invoice.grand_total:
+                        invoice.status = 'Payment Completed'
+                    elif invoice.amount_paid > 0:
+                        invoice.status = 'Payment Ongoing'
+                    else:
+                        invoice.status = 'Unpaid'
+
+                    invoice.save()
+
+                messages.success(request, "Invoice Payment added successfully!")
+                return redirect('invoices')
+        else:
+            messages.error(request, "Error adding payment. Please check the form.")
+    else:
+        form = InvoicePaymentForm()
+
+    context = TemplateLayout.init(
+        request,
+        {
+            'invoice': invoice,
+            'form': form,
+        }
+    )
+    return render(request, 'makePayment.html', context)
 
 
 

@@ -54,11 +54,11 @@ class Product(models.Model):
             else:
                 # Generate a new product code
                 last_product = Product.objects.order_by('id').last()
-                if last_product and last_product.product_code.startswith("GCP"):
+                if last_product and last_product.product_code.startswith("PROD"):
                     last_number = int(last_product.product_code[3:])  # Extract the numeric part
-                    self.product_code = f"GCP{last_number + 1:04d}"  # Increment and format
+                    self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
                 else:
-                    self.product_code = "GCP0001"  # Start from GCP0001
+                    self.product_code = "PROD-0001"  # Start from PROD-0001
 
         # Save the product instance
         super().save(*args, **kwargs)

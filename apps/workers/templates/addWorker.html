@@ -58,3 +58,26 @@
   </div>
 </div>
 {% endblock %}
+
+
+{% block page_js %} 
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const roleField = document.getElementById("role");
+      const companyField = document.getElementById("company").closest(".form-group");
+
+      function toggleCompanyField() {
+          if (roleField.value === "Sales Rep") {
+              companyField.style.display = "block";
+          } else {
+              companyField.style.display = "none";
+          }
+      }
+
+      roleField.addEventListener("change", toggleCompanyField);
+      toggleCompanyField(); // Initial check
+  });
+</script>
+
+{% endblock page_js %}

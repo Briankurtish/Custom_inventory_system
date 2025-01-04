@@ -50,3 +50,20 @@
  
 </div>
 {% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_sales_rep").select2({
+      placeholder: "Search for a Sales Rep",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+
+{% endblock %}

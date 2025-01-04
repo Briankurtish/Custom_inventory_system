@@ -3,89 +3,72 @@
 {% load static %}
 {% load i18n %}
 {% load humanize %}
-
-{% block title %}Order List{% endblock %}
+{% block title %}Old Invoice{% endblock %}
 
 {% block content %}
 
-{% if user.worker_profile.privileges.all %}
-    {% for privilege in user.worker_profile.privileges.all %}
-        {% if privilege.name == 'Create Orders' %}
-          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-            <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
-          </button>
-        {% endif %}
-    {% endfor %}
-{% endif %}
+<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Invoice
+</button>
 
 <hr class="my-8">
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Order List</h5>
+  <h5 class="card-header">Invoice List</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Order ID</th>
+          <th>Invoice ID</th>
           <th>Branch ID</th>
           <th>Created By</th>
           <th>Client</th>
           <th>Sales Rep</th>
           <th>Total Amount</th>
+          <th>Amount Paid</th>
+          <th>Amount Due</th>
           <th>Created At</th>
-          <th>Approved By</th>
-          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-        {% for order in orders %}
+        {% for order in old_invoice %}
         <tr>
-          <td><span>{{ order.purchase_order_id }}</span></td>
+          <td><span>{{ order.id }}</span></td>
           <td>{{ order.branch.branch_id }}</td>
           <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
           <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
+          <td class="text-success"><strong>{{ order.amount_paid|floatformat:0|intcomma }}<small> CFA</small></strong></td>
+          <td class="text-danger"><strong>{{ order.amount_due|floatformat:0|intcomma }}<small> CFA</small></strong></td>
           
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
-          <td>{{ order.approved_by.user.get_full_name }}</td>
-
-          <td>
-            {% if order.status|lower == "pending" %}
-              <span class="badge bg-label-warning me-1">Pending</span>
-            {% elif order.status|lower == "approved" %}
-              <span class="badge bg-label-success me-1">Approved</span>
-            {% elif order.status|lower == "rejected" %}
-              <span class="badge bg-label-danger me-1">Rejected</span>
-            {% elif order.status|lower == "canceled" %}
-              <span class="badge bg-label-secondary me-1">Canceled</span>
-            {% else %}
-              <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
-            {% endif %}
-          </td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                 <i class="bx bx-dots-vertical-rounded"></i>
               </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
+                <a class="dropdown-item" href="{% url 'invoice_details' order.id %}">
                   <i class="bx bx-book-open me-1"></i> View
                 </a>
-                {% comment %} 
-                <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
-                  <i class="bx bx-trash me-1"></i> Delete
-                </a> 
-                {% endcomment %}
+                <a 
+                  class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
+                  href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
+                  <i class="bx bx-credit-card me-1"></i> Add Payment
+                </a>
+                <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
+                  <i class="bx bx-history me-1"></i> Payment History
+                </a>
               </div>
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">No Invoices available</td>
+          <td colspan="11" class="text-center">No Invoices available NOW</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -94,6 +77,7 @@
   
 </div>
 <!--/ Hoverable Table rows -->
+
 
 <!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">

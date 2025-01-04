@@ -1,0 +1,95 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+
+{% block title %}Add Payment{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Invoice Payment</h5>
+      </div>
+
+      <div class="container">
+        <!-- invoice Information -->
+        <div class="row">
+            <div class="col-md-3">
+                <small class="text m-3">Invoice Total</small>
+                <h6 class="mx-3">{{ invoice.grand_total|floatformat:0|intcomma }} CFA</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">Amount Paid</small>
+                <h6 class="mx-3">{{ invoice.amount_paid|floatformat:0|intcomma }} CFA</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">Amount Due</small>
+                <h6 class="mx-3">{{ invoice.amount_due|floatformat:0|intcomma }} CFA</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">Payment Mode</small>
+                <h6 class="mx-3">{{ invoice.payment_method }}</h6>
+            </div>
+        </div>
+    </div>
+      <br>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <!-- Purchase invoice Form -->
+          {{ form|crispy }}
+
+          <br>
+          <button type="submit" class="btn btn-primary">Submit Payment</button>
+          
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_customer").select2({
+      placeholder: "Search for a Customer",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_sales_rep").select2({
+      placeholder: "Search for a Sales Rep",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_stock").select2({
+      placeholder: "Search for a Product",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+
+{% endblock %}

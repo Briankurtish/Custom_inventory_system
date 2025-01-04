@@ -60,7 +60,7 @@ def invoice_list(request):
     }
     context = TemplateLayout.init(request, view_context)
     
-    return render(request, "invoiceList.html", context)
+    return render(request, "OldInvoiceList.html", context)
 
 
 # @login_required

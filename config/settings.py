@@ -116,6 +116,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.context_processors.my_setting",
                 "config.context_processors.environment",
+                'web_project.context_processors.pending_counts',
             ],
             "libraries": {
                 "theme": "web_project.template_tags.theme",
