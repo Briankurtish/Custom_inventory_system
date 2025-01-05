@@ -10,7 +10,7 @@ class StockRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default="Pending")
     picking_list = models.FileField(upload_to='picking_lists/', null=True, blank=True)
-    request_number = models.CharField(max_length=15, unique=True, editable=False)
+    request_number = models.CharField(max_length=50, unique=True, editable=False)  # Adjusted length for new format
 
     def __str__(self):
         return f"Stock Request #{self.request_number} by {self.requested_by}"
@@ -18,16 +18,24 @@ class StockRequest(models.Model):
     def save(self, *args, **kwargs):
         if not self.request_number:
             current_date = now()
-            month = current_date.strftime("%m")
-            year = current_date.strftime("%y")
-            prefix = "R100"
-            # Generate unique number based on the count of requests in the same month and year
-            same_month_requests = StockRequest.objects.filter(
-                requested_at__month=current_date.month,
-                requested_at__year=current_date.year
+            date_part = current_date.strftime("%Y%m%d")  # Format date as YYYYMMDD
+            
+            # Extract the REG part from the branch ID
+            branch_id_parts = self.branch.branch_id.split("-")
+            reg_part = branch_id_parts[0] if len(branch_id_parts) > 0 else "UNKNOWN"
+
+            # Assemble the prefix
+            prefix = f"REQ-{reg_part}-CWH-{date_part}"
+
+            # Count requests for the same branch and date
+            same_day_requests = StockRequest.objects.filter(
+                branch=self.branch,
+                requested_at__date=current_date.date()
             ).count()
-            sequence = same_month_requests + 1  # Start numbering from 1 each month
-            self.request_number = f"{prefix}{month}{year}{sequence:02d}"
+
+            sequence = same_day_requests + 1  # Start numbering from 1 each day
+            self.request_number = f"{prefix}-{sequence:05d}"  # Zero-padded to 5 digits
+
         super().save(*args, **kwargs)
 
 

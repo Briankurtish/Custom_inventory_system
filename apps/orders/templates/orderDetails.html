@@ -7,6 +7,8 @@
 {% block title %}Order Details{% endblock %}
 
 {% block content %}
+{% load tz %}
+
 
 <h4 class="text">Order Details</h4>
 <nav aria-label="breadcrumb" class="mb-4">
@@ -17,6 +19,11 @@
     </ol>
 </nav>
 <hr class="my-8">
+<a href="{% url 'orders' %}" class="btn btn-outline-secondary mb-4">
+    ← Back
+</a>
+
+<br>
 
 <div class="card">
     <div class="row">
@@ -54,11 +61,11 @@
                 <small class="text m-3">Customer Name</small>
                 <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
                 {% if 'View Customer Credits' in worker_privileges %}
-                    <form action="{% url 'credit_report' customer_id=order.customer.id %}" method="get">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
-                        </button>
-                    </form>
+                <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'customer_credit_report' customer_id=order.customer.id %}'">
+                    <span class="tf-icons bx bx-package bx-18px me-2"></span>Get Customer Report
+                </button>
+                
+                    
                 {% endif %}
             </div>
             <div class="col-md-3">

@@ -20,6 +20,22 @@
 
 <hr class="my-8">
 
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <!-- Filter by Status -->
+  <form method="get" action="" class="d-flex align-items-center">
+    <label for="status" class="me-10">Filter by Status:</label>
+    <select name="status" id="status" class="form-select me-1" onchange="this.form.submit()">
+      <option value="" {% if not request.GET.status %}selected{% endif %}>All</option>
+      <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>Pending</option>
+      <option value="Approved" {% if request.GET.status == "Approved" %}selected{% endif %}>Approved</option>
+      <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>Rejected</option>
+      <option value="Canceled" {% if request.GET.status == "Canceled" %}selected{% endif %}>Canceled</option>
+    </select>
+  </form>
+</div>
+
+<hr class="my-8">
+
 <!-- Hoverable Table rows -->
 <div class="card">
   <h5 class="card-header">Order List</h5>

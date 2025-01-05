@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import order_list, create_purchase_order, add_order_items, order_details, credit_report, get_credit_report, get_sales_rep_credit_history, approve_order, reject_order, edit_prices, generate_purchase_order_pdf, cancel_order, invoice_list, add_invoice_payment
+from .views import order_list, create_purchase_order, add_order_items, order_details, get_customer_report, get_sales_rep_credit_history, approve_order, reject_order, edit_prices, generate_purchase_order_pdf, cancel_order, invoice_list, add_invoice_payment, payment_history
 
 urlpatterns = [
     path(
@@ -25,7 +25,7 @@ urlpatterns = [
     
     path('order/<int:order_id>/', order_details, name='order_details'),
     
-    path('credit-report/<int:customer_id>/', get_credit_report, name='credit_report'),
+    path('customer-report/<int:customer_id>/', get_customer_report, name='customer_credit_report'),
     
     path("worker/<int:worker_id>/credit-history/", get_sales_rep_credit_history, name="sales_rep_credit_history"),
     
@@ -36,6 +36,9 @@ urlpatterns = [
     path('orders/<int:order_id>/cancel/', cancel_order, name='cancel_order'),
     
     path('invoice/<int:invoice_id>/add-payment/', add_invoice_payment, name='add_invoice_payment'),
+    
+    path('invoice/<int:invoice_id>/payment-history/', payment_history, name='payment_history'),
+    
     
 
 ]

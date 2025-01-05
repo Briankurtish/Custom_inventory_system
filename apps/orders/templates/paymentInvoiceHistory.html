@@ -1,0 +1,88 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}Old Invoice{% endblock %}
+
+{% block content %}
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">Payment History for Invoice <strong>{{ invoice.invoice_id }}</strong></h5>
+  
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h5><strong>Customer:</strong> {{ invoice.customer.customer_name }}</h5>
+      </div>
+      <div class="col-md-4 text-end">
+        <h5><strong>Date:</strong> {{ invoice.created_at|date:"M d, Y" }}</h5>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+        <!-- First Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Invoice Total</small>
+            <h5 class="mx-3">{{ invoice.grand_total|floatformat:0|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Second Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Total Amount Paid</small>
+            <h5 class="mx-3">{{ invoice.amount_paid|floatformat:0|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Third Column -->
+        <div class="col-md-2">
+            <small class="text m-3">Total Amount Due</small>
+            <h5 class=" mx-3">{{ invoice.amount_due|floatformat:0|intcomma }} CFA</h5>
+        </div>
+
+        <!-- Fourth Column -->
+        <div class="col-md-2">
+          <small class="text m-3">Percentage Paid</small>
+          <h5 class=" mx-3">{{ percentage_paid|floatformat:0|intcomma }}%</h5>
+        </div>
+
+        <!-- Fifth Column -->
+        <div class="col-md-2">
+          <small class="text m-3">Percentage Left</small>
+          <h5 class=" mx-3">{{ percentage_left|floatformat:0|intcomma }}%</h5>
+        </div>
+    </div>
+  </div>
+
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover table-striped mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Payment Date</th>
+          <th>Amount Paid</th>
+          <th>Payment Method</th>
+          <th>Account Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in payment_history %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
+          <td class="text-success"><strong>{{ payment.amount_paid|floatformat:0|intcomma }}<small> Frs</small></strong></td>
+          <td>{{ payment.payment_mode }}</td>
+          <td>{{ payment.account_paid_to }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No payment history available for this invoice.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

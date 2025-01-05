@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.workers.models import Worker
+from apps.stock_request.models import StockRequest
 
 class DashboardsView(LoginRequiredMixin, TemplateView):
     # Default fallback template
@@ -42,4 +43,8 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         """
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         context['role'] = getattr(self.request.user.worker_profile, 'role', 'Unknown')
+        
+         # Add the count of pending stock requests
+        context['pending_request_count'] = StockRequest.objects.filter(status='Pending').count()
+        context['accepted_request_count'] = StockRequest.objects.filter(status='Accepted').count()
         return context

@@ -76,6 +76,9 @@
                   href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
                   <i class="bx bx-credit-card me-1"></i> Add Payment
                 </a>
+                <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
+                  <i class="bx bx-history me-1"></i> Payment History
+                </a>
                 {% comment %} 
                 <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
                   <i class="bx bx-trash me-1"></i> Delete

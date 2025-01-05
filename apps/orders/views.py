@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import PurchaseOrder, PurchaseOrderItem, TemporaryStock, InvoiceOrderItem, Invoice
+from .models import PurchaseOrder, PurchaseOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment
 from apps.stock.models import Stock
 from django.contrib import messages
 from .forms import PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm
@@ -22,7 +22,7 @@ from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from io import BytesIO
-
+from django.db.models import Q
 
 
 """
@@ -55,20 +55,36 @@ def order_list(request):
     # Fetch the user's branch
     user_branch = request.user.worker_profile.branch
 
-    # Fetch orders only for the user's branch
+    # Get the status filter from the query parameters
+    status_filter = request.GET.get("status")
+
+    # Filter orders by branch and optionally by status
     orders = PurchaseOrder.objects.filter(branch=user_branch)
-    
-    paginator = Paginator(orders, 10) 
-    page_number = request.GET.get('page')  # Get the current page number from the request
+    if status_filter:
+        orders = orders.filter(status__iexact=status_filter)
+
+    # Order by 'Pending' first and then by creation date
+    orders = orders.order_by(
+        Case(
+            When(status__iexact="Pending", then=Value(0)),
+            default=Value(1),
+        ),
+        "-created_at",
+    )
+
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get("page")  # Get the current page number from the request
     paginated_orders = paginator.get_page(page_number)
 
     # Prepare context for rendering
     view_context = {
         "orders": paginated_orders,
+        "status_filter": status_filter,
     }
     context = TemplateLayout.init(request, view_context)
-    
+
     return render(request, "orderList.html", context)
+
 
 @login_required
 def invoice_list(request):
@@ -144,6 +160,36 @@ def credit_report(request, order_id):
     context = TemplateLayout.init(request, view_context)
     
     return render(request, "customerCreditReport.html", context)
+
+
+
+@login_required
+def payment_history(request, invoice_id):
+    """
+    View to display the payment history for a specific invoice.
+    """
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    payment_history = InvoicePayment.objects.filter(invoice=invoice).order_by('-payment_date')
+
+    # Calculate percentages
+    if invoice.grand_total > 0:  # Avoid division by zero
+        percentage_paid = (invoice.amount_paid / invoice.grand_total) * 100
+        percentage_left = (invoice.amount_due / invoice.grand_total) * 100
+    else:
+        percentage_paid = 0
+        percentage_left = 0
+
+    context = TemplateLayout.init(
+        request,
+        {
+            'invoice': invoice,
+            'payment_history': payment_history,
+            'percentage_paid': round(percentage_paid, 2),  # Rounded to 2 decimal places
+            'percentage_left': round(percentage_left, 2),  # Rounded to 2 decimal places
+        }
+    )
+    return render(request, 'paymentInvoiceHistory.html', context)
+
 
 
 @login_required
@@ -531,36 +577,52 @@ def edit_prices(request, order_id):
 
 
 @login_required
-def get_credit_report(request, customer_id):
+def get_customer_report(request, customer_id):
     """
-    View to retrieve and display a specific customer's credit history from OldInvoiceOrder.
+    View to retrieve and display a specific customer's credit history from OldInvoiceOrder and Invoice in two tables.
     """
     # Get the customer object
     customer = get_object_or_404(Customer, id=customer_id)
 
-    # Fetch all orders for the customer where payment is credit
-    credit_orders = OldInvoiceOrder.objects.filter(
+    # Fetch old credit orders from OldInvoiceOrder
+    old_credit_orders = OldInvoiceOrder.objects.filter(
         customer=customer, payment_method="Credit"
     ).annotate(
-        calculated_amount_due=F("grand_total") - F("amount_paid"),  # Renamed annotation
+        calculated_amount_due=F("grand_total") - F("amount_paid"),
     ).order_by("-created_at")
 
-    # Current invoice: the latest one
-    current_invoice = credit_orders.first()
+    # Fetch current credit orders from Invoice
+    current_credit_orders = Invoice.objects.filter(
+        customer=customer, payment_method="Credit"
+    ).annotate(
+        calculated_amount_due=F("grand_total") - F("amount_paid"),
+    ).order_by("-created_at")
+    
+    current_invoice = current_credit_orders.first()
 
-    # Calculate total due
-    total_due = credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    # Calculate total dues for both tables
+    total_due_old = old_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    total_due_current = current_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    
+    total_due_general = total_due_old + total_due_current
 
+    # Prepare context for the template
     view_context = {
         "customer": customer,
-        "credit_orders": credit_orders,
-        "total_due": total_due,
-        "current_invoice": current_invoice,  # Pass the current invoice
+        "current_invoice": current_invoice,
+        "old_credit_orders": old_credit_orders,
+        "current_credit_orders": current_credit_orders,
+        "total_due_old": total_due_old,
+        "total_due_current": total_due_current,
+        "total_due_general": total_due_general,
+         "current_date": now(),
+        
     }
 
     # Use TemplateLayout for consistent UI
     context = TemplateLayout.init(request, view_context)
-    return render(request, "CustomerCreditReport.html", context)
+    return render(request, "CreditReport.html", context)
+
 
 
 
@@ -580,18 +642,33 @@ def get_sales_rep_credit_history(request, worker_id):
         calculated_amount_due=F("grand_total") - F("amount_paid")  # Calculate amount due
     ).order_by("-created_at")
     
-    current_invoice = credit_invoices.first()
+    # Fetch current credit orders from Invoice
+    current_credit_orders = Invoice.objects.filter(
+        sales_rep=worker, payment_method="Credit"
+    ).annotate(
+        calculated_amount_due=F("grand_total") - F("amount_paid"),
+    ).order_by("-created_at")
+    
+    current_invoice = current_credit_orders.first()
     
 
     # Calculate total due for the sales rep
-    total_due = credit_invoices.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    total_due_old = credit_invoices.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    total_due_current = current_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
+    
+    total_due_general = total_due_old + total_due_current
+    
 
     # Context data for the template
     view_context = {
         "worker": worker,
         "credit_invoices": credit_invoices,
+        "current_credit_orders": current_credit_orders,
         "current_invoice": current_invoice,
-        "total_due": total_due,
+        "total_due_old": total_due_old,
+        "total_due_current": total_due_current,
+        "total_due_general": total_due_general,
+         "current_date": now(),
     }
     
     context = TemplateLayout.init(request, view_context)

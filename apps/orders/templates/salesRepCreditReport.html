@@ -55,7 +55,7 @@
                 <small class="text m-3">Report Date</small>
                 <h6 class=" m-3">
                     {% if credit_invoices %}
-                        {{ current_invoice.created_at|date:"Y-m-d" }}
+                        {{ current_date|date:"Y-m-d" }}
                     {% else %}
                         N/A
                     {% endif %}
@@ -69,7 +69,7 @@
             <!-- First Column -->
             <div class="col-md-4">
                 <small class="text m-3">Total Due</small>
-                <h6 class="m-3 text-danger">{{ total_due|floatformat:0|intcomma }} <small>CFA</small></h6>
+                <h6 class="m-3 text-danger">{{ total_due_general|floatformat:0|intcomma }} <small>CFA</small></h6>
             </div>
             
         </div>
@@ -79,6 +79,42 @@
    
 
     <div class="card">
+
+        <h5 class="card-header">Current Invoices</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Invoice Number</th>
+                        <th>Invoice Date</th>
+                        <th>Total Amount</th>
+                        <th>Paid Amount</th>
+                        <th>Amount Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in current_credit_orders  %}
+                        <tr>
+                            <td>{{ order.invoice_id }}</td>
+                            <td>{{ order.created_at|date:"Y-m-d" }}</td>
+                            <td>{{ order.grand_total|floatformat:0|intcomma }} <small>CFA</small></td>
+                            <td class="text-success">{{ order.amount_paid|floatformat:0|intcomma }} <small>CFA</small></td>
+                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:0|intcomma }} <small>CFA</small></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No credit history found for this customer.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        </div>
+
+        <br>
+        <hr>
+
+
         <h5 class="card-header">Past Invoices</h5>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
