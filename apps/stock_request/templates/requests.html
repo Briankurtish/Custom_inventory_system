@@ -58,7 +58,7 @@
               {% if request.status|lower == "pending" %}
                 <span class="badge bg-label-warning me-1">Pending</span>
               {% elif request.status|lower == "accepted" %}
-                <span class="badge bg-label-success me-1">In Transit</span>
+                <span class="badge bg-label-success me-1">Accepted</span>
               {% elif request.status|lower == "rejected" %}
                 <span class="badge bg-label-danger me-1">Rejected</span>
               {% else %}

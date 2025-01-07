@@ -1,7 +1,9 @@
+from django.http import HttpResponseForbidden
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Recommendation
+from django.contrib.auth.decorators import login_required
 from .forms import RecommendationForm
 
 
@@ -11,7 +13,7 @@ Here you can override the page view layout.
 Refer to tables/urls.py file for more pages.
 """
 
-
+@login_required
 def ManageRecommedationView(request):
     recommendation = Recommendation.objects.all()
 
@@ -26,16 +28,23 @@ def ManageRecommedationView(request):
     return render(request, 'recommend.html', context)
 
 
+@login_required
 def add_recommend_view(request, pk=None):
     if pk:
         recommend = get_object_or_404(Recommendation, pk=pk)
+        if recommend.pharmacist != request.user.worker_profile:
+            return HttpResponseForbidden("You are not authorized to edit this recommendation.")
         form = RecommendationForm(request.POST or None, request.FILES or None, instance=recommend)
     else:
         form = RecommendationForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
         if form.is_valid():
-            form.save()
+            recommendation = form.save(commit=False)
+            # Set the pharmacist to the logged-in worker profile if creating a new record
+            if not pk:
+                recommendation.pharmacist = request.user.worker_profile
+            recommendation.save()
             return redirect('recommend')  # Redirect to the list page after saving
 
     view_context = {

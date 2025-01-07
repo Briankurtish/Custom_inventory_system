@@ -18,9 +18,9 @@ urlpatterns = [
         name="add_invoice_items",  # URL name for this path
     ),
     
-    path('invoice-details/<int:invoice_id>/', old_invoice_details, name='invoice_details'),
+    path('old-invoice-details/<int:invoice_id>/', old_invoice_details, name='invoice_details'),
      
-    path('invoice/<int:invoice_id>/add-payment/', add_invoice_payment, name='add_invoice_payment'),
+    path('old-invoice/<int:invoice_id>/add-old-payment/', add_invoice_payment, name='add_old_invoice_payment'),
       
-    path('invoice/<int:invoice_id>/payment-history/', payment_history, name='payment_history'),
+    path('old-invoice/<int:invoice_id>/old-payment-history/', payment_history, name='old_payment_history'),
 ]

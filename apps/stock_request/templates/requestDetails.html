@@ -8,11 +8,18 @@
 {% block content %}
 
 <h4 class="text">Stock Request Details</h4>
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'requests' %}">Stock Requests</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Request Details</li>
+    </ol>
+</nav>
 <hr class="my-8">
 
 <div class="card">
     <div class="row">
-        <h5 class="text col-md-2 m-3">#{{ stock_request.request_number }}</h5>
+        <h5 class="text col-md-5 m-3">#{{ stock_request.request_number }}</h5>
     </div>
     <hr>
 
@@ -21,19 +28,19 @@
             <!-- First Column -->
             <div class="col-md-4">
                 <small class="text m-3">Branch ID</small>
-                <h6 class=" m-3">{{ stock_request.branch.branch_id }}</h6>
+                <h6 class=" mx-3">{{ stock_request.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-4">
                 <small class="text m-3">Branch Name</small>
-                <h6 class=" m-3">{{ stock_request.branch.branch_name }}</h6>
+                <h6 class=" mx-3">{{ stock_request.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
             <div class="col-md-4">
                 <small class="text m-3">Created By</small>
-                <h6 class=" m-3">{{ stock_request.requested_by.get_full_name }}</h6>
+                <h6 class=" mx-3">{{ stock_request.requested_by.get_full_name }}</h6>
             </div>
         </div>
     </div>
@@ -44,11 +51,10 @@
             <!-- Third Column -->
             <div class="col-md-4">
                 <small class="text m-3">Status</small>
-                <h6 class="text-warning m-3">{{ stock_request.status }}</h6>
+                <h6 class="text-warning mx-3">{{ stock_request.status }}</h6>
             </div>
         </div>
     </div>
-    <hr>
 
     <div class="card">
       <h5 class="card-header">Product Details</h5>

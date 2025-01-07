@@ -5,7 +5,7 @@ from apps.workers.models import Worker
 from apps.stock.models import Stock
 from django.utils.text import slugify
 import datetime
-
+from django.utils import timezone
 
 class PurchaseOrder(models.Model):
     STATUS_CHOICES = [
@@ -51,31 +51,29 @@ class PurchaseOrder(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.purchase_order_id:
-            # Ensure the branch is valid and has a branch_id
-            if self.branch and isinstance(self.branch.branch_id, str):
-                reg = self.branch.branch_id[:3].upper()
+            current_date = timezone.now()
+            date_part = current_date.strftime("%Y%m%d")  # Format date as YYYYMMDD
+
+            # Extract the REG part from the branch ID
+            branch_id_parts = self.branch.branch_id.split("-")
+            reg_part = branch_id_parts[0] if len(branch_id_parts) > 0 else "UNKNOWN"
+
+            # Assemble the prefix with the date included
+            prefix = f"PO-{reg_part}-{date_part}"
+
+            # Find the latest purchase order for this branch (ignoring the date)
+            latest_order = PurchaseOrder.objects.filter(purchase_order_id__icontains=f"PO-{reg_part}-{date_part}").order_by('-purchase_order_id').first()
+
+            if latest_order:
+                # Extract the numeric part of the sequence and increment it
+                latest_sequence = int(latest_order.purchase_order_id.split("-")[-1])
+                sequence = latest_sequence + 1
             else:
-                reg = "UNK"  # Default region if branch is missing or invalid
+                # Start from 1 if no existing orders match the branch
+                sequence = 1
 
-            # Use the current date for the date portion
-            from datetime import date
-            date_str = date.today().strftime("%Y%m%d")
-
-            # Get the total number of orders to generate a unique sequence
-            last_order = PurchaseOrder.objects.filter(
-                purchase_order_id__startswith=f"PO-{reg}-{date_str}-"
-            ).order_by('id').last()
-
-            if last_order and last_order.purchase_order_id:
-                # Increment the sequence based on the last order
-                last_sequence = int(last_order.purchase_order_id.split('-')[-1])
-                new_sequence = last_sequence + 1
-            else:
-                # Start from 1
-                new_sequence = 1
-
-            # Construct the new purchase order ID
-            self.purchase_order_id = f"PO-{reg}-{date_str}-{new_sequence:05d}"
+            # Assign the new purchase order ID
+            self.purchase_order_id = f"{prefix}-{sequence:05d}"  # Zero-padded to 5 digits
 
         super().save(*args, **kwargs)
 
@@ -250,3 +248,72 @@ class InvoicePayment(models.Model):
 
     def __str__(self):
         return f"Payment #{self.payment_number} for Invoice #{self.invoice.id}"
+    
+    
+
+class Receipt(models.Model):
+    PAYMENT_METHODS = [
+        ('Cash', 'Cash'),
+        ('Credit', 'Credit'),
+        ('Bank Transfer', 'Bank Transfer'),
+        ('Mobile Money', 'Mobile Money'),
+    ]
+
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.CASCADE, related_name='receipts',
+        help_text="Invoice associated with this receipt"
+    )
+    receipt_id = models.CharField(
+        max_length=50, unique=True, editable=False,
+        help_text="Unique identifier for the receipt"
+    )
+    payment_date = models.DateTimeField(
+        auto_now_add=True, help_text="Date and time when the payment was made"
+    )
+    amount_paid = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        help_text="Amount paid for this receipt"
+    )
+    payment_method = models.CharField(
+        max_length=50, choices=PAYMENT_METHODS,
+        help_text="Payment method used for this receipt"
+    )
+    notes = models.TextField(
+        null=True, blank=True, help_text="Optional notes for the receipt"
+    )
+
+    def generate_receipt_id(self):
+        """
+        Generate the receipt ID in the format: RCT-REG-YYYYMMDD-NNNNN
+        """
+        if not self.invoice or not self.invoice.invoice_id:
+            raise ValueError("An invoice must be associated with the receipt.")
+
+        # Extract branch region from the invoice ID (e.g., "REG" from "INV-REG-...")
+        reg = self.invoice.invoice_id.split('-')[1]
+
+        # Current date in YYYYMMDD format
+        date_part = timezone.now().strftime("%Y%m%d")
+
+        # Find the latest receipt for this branch (ignoring the date)
+        last_receipt = Receipt.objects.filter(receipt_id__icontains=f"RCT-{reg}-").order_by('-receipt_id').first()
+
+        if last_receipt:
+            # Extract and increment the last sequence number
+            last_sequence = int(last_receipt.receipt_id.split('-')[-1])
+            sequence = last_sequence + 1
+        else:
+            # Start sequence at 1 if no receipts exist
+            sequence = 1
+
+        # Generate the new receipt ID
+        return f"RCT-{reg}-{date_part}-{sequence:05d}"
+
+    def save(self, *args, **kwargs):
+        if not self.receipt_id:
+            self.receipt_id = self.generate_receipt_id()
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return f"Receipt {self.receipt_id} for Invoice {self.invoice.invoice_id}"

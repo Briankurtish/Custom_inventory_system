@@ -52,13 +52,19 @@ class Product(models.Model):
                 # Reuse the product code from the existing product
                 self.product_code = existing_product.product_code
             else:
-                # Generate a new product code
-                last_product = Product.objects.order_by('id').last()
-                if last_product and last_product.product_code.startswith("PROD"):
-                    last_number = int(last_product.product_code[3:])  # Extract the numeric part
-                    self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
+                # Get the last product with a code starting with "PROD"
+                last_product = Product.objects.filter(product_code__startswith="PROD").order_by('id').last()
+                if last_product:
+                    # Extract the numeric part safely
+                    try:
+                        last_number = int(last_product.product_code.split("-")[1])  # Extract numeric part
+                        self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
+                    except (IndexError, ValueError):
+                        # Fallback to starting from PROD-0001 if the code is malformed
+                        self.product_code = "PROD-0001"
                 else:
-                    self.product_code = "PROD-0001"  # Start from PROD-0001
+                    # Start from PROD-0001 if no product exists
+                    self.product_code = "PROD-0001"
 
         # Save the product instance
         super().save(*args, **kwargs)

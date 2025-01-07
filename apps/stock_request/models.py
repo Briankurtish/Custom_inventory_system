@@ -19,24 +19,31 @@ class StockRequest(models.Model):
         if not self.request_number:
             current_date = now()
             date_part = current_date.strftime("%Y%m%d")  # Format date as YYYYMMDD
-            
+
             # Extract the REG part from the branch ID
             branch_id_parts = self.branch.branch_id.split("-")
             reg_part = branch_id_parts[0] if len(branch_id_parts) > 0 else "UNKNOWN"
 
-            # Assemble the prefix
+            # Assemble the prefix with the date included
             prefix = f"REQ-{reg_part}-CWH-{date_part}"
 
-            # Count requests for the same branch and date
-            same_day_requests = StockRequest.objects.filter(
-                branch=self.branch,
-                requested_at__date=current_date.date()
-            ).count()
+            # Find the latest request number for this branch (ignoring the date)
+            latest_request = StockRequest.objects.filter(request_number__icontains=f"REQ-{reg_part}-CWH").order_by('-request_number').first()
 
-            sequence = same_day_requests + 1  # Start numbering from 1 each day
+            if latest_request:
+                # Extract the numeric part of the sequence and increment it
+                latest_sequence = int(latest_request.request_number.split("-")[-1])
+                sequence = latest_sequence + 1
+            else:
+                # Start from 1 if no existing requests match the branch
+                sequence = 1
+
+            # Assign the new request number
             self.request_number = f"{prefix}-{sequence:05d}"  # Zero-padded to 5 digits
 
         super().save(*args, **kwargs)
+
+
 
 
 class StockRequestProduct(models.Model):
@@ -49,13 +56,22 @@ class StockRequestProduct(models.Model):
 
 
 class InTransit(models.Model):
+    STATUS_CHOICES = [
+    ('In Transit', 'In Transit'),
+    ('Delivered', 'Delivered'),
+    ('Cancelled', 'Cancelled'),
+]
     stock_request = models.ForeignKey(StockRequest, on_delete=models.CASCADE, related_name='in_transit', null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     source = models.CharField(max_length=255)  # Central Warehouse or Branch ID
     destination = models.ForeignKey(Branch, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default="In Transit")  # Add status field
+    status = models.CharField(
+    max_length=50,
+    choices=STATUS_CHOICES,
+    default="In Transit",
+)
     
 
     def __str__(self):

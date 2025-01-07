@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import PurchaseOrder, PurchaseOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment
+from .models import PurchaseOrder, PurchaseOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
 from apps.stock.models import Stock
 from django.contrib import messages
 from .forms import PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm
@@ -23,6 +23,7 @@ from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from io import BytesIO
 from django.db.models import Q
+from django.utils import timezone
 
 
 """
@@ -353,6 +354,11 @@ def approve_order(request, order_id):
     # Fetch the order
     order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
 
+    notes = request.POST.get('notes', '').strip()
+    if not notes:
+        messages.error(request, "Approval notes are required.")
+        return redirect(reverse('order_details', args=[order_id]))
+    
     # Check if the order is already approved or rejected
     if order.status != 'Pending':
         messages.error(request, "This order has already been processed.")
@@ -385,6 +391,7 @@ def approve_order(request, order_id):
             # Update the status of the order to 'Approved'
             order.status = 'Approved'
             order.approved_by = request.user.worker_profile  # Assign Worker instance to approved_by
+            order.notes = f"[Approval Note]: {notes} ({timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"   
             order.save()
 
             # Generate an invoice for the approved order
@@ -541,6 +548,12 @@ def edit_prices(request, order_id):
 
         try:
             with transaction.atomic():
+                # Capture the reason for price change
+                edit_price_note = request.POST.get("edit_price_note", "").strip()
+                if not edit_price_note:
+                    messages.error(request, "Please provide a reason for the price change.")
+                    return redirect("order_details", order_id=order_id)
+
                 for item in order_items:
                     # Extract and update the temporary price for each item
                     new_price = request.POST.get(f"prices[{item.id}]")
@@ -563,6 +576,9 @@ def edit_prices(request, order_id):
 
                 # Update the grand total in the order
                 order.grand_total = grand_total
+
+                # Overwrite the note with the new reason
+                order.notes = f"[Price Change]: {edit_price_note} ({timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"
                 order.save()
 
                 messages.success(request, "Prices and grand total updated successfully for this order.")
@@ -572,6 +588,7 @@ def edit_prices(request, order_id):
         return redirect("order_details", order_id=order_id)
     else:
         return redirect("orders")
+
 
 
 
@@ -680,7 +697,7 @@ def get_sales_rep_credit_history(request, worker_id):
 @login_required
 def add_invoice_payment(request, invoice_id):
     """
-    Handles adding payment history for a specific invoice.
+    Handles adding a payment and creating a receipt for a specific invoice.
     """
     # Get the invoice instance
     invoice = get_object_or_404(Invoice, id=invoice_id)
@@ -689,6 +706,8 @@ def add_invoice_payment(request, invoice_id):
         form = InvoicePaymentForm(request.POST)
         if form.is_valid():
             payment_amount = form.cleaned_data['amount_paid']
+            payment_mode = form.cleaned_data['payment_mode']
+            notes = form.cleaned_data.get('notes', '')
 
             # Validate payment amount
             if payment_amount > invoice.grand_total:
@@ -696,15 +715,9 @@ def add_invoice_payment(request, invoice_id):
             elif payment_amount > invoice.amount_due:
                 form.add_error('amount_paid', "Payment amount cannot exceed the remaining amount due.")
             else:
-                with transaction.atomic():  # Ensure atomicity for the payment update process
-                    # Save the payment
-                    payment = form.save(commit=False)
-                    payment.invoice = invoice  # Associate payment with the invoice
-                    payment.invoice_total = invoice.grand_total  # Fetch invoice total
-                    payment.save()
-
-                    # Update the invoice's amount paid and amount due
-                    invoice.amount_paid += payment.amount_paid
+                with transaction.atomic():  # Ensure atomicity for the process
+                    # Update the invoice's payment details
+                    invoice.amount_paid += payment_amount
                     invoice.amount_due = max(invoice.grand_total - invoice.amount_paid, 0)
 
                     # Update the invoice status based on payment progress
@@ -717,22 +730,29 @@ def add_invoice_payment(request, invoice_id):
 
                     invoice.save()
 
-                messages.success(request, "Invoice Payment added successfully!")
+                    # Create a receipt for the payment
+                    receipt = Receipt.objects.create(
+                        invoice=invoice,
+                        amount_paid=payment_amount,
+                        payment_method=payment_mode,
+                        notes=notes,
+                    )
+
+                messages.success(request, f"Payment added successfully! Receipt ID: {receipt.receipt_id}")
                 return redirect('invoices')
         else:
             messages.error(request, "Error adding payment. Please check the form.")
     else:
         form = InvoicePaymentForm()
 
-    context = TemplateLayout.init(
-        request,
-        {
-            'invoice': invoice,
-            'form': form,
-        }
-    )
+    view_context = {
+        'invoice': invoice,
+        'form': form,
+    }
+    
+    context = TemplateLayout.init(request, view_context)
+    
     return render(request, 'makePayment.html', context)
-
 
 
 

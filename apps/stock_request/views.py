@@ -114,10 +114,6 @@ def ManageRequestsView(request):
     
     user_role = worker_profile.role
     stock_requests = StockRequest.objects.all()
-    
-    paginator = Paginator(stock_requests, 10) 
-    page_number = request.GET.get('page')  # Get the current page number from the request
-    paginated_request = paginator.get_page(page_number)
 
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
@@ -143,6 +139,11 @@ def ManageRequestsView(request):
     # Order by requested_at to display the latest stock requests first
     stock_requests = stock_requests.order_by("-requested_at")
 
+    # Apply pagination after filtering
+    paginator = Paginator(stock_requests, 10)
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_request = paginator.get_page(page_number)
+
     # Prepare the context dictionary with the stock requests and privilege information
     view_context = {
         "stock_requests": paginated_request,
@@ -154,6 +155,7 @@ def ManageRequestsView(request):
 
     # Render the page with the provided context
     return render(request, 'requests.html', context)
+
 
 
 
@@ -191,10 +193,12 @@ def approve_or_decline_request(request, request_id):
         try:
             central_warehouse = Branch.objects.get(branch_type="central")  # Adjust field name as needed
         except Branch.DoesNotExist:
-            return JsonResponse({
-                "success": False,
-                "message": "Central warehouse not found. Please ensure it exists."
-            }, status=400)
+            messages.error(request, "Central warehouse not found. Please ensure it exists.")
+            return redirect("requests")
+            # return JsonResponse({
+            #     "success": False,
+            #     "message": "Central warehouse not found. Please ensure it exists."
+            # }, status=400)
 
         if action == "approve":
             product_details = StockRequestProduct.objects.filter(stock_request=stock_request)
@@ -225,11 +229,15 @@ def approve_or_decline_request(request, request_id):
 
             # Handle insufficient stock
             if insufficient_stock:
-                return JsonResponse({
-                    "success": False,
-                    "message": "Some items have insufficient stock.",
-                    "details": insufficient_stock,
-                }, status=400)
+                messages.warning(request, "Some items have insufficient stock.")
+                return redirect("requests")
+                # return JsonResponse({
+                #     "success": False,
+                #     "message": "Some items have insufficient stock.",
+                #     "details": insufficient_stock,
+                # }, status=400)
+                
+
 
             # Generate and save picking list
             picking_list_buffer = generate_picking_list(stock_request)
@@ -263,7 +271,7 @@ def approve_or_decline_request(request, request_id):
     #     "success": False,
     #     "message": "Invalid request."
     # }, status=400)
-    messages.success(request, "Invalid request.")
+    messages.error(request, "Invalid request.")
     return redirect("requests")
 
 
@@ -339,7 +347,7 @@ def stocks_in_transit(request):
 
     # Retrieve the branch and in-transit stocks for the worker's branch
     branch = worker.branch
-    stocks_in_transit = InTransit.objects.filter(destination=branch, status="Accepted")
+    stocks_in_transit = StockRequest.objects.filter(branch=branch, status="Accepted")
 
     view_context = {
         'stocks_in_transit': stocks_in_transit,
