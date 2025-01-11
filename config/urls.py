@@ -15,16 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import django
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from web_project.views import SystemView
 from django.conf import settings
-
+from django.conf.urls.i18n import i18n_patterns
+from django.utils.translation import gettext_lazy as _
 from django.conf.urls.static import static
+from django.conf.urls.i18n import set_language
 
-urlpatterns = [
+
+
+urlpatterns = i18n_patterns(
     path("admin/", admin.site.urls),
 
+    path('rosetta/', include('rosetta.urls')),
+    
+    path('set_language/', set_language, name='set_language'),
+    
     # Dashboard urls
     path("", include("apps.dashboards.urls")),
 
@@ -108,10 +117,13 @@ urlpatterns = [
     
     path('i18n/', include('django.conf.urls.i18n')),
     
+    path('i18n/setlang/', django.views.i18n.set_language, name='set_language'),
     
     
     
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    
+) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = SystemView.as_view(template_name="pages_misc_error.html", status=404)
 handler400 = SystemView.as_view(template_name="pages_misc_error.html", status=400)

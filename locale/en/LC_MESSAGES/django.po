@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-31 01:43+0100\n"
+"POT-Creation-Date: 2025-01-11 11:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,471 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: .\config\settings.py:174
+
+#: apps/authentication/views.py:39
+#, python-brace-format
+msgid "Welcome back, {user.username}!"
+msgstr ""
+
+#: apps/authentication/views.py:42
+msgid "Invalid username or password."
+msgstr ""
+
+#: apps/authentication/views.py:44
+msgid "Please correct the errors below."
+msgstr ""
+
+#: apps/authentication/views.py:67
+msgid "You have been logged out successfully."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:6
+msgid "Accountant Dashboard"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:31
+msgid "GC PHARMA Accountant 💻"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:33
+msgid ""
+"Manage and control all aspects of your inventory system. \n"
+"              Monitor and get up-to-date information about your stock."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:36
+msgid "Branch Dashboard"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:41
+#: apps/dashboards/templates/dashboard_cash.html:41
+#: apps/dashboards/templates/dashboard_cstm.html:39
+#: apps/dashboards/templates/dashboard_md.html:41
+#: apps/dashboards/templates/dashboard_sec.html:41
+msgid "View Badge User"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:53
+#: apps/dashboards/templates/dashboard_cash.html:52
+#: apps/dashboards/templates/dashboard_cstm.html:51
+#: apps/dashboards/templates/dashboard_md.html:54
+#: apps/dashboards/templates/dashboard_sec.html:52
+msgid "Quick Actions Board"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:55
+msgid ""
+"Access functions of your dashboard easily. \n"
+"              Get quick access and increase productivity."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:60
+msgid "Validate Orders"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:63
+msgid "Customer Credit History"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:66
+msgid "Sales Rep Credit History"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:85
+#: apps/dashboards/templates/dashboard_cash.html:89
+#: apps/dashboards/templates/dashboard_sec.html:87
+msgid "Confirmed Orders"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:86
+#: apps/dashboards/templates/dashboard_cash.html:90
+#: apps/dashboards/templates/dashboard_sec.html:88
+#: templates/layout/partials/menu/vertical/vertical_menu.html:188
+msgid "Orders"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:99
+#: apps/dashboards/templates/dashboard_analytics.html:104
+#: apps/dashboards/templates/dashboard_cash.html:118
+#: apps/dashboards/templates/dashboard_cstm.html:115
+#: apps/dashboards/templates/dashboard_md.html:119
+#: apps/dashboards/templates/dashboard_sec.html:119
+msgid "Notice Board"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:104
+#: apps/dashboards/templates/dashboard_analytics.html:110
+#: apps/dashboards/templates/dashboard_cash.html:123
+#: apps/dashboards/templates/dashboard_cstm.html:120
+#: apps/dashboards/templates/dashboard_md.html:124
+#: apps/dashboards/templates/dashboard_sec.html:124
+msgid "GC PHARMA - ANNOUNCEMENTS"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_acc.html:106
+#: apps/dashboards/templates/dashboard_analytics.html:112
+#: apps/dashboards/templates/dashboard_cash.html:125
+#: apps/dashboards/templates/dashboard_cstm.html:122
+msgid "No Notice to show at the moment ⚠️"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:31
+msgid "CG PHARMA Admin Panel 💻"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:32
+#: apps/dashboards/templates/dashboard_pharmacist.html:32
+msgid ""
+"Manage and control all aspects of your inventory system<br>Monitor and get "
+"up-to-date information about your stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:34
+#: apps/dashboards/templates/dashboard_analytics.html:67
+#: apps/dashboards/templates/dashboard_cstm.html:34
+#: apps/dashboards/templates/dashboard_md.html:58
+msgid "View Stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:60
+#: apps/dashboards/templates/dashboard_analytics.html:83
+#: apps/dashboards/templates/dashboard_analytics.html:160
+#: apps/dashboards/templates/dashboard_analytics.html:184
+msgid "View More"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:61
+#: apps/dashboards/templates/dashboard_analytics.html:84
+#: apps/dashboards/templates/dashboard_analytics.html:161
+#: apps/dashboards/templates/dashboard_analytics.html:185
+msgid "Delete"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:65
+msgid "Total Stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:88
+msgid "Sales"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:90
+#: apps/dashboards/templates/dashboard_cash.html:63
+#: apps/dashboards/templates/dashboard_sec.html:60
+msgid "View Orders"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:113
+msgid "Create Notice"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:138
+msgid "ADMIN DASHBOARD"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:167
+msgid "View Requests"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:189
+msgid "Total Customers"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:191
+msgid "View Customers"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_analytics.html:201
+msgid "Profile Report"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:6
+#: apps/dashboards/templates/dashboard_cash.html:36
+msgid "Branch Cashier Dashboard"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:31
+msgid "GC PHARMA Cashier 💻"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:33
+#: apps/dashboards/templates/dashboard_cstm.html:32
+#: apps/dashboards/templates/dashboard_sec.html:32
+msgid "Manage and control all aspects of your inventory system"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:34
+#: apps/dashboards/templates/dashboard_cstm.html:32
+#: apps/dashboards/templates/dashboard_sec.html:32
+msgid "Monitor and get up-to-date information about your stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:54
+msgid "Access functions of your dashboard easily"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:55
+msgid "Get quick access and increase productivity"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:60
+#: apps/dashboards/templates/dashboard_sec.html:57
+msgid "Create Order"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:66
+#: apps/dashboards/templates/dashboard_sec.html:63
+msgid "View Reports"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:103
+msgid "Purchase Order"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:104
+#: apps/dashboards/templates/dashboard_cstm.html:100
+#: apps/dashboards/templates/dashboard_sec.html:104
+msgid "Created"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cash.html:144
+#: apps/dashboards/templates/dashboard_sec.html:147
+msgid "GC PHARMA INVENTORY"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:31
+msgid "GC PHARMA Central Stock Manager 📈"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:52
+#: apps/dashboards/templates/dashboard_sec.html:53
+msgid "Access function of your dashboard Easily"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:52
+#: apps/dashboards/templates/dashboard_sec.html:53
+msgid "Get Quick Access and increase productivity"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:56
+msgid "Create Customs Report"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:59
+msgid "Create Goods Receipt Note (Bon de Recu)"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:84
+msgid "Goods Receipt Note (Bon de Recu)"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:85
+msgid "Documents"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:86
+msgid "Confirm Goods Receipt Note"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:99
+msgid "Total Bon de Sortie"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:101
+msgid "View Documents"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:137
+msgid "GC PHARMA CENTRAL WAREHOUSE"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:154
+msgid "Declined Requests"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:155
+#: apps/dashboards/templates/dashboard_md.html:85
+#: apps/dashboards/templates/dashboard_md.html:102
+msgid "Requests"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:156
+msgid "View Declined"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:169
+msgid "Warehouse Stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:170
+#: templates/layout/partials/menu/vertical/vertical_menu.html:90
+#: templates/layout/partials/menu/vertical/vertical_menu.html:99
+#: templates/layout/partials/menu/vertical/vertical_menu.html:273
+msgid "Products"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_cstm.html:171
+msgid "Update Stock"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:6
+msgid "Marketing Director Dashboard"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:31
+msgid "GC PHARMA Marketing Director 📊"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:33
+msgid "Manage and control all aspects of your inventory system."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:34
+msgid "Monitor and get up-to-date information about your stock."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:36
+msgid "New Stock Request"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:55
+msgid "Access your dashboard functions easily."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:55
+msgid "Increase productivity with quick actions."
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:61
+msgid "Stock Requests"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:84
+msgid "Pending Stock Requisition"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:87
+msgid "View Pending"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:101
+msgid "Approved Stock Requisition"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:104
+msgid "View Approved"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_md.html:126
+msgid "No notice to show at the moment ⚠️"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_sec.html:6
+#: apps/dashboards/templates/dashboard_sec.html:36
+msgid "Branch Secretary Dashboard"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_sec.html:31
+msgid "GC PHARMA Branch Secretary 💻"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_sec.html:103
+msgid "Bon de Commande"
+msgstr ""
+
+#: apps/dashboards/templates/dashboard_sec.html:126
+msgid "No Notice to show at the moment"
+msgstr ""
+
+#: config/settings.py:180
 msgid "English"
-msgstr ""
+msgstr "english"
 
-#: .\config\settings.py:175
+#: config/settings.py:181
 msgid "French"
+msgstr "french"
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:30
+#: templates/layout/partials/menu/vertical/vertical_menu.html:37
+#: templates/layout/partials/menu/vertical/vertical_menu.html:46
+#: templates/layout/partials/menu/vertical/vertical_menu.html:55
+#: templates/layout/partials/menu/vertical/vertical_menu.html:65
+#: templates/layout/partials/menu/vertical/vertical_menu.html:75
+msgid "Home"
 msgstr ""
 
-#: .\tests\templates\test.html:10
+#: templates/layout/partials/menu/vertical/vertical_menu.html:108
+#: templates/layout/partials/menu/vertical/vertical_menu.html:267
+msgid "Customers"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:119
+#: templates/layout/partials/menu/vertical/vertical_menu.html:261
+msgid "Sales Rep"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:131
+msgid "Stocks"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:140
+#: templates/layout/partials/menu/vertical/vertical_menu.html:158
+msgid "Stock Request"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:149
+msgid "Recommendations"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:170
+#: templates/layout/partials/menu/vertical/vertical_menu.html:285
+msgid "Stock In Transit"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:179
+msgid "Transferred Stock"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:200
+msgid "Old Invoice"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:209
+msgid "Invoices"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:225
+msgid "Pharmacist"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:231
+msgid "Central Stock Manager"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:237
+msgid "Branch Secretary"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:243
+msgid "Branches"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:249
+msgid "Workers"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:255
+msgid "Roles & Privileges"
+msgstr ""
+
+#: templates/layout/partials/menu/vertical/vertical_menu.html:279
+msgid "Track Stocks"
+msgstr ""
+
+#: templates/layout/partials/navbar/navbar.html:15
+msgid "Welcome Back"
+msgstr ""
+
+#: tests/templates/test.html:10
 msgid "Title: Test Page"
 msgstr ""

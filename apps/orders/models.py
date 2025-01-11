@@ -62,7 +62,7 @@ class PurchaseOrder(models.Model):
             prefix = f"PO-{reg_part}-{date_part}"
 
             # Find the latest purchase order for this branch (ignoring the date)
-            latest_order = PurchaseOrder.objects.filter(purchase_order_id__icontains=f"PO-{reg_part}-{date_part}").order_by('-purchase_order_id').first()
+            latest_order = PurchaseOrder.objects.filter(purchase_order_id__icontains=f"PO-{reg_part}").order_by('-purchase_order_id').first()
 
             if latest_order:
                 # Extract the numeric part of the sequence and increment it
@@ -88,6 +88,12 @@ class PurchaseOrderItem(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     temp_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    reason = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        default="No Note",
+        help_text="Reason for price change"
+    )
 
     def __str__(self):
         return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"

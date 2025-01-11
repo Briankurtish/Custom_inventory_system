@@ -46,13 +46,15 @@ class PurchaseOrderForm(forms.ModelForm):
 class PurchaseOrderItemForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrderItem
-        fields = ['stock', 'quantity']
+        fields = ['stock', 'quantity', 'temp_price', 'reason']
         widgets = {
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
         labels = {
             'stock': 'Product',
             'quantity': 'Quantity',
+            'temp_price': 'Price',
+            'reason': "Note"
         }
 
     def __init__(self, *args, **kwargs):

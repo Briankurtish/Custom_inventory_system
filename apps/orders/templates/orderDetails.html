@@ -188,6 +188,7 @@
                     <th>Product Code</th>
                     <th>Product Name</th>
                     <th>Unit Price</th>
+                    <th>Note</th>
                     <th>Quantity</th>
                     <th>Total Price</th>
                 </tr>
@@ -198,8 +199,10 @@
                     <td>{{ item.stock.product.product_code }}</td>
                     <td>{{ item.stock.product.generic_name_dosage }}</td>
                     <td>{{ item.get_effective_price|floatformat:0|intcomma }} CFA</td>
+                    <td>{{ item.reason }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.total_price|floatformat:0|intcomma }} <small>CFA</small></td>
+
                 </tr>
                 {% empty %}
                 <tr>
@@ -208,7 +211,7 @@
                 {% endfor %}
                 <!-- Grand Total Row -->
                 <tr>
-                    <td colspan="3"><strong><h4>Grand Total</h4></strong></td>
+                    <td colspan="4"><strong><h4>Grand Total</h4></strong></td>
                     <td><strong><h6>{{total_quantity}}</h6></strong></td>
                     <td class="text-primary"><strong>{{ order.grand_total|floatformat:0|intcomma }} CFA</strong></td>
                 </tr>

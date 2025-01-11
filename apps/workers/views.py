@@ -103,7 +103,7 @@ def manage_worker_privileges(request, worker_id):
 
     return render(request, 'manage_privileges.html', context)
 
-
+@login_required
 def create_privilege(request):
     """
     View to allow the admin to create a new privilege.
@@ -125,6 +125,7 @@ def create_privilege(request):
     context = TemplateLayout.init(request, view_context)
     return render(request, 'create_privilege.html', context)
 
+@login_required
 def get_roles_and_privileges(request):
     """
     View to fetch all roles and their default privileges.

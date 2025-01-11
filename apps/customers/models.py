@@ -4,21 +4,21 @@ from apps.branches.models import Branch
 
 class Customer(models.Model):
     customer_id = models.CharField(
-        max_length=50, unique=True, help_text="Code Client"
+        max_length=50, unique=True
     )
     customer_name = models.CharField(
-        max_length=255, help_text="Noms du client"
+        max_length=255
     )
     branch = models.ForeignKey(
         Branch,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='customers',
-        help_text="Branch associated with the customer"
+        related_name='customers'
+       
     )
     postal_code = models.CharField(
-        max_length=20, blank=True, null=True, help_text="Code Postal"
+        max_length=20, blank=True, null=True
     )
     sales_rep = models.ForeignKey(
         Worker,
@@ -26,27 +26,27 @@ class Customer(models.Model):
         null=True,
         blank=True,
         related_name='customers',
-        limit_choices_to={'role': 'Sales Rep'},  # Only include workers with role "Sales Rep"
-        help_text="Assigned Sales Agent"
+        limit_choices_to={'role': 'Sales Rep'} # Only include workers with role "Sales Rep"
+        
     )
     contact_person = models.CharField(
-        max_length=255, help_text="Contact Person"
+        max_length=255
     )
     telephone = models.CharField(
-        max_length=20, blank=True, null=True, help_text="Telephone"
+        max_length=20, blank=True, null=True
     )
     email = models.EmailField(
-        blank=True, null=True, help_text="Email"
+        blank=True, null=True
     )
     agreement_number = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Numero Agreement (Authorization Number)"
+        max_length=100, blank=True, null=True
     )
     tax_payer_number = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Immatriculation"
+        max_length=100, blank=True, null=True
     )
     location_plan = models.FileField(upload_to='location_plan/')
     note = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Notes"
+        max_length=100, blank=True, null=True
     )
 
     def __str__(self):

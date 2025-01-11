@@ -7,27 +7,41 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Batch Number
-</button>
+{% if user.worker_profile.privileges.all %}
+    {% for privilege in user.worker_profile.privileges.all %}
+        {% if privilege.name == 'Add Products' %}
+          
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
+          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Generic Name
+        </button>
+        <span>➡️</span>
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Batch Number
+        </button>
+        
+        <span>➡️</span>
+        
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
+          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Pack Size
+        </button>
+        
+        <hr>
+        <div class="mt-5">
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
+            <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Product
+          </button>
+        </div>
 
-<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Generic Name
-</button>
-
-<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Pack Size
-</button>
-
-<hr>
-<div class="mt-5">
-  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
-    <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Product
-  </button>
-</div>
+        <hr class="my-8">
 
 
-<hr class="my-8">
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+
+
 
 
 
@@ -62,8 +76,17 @@
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                {% if user.worker_profile.privileges.all %}
+                    {% for privilege in user.worker_profile.privileges.all %}
+                        {% if privilege.name == 'Add Product Prices' %}
+                          <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="bx bx-money me-1"></i> Add Price</a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="bx bx-edit-alt me-1"></i> Edit Product</a>
                 <a class="dropdown-item" href="{% url 'delete-product' product.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
+                
               </div>
             </div>
           </td>

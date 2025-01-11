@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
 
 
 class LoginView(TemplateView):
@@ -35,12 +36,12 @@ class LoginView(TemplateView):
                 if user is not None:
                     # Log the user in
                     login(request, user)
-                    messages.success(request, f'Welcome back, {user.username}!')
+                    messages.success(request, _(f'Welcome back, {user.username}!'))
                     return redirect('index')  # Redirect to homepage after login
                 else:
-                    messages.error(request, 'Invalid username or password.')
+                    messages.error(request, _('Invalid username or password.'))
             else:
-                messages.error(request, 'Please correct the errors below.')
+                messages.error(request, _('Please correct the errors below.'))
 
         else:
             form = AuthenticationForm()
@@ -63,5 +64,5 @@ class LogoutView(TemplateView):
         Log the user out and redirect to the login page or index page.
         """
         logout(request)
-        messages.info(request, "You have been logged out successfully.")
+        messages.info(request, _("You have been logged out successfully."))
         return redirect('auth-login-basic')  # Redirect to login page or home page (adjust the URL as necessary)

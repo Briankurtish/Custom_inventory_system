@@ -14,6 +14,10 @@
 
 {% block content %}
 <!-- Basic Layout -->
+
+<a href="{{ request.META.HTTP_REFERER|default:'#' }}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
 <div class="row">
   <div class="col-xl">
     <div class="card mb-6">
@@ -79,4 +83,59 @@
 </script>
 
 
+
+
+
+{% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  document.addEventListener('input', function (e) {
+      if (e.target.id === 'unit_price') {
+          // Remove commas and ensure the value is a valid number
+          let value = e.target.value.replace(/,/g, '');
+          if (!isNaN(value) && value !== "") {
+              e.target.value = parseFloat(value).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+              });
+          }
+      }
+  });
+  </script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_generic_name_dosage").select2({
+      placeholder: "Search Generic Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_brand_name").select2({
+      placeholder: "Search for Brand Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_batch").select2({
+      placeholder: "Search for Batch Number",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
 {% endblock %}

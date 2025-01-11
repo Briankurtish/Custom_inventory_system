@@ -14,7 +14,6 @@ import random
 import string
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
-
 from dotenv import load_dotenv
 
 from .template import  THEME_LAYOUT_DIR, THEME_VARIABLES
@@ -87,6 +86,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     'django.contrib.humanize',
+    'rosetta',
+    'parler',
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.DebugMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -145,6 +147,8 @@ DATABASES = {
 }
 
 
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -177,6 +181,17 @@ LANGUAGES = [
     ('fr', _('French')),
 ]
 
+PARLER_LANGUAGES = {
+     None: (
+         {'code': 'en'},
+         {'code': 'fr'},
+     ),
+     'default': {
+         'fallbacks': ['en'],
+         'hide_untranslated': False,
+     }
+}
+
 
 LANGUAGE_CODE = "en"
 
@@ -188,20 +203,21 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_L10N = True
 
+USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 
 STATICFILES_DIRS = [
     BASE_DIR / "src" / "assets",
 ]
-
 # Default URL on which Django application runs for specific environment
 BASE_URL = os.environ.get("BASE_URL", default="http://127.0.0.1:8000")
 

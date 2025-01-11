@@ -3,6 +3,7 @@ from web_project import TemplateLayout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.workers.models import Worker
 from apps.stock_request.models import StockRequest
+from django.utils.translation import activate
 
 class DashboardsView(LoginRequiredMixin, TemplateView):
     # Default fallback template

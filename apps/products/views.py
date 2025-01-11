@@ -3,7 +3,7 @@ from web_project import TemplateLayout
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Batch, Product
-from .forms import BatchForm, ProductForm
+from .forms import AddProductForm, BatchForm, EditProductForm, ProductForm, UpdateProductForm
 from apps.genericName.models import GenericName
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -100,41 +100,46 @@ def get_brand_name(request, generic_name_id):
 
 
 @login_required
-def add_product_view(request, pk=None):
-    batches = Batch.objects.all()  # Fetch all batches for the dropdown
-    
-    if pk:
-        product = get_object_or_404(Product, pk=pk)  # Fetch the product for editing
-        form = ProductForm(request.POST or None, instance=product)  # Bind the form to the existing product
-    else:
-        product = None
-        form = ProductForm(request.POST or None)  # Empty form for creating a new product
-
-    # Handle the POST request (form submission)
+def add_product_view(request):
     if request.method == "POST":
+        form = AddProductForm(request.POST)
         if form.is_valid():
-            # Ensure brand_name is set correctly before saving the product
-            generic_name_dosage = form.cleaned_data.get('generic_name_dosage')
-            if generic_name_dosage:
-                # If brand_name is not provided, get it from generic_name_dosage
-                if not form.cleaned_data.get('brand_name'):
-                    form.cleaned_data['brand_name'] = generic_name_dosage  # Assign the GenericName instance
-
-            # Save the product (create or update based on `pk`)
-            form.save()
-            return redirect('products')  # Redirect to the product list after saving
+            product = form.save(commit=False)
+            product.unit_price = 0.00  # Default price for new products
+            product.save()
+            return redirect('products')
+    else:
+        form = AddProductForm()
 
     view_context = {
         "form": form,
-        "batches": batches,
-        "product": product,  # Pass the product object for reference in the template
-        "is_editing": bool(pk),  # Flag to indicate if we are editing
+        "is_editing": False,  # Flag for add operation
     }
-    
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addProduct.html', context)
 
+
+@login_required
+def edit_product_view(request, pk):
+    product = get_object_or_404(Product, pk=pk)  # Get the product by ID
+
+    if request.method == "POST":
+        form = EditProductForm(request.POST, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.save()
+            return redirect('products')
+    else:
+        form = EditProductForm(instance=product)
+
+    view_context = {
+        "form": form,
+        "is_editing": True,  # Flag for edit operation
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'addProduct.html', context)
 
 
 @login_required
@@ -142,25 +147,25 @@ def update_product_view(request, pk):
     product = get_object_or_404(Product, pk=pk)  # Get the product by ID
 
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)  # Bind form to the product instance
+        form = UpdateProductForm(request.POST, instance=product)
         if form.is_valid():
-            form.save()
-            return redirect('products')  # Redirect to the product list
+            product = form.save(commit=False)
+            product.unit_price = form.cleaned_data['unit_price']  # Update price
+            product.save()
+            return redirect('products')
     else:
-        form = ProductForm(instance=product)
-
-    products = Product.objects.all()
-    batches = Batch.objects.all()  # For display in the list
+        form = UpdateProductForm(instance=product)
 
     view_context = {
         "form": form,
-        "products": products,
-        "batches": batches,
         "is_editing": True,  # Flag for edit operation
     }
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addProduct.html', context)
+
+
+
 
 
 @login_required

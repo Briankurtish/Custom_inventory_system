@@ -7,19 +7,19 @@ class Branch(models.Model):
     ]
 
     branch_id = models.CharField(
-        max_length=50, unique=True, help_text="Branch Identifier"
+        max_length=50, unique=True
     )
     branch_name = models.CharField(
         max_length=255, help_text="Branch Name"
     )
     address = models.TextField(
-        help_text="Branch Address"
+        
     )
     branch_type = models.CharField(
         max_length=10,
         choices=BRANCH_TYPES,
         default="regular",
-        help_text="Type of branch (Central or Regular)"
+       
     )
 
     def save(self, *args, **kwargs):

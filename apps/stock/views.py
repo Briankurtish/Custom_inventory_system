@@ -73,7 +73,7 @@ def ManageStockBranchView(request):
     return render(request, 'stock_branch.html', context)
 
 
-
+@login_required
 def add_stock_view(request):
     form = StockUpdateForm()
 

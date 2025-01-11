@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Branch Secretary Dashboard{% endblock %}
+{% block title %}{% trans "Branch Secretary Dashboard" %}{% endblock %}
 
 {% block vendor_css %}
 {{ block.super }}
@@ -28,16 +28,16 @@
       <div class="d-flex align-items-start row">
         <div class="col-sm-7">
           <div class="card-body">
-            <h5 class="card-title text-primary mb-3">GC PHARMA Branch Secretary 💻 </h5>
-            <p class="mb-6">Manage and control all aspects of your inventory system<br>Monitor and get up-to-date information about your stock</p>
+            <h5 class="card-title text-primary mb-3">{% trans "GC PHARMA Branch Secretary 💻" %}</h5>
+            <p class="mb-6">{% trans "Manage and control all aspects of your inventory system" %}<br>{% trans "Monitor and get up-to-date information about your stock" %}</p>
 
-            {% comment %} <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-info">View Stock</a> {% endcomment %}
-            <p class="text-secondary">Douala Branch</p>
+            {% comment %} <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-info">{% trans "View Stock" %}</a> {% endcomment %}
+            <p class="text-secondary">{% trans "Branch Secretary Dashboard" %}</p>
           </div>
         </div>
         <div class="col-sm-5 text-center text-sm-left">
           <div class="card-body pb-0 px-0 px-md-6">
-            <img src="{% static 'img/illustrations/man-with-laptop.png' %}" height="175" alt="View Badge User">
+            <img src="{% static 'img/illustrations/man-with-laptop.png' %}" height="175" alt="{% trans 'View Badge User' %}">
           </div>
         </div>
       </div>
@@ -48,18 +48,18 @@
       <div class="d-flex align-items-start row">
         <div class="col-sm-7">
           <div class="card-body">
-            <h5 class="card-title text-warning mb-3">Quick Actions Board </h5>
-            <p class="mb-6">Access function of your dashboard Easily<br>Get Quick Access and increase productivity</p>
+            <h5 class="card-title text-warning mb-3">{% trans "Quick Actions Board" %}</h5>
+            <p class="mb-6">{% trans "Access function of your dashboard Easily" %}<br>{% trans "Get Quick Access and increase productivity" %}</p>
 
             <div class="row">
               <div class="col-md-4 mb-2">
-                <a href="{% url 'create-order' %}" class="btn btn-sm btn-outline-info">Create Order</a>
+                <a href="{% url 'create-order' %}" class="btn btn-sm btn-outline-info">{% trans "Create Order" %}</a>
               </div>
               <div class="col-md-4 mb-2">
-                <a href="{% url 'orders' %}" class="btn btn-sm btn-outline-primary">View Orders</a>
+                <a href="{% url 'orders' %}" class="btn btn-sm btn-outline-primary">{% trans "View Orders" %}</a>
               </div>
               <div class="col-md-4 mb-2">
-                <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-secondary">View Reports</a>
+                <a href="{% url 'stock' %}" class="btn btn-sm btn-outline-secondary">{% trans "View Reports" %}</a>
               </div>
             </div>
           </div>
@@ -80,13 +80,11 @@
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
                 <i class="bx bx-box text-success" style="font-size: 2em;"></i>
-
               </div>
-             
             </div>
-            <p class="mb-1">Confirmed Orders</p>
-            <h4 class="card-title mb-3">104 <small>Orders</small></h4>
-            {% comment %} <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> View Approved</small></a> {% endcomment %}
+            <p class="mb-1">{% trans "Confirmed Orders" %}</p>
+            <h4 class="card-title mb-3">104 <small>{% trans "Orders" %}</small></h4>
+            {% comment %} <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> {% trans 'View Approved' %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>
@@ -97,18 +95,14 @@
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
                 <i class="bx bx-receipt text-info" style="font-size: 2em;"></i>
-
               </div>
-              
             </div>
-            <p class="mb-1">Bon de Commande</p>
-            <h4 class="card-title mb-3">30 <small>Created</small></h4>
-            {% comment %} <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> View Documents</small></a> {% endcomment %}
+            <p class="mb-1">{% trans "Bon de Commande" %}</p>
+            <h4 class="card-title mb-3">30 <small>{% trans "Created" %}</small></h4>
+            {% comment %} <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans 'View Documents' %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>
-      
-
     </div>
   </div>
   <!-- Total Revenue -->
@@ -118,15 +112,14 @@
         <div class="col-lg-8">
           <div class="card-header d-flex align-items-center justify-content-between">
             <div class="card-title mb-0">
-              <h5 class="m-0 me-2"> <i class="bx bx-info-circle text-warning"></i> Notice Board</h5>
+              <h5 class="m-0 me-2"> <i class="bx bx-info-circle text-warning"></i> {% trans "Notice Board" %}</h5>
             </div>
-            
           </div>
           <div class="m-2">
             <marquee behavior="" direction="">
-              <h3 class="my-4">GC PHARMA - ANNOUNCEMENTS</h3>
+              <h3 class="my-4">{% trans "GC PHARMA - ANNOUNCEMENTS" %}</h3>
             </marquee>
-            <p class="fw-medium">No Notice to show at the moment ⚠️</p>
+            <p class="fw-medium">{% trans "No Notice to show at the moment" %} ⚠️</p>
           </div>
           <div id="totalRevenueChart" class="px-3"></div>
         </div>
@@ -137,316 +130,25 @@
                 <p class="text-info fw-medium fs-5">
                   <script>
                     document.write(new Date().toDateString());
-                    
                   </script>
                 </p>
                 <p class="text-warning fw-bold fs-4">
                   <script>
-                    
                     document.write(new Date().toLocaleTimeString());
                   </script>
                 </p>
-                
               </div>
             </div>
-
             <div id="growthChart"></div>
-            <div class="text-center fw-bold my-6">GC PHARMA DOUALA BRANCH</div>
-          
+            <div class="text-center fw-bold my-6">{% trans "GC PHARMA INVENTORY" %}</div>
           </div>
         </div>
       </div>
     </div>
   </div>
   <!--/ Total Revenue -->
-  <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
-    <div class="row">
 
-      <div class="col-lg-6 col-md-12 col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="bx bx-box text-warning" style="font-size: 2em;"></i>
+  <!-- Other sections... -->
 
-              </div>
-            </div>
-            <p class="mb-1">Unverified Orders</p>
-            <h4 class="card-title mb-3">20 <small>Orders</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i> View Declined</small></a>
-          </div>
-        </div>
-      </div>
-
-      
-      {% comment %} <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="bx bx-box text-warning" style="font-size: 2em;"></i>
-
-              </div>
-              
-            </div>
-            <p class="mb-1">Warehouse Stock</p>
-            <h4 class="card-title mb-3">3345 <small>Products</small></h4>
-            <a href="{% url 'stock' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i> Update Stock</small></a>
-          </div>
-        </div>
-      </div> {% endcomment %}
-      
-    </div>
-  </div>
 </div>
-{% comment %} <div class="row">
-  <!-- Order Statistics -->
-  <div class="col-md-6 col-lg-4 col-xl-4 order-0 mb-6">
-    <div class="card h-100">
-      <div class="card-header d-flex justify-content-between">
-        <div class="card-title mb-0">
-          <h5 class="mb-1 me-2">Order Statistics</h5>
-          <p class="card-subtitle">42.82k Total Sales</p>
-        </div>
-        <div class="dropdown">
-          <button class="btn text-muted p-0" type="button" id="orederStatistics" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="bx bx-dots-vertical-rounded bx-lg"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orederStatistics">
-            <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-            <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-            <a class="dropdown-item" href="javascript:void(0);">Share</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-6">
-          <div class="d-flex flex-column align-items-center gap-1">
-            <h3 class="mb-1">8,258</h3>
-            <small>Total Orders</small>
-          </div>
-          <div id="orderStatisticsChart"></div>
-        </div>
-        <ul class="p-0 m-0">
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-primary"><i class='bx bx-mobile-alt'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Electronic</h6>
-                <small>Mobile, Earbuds, TV</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">82.5k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-success"><i class='bx bx-closet'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Fashion</h6>
-                <small>T-shirt, Jeans, Shoes</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">23.8k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-info"><i class='bx bx-home-alt'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Decor</h6>
-                <small>Fine Art, Dining</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">849k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-secondary"><i class='bx bx-football'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Sports</h6>
-                <small>Football, Cricket Kit</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">99</h6>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <!--/ Order Statistics -->
-
-  <!-- Expense Overview -->
-  <div class="col-md-6 col-lg-4 order-1 mb-6">
-    <div class="card h-100">
-      <div class="card-header nav-align-top">
-        <ul class="nav nav-pills" role="tablist">
-          <li class="nav-item">
-            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-tabs-line-card-income" aria-controls="navs-tabs-line-card-income" aria-selected="true">Income</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" role="tab">Expenses</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" role="tab">Profit</button>
-          </li>
-        </ul>
-      </div>
-      <div class="card-body">
-        <div class="tab-content p-0">
-          <div class="tab-pane fade show active" id="navs-tabs-line-card-income" role="tabpanel">
-            <div class="d-flex mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User">
-              </div>
-              <div>
-                <p class="mb-0">Total Balance</p>
-                <div class="d-flex align-items-center">
-                  <h6 class="mb-0 me-1">$459.10</h6>
-                  <small class="text-success fw-medium">
-                    <i class='bx bx-chevron-up bx-lg'></i>
-                    42.9%
-                  </small>
-                </div>
-              </div>
-            </div>
-            <div id="incomeChart"></div>
-            <div class="d-flex align-items-center justify-content-center mt-6 gap-3">
-              <div class="flex-shrink-0">
-                <div id="expensesOfWeek"></div>
-              </div>
-              <div>
-                <h6 class="mb-0">Income this week</h6>
-                <small>$39k less than last week</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--/ Expense Overview -->
-
-  <!-- Transactions -->
-  <div class="col-md-6 col-lg-4 order-2 mb-6">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">Transactions</h5>
-        <div class="dropdown">
-          <button class="btn text-muted p-0" type="button" id="transactionID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="bx bx-dots-vertical-rounded bx-lg"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-            <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-            <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-            <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body pt-4">
-        <ul class="p-0 m-0">
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/paypal.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Paypal</small>
-                <h6 class="fw-normal mb-0">Send money</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+82.6</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Wallet</small>
-                <h6 class="fw-normal mb-0">Mac'D</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+270.69</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/chart.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Transfer</small>
-                <h6 class="fw-normal mb-0">Refund</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+637.91</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/cc-primary.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Credit Card</small>
-                <h6 class="fw-normal mb-0">Ordered Food</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">-838.71</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Wallet</small>
-                <h6 class="fw-normal mb-0">Starbucks</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+203.33</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/cc-warning.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Mastercard</small>
-                <h6 class="fw-normal mb-0">Ordered Food</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">-92.45</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <!--/ Transactions -->
-</div> {% endcomment %}
-{% endblock %}
+{% endblock content %}

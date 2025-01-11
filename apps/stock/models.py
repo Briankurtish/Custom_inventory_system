@@ -7,18 +7,15 @@ class Stock(models.Model):
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
-        related_name="stocks", 
-        help_text="Product associated with this stock"
+        related_name="stocks"
     )
     branch = models.ForeignKey(
         Branch, 
         on_delete=models.CASCADE, 
-        related_name="stocks", 
-        help_text="Branch where this stock is stored"
+        related_name="stocks"
     )
     quantity = models.PositiveIntegerField(
-        default=0, 
-        help_text="Quantity of stock at this branch"
+        default=0
     )
 
     class Meta:
@@ -39,25 +36,22 @@ class InventoryTransaction(models.Model):
         Product, 
         on_delete=models.CASCADE, 
         related_name="transactions", 
-        help_text="Product involved in the transaction"
     )
     branch = models.ForeignKey(
         Branch, 
         on_delete=models.CASCADE, 
         related_name="transactions", 
-        help_text="Branch where the transaction occurred"
     )
     transaction_type = models.CharField(
         max_length=10, 
-        choices=TRANSACTION_TYPES, 
-        help_text="Type of transaction"
+        choices=TRANSACTION_TYPES
     )
     quantity = models.IntegerField(
-        help_text="Quantity added, updated, or removed"
+        
     )
     transaction_date = models.DateTimeField(
         auto_now_add=True, 
-        help_text="Date and time of the transaction"
+        
     )
 
     def __str__(self):

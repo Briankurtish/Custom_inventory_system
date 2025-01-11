@@ -6,8 +6,8 @@ class Privilege(models.Model):
     """
     Represents a specific privilege that can be assigned to workers.
     """
-    name = models.CharField(max_length=100, unique=True, help_text="Name of the privilege")
-    description = models.TextField(blank=True, null=True, help_text="Description of the privilege")
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name

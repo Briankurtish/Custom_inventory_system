@@ -244,6 +244,8 @@ def add_order_items(request):
             if item_form.is_valid():
                 stock = item_form.cleaned_data["stock"]
                 quantity = item_form.cleaned_data["quantity"]
+                temp_price = item_form.cleaned_data["temp_price"]
+                reason = item_form.cleaned_data["reason"]
 
                 # Ensure stock availability
                 if quantity > stock.quantity:
@@ -254,9 +256,10 @@ def add_order_items(request):
                     order_items.append({
                         "stock_id": stock.id,
                         "stock_name": str(stock.product.generic_name_dosage),
-                        "unit_price": float(stock.product.unit_price),  # Convert Decimal to float
+                        "temp_price": float(temp_price),  # Convert Decimal to float
+                        "reason": reason,  
                         "quantity": quantity,
-                        "total_price": float(stock.product.unit_price * quantity),
+                        "total_price": float(temp_price * quantity),
                     })
                     request.session.modified = True
                     messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
@@ -301,7 +304,7 @@ def add_order_items(request):
                     branch = get_object_or_404(Branch, id=branch_id)
 
                     # Calculate the grand total
-                    grand_total = sum(item["unit_price"] * item["quantity"] for item in order_items)
+                    grand_total = sum(item["temp_price"] * item["quantity"] for item in order_items)
 
                     # Create purchase order with status 'Pending' and calculated grand total
                     purchase_order = PurchaseOrder.objects.create(
@@ -321,6 +324,8 @@ def add_order_items(request):
                             purchase_order=purchase_order,
                             stock=stock,
                             quantity=item["quantity"],
+                            temp_price=item['temp_price'],
+                            reason=item['reason'],
                         )
 
                     # Clear session data and redirect
@@ -335,7 +340,7 @@ def add_order_items(request):
 
     # Calculate order details
     order_items = request.session["order_items"]
-    grand_total = sum(item["unit_price"] * item["quantity"] for item in order_items)
+    grand_total = sum(item["temp_price"] * item["quantity"] for item in order_items)
 
     view_context = {
         "item_form": item_form,

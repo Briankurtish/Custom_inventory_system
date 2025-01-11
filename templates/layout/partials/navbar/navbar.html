@@ -12,7 +12,7 @@
   {% endif %}
   <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
-    <small class="">Welcome Back </small>
+    <small class="">{% trans "Welcome Back" %} </small>
     &nbsp
     <h6 class="mb-0 text-primary">{{user.first_name}} {{user.last_name}}</h6>
 
@@ -28,17 +28,28 @@
     <ul class="navbar-nav flex-row align-items-center ms-auto">
       <strong class="">{{user.worker_profile.role}}</strong>
 
+
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          {% get_current_language as LANGUAGE_CODE %}
-          {% if LANGUAGE_CODE == 'en' %}
-            English
-          {% elif LANGUAGE_CODE == 'fr' %}
-            French
-          {% else %}
-            {{ LANGUAGE_CODE }}
-          {% endif %}
-        </a>
+        <form action="{% url 'set_language' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <select name="language" onchange="this.form.submit()">
+                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+                <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>French</option>
+            </select>
+            <input type="hidden" name="next" value="{{ request.path }}">
+        </form>
+    </li>
+    
+
+      {% comment %} <li class="nav-item dropdown">
+        <form action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}
+          <select name="language">
+              <option value="en">English</option>
+              <option value="fr">French</option>
+          </select>
+          <button type="submit">Switch Language</button>
+      </form>
         <ul class="dropdown-menu" aria-labelledby="languageDropdown">
           <li>
             <a class="dropdown-item" href="{% url 'set_language' %}?next={{ request.path }}&language=en">English</a>
@@ -47,7 +58,7 @@
             <a class="dropdown-item" href="{% url 'set_language' %}?next={{ request.path }}&language=fr">French</a>
           </li>
         </ul>
-      </li>
+      </li> {% endcomment %}
       
     &nbsp
     &nbsp

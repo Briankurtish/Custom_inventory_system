@@ -22,19 +22,20 @@ class Product(models.Model):
         max_length=50, blank=True, help_text="Code produit"
     )
     brand_name = models.ForeignKey(
-        GenericName, on_delete=models.CASCADE, related_name="brand_products", help_text="Brand Name associated with this product"
-    )
+        GenericName, on_delete=models.CASCADE, related_name="brand_products")
     generic_name_dosage = models.ForeignKey(
-        GenericName, on_delete=models.CASCADE, related_name="dosage_products", help_text="Generic Name associated with this product", null=True, blank=True
+        GenericName, on_delete=models.CASCADE, related_name="dosage_products", null=True, blank=True
     )
     pack_size = models.ForeignKey(
-        "pack_size.PackSize", on_delete=models.CASCADE, related_name="products", help_text="Pack Size associated with this product"
-    )
+        "pack_size.PackSize", on_delete=models.CASCADE, related_name="products")
     unit_price = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="Unit Price of the product"
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00,  # Default value for unit_price
+        help_text="Unit Price of the product"
     )
     batch = models.ForeignKey(
-        Batch, on_delete=models.CASCADE, related_name="products", help_text="Batch associated with this product"
+        Batch, on_delete=models.CASCADE, related_name="products"
     )
 
     class Meta:
