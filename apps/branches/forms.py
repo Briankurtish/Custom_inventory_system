@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from .models import Branch
 
 class BranchForm(forms.ModelForm):
@@ -6,12 +7,21 @@ class BranchForm(forms.ModelForm):
         model = Branch
         fields = ['branch_name', 'address', 'branch_type']  # Added 'branch_type'
         widgets = {
-            'branch_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Branch Name'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter Branch Address', 'rows': 3}),
-            'branch_type': forms.Select(attrs={'class': 'form-control'}),  # Dropdown for branch type
+            'branch_name': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': _('Enter Branch Name')  # Translatable placeholder
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'placeholder': _('Enter Branch Address'),  # Translatable placeholder
+                'rows': 3
+            }),
+            'branch_type': forms.Select(attrs={
+                'class': 'form-control'
+            }),  # Dropdown for branch type
         }
         labels = {
-            'branch_name': 'Branch Name',
-            'address': 'Address',
-            'branch_type': 'Branch Type',  # Label for branch type
+            'branch_name': _('Branch Name'),  # Translatable label
+            'address': _('Address'),  # Translatable label
+            'branch_type': _('Branch Type'),  # Translatable label
         }

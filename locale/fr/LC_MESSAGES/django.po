@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-11 11:04+0000\n"
-"PO-Revision-Date: 2025-01-11 12:05+0100\n"
+"POT-Creation-Date: 2025-01-11 12:37+0000\n"
+"PO-Revision-Date: 2025-01-11 13:57+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -18,6 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: apps/authentication/templates/auth_login_basic.html:6
+#: apps/authentication/templates/auth_login_basic.html:37
+msgid "Login"
+msgstr "Connexion"
+
+#: apps/authentication/templates/auth_login_basic.html:30
+msgid "Welcome to"
+msgstr "Bienvenue à"
+
+#: apps/authentication/templates/auth_login_basic.html:31
+msgid "Please sign-in to your account and start the adventure"
+msgstr "Connectez-vous à votre compte et commencez l'aventure"
 
 #: apps/authentication/views.py:39
 #, python-brace-format
@@ -35,6 +48,114 @@ msgstr "Veuillez corriger les erreurs ci-dessous."
 #: apps/authentication/views.py:67
 msgid "You have been logged out successfully."
 msgstr "Vous avez été déconnecté avec succès."
+
+#: apps/branches/forms.py:12
+msgid "Enter Branch Name"
+msgstr "Entrer le nom de la branche"
+
+#: apps/branches/forms.py:16
+msgid "Enter Branch Address"
+msgstr "Saisir l'adresse de la branche"
+
+#: apps/branches/forms.py:24 apps/branches/templates/branches.html:26
+#: apps/workers/templates/workers.html:27
+msgid "Branch Name"
+msgstr "Nom de la branche"
+
+#: apps/branches/forms.py:25 apps/branches/templates/branches.html:27
+#: apps/workers/forms.py:62 apps/workers/forms.py:137
+#: apps/workers/templates/workers.html:35
+msgid "Address"
+msgstr "Adresse"
+
+#: apps/branches/forms.py:26
+msgid "Branch Type"
+msgstr "Type de branche"
+
+#: apps/branches/templates/addBranch.html:6
+#: apps/branches/templates/addBranch.html:33
+msgid "Add Branch"
+msgstr "Ajouter une branche"
+
+#: apps/branches/templates/addBranch.html:18
+msgid "Edit Branch Details"
+msgstr "Modifier les détails de la succursale"
+
+#: apps/branches/templates/addBranch.html:20
+msgid "New Branch Details"
+msgstr "Détails de la nouvelle branche"
+
+#: apps/branches/templates/addBranch.html:31
+msgid "Update Branch"
+msgstr "Mise à jour de la branche"
+
+#: apps/branches/templates/branches.html:6
+#: templates/layout/partials/menu/vertical/vertical_menu.html:231
+msgid "Branches"
+msgstr "Branches"
+
+#: apps/branches/templates/branches.html:11
+msgid "Add New Branch"
+msgstr "Ajouter une nouvelle branche"
+
+#: apps/branches/templates/branches.html:20
+msgid "Branch List"
+msgstr "Liste des branches"
+
+#: apps/branches/templates/branches.html:25
+msgid "Branch ID"
+msgstr "Branch ID"
+
+#: apps/branches/templates/branches.html:28
+msgid "Type"
+msgstr "Type"
+
+#: apps/branches/templates/branches.html:46
+#: apps/workers/templates/workers.html:63
+msgid "Edit"
+msgstr "Editer"
+
+#: apps/branches/templates/branches.html:47
+#: apps/dashboards/templates/dashboard_analytics.html:61
+#: apps/dashboards/templates/dashboard_analytics.html:84
+#: apps/dashboards/templates/dashboard_analytics.html:161
+#: apps/dashboards/templates/dashboard_analytics.html:185
+#: apps/workers/templates/workers.html:66
+msgid "Delete"
+msgstr "Supprimer"
+
+#: apps/branches/templates/deleteBranch.html:6
+#: apps/branches/templates/deleteBranch.html:25
+msgid "Manage Branches"
+msgstr "Gérer les branches"
+
+#: apps/branches/templates/deleteBranch.html:33
+msgid "Warning"
+msgstr "Avertissement"
+
+#: apps/branches/templates/deleteBranch.html:34
+msgid "Are you sure you want to delete"
+msgstr "Êtes-vous sûr de vouloir supprimer"
+
+#: apps/branches/templates/deleteBranch.html:41
+msgid "Cancel"
+msgstr "Annuler"
+
+#: apps/branches/templates/deleteBranch.html:44
+msgid "Yes"
+msgstr "Oui"
+
+#: apps/branches/views.py:56
+msgid "Branch Created Successfully"
+msgstr "Branche créée avec succès"
+
+#: apps/branches/views.py:76
+msgid "Branch Updated Successfully"
+msgstr "Branche mise à jour avec succès"
+
+#: apps/branches/views.py:101
+msgid "Branch Deleted Successfully"
+msgstr "Branche supprimée avec succès"
 
 #: apps/dashboards/templates/dashboard_acc.html:6
 msgid "Accountant Dashboard"
@@ -159,13 +280,6 @@ msgstr "Voir le stock"
 #: apps/dashboards/templates/dashboard_analytics.html:184
 msgid "View More"
 msgstr "Voir plus"
-
-#: apps/dashboards/templates/dashboard_analytics.html:61
-#: apps/dashboards/templates/dashboard_analytics.html:84
-#: apps/dashboards/templates/dashboard_analytics.html:161
-#: apps/dashboards/templates/dashboard_analytics.html:185
-msgid "Delete"
-msgstr "Supprimer"
 
 #: apps/dashboards/templates/dashboard_analytics.html:65
 msgid "Total Stock"
@@ -329,7 +443,7 @@ msgstr "Stock de l'entrepôt"
 #: apps/dashboards/templates/dashboard_cstm.html:170
 #: templates/layout/partials/menu/vertical/vertical_menu.html:90
 #: templates/layout/partials/menu/vertical/vertical_menu.html:99
-#: templates/layout/partials/menu/vertical/vertical_menu.html:273
+#: templates/layout/partials/menu/vertical/vertical_menu.html:261
 msgid "Products"
 msgstr "Produits"
 
@@ -409,6 +523,213 @@ msgstr "Bon de Commande"
 msgid "No Notice to show at the moment"
 msgstr "Aucun avis n'est disponible pour le moment ⚠️"
 
+#: apps/workers/forms.py:11
+msgid "Enter first name"
+msgstr "Saisir le prénom"
+
+#: apps/workers/forms.py:12 apps/workers/templates/workers.html:28
+msgid "First Name"
+msgstr "Prénom"
+
+#: apps/workers/forms.py:16
+msgid "Enter last name"
+msgstr "Saisir le nom de famille"
+
+#: apps/workers/forms.py:17 apps/workers/templates/workers.html:29
+msgid "Last Name"
+msgstr "Dernier nom"
+
+#: apps/workers/forms.py:20
+msgid "Enter email"
+msgstr "Saisir l'email"
+
+#: apps/workers/forms.py:21 apps/workers/templates/workers.html:31
+msgid "Email"
+msgstr "Email"
+
+#: apps/workers/forms.py:24
+msgid "Enter password"
+msgstr "Saisir le mot de passe"
+
+#: apps/workers/forms.py:25
+msgid "Password"
+msgstr "Mot de passe"
+
+#: apps/workers/forms.py:28
+msgid "Confirm password"
+msgstr "Confirmer le mot de passe"
+
+#: apps/workers/forms.py:29
+msgid "Confirm Password"
+msgstr "Confirmer le mot de passe"
+
+#: apps/workers/forms.py:34 apps/workers/templates/workers.html:32
+msgid "Role"
+msgstr "Rôle"
+
+#: apps/workers/forms.py:39
+msgid "Company"
+msgstr "Entreprise"
+
+#: apps/workers/forms.py:46 apps/workers/forms.py:134
+msgid "Branch"
+msgstr "Branche"
+
+#: apps/workers/forms.py:52 apps/workers/forms.py:135
+msgid "Telephone"
+msgstr "Telephone"
+
+#: apps/workers/forms.py:57 apps/workers/forms.py:136
+#: apps/workers/templates/workers.html:34
+msgid "Department"
+msgstr "Département"
+
+#: apps/workers/forms.py:133
+msgid "Worker Role"
+msgstr "Rôle de l'employé"
+
+#: apps/workers/forms.py:155
+msgid "Privilege Name"
+msgstr "Nom du privilège"
+
+#: apps/workers/forms.py:156
+msgid "Privilege Description"
+msgstr "Privilège Description"
+
+#: apps/workers/templates/addWorker.html:9
+#: apps/workers/templates/addWorker.html:28
+#: apps/workers/templates/manage_privileges.html:9
+msgid "Edit Worker"
+msgstr "Editer l'employée"
+
+#: apps/workers/templates/addWorker.html:11
+#: apps/workers/templates/addWorker.html:30
+#: apps/workers/templates/addWorker.html:57
+#: apps/workers/templates/manage_privileges.html:11
+msgid "Add Worker"
+msgstr "Ajouter un Employée"
+
+#: apps/workers/templates/addWorker.html:24
+#: apps/workers/templates/create_privilege.html:21
+#: apps/workers/templates/manage_privileges.html:19
+#: apps/workers/templates/privilege_details.html:12
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+#: apps/workers/templates/addWorker.html:25
+msgid "Manage Workers"
+msgstr "Gérer les Employés"
+
+#: apps/workers/templates/addWorker.html:42
+msgid "Employee Information"
+msgstr "Informations sur les employés"
+
+#: apps/workers/templates/addWorker.html:55
+msgid "Update Worker"
+msgstr "Mise à jour du Employée"
+
+#: apps/workers/templates/create_privilege.html:8
+#: apps/workers/templates/create_privilege.html:22
+#: apps/workers/templates/create_privilege.html:40
+#: apps/workers/templates/create_privilege.html:52
+#: apps/workers/templates/workers.html:14
+msgid "Create Privilege"
+msgstr "Créer un privilège"
+
+#: apps/workers/templates/manage_privileges.html:20
+#: templates/layout/partials/menu/vertical/vertical_menu.html:237
+msgid "Workers"
+msgstr "Employés"
+
+#: apps/workers/templates/manage_privileges.html:21
+#: apps/workers/templates/workers.html:60
+msgid "Manage Privileges"
+msgstr "Gérer les privilèges"
+
+#: apps/workers/templates/manage_privileges.html:39
+msgid "Manage Privileges for"
+msgstr "Gérer les privilèges pour"
+
+#: apps/workers/templates/manage_privileges.html:50
+msgid "Save Privileges"
+msgstr "Sauvegarder les privilèges"
+
+#: apps/workers/templates/manage_privileges.html:51
+msgid "Back to Workers"
+msgstr "Retour aux Employés"
+
+#: apps/workers/templates/privilege_details.html:5
+#: apps/workers/templates/privilege_details.html:13
+#: apps/workers/templates/privilege_details.html:20
+msgid "Roles and Privileges"
+msgstr "Rôles et privilèges"
+
+#: apps/workers/templates/privilege_details.html:26
+msgid "Select Role"
+msgstr "Sélectionner un rôle"
+
+#: apps/workers/templates/privilege_details.html:28
+msgid "Choose a role"
+msgstr "Choisir un rôle"
+
+#: apps/workers/templates/privilege_details.html:37
+msgid "Get Privileges"
+msgstr "Obtenir des privilèges"
+
+#: apps/workers/templates/privilege_details.html:52
+msgid "No privileges found for the selected role"
+msgstr "Aucun privilège n'a été trouvé pour le rôle sélectionné"
+
+#: apps/workers/templates/workers.html:6
+msgid "Workers List"
+msgstr "Liste des Employés"
+
+#: apps/workers/templates/workers.html:11
+msgid "Add Employee"
+msgstr "Ajouter un employé"
+
+#: apps/workers/templates/workers.html:21
+msgid "Employee List"
+msgstr "Liste des employés"
+
+#: apps/workers/templates/workers.html:26
+msgid "Employee ID"
+msgstr "ID de l'employé"
+
+#: apps/workers/templates/workers.html:30
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: apps/workers/templates/workers.html:33
+msgid "Phone Number"
+msgstr "Numéro de téléphone"
+
+#: apps/workers/templates/workers.html:36
+msgid "Actions"
+msgstr "Actions"
+
+#: apps/workers/views.py:52
+msgid "Employee Credentials created successfully!"
+msgstr ""
+"Les données d'identification des employés ont été créées avec succès !"
+
+#: apps/workers/views.py:71
+msgid "Employee Credentials updated successfully!"
+msgstr "Mise à jour réussie des titres de compétences des employés !"
+
+#: apps/workers/views.py:97
+msgid "Employee Privileges updated successfully!"
+msgstr "Privilèges des employés mis à jour avec succès !"
+
+#: apps/workers/views.py:119
+msgid "Privilege created successfully!"
+msgstr "Privilège créé avec succès !"
+
+#: apps/workers/views.py:122
+msgid "Error creating privilege. Please check the input."
+msgstr ""
+"Erreur lors de la création d'un privilège. Veuillez vérifier l'entrée."
+
 #: config/settings.py:180
 msgid "English"
 msgstr "Anglais"
@@ -423,16 +744,17 @@ msgstr "Français"
 #: templates/layout/partials/menu/vertical/vertical_menu.html:55
 #: templates/layout/partials/menu/vertical/vertical_menu.html:65
 #: templates/layout/partials/menu/vertical/vertical_menu.html:75
+#: templates/layout/partials/menu/vertical/vertical_menu.html:225
 msgid "Home"
 msgstr "Accueil"
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:108
-#: templates/layout/partials/menu/vertical/vertical_menu.html:267
+#: templates/layout/partials/menu/vertical/vertical_menu.html:255
 msgid "Customers"
 msgstr "Clients"
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:119
-#: templates/layout/partials/menu/vertical/vertical_menu.html:261
+#: templates/layout/partials/menu/vertical/vertical_menu.html:249
 msgid "Sales Rep"
 msgstr "Représentant commercial"
 
@@ -450,7 +772,7 @@ msgid "Recommendations"
 msgstr "Recommandations"
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:170
-#: templates/layout/partials/menu/vertical/vertical_menu.html:285
+#: templates/layout/partials/menu/vertical/vertical_menu.html:273
 msgid "Stock In Transit"
 msgstr "Stock en transit"
 
@@ -466,31 +788,11 @@ msgstr "Ancienne facture"
 msgid "Invoices"
 msgstr "Factures"
 
-#: templates/layout/partials/menu/vertical/vertical_menu.html:225
-msgid "Pharmacist"
-msgstr "Pharmacien"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:231
-msgid "Central Stock Manager"
-msgstr "Gestionnaire central des stocks"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:237
-msgid "Branch Secretary"
-msgstr "Secrétaire de branche"
-
 #: templates/layout/partials/menu/vertical/vertical_menu.html:243
-msgid "Branches"
-msgstr "Branches"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:249
-msgid "Workers"
-msgstr "Employés"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:255
 msgid "Roles & Privileges"
 msgstr "Rôles et privilèges"
 
-#: templates/layout/partials/menu/vertical/vertical_menu.html:279
+#: templates/layout/partials/menu/vertical/vertical_menu.html:267
 msgid "Track Stocks"
 msgstr "Suivi des stocks"
 
@@ -501,6 +803,15 @@ msgstr "Bienvenue"
 #: tests/templates/test.html:10
 msgid "Title: Test Page"
 msgstr "Titre : Page de test"
+
+#~ msgid "Pharmacist"
+#~ msgstr "Pharmacien"
+
+#~ msgid "Central Stock Manager"
+#~ msgstr "Gestionnaire central des stocks"
+
+#~ msgid "Branch Secretary"
+#~ msgstr "Secrétaire de branche"
 
 #~ msgid "Douala Branch"
 #~ msgstr "Agence de Douala"

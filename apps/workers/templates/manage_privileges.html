@@ -6,9 +6,9 @@
 
 {% block title %}
   {% if is_editing %}
-  Edit Worker
+  {% trans "Edit Worker" %}
   {% else %}
-  Add Worker
+  {% trans "Add Worker" %}
   {% endif %}
 {% endblock %}
 
@@ -16,9 +16,9 @@
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'workers' %}">Workers</a></li>
-    <li class="breadcrumb-item"><a href="">Manage Privileges</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Workers" %}</a></li>
+    <li class="breadcrumb-item"><a href="">{% trans "Manage Privileges" %}</a></li>
     {% comment %} <li class="breadcrumb-item active" aria-current="page">
       {% if is_editing %}
         Edit Worker
@@ -35,7 +35,7 @@
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Manage Privileges for {{ worker.user.get_full_name }}</></h5> 
+        <h5 class="mb-0">{% trans "Manage Privileges for" %} {{ worker.user.get_full_name }}</></h5> 
         <hr> 
       </div>
       <div class="card-body">
@@ -46,8 +46,8 @@
 
           <br>
           
-          <button type="submit" class="btn btn-primary">Save Privileges</button>
-          <a href="{% url 'workers' %}" class="btn btn-secondary">Back to Workers</a>
+          <button type="submit" class="btn btn-primary">{% trans "Save Privileges" %}</button>
+          <a href="{% url 'workers' %}" class="btn btn-secondary">{% trans "Back to Workers" %}</a>
         </form>
       </div>
     </div>

@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Vertical Layouts - Forms{% endblock %}
+{% block title %}{% trans "Add Branch"%} - GC PHARMA{% endblock %}
 
 {% load crispy_forms_tags %}
 
@@ -15,9 +15,9 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
           {% if is_editing %}
-            Edit Branch Details
+            {% trans "Edit Branch Details"%}
           {% else %}
-           New Branch Details
+           {% trans "New Branch Details"%}
           {% endif %}
         </h5> 
       </div>
@@ -28,9 +28,9 @@
           
           <button type="submit" class="btn btn-primary">
             {% if is_editing %}
-              Update Branch
+              {% trans "Update Branch"%}
             {% else %}
-              Add Branch
+              {% trans "Add Branch"%}
             {% endif %}
           </button>
         </form>

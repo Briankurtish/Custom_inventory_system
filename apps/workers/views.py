@@ -7,6 +7,7 @@ from .models import Worker
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserCreationForm, WorkerForm, WorkerPrivilegeForm, PrivilegeForm
+from django.utils.translation import gettext_lazy as _
 
 
 """
@@ -48,6 +49,7 @@ def add_worker_view(request, pk=None):
     if request.method == "POST":
         if form.is_valid():
             form.save()  # Save the product (create or update based on `pk`)
+            messages.success(request, _('Employee Credentials created successfully!'))
             return redirect('workers')  # Redirect to the product list after saving
 
     view_context = {
@@ -66,6 +68,7 @@ def update_worker_view(request, pk):
         form = WorkerForm(request.POST, instance=worker)  # Bind form to the product instance
         if form.is_valid():
             form.save()
+            messages.success(request, _('Employee Credentials updated successfully!'))
             return redirect('workers')  # Redirect to the product list
     else:
         form = WorkerForm(instance=worker)
@@ -91,6 +94,7 @@ def manage_worker_privileges(request, worker_id):
         form = WorkerPrivilegeForm(request.POST, instance=worker)
         if form.is_valid():
             form.save()
+            messages.success(request, _('Employee Privileges updated successfully!'))
             return redirect('workers')  # Redirect to a list of workers or success page
     else:
         form = WorkerPrivilegeForm(instance=worker)
@@ -112,10 +116,10 @@ def create_privilege(request):
         form = PrivilegeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Privilege created successfully!')
+            messages.success(request, _('Privilege created successfully!'))
             return redirect('create_privilege')
         else:
-            messages.error(request, 'Error creating privilege. Please check the input.')
+            messages.error(request, _('Error creating privilege. Please check the input.'))
     else:
         form = PrivilegeForm()
 

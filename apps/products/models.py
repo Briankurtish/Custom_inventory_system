@@ -5,10 +5,10 @@ from apps.genericName.models import GenericName
 
 class Batch(models.Model):
     batch_number = models.CharField(
-        max_length=50, unique=True, help_text="Batch Number"
+        max_length=50, unique=True
     )
     generic_name = models.ForeignKey(
-        GenericName, on_delete=models.CASCADE, related_name='batches', help_text="Generic Name"
+        GenericName, on_delete=models.CASCADE, related_name='batches'
     )
     expiry_date = models.DateField(help_text="Expiry Date")
     
@@ -19,7 +19,7 @@ class Batch(models.Model):
 
 class Product(models.Model):
     product_code = models.CharField(
-        max_length=50, blank=True, help_text="Code produit"
+        max_length=50, blank=True
     )
     brand_name = models.ForeignKey(
         GenericName, on_delete=models.CASCADE, related_name="brand_products")
@@ -32,7 +32,7 @@ class Product(models.Model):
         max_digits=10, 
         decimal_places=2, 
         default=0.00,  # Default value for unit_price
-        help_text="Unit Price of the product"
+        
     )
     batch = models.ForeignKey(
         Batch, on_delete=models.CASCADE, related_name="products"

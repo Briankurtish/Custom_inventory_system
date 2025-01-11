@@ -3,12 +3,12 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Tables - Basic Tables{% endblock %}
+{% block title %}{% trans "Branches"%} - GC PHARMA{% endblock %}
 
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-branch' %}'">
-  <span class="tf-icons bx bx-plus bx-18px me-2"></span>Add New Branch
+  <span class="tf-icons bx bx-plus bx-18px me-2"></span>{% trans "Add New Branch"%}
 </button>
 
 <hr class="my-8">
@@ -17,15 +17,15 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Branch List</h5>
+  <h5 class="card-header">{% trans "Branch List"%}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Branch ID</th>
-          <th>Branch Name</th>
-          <th>Address</th>
-          <th>Type</th>
+          <th>{% trans "Branch ID"%}</th>
+          <th>{% trans "Branch Name"%}</th>
+          <th>{% trans "Address"%}</th>
+          <th>{% trans "Type"%}</th>
           {% comment %} <th>Status</th> {% endcomment %}
           <th>Actions</th>
         </tr>
@@ -42,8 +42,8 @@
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'edit-branch' branch.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                <a class="dropdown-item" href="{% url 'delete-branch' branch.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
+                <a class="dropdown-item" href="{% url 'edit-branch' branch.id %}"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit"%}</a>
+                <a class="dropdown-item" href="{% url 'delete-branch' branch.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete"%}</a>
               </div>
             </div>
           </td>

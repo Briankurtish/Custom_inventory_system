@@ -10,7 +10,7 @@ class Branch(models.Model):
         max_length=50, unique=True
     )
     branch_name = models.CharField(
-        max_length=255, help_text="Branch Name"
+        max_length=255
     )
     address = models.TextField(
         

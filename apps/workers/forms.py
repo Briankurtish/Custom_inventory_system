@@ -2,62 +2,64 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Worker, Privilege
 from apps.branches.models import Branch
+from django.utils.translation import gettext_lazy as _
+
 
 class UserCreationForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),
-        label="First Name"
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter first name')}),
+        label= _("First Name")
     )
     last_name = forms.CharField(
         max_length=150,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter last name'}),
-        label="Last Name"
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter last name')}),
+        label= _("Last Name")
     )
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter email'}),
-        label="Email"
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': _('Enter email')}),
+        label= _("Email")
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}),
-        label="Password"
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Enter password')}),
+        label= _("Password")
     )
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password'}),
-        label="Confirm Password"
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Confirm password')}),
+        label= _("Confirm Password")
     )
     role = forms.ChoiceField(
         choices=Worker.ROLE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'}),
-        label="Role"
+        label= _("Role")
     )
     company = forms.ChoiceField(
         choices=[('GC Pharma', 'GC Pharma'), ('2A-Promo', '2A-Promo')],
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'company'}),
-        label="Company",
+        label= _("Company"),
         required=False
     )
     branch = forms.ModelChoiceField(
         queryset=Branch.objects.all(),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
-        label="Branch (optional)"
+        label= _("Branch"),
     )
     telephone = forms.CharField(
         max_length=20,
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
-        label="Telephone"
+        label= _("Telephone")
     )
     department = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
-        label="Department"
+        label= _("Department")
     )
     address = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
-        label="Address"
+        label= _("Address")
     )
 
     class Meta:
@@ -128,11 +130,11 @@ class WorkerForm(forms.ModelForm):
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
         }
         labels = {
-            'role': 'Worker Role',
-            'branch': 'Branch',
-            'telephone': 'Telephone',
-            'department': 'Department',
-            'address': 'Address',
+            'role': _('Worker Role'),
+            'branch': _('Branch'),
+            'telephone': _('Telephone'),
+            'department': _('Department'),
+            'address': _('Address'),
         }
         
         
@@ -150,6 +152,6 @@ class PrivilegeForm(forms.ModelForm):
         model = Privilege
         fields = ['name', 'description']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Privilege Name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Privilege Description', 'rows': 3}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Privilege Name')}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': _('Privilege Description'), 'rows': 3}),
         }
