@@ -24,6 +24,7 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 """
@@ -213,7 +214,7 @@ def create_purchase_order(request):
             # Redirect to the page for adding order items
             return redirect("add_order_items")
         else:
-            messages.error(request, "Invalid form submission. Please correct the errors.")
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
     else:
         po_form = PurchaseOrderForm(user_branch=user_branch)
 
@@ -264,7 +265,7 @@ def add_order_items(request):
                     request.session.modified = True
                     messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
             else:
-                messages.error(request, "Invalid form input. Please correct the errors.")
+                messages.error(request, _("Invalid form input. Please correct the errors."))
 
         # Remove item from order
         elif action == "remove_item":
@@ -281,9 +282,9 @@ def add_order_items(request):
                     # Notify success
                     messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
                 else:
-                    messages.error(request, "Invalid item index provided.")
+                    messages.error(request, _("Invalid item index provided."))
             except ValueError:
-                messages.error(request, "Invalid item index provided.")
+                messages.error(request, _("Invalid item index provided."))
 
         # Submit order
         elif action == "submit_order":
@@ -331,12 +332,12 @@ def add_order_items(request):
                     # Clear session data and redirect
                     request.session["order_items"] = []
                     request.session.modified = True
-                    messages.success(request, "Purchase order submitted successfully.")
+                    messages.success(request, _("Purchase order submitted successfully."))
                     return redirect("orders")
                 except Exception as e:
                     messages.error(request, f"Error submitting the order: {e}")
             else:
-                messages.error(request, "No items in the order to submit.")
+                messages.error(request, _("Purchase order submitted successfully."))
 
     # Calculate order details
     order_items = request.session["order_items"]
@@ -361,12 +362,12 @@ def approve_order(request, order_id):
 
     notes = request.POST.get('notes', '').strip()
     if not notes:
-        messages.error(request, "Approval notes are required.")
+        messages.error(request, _("Approval notes are required."))
         return redirect(reverse('order_details', args=[order_id]))
     
     # Check if the order is already approved or rejected
     if order.status != 'Pending':
-        messages.error(request, "This order has already been processed.")
+        messages.error(request, _("This order has already been processed."))
         return redirect(reverse('order_details', args=[order_id]))
 
     try:
@@ -421,7 +422,7 @@ def approve_order(request, order_id):
                     price=item.get_effective_price()  # Use the effective price (temp price or regular price)
                 )
 
-            messages.success(request, "Order approved and invoice generated successfully.")
+            messages.success(request, _("Order approved and invoice generated successfully."))
             return redirect(reverse('order_details', args=[order_id]))
 
     except Exception as e:
@@ -477,14 +478,14 @@ def reject_order(request, order_id):
 
     # Check if the order is already approved or rejected
     if order.status != 'Pending':
-        messages.error(request, "This order has already been processed.")
+        messages.error(request, _("This order has already been processed."))
         return redirect(reverse('order_details', args=[order_id]))
 
     if request.method == 'POST':
         # Get the rejection reason
         notes = request.POST.get('notes', '').strip()
         if not notes:
-            messages.error(request, "Rejection notes are required.")
+            messages.error(request, _("Rejection notes are required."))
             return redirect(reverse('order_details', args=[order_id]))
 
         # Update order status and notes
@@ -492,7 +493,7 @@ def reject_order(request, order_id):
         order.notes = notes
         order.save()
 
-        messages.success(request, "Order rejected successfully.")
+        messages.success(request, _("Order rejected successfully."))
         return redirect(reverse('order_details', args=[order_id]))
     
     # If not POST, return error response
@@ -506,7 +507,7 @@ def cancel_order(request, order_id):
 
     # Ensure the order is approved before allowing cancellation
     if order.status != 'Approved':
-        messages.error(request, "Only approved orders can be canceled.")
+        messages.error(request, _("Only approved orders can be canceled."))
         return redirect(reverse('order_details', args=[order_id]))
 
     # Perform cancellation
@@ -531,7 +532,7 @@ def cancel_order(request, order_id):
             order.status = 'Canceled'
             order.save()
 
-            messages.success(request, "Order canceled and stock levels restored successfully.")
+            messages.success(request, _("Order canceled and stock levels restored successfully."))
             return redirect(reverse('order_details', args=[order_id]))
 
         except Exception as e:
@@ -556,7 +557,7 @@ def edit_prices(request, order_id):
                 # Capture the reason for price change
                 edit_price_note = request.POST.get("edit_price_note", "").strip()
                 if not edit_price_note:
-                    messages.error(request, "Please provide a reason for the price change.")
+                    messages.error(request, _("Please provide a reason for the price change."))
                     return redirect("order_details", order_id=order_id)
 
                 for item in order_items:
@@ -586,7 +587,7 @@ def edit_prices(request, order_id):
                 order.notes = f"[Price Change]: {edit_price_note} ({timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"
                 order.save()
 
-                messages.success(request, "Prices and grand total updated successfully for this order.")
+                messages.success(request, _("Prices and grand total updated successfully for this order."))
         except Exception as e:
             messages.error(request, f"An error occurred while updating prices: {e}")
 
@@ -716,9 +717,9 @@ def add_invoice_payment(request, invoice_id):
 
             # Validate payment amount
             if payment_amount > invoice.grand_total:
-                form.add_error('amount_paid', "Payment amount cannot exceed the invoice's grand total.")
+                form.add_error('amount_paid', _("Payment amount cannot exceed the invoice's grand total."))
             elif payment_amount > invoice.amount_due:
-                form.add_error('amount_paid', "Payment amount cannot exceed the remaining amount due.")
+                form.add_error('amount_paid', _("Payment amount cannot exceed the remaining amount due."))
             else:
                 with transaction.atomic():  # Ensure atomicity for the process
                     # Update the invoice's payment details
@@ -746,7 +747,7 @@ def add_invoice_payment(request, invoice_id):
                 messages.success(request, f"Payment added successfully! Receipt ID: {receipt.receipt_id}")
                 return redirect('invoices')
         else:
-            messages.error(request, "Error adding payment. Please check the form.")
+            messages.error(request, _("Error adding payment. Please check the form."))
     else:
         form = InvoicePaymentForm()
 

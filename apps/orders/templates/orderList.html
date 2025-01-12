@@ -4,7 +4,7 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Order List{% endblock %}
+{% block title %}{% trans "Order List" %}{% endblock %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
     {% for privilege in user.worker_profile.privileges.all %}
         {% if privilege.name == 'Create Orders' %}
           <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-            <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
+            <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Create Order" %}
           </button>
         {% endif %}
     {% endfor %}
@@ -23,13 +23,13 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <!-- Filter by Status -->
   <form method="get" action="" class="d-flex align-items-center">
-    <label for="status" class="me-10">Filter by Status:</label>
+    <label for="status" class="me-10">{% trans "Filter by Status" %}:</label>
     <select name="status" id="status" class="form-select me-1" onchange="this.form.submit()">
-      <option value="" {% if not request.GET.status %}selected{% endif %}>All</option>
-      <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>Pending</option>
-      <option value="Approved" {% if request.GET.status == "Approved" %}selected{% endif %}>Approved</option>
-      <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>Rejected</option>
-      <option value="Canceled" {% if request.GET.status == "Canceled" %}selected{% endif %}>Canceled</option>
+      <option value="" {% if not request.GET.status %}selected{% endif %}>{% trans "All" %}</option>
+      <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+      <option value="Approved" {% if request.GET.status == "Approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+      <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
+      <option value="Canceled" {% if request.GET.status == "Canceled" %}selected{% endif %}>{% trans "Canceled" %}</option>
     </select>
   </form>
 </div>
@@ -38,21 +38,21 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Order List</h5>
+  <h5 class="card-header">{% trans "Order List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Order ID</th>
-          <th>Branch ID</th>
-          <th>Created By</th>
-          <th>Client</th>
-          <th>Sales Rep</th>
-          <th>Total Amount</th>
-          <th>Created At</th>
-          <th>Approved By</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{% trans "Order ID" %}</th>
+          <th>{% trans "Branch ID" %}</th>
+          <th>{% trans "Created By" %}</th>
+          <th>{% trans "Client" %}</th>
+          <th>{% trans "Sales Rep" %}</th>
+          <th>{% trans "Total Amount" %}</th>
+          <th>{% trans "Created At" %}</th>
+          <th>{% trans "Approved By" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -70,13 +70,13 @@
 
           <td>
             {% if order.status|lower == "pending" %}
-              <span class="badge bg-label-warning me-1">Pending</span>
+              <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
             {% elif order.status|lower == "approved" %}
-              <span class="badge bg-label-success me-1">Approved</span>
+              <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
             {% elif order.status|lower == "rejected" %}
-              <span class="badge bg-label-danger me-1">Rejected</span>
+              <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
             {% elif order.status|lower == "canceled" %}
-              <span class="badge bg-label-secondary me-1">Canceled</span>
+              <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
             {% else %}
               <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
             {% endif %}
@@ -88,7 +88,7 @@
               </button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'order_details' order.id %}">
-                  <i class="bx bx-book-open me-1"></i> View
+                  <i class="bx bx-book-open me-1"></i> {% trans "View" %}
                 </a>
                 {% comment %} 
                 <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
@@ -101,7 +101,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">No Invoices available</td>
+          <td colspan="11" class="text-center">{% trans "No Invoices available" %}</td>
         </tr>
         {% endfor %}
       </tbody>

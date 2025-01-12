@@ -4,16 +4,16 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Invoice Detail{% endblock %}
+{% block title %}{% trans "Invoice Details" %}{% endblock %}
 
 {% block content %}
 
-<h4 class="text">Invoice Details</h4>
+<h4 class="text">{% trans "Invoice Details" %}</h4>
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-      <li class="breadcrumb-item active"><a href="{% url 'invoices' %}">invoice</a></li>
-      <li class="breadcrumb-item active" aria-current="page">invoice Details</li>
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'invoices' %}">{% trans "Invoice" %}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Invoice Details" %}</li>
     </ol>
 </nav>
 <hr class="my-8">
@@ -28,19 +28,19 @@
         <!-- Order Information -->
         <div class="row">
             <div class="col-md-3">
-                <small class="text m-3">Branch ID</small>
+                <small class="text m-3">{% trans "Branch ID" %}</small>
                 <h6 class="mx-3">{{ order.branch.branch_id }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Branch Name</small>
+                <small class="text m-3">{% trans "Branch Name" %}</small>
                 <h6 class="mx-3">{{ order.branch.branch_name }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Created By</small>
+                <small class="text m-3">{% trans "Created By" %}</small>
                 <h6 class="mx-3">{{ order.created_by.user.get_full_name }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Date Created</small>
+                <small class="text m-3">{% trans "Date Created" %}</small>
                 <h6 class="mx-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
@@ -51,28 +51,28 @@
         <!-- More Order Information -->
         <div class="row">
             <div class="col-md-3">
-                <small class="text m-3">Customer Name</small>
+                <small class="text m-3">{% trans "Customer Name" %}</small>
                 <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
                 
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Sales Representative</small>
+                <small class="text m-3">{% trans "Sales Representative" %}</small>
                 <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
                 
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Payment Method</small>
+                <small class="text m-3">{% trans "Payment Method" %}</small>
                 <h6 class="mx-3 text-primary">{{ order.payment_method }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text mx-3">Status</small>
+                <small class="text mx-3">{% trans "Status" %}</small>
                 <h6 class="text-warning mx-3">
                     {% if order.status|lower == "unpaid" %}
-                    <span class="badge bg-label-warning me-1">UnPaid</span>
+                    <span class="badge bg-label-warning me-1">{% trans "UnPaid" %}</span>
                     {% elif order.status|lower == "payment ongoing" %}
-                    <span class="badge bg-label-success me-1">Payment Ongoing</span>
+                    <span class="badge bg-label-success me-1">{% trans "Payment Ongoing" %}</span>
                     {% elif order.status|lower == "payment completed" %}
-                    <span class="badge bg-label-danger me-1">Payment Completed</span>
+                    <span class="badge bg-label-danger me-1">{% trans "Payment Completed" %}</span>
                     {% else %}
                     <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
                     {% endif %}
@@ -85,18 +85,18 @@
 <!-- Order Items -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Order Items</h5>
+        <h5 class="mb-0">{% trans "Order Items" %}</h5>
        
     </div>
     <div class="table-responsive text-nowrap">
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Product Code</th>
-                    <th>Product Name</th>
-                    <th>Unit Price</th>
-                    <th>Quantity</th>
-                    <th>Total Price</th>
+                    <th>{% trans "Product Code" %}</th>
+                    <th>{% trans "Product Name" %}</th>
+                    <th>{% trans "Unit Price" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th>{% trans "Total Price" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,12 +110,12 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No items found for this order.</td>
+                    <td colspan="5" class="text-center">{% trans "No items found for this order" %}</td>
                 </tr>
                 {% endfor %}
                 <!-- Grand Total Row -->
                 <tr>
-                    <td colspan="3"><strong><h4>Grand Total</h4></strong></td>
+                    <td colspan="3"><strong><h4>{% trans "Grand Total" %}</h4></strong></td>
                     <td><strong><h6>{{total_quantity}}</h6></strong></td>
                     <td class="text-primary"><strong>{{ order.grand_total|floatformat:0|intcomma }} CFA</strong></td>
                 </tr>
@@ -138,24 +138,24 @@
     {% if order.status == "Pending" and 'Approve or decline Orders' in worker_privileges %}
         <form action="{% url 'approve_order' order.id %}" method="post" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="btn btn-success">Approve</button>
+            <button type="submit" class="btn btn-success">{% trans "Approve" %}</button>
         </form>
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-            Reject
+            {% trans "Reject" %}
         </button>
     {% endif %}
 
     {% if order.status == "Approved" and 'Cancel Order' in worker_privileges %}
         <form method="post" action="{% url 'cancel_order' order.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Cancel Order</button>
+            <button type="submit" class="btn btn-danger">{% trans "Cancel Order" %}</button>
         </form>
     {% endif %}
 </div>
 
 <div class="mt-3">
     {% if order.status == "Approved" and 'Generate Purchase Order' in worker_privileges %}
-        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">Download Purchase Order PDF</a>
+        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">{% trans "Download Purchase Order PDF" %}</a>
     {% endif %}
 </div>
 
@@ -165,20 +165,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="rejectModalLabel">Reject Order</h5>
+                <h5 class="modal-title" id="rejectModalLabel">{% trans "Reject Order" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{% url 'reject_order' order.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Rejection Notes</label>
+                        <label for="notes" class="form-label">{% trans "Rejection Notes" %}</label>
                         <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Reject</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Reject" %}</button>
                 </div>
             </form>
         </div>

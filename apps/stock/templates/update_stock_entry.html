@@ -1,19 +1,19 @@
 {% extends layout_path %}
 
-{% block title %}Update Stock{% endblock %}
+{% block title %}{% trans "Update Stock" %}{% endblock %}
 
 {% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container mt-4">
-  <h1 class="text-center">Update Stock for {{ stock.product.generic_name_dosage }}</h1>
+  <h1 class="text-center">{% trans "Update Stock for" %} {{ stock.product.generic_name_dosage }}</h1>
 
   <!-- Stock Update Form -->
   <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="d-flex justify-content-end mt-3">
-      <button type="submit" class="btn btn-success">Update Stock</button>
+      <button type="submit" class="btn btn-success">{% trans "Update Stock" %}</button>
     </div>
   </form>
 </div>

@@ -1,6 +1,8 @@
 from django import forms
 from .models import Batch, Product
 from apps.genericName.models import GenericName
+from django.utils.translation import gettext_lazy as _
+
 
 class BatchForm(forms.ModelForm):
     class Meta:
@@ -9,13 +11,18 @@ class BatchForm(forms.ModelForm):
         widgets = {
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for expiry date
         }
+        labels = {
+            'batch_number': _('Batch Number'),  # Translatable label
+            'generic_name': _('Generic Name & Dosage'),  # Translatable label
+            'expiry_date': _('Expiry Date'),  # Translatable label
+        }
     
     # Change 'generic_name' to a ModelChoiceField to fetch data from GenericName table
     generic_name = forms.ModelChoiceField(
         queryset=GenericName.objects.all(),
         required=True,
         widget=forms.Select(attrs={'class': 'form-control'}),
-        help_text="Select the generic name from the list"
+        help_text=_("Select the generic name from the list")
     )
 
 
@@ -27,6 +34,12 @@ class ProductForm(forms.ModelForm):
         fields = ['generic_name_dosage', 'brand_name', 'pack_size', 'batch']
         widgets = {
             'product_code': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        labels = {
+            'generic_name_dosage': _('Generic Name & Dosage'),  # Translatable label
+            'brand_name': _('Brand Name'),  # Translatable label
+            'pack_size': _('Pack Size'),  # Translatable label
+            'batch': _('Batch Number'),  # Translatable label
         }
 
     def __init__(self, *args, **kwargs):
@@ -40,7 +53,7 @@ class ProductForm(forms.ModelForm):
                 decimal_places=2,
                 required=True,
                 widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}),
-                help_text="Unit Price of the product"
+                help_text=_("Unit Price of the product")
             )
             # Pre-populate with the instance value if available
             if self.instance and self.instance.pk:
@@ -58,6 +71,12 @@ class AddProductForm(forms.ModelForm):
         widgets = {
             'product_code': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
+        labels = {
+            'generic_name_dosage': _('Generic Name & Dosage'),  # Translatable label
+            'brand_name': _('Brand Name'),  # Translatable label
+            'pack_size': _('Pack Size'),  # Translatable label
+            'batch': _('Batch Number'),  # Translatable label
+        }
 
 
 class EditProductForm(forms.ModelForm):
@@ -66,6 +85,12 @@ class EditProductForm(forms.ModelForm):
         fields = ['generic_name_dosage', 'brand_name', 'pack_size', 'batch']
         widgets = {
             'product_code': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        labels = {
+            'generic_name_dosage': _('Generic Name & Dosage'),  # Translatable label
+            'brand_name': _('Brand Name'),  # Translatable label
+            'pack_size': _('Pack Size'),  # Translatable label
+            'batch': _('Batch Number'),  # Translatable label
         }
 
 
@@ -77,6 +102,13 @@ class UpdateProductForm(forms.ModelForm):
         widgets = {
             'product_code': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'unit_price': forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}),
+        }
+        labels = {
+            'generic_name_dosage': _('Generic Name & Dosage'),  # Translatable label
+            'brand_name': _('Brand Name'),  # Translatable label
+            'pack_size': _('Pack Size'),  # Translatable label
+            'batch': _('Batch Number'),  # Translatable label
+            'unit_price': _('Unit Price'),  # Translatable label
         }
 
     def __init__(self, *args, **kwargs):

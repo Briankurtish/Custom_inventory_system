@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Create Stock Request{% endblock %}
+{% block title %}{% trans "Create Stock Request" %}{% endblock %}
 
 {% load crispy_forms_tags %}
 
@@ -11,7 +11,7 @@
 <div class="card">
 
   <div class="container mt-4 mb-6">
-    <h1 class="text-center">Create Stock Request</h1>
+    <h1 class="text-center">{% trans "Create Stock Request" %}</h1>
   
     <!-- Stock Request Form -->
     <form method="post">
@@ -19,22 +19,22 @@
       {{ form|crispy }}
   
       <div class="d-flex justify-content-end mt-3">
-        <button type="submit" class="btn btn-info" name="add_to_request_list" value="true">Add to Request List</button>
+        <button type="submit" class="btn btn-info" name="add_to_request_list" value="true">{% trans "Add to Request List" %}</button>
       </div>
     </form>
   
     <!-- Temporary Stock Request List -->
     <div class="card mt-5">
-      <h5 class="card-header">Stock Request List</h5>
+      <h5 class="card-header">{% trans "Stock Request List" %}</h5>
       <div class="table-responsive text-nowrap">
         <table class="table table-hover">
           <thead>
             <tr>
-              <th>Product Code</th>
-              <th>Generic Name</th>
-              <th>Quantity</th>
-              <th>Branch</th>
-              <th>Actions</th>
+              <th>{% trans "Product Code" %}</th>
+              <th>{% trans "Generic Name" %}</th>
+              <th>{% trans "Quantity" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th>{% trans "Actions" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,14 +50,14 @@
                       {% csrf_token %}
                       <input type="hidden" name="product_code" value="{{ item.product_code }}" />
                       <input type="hidden" name="branch" value="{{ item.branch_id }}" />
-                      <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">Remove</button>
+                      <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">{% trans "Remove" %}</button>
                     </form>
                   </td>
                 </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="4" class="text-center">No items in the request list.</td>
+                <td colspan="4" class="text-center">{% trans "No items in the request list" %}</td>
               </tr>
             {% endif %}
           </tbody>
@@ -70,7 +70,7 @@
       <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary btn-lg" name="submit_request" value="true">
-          Submit Request
+          {% trans "Submit Request" %}
         </button>
       </form>
     </div>

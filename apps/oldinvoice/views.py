@@ -14,6 +14,7 @@ from apps.workers.models import Worker
 from datetime import datetime
 from django.core.paginator import Paginator
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField, FloatField
+from django.utils.translation import gettext_lazy as _
 
 
 
@@ -141,7 +142,7 @@ def create_invoice_order(request):
             }
             return redirect("add_invoice_items")  # Redirect to add items to the order
         else:
-            messages.error(request, "Invalid form submission. Please correct the errors.")
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
     else:
         # Pass user_branch to the form initialization for filtering options
         invoice_form = OldInvoiceOrderForm(user_branch=user_branch)
@@ -196,9 +197,9 @@ def add_invoice_items(request):
                     request.session.modified = True
                     messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
                 else:
-                    messages.error(request, "Invalid item index provided.")
+                    messages.error(request, _("Invalid item index provided."))
             except ValueError:
-                messages.error(request, "Invalid item index provided.")
+                messages.error(request, _("Invalid item index provided."))
 
         # Submit order
         elif action == "submit_order":
@@ -252,12 +253,12 @@ def add_invoice_items(request):
                     request.session["order_items"] = []
                     request.session["invoice_order_details"] = {}
                     request.session.modified = True
-                    messages.success(request, "Old Invoice Created Successfully.")
+                    messages.success(request, _("Old Invoice Created Successfully."))
                     return redirect("old-invoice")
                 except Exception as e:
                     messages.error(request, f"Error submitting the invoice: {e}")
             else:
-                messages.error(request, "No items in the order or missing order details.")
+                messages.error(request, _("No items in the order or missing order details."))
 
     # Calculate order details
     order_items = request.session["order_items"]
@@ -288,10 +289,10 @@ def add_invoice_payment(request, invoice_id):
 
             # Check if the payment exceeds the grand total
             if payment_amount > invoice.grand_total:
-                form.add_error('amount_paid', "Payment amount cannot exceed the invoice's grand total.")
+                form.add_error('amount_paid', _("Payment amount cannot exceed the invoice's grand total."))
             # Check if the payment exceeds the amount due
             elif payment_amount > invoice.amount_due:
-                form.add_error('amount_paid', "Payment amount cannot exceed the remaining amount due.")
+                form.add_error('amount_paid', _("Payment amount cannot exceed the remaining amount due."))
             else:
                 with transaction.atomic():  # Ensure atomicity for the payment update process
                     # Save the payment
@@ -305,10 +306,10 @@ def add_invoice_payment(request, invoice_id):
                     invoice.amount_due = max(invoice.grand_total - invoice.amount_paid, 0)
                     invoice.save()
 
-                messages.success(request, "Payment added successfully!")
+                messages.success(request, _("Payment added successfully!"))
                 return redirect('old-invoice')
         else:
-            messages.error(request, "Error adding payment. Please check the form.")
+            messages.error(request, _("Error adding payment. Please check the form."))
     else:
         form = InvoicePaymentHistoryForm()
 

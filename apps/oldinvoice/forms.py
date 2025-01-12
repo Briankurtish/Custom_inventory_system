@@ -5,6 +5,7 @@ from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
 from apps.workers.models import Worker
+from django.utils.translation import gettext_lazy as _
 
 
 from django import forms
@@ -21,12 +22,12 @@ class OldInvoiceOrderForm(forms.ModelForm):
             'created_at': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
         labels = {
-            'branch': 'Branch',
-            'customer': 'Customer',
-            'sales_rep': 'Sales Representative',
-            'payment_method': 'Payment Method',
-            'amount_paid': 'Amount Paid',
-            'created_at': 'Invoice Date',
+            'branch': _('Branch'),
+            'customer': _('Customer'),
+            'sales_rep': _('Sales Representative'),
+            'payment_method': _('Payment Method'),
+            'amount_paid': _('Amount Paid'),
+            'created_at': _('Invoice Date'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -57,7 +58,7 @@ class OldInvoiceOrderForm(forms.ModelForm):
         amount_paid = self.cleaned_data.get('amount_paid')
         grand_total = self.instance.grand_total  # Use instance if editing an existing order
         if amount_paid and grand_total and amount_paid > grand_total:
-            raise forms.ValidationError("Amount paid cannot exceed the grand total.")
+            raise forms.ValidationError(_("Amount paid cannot exceed the grand total."))
         return amount_paid
 
 
@@ -71,9 +72,9 @@ class OldInvoiceOrderItemForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
         labels = {
-            'stock': 'Product',
-            'quantity': 'Quantity',
-            'price': 'Price',
+            'stock': _('Product'),
+            'quantity': _('Quantity'),
+            'price': _('Price'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -121,8 +122,8 @@ class InvoicePaymentHistoryForm(forms.ModelForm):
 
         if self.invoice:
             if amount_paid > self.invoice.grand_total:
-                raise forms.ValidationError("Amount paid cannot exceed the invoice's grand total.")
+                raise forms.ValidationError(_("Amount paid cannot exceed the invoice's grand total."))
             if amount_paid > self.invoice.amount_due:
-                raise forms.ValidationError("Amount paid cannot exceed the remaining amount due.")
+                raise forms.ValidationError(_("Amount paid cannot exceed the remaining amount due."))
 
         return amount_paid

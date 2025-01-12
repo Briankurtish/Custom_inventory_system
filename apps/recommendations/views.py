@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import Recommendation
 from django.contrib.auth.decorators import login_required
 from .forms import RecommendationForm
+from django.utils.translation import gettext_lazy as _
+from django.contrib import messages
 
 
 """
@@ -45,6 +47,7 @@ def add_recommend_view(request, pk=None):
             if not pk:
                 recommendation.pharmacist = request.user.worker_profile
             recommendation.save()
+            messages.success(request, _("Recommendation sent successfully!"))
             return redirect('recommend')  # Redirect to the list page after saving
 
     view_context = {

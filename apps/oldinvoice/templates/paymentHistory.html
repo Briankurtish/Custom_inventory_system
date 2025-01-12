@@ -9,15 +9,15 @@
 {% block content %}
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Payment History for Invoice #{{ invoice.id }}</h5>
+  <h5 class="card-header">{% trans "Payment History for Invoice" %} #{{ invoice.id }}</h5>
   
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <h5><strong>Customer:</strong> {{ invoice.customer.customer_name }}</h5>
+        <h5><strong>{% trans "Customer" %}:</strong> {{ invoice.customer.customer_name }}</h5>
       </div>
       <div class="col-md-4 text-end">
-        <h5><strong>Date:</strong> {{ invoice.created_at|date:"M d, Y" }}</h5>
+        <h5><strong>{% trans "Date" %}:</strong> {{ invoice.created_at|date:"M d, Y" }}</h5>
       </div>
     </div>
   </div>
@@ -26,31 +26,31 @@
     <div class="row">
         <!-- First Column -->
         <div class="col-md-2">
-            <small class="text m-3">Invoice Total</small>
+            <small class="text m-3">{% trans "Invoice Total" %}</small>
             <h5 class="mx-3">{{ invoice.grand_total|intcomma }} CFA</h5>
         </div>
 
         <!-- Second Column -->
         <div class="col-md-2">
-            <small class="text m-3">Total Amount Paid</small>
+            <small class="text m-3">{% trans "Total Amount Paid" %}</small>
             <h5 class="mx-3">{{ invoice.amount_paid|intcomma }} CFA</h5>
         </div>
 
         <!-- Third Column -->
         <div class="col-md-2">
-            <small class="text m-3">Total Amount Due</small>
+            <small class="text m-3">{% trans "Total Amount Due" %}</small>
             <h5 class=" mx-3">{{ invoice.amount_due|intcomma }} CFA</h5>
         </div>
 
         <!-- Fourth Column -->
         <div class="col-md-2">
-          <small class="text m-3">Percentage Paid</small>
+          <small class="text m-3">{% trans "Percentage Paid" %}</small>
           <h5 class=" mx-3">{{ percentage_paid|intcomma }}%</h5>
         </div>
 
         <!-- Fifth Column -->
         <div class="col-md-2">
-          <small class="text m-3">Percentage Left</small>
+          <small class="text m-3">{% trans "Percentage Left" %}</small>
           <h5 class=" mx-3">{{ percentage_left|intcomma }}%</h5>
         </div>
     </div>
@@ -61,10 +61,10 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Payment Date</th>
-          <th>Amount Paid</th>
-          <th>Payment Method</th>
-          <th>Account Details</th>
+          <th>{% trans "Payment Date" %}</th>
+          <th>{% trans "Amount Paid" %}</th>
+          <th>{% trans "Payment Method" %}</th>
+          <th>{% trans "Account Details" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -78,7 +78,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center">No payment history available for this invoice.</td>
+          <td colspan="6" class="text-center">{% trans "No payment history available for this invoice" %}</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Sales Rep List{% endblock %}
+{% block title %}{% trans "Sales Rep List"%}{% endblock %}
 
 {% block content %}
 
@@ -15,19 +15,19 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Sales Rep List</h5>
+  <h5 class="card-header">{% trans "Sales Rep List"%}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Sales Rep ID</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Phone Number</th>
-          <th>Email</th>
-          <th>Branch</th>
-          <th>Manager</th>
-          <th>Actions</th>
+          <th>{% trans "Sales Rep ID"%}</th>
+          <th>{% trans "First Name" %}</th>
+          <th>{% trans "Last Name" %}</th>
+          <th>{% trans "Phone Number" %}</th>
+          <th>{% trans "Email" %}</th>
+          <th>{% trans "Branch" %}</th>
+          <th>{% trans "Manager" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -46,7 +46,7 @@
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
                 {% if 'View Customer Credits' in worker_privileges %}
-                  <a class="dropdown-item" href="{% url 'sales_rep_credit_history' worker_id=salesRep.id %}"><i class="bx bx-credit-card me-1"></i> View Credits</a>
+                  <a class="dropdown-item" href="{% url 'sales_rep_credit_history' worker_id=salesRep.id %}"><i class="bx bx-credit-card me-1"></i> {% trans "View Credits" %}</a>
                 {% endif %}
                 
               </div>

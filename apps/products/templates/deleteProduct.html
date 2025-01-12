@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Manage Products{% endblock title %}
+{% block title %}{% trans "Manage Products" %}{% endblock title %}
 
 {% block vendor_css %}
 {{ block.super }}
@@ -22,7 +22,7 @@
 
 {% block content %}
 <div class="row gy-6">
-  <h3 class=" mb-0 flex-wrap text-nowrap">Manage Products</h3>
+  <h3 class=" mb-0 flex-wrap text-nowrap">{% trans "Manage Products" %}</h3>
 
   <!-- Hoverable Table rows -->
 
@@ -30,17 +30,17 @@
     <div class="col-md-6 col-lg-4 mx-auto"> <!-- Add mx-auto to the column -->
       <div class="card text-center">
         <div class="card-body">
-          <h5 class="card-title text-warning"> <span class="tf-icons ri-notification-fill text-warning ri-16px me-1_5"></span>Warning</h5>
-          <p class="card-text">Are you sure you want to delete {{product.brand_name}}?</p>
+          <h5 class="card-title text-warning"> <span class="tf-icons ri-notification-fill text-warning ri-16px me-1_5"></span>{% trans "Warning" %}</h5>
+          <p class="card-text">{% trans "Are you sure you want to delete" %} {{product.brand_name}}?</p>
           <form method="POST">
             {% csrf_token %}
             {% comment %} {{form}} {% endcomment %}
             <div class="row">
                 <div class="col-md-3">
-                    <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
+                    <a href="{% url 'products' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-danger" type="submit">Yes</button>
+                    <button class="btn btn-danger" type="submit">{% trans "Yes" %}</button>
                 </div>
               </div>
           </form>

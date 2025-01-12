@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import PackSize
 from .forms import PackSizeForm
 from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
 
 # Create your views here.
 def ManagePackView(request):
@@ -28,7 +29,7 @@ def add_pack_view(request):
         form = PackSizeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Pack Size added successfully!")
+            messages.success(request, _("Pack Size added successfully!"))
             return redirect('add-packsize')
     else:
         form = PackSizeForm()
@@ -47,7 +48,7 @@ def edit_pack_view(request, pk):
         form = PackSizeForm(request.POST, instance=pack_size)  
         if form.is_valid():
             form.save()
-            messages.success(request, "Pack Size updated successfully!")
+            messages.success(request, _("Pack Size updated successfully!"))
             return redirect('add-packsize')  
     else:
         form = PackSizeForm(instance=pack_size)  
@@ -68,7 +69,7 @@ def delete_pack_view(request, pk):
     pack_size = get_object_or_404(PackSize, pk=pk)  # Get the batch by ID
     if request.method == "POST":
         pack_size.delete()  # Delete the batch
-        messages.success(request, "Pack Size deleted successfully!")
+        messages.success(request, _("Pack Size deleted successfully!"))
         return redirect('add-packsize')  # Redirect to the batch list
 
     pack_size = PackSize.objects.all()

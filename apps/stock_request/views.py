@@ -21,6 +21,7 @@ from reportlab.lib.units import inch
 import io
 from django.core.files import File
 from django.core.paginator import Paginator
+from django.utils.translation import gettext_lazy as _
 
 
 """
@@ -63,9 +64,9 @@ def stock_request_view(request):
                     })
 
                 request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
-                messages.success(request, "Item added to temporary stock request list.")
+                messages.success(request, _("Item added to temporary stock request list."))
             else:
-                messages.error(request, "Invalid data. Please check the form.")
+                messages.error(request, _("Item added to temporary stock request list."))
 
         elif "remove_item" in request.POST:
             product_code = request.POST.get("product_code")
@@ -77,7 +78,7 @@ def stock_request_view(request):
                 if not (item["product_code"] == product_code and item["branch_id"] == int(branch_id))
             ]
             request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
-            messages.success(request, "Item removed from the temporary stock request list.")
+            messages.success(request, _("Item removed from the temporary stock request list."))
 
         elif "submit_request" in request.POST:
             if temp_stock_request_list:
@@ -90,7 +91,7 @@ def stock_request_view(request):
                     StockRequestProduct.objects.create(stock_request=stock_request, product=product, quantity=item["quantity"])
 
                 del request.session["TEMP_STOCK_REQUEST_LIST"]
-                messages.success(request, "Stock request submitted successfully.")
+                messages.success(request, _("Stock request submitted successfully."))
                 return redirect("requests")  # Adjust this with your actual URL name
 
     view_context = {
@@ -110,7 +111,7 @@ def ManageRequestsView(request):
     worker_profile = getattr(request.user, 'worker_profile', None)
     
     if not worker_profile:
-        return HttpResponseForbidden("You do not have access to manage stock requests.")
+        return HttpResponseForbidden(_("You do not have access to manage stock requests."))
     
     user_role = worker_profile.role
     stock_requests = StockRequest.objects.all()
@@ -193,7 +194,7 @@ def approve_or_decline_request(request, request_id):
         try:
             central_warehouse = Branch.objects.get(branch_type="central")  # Adjust field name as needed
         except Branch.DoesNotExist:
-            messages.error(request, "Central warehouse not found. Please ensure it exists.")
+            messages.error(request, _("Central warehouse not found. Please ensure it exists."))
             return redirect("requests")
             # return JsonResponse({
             #     "success": False,
@@ -229,7 +230,7 @@ def approve_or_decline_request(request, request_id):
 
             # Handle insufficient stock
             if insufficient_stock:
-                messages.warning(request, "Some items have insufficient stock.")
+                messages.warning(request, _("Some items have insufficient stock."))
                 return redirect("requests")
                 # return JsonResponse({
                 #     "success": False,
@@ -252,7 +253,7 @@ def approve_or_decline_request(request, request_id):
             #     "message": "Stock request approved. Picking list generated and stocks updated."
             # })
             
-            messages.success(request, "Stock request approved. Picking list generated and stocks updated.")
+            messages.success(request, _("Stock request approved. Picking list generated and stocks updated."))
             return redirect("requests")  # Redirect to the appropriate page, like the list of requests
 
         elif action == "decline":
@@ -264,14 +265,14 @@ def approve_or_decline_request(request, request_id):
             #     "success": True,
             #     "message": "Stock request declined."
             # })
-            messages.success(request, "Stock request declined.")
+            messages.success(request, _("Stock request declined."))
             return redirect("requests")
 
     # return JsonResponse({
     #     "success": False,
     #     "message": "Invalid request."
     # }, status=400)
-    messages.error(request, "Invalid request.")
+    messages.error(request, _("Invalid request."))
     return redirect("requests")
 
 
@@ -318,12 +319,12 @@ def stock_received(request, request_id):
         stock_request.save()
 
         # Return a success message
-        messages.success(request, "Stock received and branch warehouse updated successfully.")
+        messages.success(request, _("Stock received and branch warehouse updated successfully."))
         return redirect("stock")  # Redirect to the appropriate page, like the list of requests
 
     else:
         # If not POST, show an error message or redirect
-        messages.error(request, "Invalid request method.")
+        messages.error(request, _("Invalid request method."))
         return redirect("stock")
 
     # If not a POST request, render a confirmation page or similar
@@ -343,7 +344,7 @@ def stocks_in_transit(request):
 
     # If the user is not a worker or doesn't belong to a branch, deny access
     if not worker or not worker.branch:
-        return HttpResponseForbidden("You do not have access to view stocks in transit.")
+        return HttpResponseForbidden(_("You do not have access to view stocks in transit."))
 
     # Retrieve the branch and in-transit stocks for the worker's branch
     branch = worker.branch

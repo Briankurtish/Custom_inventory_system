@@ -6,33 +6,33 @@
 {% load humanize %}
 
 
-{% block title %}Add Payment{% endblock %}
+{% block title %}{% trans "Add Payment" %}{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Invoice Payment</h5>
+        <h5 class="mb-0">{% trans "Invoice Payment" %}</h5>
       </div>
 
       <div class="container">
         <!-- invoice Information -->
         <div class="row">
             <div class="col-md-3">
-                <small class="text m-3">Invoice Total</small>
+                <small class="text m-3">{% trans "Invoice Total" %}</small>
                 <h6 class="mx-3">{{ invoice.grand_total|floatformat:0|intcomma }} CFA</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Amount Paid</small>
+                <small class="text m-3">{% trans "Amount Paid" %}</small>
                 <h6 class="mx-3">{{ invoice.amount_paid|floatformat:0|intcomma }} CFA</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Amount Due</small>
+                <small class="text m-3">{% trans "Amount Due" %}</small>
                 <h6 class="mx-3">{{ invoice.amount_due|floatformat:0|intcomma }} CFA</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Payment Mode</small>
+                <small class="text m-3">{% trans "Payment Mode" %}</small>
                 <h6 class="mx-3">{{ invoice.payment_method }}</h6>
             </div>
         </div>
@@ -45,7 +45,7 @@
           {{ form|crispy }}
 
           <br>
-          <button type="submit" class="btn btn-primary">Submit Payment</button>
+          <button type="submit" class="btn btn-primary">{% trans "Submit Payment" %}</button>
           
         </form>
 

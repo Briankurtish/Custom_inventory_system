@@ -4,14 +4,14 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block title %}Create Purchase Order{% endblock %}
+{% block title %}{% trans "Create Purchase Order" %}{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Purchase Order / Bon de Commande</h5>
+        <h5 class="mb-0">{% trans "Purchase Order" %}</h5>
       </div>
       <br>
       <div class="card-body">
@@ -21,7 +21,7 @@
           {{ po_form|crispy }}
 
           <br>
-          <button type="submit" class="btn btn-primary">Next: Add Items</button>
+          <button type="submit" class="btn btn-primary">{% trans "Next" %}: {% trans "Add Items" %}</button>
           
         </form>
 

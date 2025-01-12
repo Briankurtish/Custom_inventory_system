@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Batch Numbers{% endblock %}
+{% block title %}{% trans "Add Batch Number" %}{% endblock %}
 
 {% load crispy_forms_tags %}
 
@@ -17,7 +17,7 @@
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Add Batch Number</h5> 
+        <h5 class="mb-0">{% trans "Add Batch Number" %}</h5> 
       </div>
       <div class="card-body">
         <form method='POST'>
@@ -25,9 +25,9 @@
           {{ form|crispy }}
           
           {% if is_editing %}
-            <button type="submit" class="btn btn-warning">Update Batch</button>
+            <button type="submit" class="btn btn-warning">{% trans "Update Batch" %}</button>
           {% else %}
-            <button type="submit" class="btn btn-primary">Add Batch Number</button>
+            <button type="submit" class="btn btn-primary">{% trans "Add Batch Number" %}</button>
           {% endif %}
         </form>
       </div>
@@ -42,15 +42,15 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Batch Number List</h5>
+  <h5 class="card-header">{% trans "Batch Number List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Batch Number</th>
-          <th>Generic Name</th>
-          <th>Exipry Date</th>
-          <th>Actions</th>
+          <th>{% trans "Batch Number" %}</th>
+          <th>{% trans "Generic Name" %}</th>
+          <th>{% trans "Exipry Date" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -64,9 +64,9 @@
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'edit-batch' batch.id %}">
-                  <i class="bx bx-edit-alt me-1"></i> Edit
+                  <i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'delete-batch' batch.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
+                <a class="dropdown-item" href="{% url 'delete-batch' batch.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
               </div>
             </div>
           </td>
@@ -80,5 +80,22 @@
 
 
 
+
+{% endblock %}
+
+
+{% block page_js %}
+
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_generic_name").select2({
+      placeholder: "Search Generic Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
 
 {% endblock %}

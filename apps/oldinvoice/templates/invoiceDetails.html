@@ -4,11 +4,11 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Order Details{% endblock %}
+{% block title %}{% trans "Order Details" %}{% endblock %}
 
 {% block content %}
 
-<h4 class="text">Order Details</h4>
+<h4 class="text">{% trans "Order Details" %}</h4>
 <hr class="my-8">
 
 <div class="card">
@@ -21,24 +21,24 @@
         <div class="row">
             <!-- First Column -->
             <div class="col-md-3">
-                <small class="text m-3">Branch ID</small>
+                <small class="text m-3">{% trans "Branch ID" %}</small>
                 <h6 class="mx-3">{{ old_invoice.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-3">
-                <small class="text m-3">Branch Name</small>
+                <small class="text m-3">{% trans "Branch Name" %}</small>
                 <h6 class="mx-3">{{ old_invoice.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
             <div class="col-md-3">
-                <small class="text m-3">Created By</small>
+                <small class="text m-3">{% trans "Created By" %}</small>
                 <h6 class=" mx-3">{{ old_invoice.created_by.user.get_full_name }}</h6>
             </div>
             <!-- Date Column -->
             <div class="col-md-3">
-                <small class="text m-3">Date Created</small>
+                <small class="text m-3">{% trans "Date Created" %}</small>
                 <h6 class=" mx-3">{{ old_invoice.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
@@ -49,20 +49,20 @@
         <div class="row">
             <!-- First Column -->
             <div class="col-md-4">
-                <small class="text m-3">Customer Name</small>
+                <small class="text m-3">{% trans "Customer Name" %}</small>
                 <h6 class="mx-3">{{ old_invoice.customer.customer_name }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-4">
-                <small class="text m-3">Sales Representative</small>
+                <small class="text m-3">{% trans "Sales Representative" %}</small>
                 <h6 class="mx-3">{{ old_invoice.sales_rep.user.get_full_name }}</h6>
 
             </div>
 
             <!-- Third Column -->
             <div class="col-md-4">
-                <small class="text m-3">Payment Method</small>
+                <small class="text m-3">{% trans "Payment Method" %}</small>
                 <h6 class=" mx-3">{{ old_invoice.payment_method }}</h6>
             </div>
         </div>
@@ -70,16 +70,16 @@
     <hr>
 
     <div class="card">
-        <h5 class="card-header">Order Items</h5>
+        <h5 class="card-header">{% trans "Order Items" %}</h5>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
-                        <th>Unit Price</th>
-                        <th>Quantity</th>
-                        <th>Total Price</th>
+                        <th>{% trans "Product Code" %}</th>
+                        <th>{% trans "Product Name" %}</th>
+                        <th>{% trans "Unit Price" %}</th>
+                        <th>{% trans "Quantity" %}</th>
+                        <th>{% trans "Total Price" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,11 +93,11 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No items found for this order.</td>
+                            <td colspan="5" class="text-center">{% trans "No items found for this order" %}</td>
                         </tr>
                     {% endfor %}
                     <tr>
-                        <td colspan="3"><strong><h4>Grand Total</h4></strong></td>
+                        <td colspan="3"><strong><h4>{% trans "Grand Total" %}</h4></strong></td>
                         <td><strong><h6>{{total_quantity}}</h6></strong></td>
                         <td class="text-primary"><strong>{{ old_invoice.grand_total|floatformat:0|intcomma }} CFA</strong></td>
                     </tr>
@@ -120,10 +120,10 @@
         <form action="{% url 'approve_or_decline_order' order_id=order.id %}" method="post">
             {% csrf_token %}
             <button type="submit" name="action" value="approve" class="btn btn-success">
-                <span class="tf-icons bx bx-check bx-18px me-2"></span> Approve
+                <span class="tf-icons bx bx-check bx-18px me-2"></span> {% trans "Approve" %}
             </button>
             <button type="submit" name="action" value="decline" class="btn btn-danger">
-                <span class="tf-icons bx bx-x bx-18px me-2"></span> Decline
+                <span class="tf-icons bx bx-x bx-18px me-2"></span> {% trans "Decline" %}
             </button>
         </form>
         {% endif %}

@@ -3,33 +3,33 @@
 {% load static %}
 {% load i18n %}
 {% load humanize %}
-{% block title %}Old Invoice{% endblock %}
+{% block title %}{% trans "Old Invoice" %}{% endblock %}
 
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>Add Invoice
+  <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Add Invoice" %}
 </button>
 
 <hr class="my-8">
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Invoice List</h5>
+  <h5 class="card-header">{% trans "Invoice List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Invoice ID</th>
-          <th>Branch ID</th>
-          <th>Created By</th>
-          <th>Client</th>
-          <th>Sales Rep</th>
-          <th>Total Amount</th>
-          <th>Amount Paid</th>
-          <th>Amount Due</th>
-          <th>Created At</th>
-          <th>Actions</th>
+          <th>{% trans "Invoice ID" %}</th>
+          <th>{% trans "Branch ID" %}</th>
+          <th>{% trans "Created By" %}</th>
+          <th>{% trans "Client" %}</th>
+          <th>{% trans "Sales Rep" %}</th>
+          <th>{% trans "Total Amount" %}</th>
+          <th>{% trans "Amount Paid" %}</th>
+          <th>{% trans "Amount Due" %}</th>
+          <th>{% trans "Created At" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -52,15 +52,15 @@
               </button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'invoice_details' order.id %}">
-                  <i class="bx bx-book-open me-1"></i> View
+                  <i class="bx bx-book-open me-1"></i> {% trans "View" %}
                 </a>
                 <a 
                   class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
                   href="{% if order.amount_due > 0 %}{% url 'add_old_invoice_payment' order.id %}{% endif %}">
-                  <i class="bx bx-credit-card me-1"></i> Add Payment
+                  <i class="bx bx-credit-card me-1"></i> {% trans "Add Payment" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'old_payment_history' order.id %}">
-                  <i class="bx bx-history me-1"></i> Payment History
+                  <i class="bx bx-history me-1"></i> {% trans "Payment History" %}
                 </a>
               </div>
             </div>
@@ -68,7 +68,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">No Invoices available NOW</td>
+          <td colspan="11" class="text-center">{% trans "No Invoices available" %}</td>
         </tr>
         {% endfor %}
       </tbody>

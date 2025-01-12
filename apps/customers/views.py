@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from apps.oldinvoice.models import OldInvoiceOrder
 from django.core.paginator import Paginator
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
+from django.utils.translation import gettext_lazy as _
+from django.contrib import messages
 
 
 """
@@ -47,6 +49,7 @@ def customer_view(request, pk=None):
     
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, _("Customer created successfully"))
         return redirect('customers')  # Redirect to customer list or any desired page
 
     customers = Customer.objects.all()  # Fetch all customers for display
@@ -68,6 +71,7 @@ def delete_customer_view(request, pk):
     customer = get_object_or_404(Customer, id=pk)
     if request.method == "POST":
         customer.delete()
+        messages.success(request, _("Customer record deleted successfully"))
         return redirect("customers")
 
     view_context = {

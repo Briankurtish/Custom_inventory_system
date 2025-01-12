@@ -3,31 +3,31 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Stock Requests{% endblock %}
+{% block title %}{% trans "Stock Requests" %}{% endblock %}
 
 {% block content %}
 
 {% if can_request_stock %}
   <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
-    <span class="tf-icons bx bx-plus bx-18px me-2"></span>New Stock Request
+    <span class="tf-icons bx bx-plus bx-18px me-2"></span>{% trans "New Stock Request" %}
   </button>
   <hr>
 {% endif %}
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Stock Requests</h5>
+  <h5 class="card-header">{% trans "Stock Requests" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Request ID</th>
-          <th>Branch ID</th>
-          <th>Branch Name</th>
-          <th>Created By</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{% trans "Request ID" %}</th>
+          <th>{% trans "Branch ID" %}</th>
+          <th>{% trans "Branch Name" %}</th>
+          <th>{% trans "Created By" %}</th>
+          <th>{% trans "Date" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -40,11 +40,11 @@
             <td><span>{{ request.requested_at|date:"d-m-Y" }}</span></td>
             <td>
               {% if request.status|lower == "pending" %}
-                <span class="badge bg-label-warning me-1">Pending</span>
+                <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
               {% elif request.status|lower == "accepted" %}
-                <span class="badge bg-label-success me-1">In Transit</span>
+                <span class="badge bg-label-success me-1">{% trans "In Transit" %}</span>
               {% elif request.status|lower == "rejected" %}
-                <span class="badge bg-label-danger me-1">Rejected</span>
+                <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
               {% else %}
                 <span class="badge bg-label-secondary me-1">{{ request.status }}</span> <!-- Default fallback -->
               {% endif %}
@@ -56,7 +56,7 @@
                 </button>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
-                    <i class="bx bx-book-open me-1"></i> View
+                    <i class="bx bx-book-open me-1"></i> {% trans "View" %}
                   </a>
                 </div>
               </div>
@@ -64,7 +64,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="text-center">No stock in transit found.</td>
+            <td colspan="7" class="text-center">{% trans "No stock in transit found" %}</td>
           </tr>
         {% endfor %}
       </tbody>

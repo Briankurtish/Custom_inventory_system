@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Pack Size{% endblock %}
+{% block title %}{% trans "Pack Size" %}{% endblock %}
 
 {% load crispy_forms_tags %}
 
@@ -17,7 +17,7 @@
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Add Pack Size</h5> 
+        <h5 class="mb-0">{% trans "Add Pack Size" %}</h5> 
       </div>
       <div class="card-body">
         <form method='POST'>
@@ -25,9 +25,9 @@
           {{ form|crispy }}
           
           {% if is_editing %}
-            <button type="submit" class="btn btn-warning">Update Pack Size</button>
+            <button type="submit" class="btn btn-warning">{% trans "Update Pack Size" %}</button>
           {% else %}
-            <button type="submit" class="btn btn-primary">Add Pack Size</button>
+            <button type="submit" class="btn btn-primary">{% trans "Add Pack Size" %}</button>
           {% endif %}
         </form>
       </div>
@@ -42,14 +42,14 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Product Pack Size List</h5>
+  <h5 class="card-header">{% trans "Product Pack Size List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
           <th>ID</th>
-          <th>Pack Size</th>
-          <th>Actions</th>
+          <th>{% trans "Pack Size" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -62,9 +62,9 @@
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'edit-packsize' pack_size.id %}">
-                  <i class="bx bx-edit-alt me-1"></i> Edit
+                  <i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'delete-packsize' pack_size.id %}"><i class="bx bx-trash me-1"></i> Delete</a> 
+                <a class="dropdown-item" href="{% url 'delete-packsize' pack_size.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a> 
               </div>
             </div>
           </td>

@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext_lazy as _
 
 
 
@@ -98,9 +99,9 @@ def add_stock_view(request):
                 })
                 # Store the updated temporary list in session
                 request.session["TEMP_STOCK_LIST"] = temp_stock_list
-                messages.success(request, "Item added to temporary stock list.")
+                messages.success(request, _("Item added to temporary stock list."))
             else:
-                messages.error(request, "Invalid data. Please check the form.")
+                messages.error(request, _("Invalid data. Please check the form."))
 
         elif "remove_item" in request.POST:  # Handle removing from the temporary list
             product_code = request.POST.get("product_code")
@@ -113,7 +114,7 @@ def add_stock_view(request):
             ]
             # Store the updated list in session
             request.session["TEMP_STOCK_LIST"] = temp_stock_list
-            messages.success(request, "Item removed from the temporary stock list.")
+            messages.success(request, _("Item removed from the temporary stock list."))
 
         elif "update_stock" in request.POST:  # Handle updating stock in the database
             for item in temp_stock_list:
@@ -144,7 +145,7 @@ def add_stock_view(request):
 
             # Clear the temporary list
             del request.session["TEMP_STOCK_LIST"]
-            messages.success(request, "Stock updated successfully.")
+            messages.success(request, _("Stock updated successfully."))
             return redirect("stock")  # Replace with the correct URL name
 
     # Prepare context for rendering
@@ -177,9 +178,9 @@ def update_existing_stock_view(request):
                 try:
                     quantity = int(quantity)
                     if quantity <= 0:
-                        raise ValueError("Quantity must be greater than zero.")
+                        raise ValueError(_("Quantity must be greater than zero."))
                 except ValueError:
-                    messages.error(request, "Invalid quantity. Please enter a number greater than zero.")
+                    messages.error(request, _("Invalid quantity. Please enter a number greater than zero."))
                     return redirect(request.path)
 
                 # Check if the stock item already exists in the temporary list
@@ -202,7 +203,7 @@ def update_existing_stock_view(request):
                     })
                     messages.success(request, f"Stock for {product.generic_name_dosage} added to the update list.")
             else:
-                messages.error(request, "Please select a valid product and branch.")
+                messages.error(request, _("Please select a valid product and branch."))
 
             return redirect(request.path)
 
@@ -227,11 +228,11 @@ def update_existing_stock_view(request):
             ]
             # Store the updated list in session
             # request.session["TEMP_UPDATE_LIST"] = TEMP_UPDATE_LIST
-            messages.success(request, "Item removed from the temporary stock list.")
+            messages.success(request, _("Item removed from the temporary stock list."))
 
         elif "update_stock" in request.POST:  # Apply updates to the database
             if not TEMP_UPDATE_LIST:
-                messages.error(request, "No items in the update list to update.")
+                messages.error(request, _("No items in the update list to update."))
             else:
                 for item in TEMP_UPDATE_LIST:
                     product = get_object_or_404(Product, id=item["product_id"])
@@ -254,7 +255,7 @@ def update_existing_stock_view(request):
                         )
 
                 TEMP_UPDATE_LIST = []  # Clear the temporary list
-                messages.success(request, "Stock updates applied successfully.")
+                messages.success(request, _("Stock updates applied successfully."))
                 return redirect("stock")  # Adjust redirect to appropriate URL for your project
 
     # Prepare context for rendering

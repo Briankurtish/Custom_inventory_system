@@ -8,6 +8,8 @@ from apps.genericName.models import GenericName
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
+
 
 
 
@@ -73,7 +75,7 @@ def add_batch_view(request):
         form = BatchForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Batch number added successfully!")
+            messages.success(request, _("Batch number added successfully!"))
             return redirect('add-batch')
     else:
         form = BatchForm()
@@ -109,6 +111,7 @@ def add_product_view(request):
             product = form.save(commit=False)
             product.unit_price = 0.00  # Default price for new products
             product.save()
+            messages.success(request, _("Product added successfully!"))
             return redirect('products')
     else:
         form = AddProductForm()
@@ -131,6 +134,7 @@ def edit_product_view(request, pk):
         if form.is_valid():
             product = form.save(commit=False)
             product.save()
+            messages.success(request, _("Product updated successfully!"))
             return redirect('products')
     else:
         form = EditProductForm(instance=product)
@@ -154,6 +158,7 @@ def update_product_view(request, pk):
             product = form.save(commit=False)
             product.unit_price = form.cleaned_data['unit_price']  # Update price
             product.save()
+            messages.success(request, _("Product price updated successfully!"))
             return redirect('products')
     else:
         form = UpdateProductForm(instance=product)
@@ -178,6 +183,7 @@ def delete_product_view(request, pk):
     product = get_object_or_404(Product, id=pk)
     if request.method == "POST":
         product.delete()
+        messages.success(request, _("Product deleted successfully!"))
         return redirect("products")
 
     view_context = {
@@ -196,6 +202,7 @@ def edit_batch_view(request, pk):
         form = BatchForm(request.POST, instance=batch)  
         if form.is_valid():
             form.save()
+            messages.success(request, _("Batch edited successfully!"))
             return redirect('add-batch')  
     else:
         form = BatchForm(instance=batch)  
@@ -217,6 +224,7 @@ def delete_batch_view(request, pk):
     batch = get_object_or_404(Batch, pk=pk)  # Get the batch by ID
     if request.method == "POST":
         batch.delete()  # Delete the batch
+        messages.success(request, _("Batch deleted successfully!"))
         return redirect('add-batch')  # Redirect to the batch list
 
     batch = Batch.objects.all()

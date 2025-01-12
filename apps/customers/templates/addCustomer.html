@@ -5,15 +5,19 @@
 
 {% block title %}
 {% if is_editing %}
-    Edit Customer
+    {% trans "Edit Customer" %}
   {% else %}
-    Add Customer
+    {% trans "Add Customer" %}
   {% endif %}
 {% endblock %}
 
 {% load crispy_forms_tags %}
 
 {% block content %}
+
+<a href="{% url 'customers' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
 <!-- Basic Layout -->
 <div class="row">
   <div class="col-xl">
@@ -21,9 +25,9 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
           {% if is_editing %}
-            Edit Customer Information
+            {% trans "Edit Customer Information" %}
           {% else %}
-            Customer Information
+            {% trans "Customer Information" %}
           {% endif %}
         </h5> 
       </div>
@@ -38,9 +42,9 @@
           
           <button type="submit" class="btn btn-primary">
             {% if is_editing %}
-              Update Customer
+              {% trans "Update Customer" %}
             {% else %}
-              Add Customer
+              {% trans "Add Customer" %}
             {% endif %}
           </button>
         </form>

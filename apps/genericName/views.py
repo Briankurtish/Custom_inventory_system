@@ -5,6 +5,7 @@ from .models import GenericName
 from django.contrib import messages
 from .forms import GenericNameForm
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext_lazy as _
 
 
 # Create your views here.
@@ -33,10 +34,10 @@ def add_generic_name(request):
         form = GenericNameForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Generic name added successfully!")
+            messages.success(request, _("Generic name added successfully!"))
             return redirect("add-genericName")  # Replace with your desired redirect URL
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, _("Please correct the errors below."))
     else:
         form = GenericNameForm()
 
@@ -64,10 +65,10 @@ def edit_generic_view(request, pk):
         form = GenericNameForm(request.POST, instance=generic_name)
         if form.is_valid():
             form.save()
-            messages.success(request, "Generic name updated successfully!")
+            messages.success(request, _("Generic name updated successfully!"))
             return redirect('add-genericName')  # Redirect to the appropriate page
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, _("Please correct the errors below."))
     else:
         # Populate the form with existing data for GET requests
         form = GenericNameForm(instance=generic_name)
@@ -93,7 +94,7 @@ def delete_generic_view(request, pk):
     if request.method == "POST":
         # Delete the instance on POST
         generic_name.delete()
-        messages.success(request, "Generic name deleted successfully!")
+        messages.success(request, _("Generic name deleted successfully!"))
         return redirect('add-genericName')  # Redirect to the appropriate page
 
     # Fetch all generic names for display (if needed)

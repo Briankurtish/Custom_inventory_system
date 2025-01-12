@@ -4,18 +4,18 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Order Details{% endblock %}
+{% block title %}{% trans "Order Details" %}{% endblock %}
 
 {% block content %}
 {% load tz %}
 
 
-<h4 class="text">Order Details</h4>
+<h4 class="text">{% trans "Order Details" %}</h4>
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-      <li class="breadcrumb-item active"><a href="{% url 'orders' %}">Orders</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Order Details</li>
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'orders' %}">{% trans "Orders" %}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Order Details" %}</li>
     </ol>
 </nav>
 <hr class="my-8">
@@ -35,19 +35,19 @@
         <!-- Order Information -->
         <div class="row">
             <div class="col-md-3">
-                <small class="text m-3">Branch ID</small>
+                <small class="text m-3">{% trans "Branch ID" %}</small>
                 <h6 class="mx-3">{{ order.branch.branch_id }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Branch Name</small>
+                <small class="text m-3">{% trans "Branch Name" %}</small>
                 <h6 class="mx-3">{{ order.branch.branch_name }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Created By</small>
+                <small class="text m-3">{% trans "Created By" %}</small>
                 <h6 class="mx-3">{{ order.created_by.user.get_full_name }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Date Created</small>
+                <small class="text m-3">{% trans "Date Created" %}</small>
                 <h6 class="mx-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
             </div>
         </div>
@@ -58,40 +58,40 @@
         <!-- More Order Information -->
         <div class="row">
             <div class="col-md-3">
-                <small class="text m-3">Customer Name</small>
+                <small class="text m-3">{% trans "Customer Name" %}</small>
                 <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
                 {% if 'View Customer Credits' in worker_privileges %}
                 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'customer_credit_report' customer_id=order.customer.id %}'">
-                    <span class="tf-icons bx bx-package bx-18px me-2"></span>Get Customer Report
+                    <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Get Customer Report" %}
                 </button>
                 
                     
                 {% endif %}
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Sales Representative</small>
+                <small class="text m-3">{% trans "Sales Representative" %}</small>
                 <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
                 {% if 'View Sales Rep Credits' in worker_privileges %}
                     <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
                         <button type="submit" class="btn btn-primary">
-                            <span class="tf-icons bx bx-file bx-18px me-2"></span> Get Credit Report
+                            <span class="tf-icons bx bx-file bx-18px me-2"></span> {% trans "Get Credit Report" %}
                         </button>
                     </form>
                 {% endif %}
             </div>
             <div class="col-md-3">
-                <small class="text m-3">Payment Method</small>
+                <small class="text m-3">{% trans "Payment Method" %}</small>
                 <h6 class="mx-3 text-primary">{{ order.payment_method }}</h6>
             </div>
             <div class="col-md-3">
-                <small class="text mx-3">Status</small>
+                <small class="text mx-3">{% trans "Status" %}</small>
                 <h6 class="text-warning mx-3">
                     {% if order.status|lower == "pending" %}
-                    <span class="badge bg-label-warning me-1">Pending</span>
+                    <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
                     {% elif order.status|lower == "approved" %}
-                    <span class="badge bg-label-success me-1">Approved</span>
+                    <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
                     {% elif order.status|lower == "rejected" %}
-                    <span class="badge bg-label-danger me-1">Rejected</span>
+                    <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
                     {% else %}
                     <span class="badge bg-label-info me-1">{{ order.status }}</span>
                     {% endif %}
@@ -107,7 +107,7 @@
         <div class="row">
             
             <div class="col-md-3">
-                <small class="text m-3">Rejection Reason</small>
+                <small class="text m-3">{% trans "Rejection Reason" %}</small>
                 <h6 class="m-3">{{ order.notes }}</h6>
             </div>
             
@@ -120,10 +120,10 @@
 <!-- Order Items -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Order Items</h5>
+        <h5 class="mb-0">{% trans "Order Items" %}</h5>
         {% if order.status == "Pending" and 'Edit Order Prices' in worker_privileges %}
             <!-- Edit Prices Button -->
-            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">Edit Prices</a>
+            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">{% trans "Edit Prices" %}</a>
 
             <!-- Modal -->
             <div class="modal fade" id="editPricesModal" tabindex="-1" aria-labelledby="editPricesModalLabel" aria-hidden="true">
@@ -132,7 +132,7 @@
                         <form action="{% url 'edit_prices' order.id %}" method="post">
                             {% csrf_token %}
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editPricesModalLabel">Edit Prices for Order #ORD_{{ order.id }}</h5>
+                                <h5 class="modal-title" id="editPricesModalLabel">{% trans "Edit Prices for Order" %}{{ order.id }}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -140,10 +140,10 @@
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Product Code</th>
-                                                <th>Product Name</th>
-                                                <th>Current Price</th>
-                                                <th>New Temporary Price</th>
+                                                <th>{% trans "Product Code" %}</th>
+                                                <th>{% trans "Product Name" %}</th>
+                                                <th>{% trans "Current Price" %}</th>
+                                                <th>{% trans "New Temporary Price" %}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -158,20 +158,20 @@
                                             </tr>
                                             {% empty %}
                                             <tr>
-                                                <td colspan="4" class="text-center">No items found for this order.</td>
+                                                <td colspan="4" class="text-center">{% trans "No items found for this order" %}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
                                 <div class="form-group mt-3">
-                                    <label for="editPriceNote">Reason for Price Change:</label>
+                                    <label for="editPriceNote">{% trans "Reason for Price Change" %}:</label>
                                     <textarea name="edit_price_note" id="editPriceNote" class="form-control" rows="3" placeholder="Enter the reason for the price change"></textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-success">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                <button type="submit" class="btn btn-success">{% trans "Save Changes" %}</button>
                             </div>
                         </form>
                     </div>
@@ -185,12 +185,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Product Code</th>
-                    <th>Product Name</th>
-                    <th>Unit Price</th>
-                    <th>Note</th>
-                    <th>Quantity</th>
-                    <th>Total Price</th>
+                    <th>{% trans "Product Code" %}</th>
+                    <th>{% trans "Product Name" %}</th>
+                    <th>{% trans "Unit Price" %}</th>
+                    <th>{% trans "Note" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th>{% trans "Total Price" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -206,12 +206,12 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No items found for this order.</td>
+                    <td colspan="5" class="text-center">{% trans "No items found for this order" %}</td>
                 </tr>
                 {% endfor %}
                 <!-- Grand Total Row -->
                 <tr>
-                    <td colspan="4"><strong><h4>Grand Total</h4></strong></td>
+                    <td colspan="4"><strong><h4>{% trans "Grand Total" %}</h4></strong></td>
                     <td><strong><h6>{{total_quantity}}</h6></strong></td>
                     <td class="text-primary"><strong>{{ order.grand_total|floatformat:0|intcomma }} CFA</strong></td>
                 </tr>
@@ -232,24 +232,24 @@
 <!-- Action Buttons -->
 <div class="mt-3">
     {% if order.status == "Pending" and 'Approve or decline Orders' in worker_privileges %}
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" >Approve</button>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" >{% trans "Approve" %}</button>
         
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-            Reject
+            {% trans "Reject" %}
         </button>
     {% endif %}
 
     {% if order.status == "Approved" and 'Cancel Order' in worker_privileges %}
         <form method="post" action="{% url 'cancel_order' order.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Cancel Order</button>
+            <button type="submit" class="btn btn-danger">{% trans "Cancel" %} {% trans "Order" %}</button>
         </form>
     {% endif %}
 </div>
 
 <div class="mt-3">
     {% if order.status == "Approved" and 'Generate Purchase Order' in worker_privileges %}
-        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">Download Purchase Order PDF</a>
+        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">{% trans "Download Purchase Order PDF" %}</a>
     {% endif %}
 </div>
 
@@ -258,20 +258,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="rejectModalLabel">Approve Order</h5>
+                <h5 class="modal-title" id="rejectModalLabel">{% trans "Approve Order" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{% url 'approve_order' order.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Approval Notes</label>
+                        <label for="notes" class="form-label">{% trans "Approval Notes" %}</label>
                         <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-success">{% trans "Approve" %}</button>
                 </div>
             </form>
         </div>
@@ -285,20 +285,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="rejectModalLabel">Reject Order</h5>
+                <h5 class="modal-title" id="rejectModalLabel">{% trans "Reject Order" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{% url 'reject_order' order.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Rejection Notes</label>
+                        <label for="notes" class="form-label">{% trans "Rejection Notes" %}</label>
                         <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Reject</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Reject" %}</button>
                 </div>
             </form>
         </div>

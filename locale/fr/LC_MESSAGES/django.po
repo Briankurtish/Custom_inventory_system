@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: apps/genericName/templates/add_genericName.html:77
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-11 12:37+0000\n"
-"PO-Revision-Date: 2025-01-11 13:57+0100\n"
+"POT-Creation-Date: 2025-01-12 01:18+0000\n"
+"PO-Revision-Date: 2025-01-12 02:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -41,7 +42,8 @@ msgstr "Bienvenue, {user.username}!"
 msgid "Invalid username or password."
 msgstr "Nom d'utilisateur ou mot de passe invalide."
 
-#: apps/authentication/views.py:44
+#: apps/authentication/views.py:44 apps/genericName/views.py:40
+#: apps/genericName/views.py:71
 msgid "Please correct the errors below."
 msgstr "Veuillez corriger les erreurs ci-dessous."
 
@@ -58,6 +60,14 @@ msgid "Enter Branch Address"
 msgstr "Saisir l'adresse de la branche"
 
 #: apps/branches/forms.py:24 apps/branches/templates/branches.html:26
+#: apps/oldinvoice/templates/invoiceDetails.html:30
+#: apps/orders/templates/invoiceDetail.html:35
+#: apps/orders/templates/orderDetails.html:42
+#: apps/stock/templates/stock.html:47 apps/stock/templates/stock_all.html:52
+#: apps/stock/templates/stock_branch.html:34
+#: apps/stock_request/templates/requestDetails.html:36
+#: apps/stock_request/templates/requests.html:42
+#: apps/stock_request/templates/transit-requests.html:26
 #: apps/workers/templates/workers.html:27
 msgid "Branch Name"
 msgstr "Nom de la branche"
@@ -103,6 +113,16 @@ msgid "Branch List"
 msgstr "Liste des branches"
 
 #: apps/branches/templates/branches.html:25
+#: apps/oldinvoice/templates/OldInvoiceList.html:24
+#: apps/oldinvoice/templates/invoiceDetails.html:24
+#: apps/orders/templates/invoiceDetail.html:31
+#: apps/orders/templates/invoiceList.html:32
+#: apps/orders/templates/orderDetails.html:38
+#: apps/orders/templates/orderList.html:47
+#: apps/stock/templates/stock_all.html:51
+#: apps/stock_request/templates/requestDetails.html:30
+#: apps/stock_request/templates/requests.html:41
+#: apps/stock_request/templates/transit-requests.html:25
 msgid "Branch ID"
 msgstr "Branch ID"
 
@@ -111,15 +131,28 @@ msgid "Type"
 msgstr "Type"
 
 #: apps/branches/templates/branches.html:46
+#: apps/customers/templates/customers.html:63
+#: apps/genericName/templates/add_genericName.html:63
+#: apps/pack_size/templates/add_packsize.html:65
+#: apps/products/templates/add_batchNumber.html:67
+#: apps/recommendations/templates/recommend.html:48
+#: apps/stock_request/templates/requests.html:77
 #: apps/workers/templates/workers.html:63
 msgid "Edit"
 msgstr "Editer"
 
 #: apps/branches/templates/branches.html:47
+#: apps/customers/templates/customers.html:64
 #: apps/dashboards/templates/dashboard_analytics.html:61
 #: apps/dashboards/templates/dashboard_analytics.html:84
 #: apps/dashboards/templates/dashboard_analytics.html:161
 #: apps/dashboards/templates/dashboard_analytics.html:185
+#: apps/genericName/templates/add_genericName.html:68
+#: apps/pack_size/templates/add_packsize.html:67
+#: apps/products/templates/add_batchNumber.html:69
+#: apps/products/templates/product.html:88
+#: apps/recommendations/templates/recommend.html:49
+#: apps/stock_request/templates/requests.html:78
 #: apps/workers/templates/workers.html:66
 msgid "Delete"
 msgstr "Supprimer"
@@ -130,18 +163,38 @@ msgid "Manage Branches"
 msgstr "Gérer les branches"
 
 #: apps/branches/templates/deleteBranch.html:33
+#: apps/genericName/templates/delete_genericName.html:33
+#: apps/pack_size/templates/delete_packsize.html:33
+#: apps/products/templates/deleteBatch.html:33
+#: apps/products/templates/deleteProduct.html:33
 msgid "Warning"
 msgstr "Avertissement"
 
 #: apps/branches/templates/deleteBranch.html:34
+#: apps/genericName/templates/delete_genericName.html:34
+#: apps/pack_size/templates/delete_packsize.html:34
+#: apps/products/templates/deleteProduct.html:34
 msgid "Are you sure you want to delete"
 msgstr "Êtes-vous sûr de vouloir supprimer"
 
 #: apps/branches/templates/deleteBranch.html:41
+#: apps/genericName/templates/delete_genericName.html:41
+#: apps/orders/templates/invoiceDetail.html:181
+#: apps/orders/templates/orderDetails.html:173
+#: apps/orders/templates/orderDetails.html:246
+#: apps/orders/templates/orderDetails.html:274
+#: apps/orders/templates/orderDetails.html:301
+#: apps/pack_size/templates/delete_packsize.html:41
+#: apps/products/templates/deleteBatch.html:41
+#: apps/products/templates/deleteProduct.html:41
 msgid "Cancel"
 msgstr "Annuler"
 
 #: apps/branches/templates/deleteBranch.html:44
+#: apps/genericName/templates/delete_genericName.html:44
+#: apps/pack_size/templates/delete_packsize.html:44
+#: apps/products/templates/deleteBatch.html:44
+#: apps/products/templates/deleteProduct.html:44
 msgid "Yes"
 msgstr "Oui"
 
@@ -156,6 +209,307 @@ msgstr "Branche mise à jour avec succès"
 #: apps/branches/views.py:101
 msgid "Branch Deleted Successfully"
 msgstr "Branche supprimée avec succès"
+
+#: apps/customers/forms.py:13
+msgid "Enter customer name"
+msgstr "Saisir le nom du client"
+
+#: apps/customers/forms.py:14
+msgid "Enter postal code"
+msgstr "Saisir le code postal"
+
+#: apps/customers/forms.py:17
+msgid "Enter Contact Person Name"
+msgstr "Saisir le nom de la personne de contact"
+
+#: apps/customers/forms.py:18
+msgid "Enter telephone"
+msgstr "Entrer le numéro de téléphone"
+
+#: apps/customers/forms.py:19 apps/workers/forms.py:20
+msgid "Enter email"
+msgstr "Saisir l'email"
+
+#: apps/customers/forms.py:20
+msgid "Enter agreement number"
+msgstr "Saisir le numéro de l'accord"
+
+#: apps/customers/forms.py:21
+msgid "Enter tax payer number"
+msgstr "Saisir le numéro de contribuable"
+
+#: apps/customers/forms.py:22
+msgid "Enter Note"
+msgstr "Enter Note"
+
+#: apps/customers/forms.py:25 apps/oldinvoice/templates/invoiceDetails.html:52
+#: apps/orders/templates/invoiceDetail.html:54
+#: apps/orders/templates/orderDetails.html:61
+msgid "Customer Name"
+msgstr "Nom du client"
+
+#: apps/customers/forms.py:26 apps/customers/templates/customers.html:30
+msgid "Postal Code"
+msgstr "Code postal"
+
+#: apps/customers/forms.py:27 apps/oldinvoice/forms.py:25
+#: apps/orders/forms.py:18 apps/sales_rep/templates/sales-rep.html:28
+#: apps/stock/templates/AddStock.html:44
+#: apps/stock/templates/UpdateStock.html:68
+#: apps/stock_request/templates/createRequests.html:36 apps/workers/forms.py:46
+#: apps/workers/forms.py:134
+msgid "Branch"
+msgstr "Branche"
+
+#: apps/customers/forms.py:28 apps/customers/templates/customers.html:31
+#: apps/oldinvoice/templates/OldInvoiceList.html:27
+#: apps/orders/templates/invoiceList.html:35
+#: apps/orders/templates/orderList.html:50
+#: apps/orders/templates/salesRepCreditReport.html:43
+#: templates/layout/partials/menu/vertical/vertical_menu.html:119
+#: templates/layout/partials/menu/vertical/vertical_menu.html:249
+msgid "Sales Rep"
+msgstr "Représentant commercial"
+
+#: apps/customers/forms.py:29 apps/customers/templates/customers.html:32
+msgid "Contact Person"
+msgstr "Personne de contact"
+
+#: apps/customers/forms.py:30 apps/customers/templates/customers.html:33
+#: apps/workers/forms.py:52 apps/workers/forms.py:135
+msgid "Telephone"
+msgstr "Telephone"
+
+#: apps/customers/forms.py:31 apps/customers/templates/customers.html:34
+#: apps/sales_rep/templates/sales-rep.html:27 apps/workers/forms.py:21
+#: apps/workers/templates/workers.html:31
+msgid "Email"
+msgstr "Email"
+
+#: apps/customers/forms.py:32 apps/customers/templates/customers.html:35
+msgid "Agreement Number"
+msgstr "Numéro de l'accord"
+
+#: apps/customers/forms.py:33 apps/customers/templates/customers.html:36
+msgid "Tax Payer Number"
+msgstr "Numéro de contribuable"
+
+#: apps/customers/forms.py:34 apps/customers/templates/customers.html:37
+msgid "Location Plan"
+msgstr "Plan de situation"
+
+#: apps/customers/forms.py:35 apps/orders/forms.py:58
+#: apps/orders/templates/addOrderItems.html:36
+#: apps/orders/templates/orderDetails.html:191
+msgid "Note"
+msgstr "Note"
+
+#: apps/customers/templates/addCustomer.html:8
+msgid "Edit Customer"
+msgstr "Modifier le client"
+
+#: apps/customers/templates/addCustomer.html:10
+#: apps/customers/templates/addCustomer.html:47
+#: apps/customers/templates/customers.html:12
+msgid "Add Customer"
+msgstr "Ajouter un client"
+
+#: apps/customers/templates/addCustomer.html:28
+msgid "Edit Customer Information"
+msgstr "Modifier les informations sur le client"
+
+#: apps/customers/templates/addCustomer.html:30
+msgid "Customer Information"
+msgstr "Informations sur les clients"
+
+#: apps/customers/templates/addCustomer.html:45
+msgid "Update Customer"
+msgstr "Mise à jour du client"
+
+#: apps/customers/templates/customerCreditReport.html:6
+#: apps/orders/templates/CreditReport.html:7
+msgid "Credit report"
+msgstr "Rapport de crédit"
+
+#: apps/customers/templates/customerCreditReport.html:11
+#: apps/orders/templates/CreditReport.html:12
+msgid "Credit Status/ Credit Report"
+msgstr "Statut de crédit/ Rapport de crédit"
+
+#: apps/customers/templates/customerCreditReport.html:15
+#: apps/orders/templates/CreditReport.html:16
+#: apps/orders/templates/invoiceDetail.html:14
+#: apps/orders/templates/orderDetails.html:16
+#: apps/orders/templates/salesRepCreditReport.html:16
+#: apps/stock/templates/stock_all.html:11
+#: apps/stock_request/templates/requestDetails.html:13
+#: apps/workers/templates/addWorker.html:24
+#: apps/workers/templates/create_privilege.html:21
+#: apps/workers/templates/manage_privileges.html:19
+#: apps/workers/templates/privilege_details.html:12
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+#: apps/customers/templates/customerCreditReport.html:16
+#: apps/dashboards/templates/dashboard_acc.html:86
+#: apps/dashboards/templates/dashboard_cash.html:90
+#: apps/dashboards/templates/dashboard_sec.html:88
+#: apps/orders/templates/CreditReport.html:17
+#: apps/orders/templates/orderDetails.html:17
+#: apps/orders/templates/salesRepCreditReport.html:17
+#: templates/layout/partials/menu/vertical/vertical_menu.html:188
+msgid "Orders"
+msgstr "Commandes"
+
+#: apps/customers/templates/customerCreditReport.html:17
+#: apps/oldinvoice/templates/invoiceDetails.html:7
+#: apps/oldinvoice/templates/invoiceDetails.html:11
+#: apps/orders/templates/CreditReport.html:18
+#: apps/orders/templates/orderDetails.html:7
+#: apps/orders/templates/orderDetails.html:13
+#: apps/orders/templates/orderDetails.html:18
+#: apps/orders/templates/salesRepCreditReport.html:18
+msgid "Order Details"
+msgstr "Détails de la commande"
+
+#: apps/customers/templates/customerCreditReport.html:18
+#: apps/orders/templates/CreditReport.html:19
+msgid "Credit Report"
+msgstr "Rapport de crédit"
+
+#: apps/customers/templates/customerCreditReport.html:33
+#: apps/orders/templates/CreditReport.html:34
+msgid "Customer Credit Report"
+msgstr "Historique du crédit client"
+
+#: apps/customers/templates/customerCreditReport.html:42
+#: apps/orders/templates/CreditReport.html:43
+msgid "Client Name"
+msgstr "Nom du client"
+
+#: apps/customers/templates/customerCreditReport.html:48
+msgid "Client Code"
+msgstr "Code du client"
+
+#: apps/customers/templates/customerCreditReport.html:54
+#: apps/orders/templates/CreditReport.html:55
+#: apps/orders/templates/salesRepCreditReport.html:55
+msgid "Report Date"
+msgstr "Date du rapport"
+
+#: apps/customers/templates/customerCreditReport.html:70
+#: apps/orders/templates/CreditReport.html:71
+#: apps/orders/templates/invoiceList.html:38
+#: apps/orders/templates/salesRepCreditReport.html:71
+msgid "Total Due"
+msgstr "Total dû"
+
+#: apps/customers/templates/customerCreditReport.html:81
+#: apps/orders/templates/CreditReport.html:119
+#: apps/orders/templates/salesRepCreditReport.html:118
+msgid "Past Invoices"
+msgstr "Factures antérieures"
+
+#: apps/customers/templates/customerCreditReport.html:86
+#: apps/orders/templates/CreditReport.html:88
+#: apps/orders/templates/CreditReport.html:124
+#: apps/orders/templates/salesRepCreditReport.html:88
+#: apps/orders/templates/salesRepCreditReport.html:123
+msgid "Invoice Number"
+msgstr "Numéro de la facture"
+
+#: apps/customers/templates/customerCreditReport.html:87
+#: apps/oldinvoice/forms.py:30 apps/orders/templates/CreditReport.html:89
+#: apps/orders/templates/CreditReport.html:125
+#: apps/orders/templates/salesRepCreditReport.html:89
+#: apps/orders/templates/salesRepCreditReport.html:124
+msgid "Invoice Date"
+msgstr "Date de la Facture"
+
+#: apps/customers/templates/customerCreditReport.html:88
+#: apps/oldinvoice/templates/OldInvoiceList.html:28
+#: apps/orders/templates/CreditReport.html:90
+#: apps/orders/templates/CreditReport.html:126
+#: apps/orders/templates/invoiceList.html:36
+#: apps/orders/templates/orderList.html:51
+#: apps/orders/templates/salesRepCreditReport.html:90
+#: apps/orders/templates/salesRepCreditReport.html:125
+msgid "Total Amount"
+msgstr "Montant total"
+
+#: apps/customers/templates/customerCreditReport.html:89
+#: apps/orders/templates/CreditReport.html:91
+#: apps/orders/templates/CreditReport.html:127
+#: apps/orders/templates/salesRepCreditReport.html:91
+#: apps/orders/templates/salesRepCreditReport.html:126
+msgid "Paid Amount"
+msgstr "Montant payé"
+
+#: apps/customers/templates/customerCreditReport.html:90
+#: apps/oldinvoice/templates/OldInvoiceList.html:30
+#: apps/orders/templates/CreditReport.html:92
+#: apps/orders/templates/CreditReport.html:128
+#: apps/orders/templates/makePayment.html:31
+#: apps/orders/templates/salesRepCreditReport.html:92
+#: apps/orders/templates/salesRepCreditReport.html:127
+msgid "Amount Due"
+msgstr "Montant dû"
+
+#: apps/customers/templates/customerCreditReport.html:104
+#: apps/orders/templates/CreditReport.html:106
+#: apps/orders/templates/CreditReport.html:142
+#: apps/orders/templates/salesRepCreditReport.html:106
+msgid "No credit history found for this customer"
+msgstr "Aucun historique de crédit n'a été trouvé pour ce client"
+
+#: apps/customers/templates/customers.html:6
+#: apps/customers/templates/customers.html:23
+msgid "Customer List"
+msgstr "Liste des clients"
+
+#: apps/customers/templates/customers.html:28
+#: apps/orders/templates/CreditReport.html:49
+msgid "Client ID"
+msgstr "Client ID"
+
+#: apps/customers/templates/customers.html:29
+msgid "Name"
+msgstr "Nom"
+
+#: apps/customers/templates/customers.html:38
+#: apps/genericName/templates/add_genericName.html:47
+#: apps/oldinvoice/templates/OldInvoiceList.html:32
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:34
+#: apps/orders/templates/addOrderItems.html:37
+#: apps/orders/templates/invoiceList.html:41
+#: apps/orders/templates/orderList.html:55
+#: apps/pack_size/templates/add_packsize.html:52
+#: apps/products/templates/add_batchNumber.html:53
+#: apps/products/templates/product.html:62
+#: apps/recommendations/templates/recommend.html:31
+#: apps/sales_rep/templates/sales-rep.html:30
+#: apps/stock/templates/AddStock.html:45
+#: apps/stock/templates/UpdateStock.html:69 apps/stock/templates/stock.html:51
+#: apps/stock/templates/stock_branch.html:38
+#: apps/stock_request/templates/createRequests.html:37
+#: apps/stock_request/templates/requests.html:46
+#: apps/stock_request/templates/transit-requests.html:30
+#: apps/workers/templates/workers.html:36
+msgid "Actions"
+msgstr "Actions"
+
+#: apps/customers/templates/customers.html:60
+#: apps/sales_rep/templates/sales-rep.html:49
+msgid "View Credits"
+msgstr "Voir les crédits"
+
+#: apps/customers/views.py:52
+msgid "Customer created successfully"
+msgstr "Client créé avec succès"
+
+#: apps/customers/views.py:74
+msgid "Customer record deleted successfully"
+msgstr "L'enregistrement du client a été supprimé avec succès"
 
 #: apps/dashboards/templates/dashboard_acc.html:6
 msgid "Accountant Dashboard"
@@ -220,13 +574,6 @@ msgstr "Historique du crédit représentant des ventes"
 #: apps/dashboards/templates/dashboard_sec.html:87
 msgid "Confirmed Orders"
 msgstr "Commandes confirmées"
-
-#: apps/dashboards/templates/dashboard_acc.html:86
-#: apps/dashboards/templates/dashboard_cash.html:90
-#: apps/dashboards/templates/dashboard_sec.html:88
-#: templates/layout/partials/menu/vertical/vertical_menu.html:188
-msgid "Orders"
-msgstr "Commandes"
 
 #: apps/dashboards/templates/dashboard_acc.html:99
 #: apps/dashboards/templates/dashboard_analytics.html:104
@@ -353,6 +700,9 @@ msgstr "Accès rapide et augmentation de la productivité"
 
 #: apps/dashboards/templates/dashboard_cash.html:60
 #: apps/dashboards/templates/dashboard_sec.html:57
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:7
+#: apps/orders/templates/addOrderItems.html:9
+#: apps/orders/templates/orderList.html:15
 msgid "Create Order"
 msgstr "Créée Bon de Commande"
 
@@ -362,6 +712,7 @@ msgid "View Reports"
 msgstr "Voir les documents"
 
 #: apps/dashboards/templates/dashboard_cash.html:103
+#: apps/orders/templates/createPurchaseOrder.html:14
 msgid "Purchase Order"
 msgstr "Bon de Commande"
 
@@ -448,6 +799,11 @@ msgid "Products"
 msgstr "Produits"
 
 #: apps/dashboards/templates/dashboard_cstm.html:171
+#: apps/stock/templates/UpdateStock.html:40
+#: apps/stock/templates/UpdateStock.html:105 apps/stock/templates/stock.html:18
+#: apps/stock/templates/stock_branch.html:15
+#: apps/stock/templates/update_stock_entry.html:3
+#: apps/stock/templates/update_stock_entry.html:16
 msgid "Update Stock"
 msgstr "Mise à jour du stock"
 
@@ -471,6 +827,8 @@ msgid "Monitor and get up-to-date information about your stock."
 msgstr "Contrôler et obtenir des informations actualisées sur votre stock."
 
 #: apps/dashboards/templates/dashboard_md.html:36
+#: apps/stock_request/templates/requests.html:12
+#: apps/stock_request/templates/transit-requests.html:12
 msgid "New Stock Request"
 msgstr "Demande de stocks"
 
@@ -483,6 +841,11 @@ msgid "Increase productivity with quick actions."
 msgstr "Augmentez votre productivité grâce à des actions rapides."
 
 #: apps/dashboards/templates/dashboard_md.html:61
+#: apps/stock_request/templates/requestDetails.html:14
+#: apps/stock_request/templates/requests.html:6
+#: apps/stock_request/templates/requests.html:35
+#: apps/stock_request/templates/transit-requests.html:6
+#: apps/stock_request/templates/transit-requests.html:19
 msgid "Stock Requests"
 msgstr "Demande de stocks"
 
@@ -523,29 +886,1214 @@ msgstr "Bon de Commande"
 msgid "No Notice to show at the moment"
 msgstr "Aucun avis n'est disponible pour le moment ⚠️"
 
+#: apps/genericName/forms.py:10
+msgid "Enter Generic Name"
+msgstr "Entrer le DCI"
+
+#: apps/genericName/forms.py:11
+msgid "Enter Brand Name (optional)"
+msgstr "Entrer le nom de la marque"
+
+#: apps/genericName/forms.py:14
+#: apps/genericName/templates/add_genericName.html:7
+#: apps/genericName/templates/add_genericName.html:45
+#: apps/products/templates/add_batchNumber.html:51
+#: apps/stock/templates/AddStock.html:42
+#: apps/stock/templates/UpdateStock.html:66
+#: apps/stock_request/templates/createRequests.html:34
+msgid "Generic Name"
+msgstr "DCI"
+
+#: apps/genericName/forms.py:15
+#: apps/genericName/templates/add_genericName.html:46 apps/products/forms.py:40
+#: apps/products/forms.py:76 apps/products/forms.py:91
+#: apps/products/forms.py:108 apps/products/templates/product.html:56
+msgid "Brand Name"
+msgstr "Nom de la marque"
+
+#: apps/genericName/templates/add_genericName.html:19
+msgid "Edit Generic Name"
+msgstr "Modifier DCI"
+
+#: apps/genericName/templates/add_genericName.html:19
+#: apps/genericName/templates/add_genericName.html:27
+#: apps/products/templates/product.html:15
+msgid "Add Generic Name"
+msgstr "Ajouter un DCI"
+
+#: apps/genericName/templates/add_genericName.html:27
+msgid "Update Generic Name"
+msgstr "Mettre à jour le DCI"
+
+#: apps/genericName/templates/add_genericName.html:39
+msgid "Product Generic Name List"
+msgstr "Liste des DCI des produits"
+
+#: apps/genericName/templates/delete_genericName.html:6
+#: apps/genericName/templates/delete_genericName.html:25
+msgid "Manage Generic Names"
+msgstr "Gérer les DCI"
+
+#: apps/genericName/views.py:37
+msgid "Generic name added successfully!"
+msgstr "DCI ajouté avec succès !"
+
+#: apps/genericName/views.py:68
+msgid "Generic name updated successfully!"
+msgstr "DCI mis à jour avec succès !"
+
+#: apps/genericName/views.py:97
+msgid "Generic name deleted successfully!"
+msgstr "DCI supprimé avec succès !"
+
+#: apps/oldinvoice/forms.py:26 apps/oldinvoice/templates/paymentHistory.html:17
+#: apps/orders/forms.py:19 apps/orders/templates/invoiceList.html:34
+#: apps/orders/templates/paymentInvoiceHistory.html:17
+msgid "Customer"
+msgstr "Client"
+
+#: apps/oldinvoice/forms.py:27 apps/oldinvoice/templates/invoiceDetails.html:58
+#: apps/orders/forms.py:20 apps/orders/templates/invoiceDetail.html:59
+#: apps/orders/templates/orderDetails.html:72
+msgid "Sales Representative"
+msgstr "Représentant des ventes"
+
+#: apps/oldinvoice/forms.py:28 apps/oldinvoice/templates/invoiceDetails.html:65
+#: apps/oldinvoice/templates/paymentHistory.html:66 apps/orders/forms.py:21
+#: apps/orders/templates/invoiceDetail.html:64
+#: apps/orders/templates/orderDetails.html:83
+#: apps/orders/templates/paymentInvoiceHistory.html:66
+msgid "Payment Method"
+msgstr "Mode de paiement"
+
+#: apps/oldinvoice/forms.py:29 apps/oldinvoice/templates/OldInvoiceList.html:29
+#: apps/oldinvoice/templates/paymentHistory.html:65 apps/orders/forms.py:97
+#: apps/orders/templates/makePayment.html:27
+#: apps/orders/templates/paymentInvoiceHistory.html:65
+msgid "Amount Paid"
+msgstr "Montant payé"
+
+#: apps/oldinvoice/forms.py:61
+msgid "Amount paid cannot exceed the grand total."
+msgstr "Le montant payé ne peut pas dépasser le total général."
+
+#: apps/oldinvoice/forms.py:75
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:30
+#: apps/orders/forms.py:55 apps/orders/templates/addOrderItems.html:32
+#: apps/recommendations/forms.py:15
+#: apps/recommendations/templates/recommend.html:25
+msgid "Product"
+msgstr "Produit"
+
+#: apps/oldinvoice/forms.py:76
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:31
+#: apps/oldinvoice/templates/invoiceDetails.html:81 apps/orders/forms.py:56
+#: apps/orders/templates/addOrderItems.html:33
+#: apps/orders/templates/invoiceDetail.html:98
+#: apps/orders/templates/orderDetails.html:192 apps/recommendations/forms.py:16
+#: apps/recommendations/templates/recommend.html:26
+#: apps/stock/templates/AddStock.html:43
+#: apps/stock/templates/UpdateStock.html:67
+#: apps/stock/templates/stock_all.html:54
+#: apps/stock/templates/stock_branch.html:36
+#: apps/stock_request/templates/createRequests.html:35
+#: apps/stock_request/templates/requestDetails.html:67
+msgid "Quantity"
+msgstr "Quantité"
+
+#: apps/oldinvoice/forms.py:77 apps/orders/forms.py:57
+msgid "Price"
+msgstr "Prix"
+
+#: apps/oldinvoice/forms.py:125
+msgid "Amount paid cannot exceed the invoice's grand total."
+msgstr "Le montant payé ne peut pas dépasser le total général de la facture."
+
+#: apps/oldinvoice/forms.py:127
+msgid "Amount paid cannot exceed the remaining amount due."
+msgstr "Le montant payé ne peut excéder le montant restant dû."
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:6
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:14
+#: apps/oldinvoice/templates/createInvoiceOrder.html:14
+#: apps/orders/templates/paymentInvoiceHistory.html:7
+#: templates/layout/partials/menu/vertical/vertical_menu.html:200
+msgid "Old Invoice"
+msgstr "Ancienne facture"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:11
+msgid "Add Invoice"
+msgstr "Ajouter une facture"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:18
+#: apps/orders/templates/invoiceList.html:7
+#: apps/orders/templates/invoiceList.html:26
+msgid "Invoice List"
+msgstr "Liste des Factures"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:23
+#: apps/orders/templates/invoiceList.html:31
+msgid "Invoice ID"
+msgstr "ID"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:25
+#: apps/oldinvoice/templates/invoiceDetails.html:36
+#: apps/orders/templates/invoiceDetail.html:39
+#: apps/orders/templates/invoiceList.html:33
+#: apps/orders/templates/orderDetails.html:46
+#: apps/orders/templates/orderList.html:48
+#: apps/stock_request/templates/requestDetails.html:42
+#: apps/stock_request/templates/requests.html:43
+#: apps/stock_request/templates/transit-requests.html:27
+msgid "Created By"
+msgstr "Créé par"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:26
+#: apps/orders/templates/orderList.html:49
+msgid "Client"
+msgstr "Client"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:31
+#: apps/orders/templates/invoiceList.html:39
+#: apps/orders/templates/orderList.html:52
+msgid "Created At"
+msgstr "Créé à"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:55
+#: apps/orders/templates/orderList.html:91
+#: apps/stock_request/templates/transit-requests.html:59
+msgid "View"
+msgstr "Voir"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:60
+#: apps/oldinvoice/templates/addPayment.html:7
+#: apps/orders/templates/invoiceList.html:78
+#: apps/orders/templates/makePayment.html:9
+msgid "Add Payment"
+msgstr "Ajouter un paiement"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:63
+#: apps/orders/templates/invoiceList.html:81
+msgid "Payment History"
+msgstr "Historique des paiements"
+
+#: apps/oldinvoice/templates/OldInvoiceList.html:71
+#: apps/orders/templates/invoiceList.html:95
+#: apps/orders/templates/orderList.html:105
+msgid "No Invoices available"
+msgstr "Pas de factures disponibles"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:22
+#: apps/orders/templates/addOrderItems.html:24
+msgid "Add Item"
+msgstr "Ajouter un article"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:26
+#: apps/oldinvoice/templates/invoiceDetails.html:73
+#: apps/orders/templates/invoiceDetail.html:88
+#: apps/orders/templates/orderDetails.html:123
+msgid "Order Items"
+msgstr "Articles à commander"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:32
+#: apps/oldinvoice/templates/invoiceDetails.html:80
+#: apps/orders/templates/addOrderItems.html:34
+#: apps/orders/templates/invoiceDetail.html:97
+#: apps/orders/templates/orderDetails.html:190 apps/products/forms.py:111
+#: apps/products/templates/product.html:59
+msgid "Unit Price"
+msgstr "Prix unitaire"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:33
+#: apps/oldinvoice/templates/invoiceDetails.html:82
+#: apps/orders/templates/addOrderItems.html:35
+#: apps/orders/templates/invoiceDetail.html:99
+#: apps/orders/templates/orderDetails.html:193
+msgid "Total Price"
+msgstr "Prix total"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:49
+#: apps/orders/templates/addOrderItems.html:54
+#: apps/stock/templates/AddStock.html:61
+#: apps/stock/templates/UpdateStock.html:85
+#: apps/stock_request/templates/createRequests.html:53
+msgid "Remove"
+msgstr "Retirer"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:58
+#: apps/oldinvoice/templates/invoiceDetails.html:100
+#: apps/orders/templates/addOrderItems.html:63
+#: apps/orders/templates/invoiceDetail.html:118
+#: apps/orders/templates/orderDetails.html:214
+msgid "Grand Total"
+msgstr "Total général"
+
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:65
+#: apps/orders/templates/addOrderItems.html:70
+msgid "Submit Order"
+msgstr "Soumettre une commande"
+
+#: apps/oldinvoice/templates/addPayment.html:14
+msgid "Invoice Payment History"
+msgstr "Historique des paiements des factures"
+
+#: apps/oldinvoice/templates/addPayment.html:24
+msgid "Submit"
+msgstr "Soumettre"
+
+#: apps/oldinvoice/templates/createInvoiceOrder.html:7
+msgid "Add Old Invoice"
+msgstr "Ajouter une ancienne facture"
+
+#: apps/oldinvoice/templates/createInvoiceOrder.html:24
+#: apps/orders/templates/createPurchaseOrder.html:24
+msgid "Next"
+msgstr "Suivant"
+
+#: apps/oldinvoice/templates/createInvoiceOrder.html:24
+#: apps/orders/templates/createPurchaseOrder.html:24
+msgid "Add Items"
+msgstr "Ajouter des éléments"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:41
+#: apps/orders/templates/invoiceDetail.html:43
+#: apps/orders/templates/orderDetails.html:50
+#: apps/recommendations/templates/recommend.html:28
+msgid "Date Created"
+msgstr "Date de création"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:78
+#: apps/orders/templates/invoiceDetail.html:95
+#: apps/orders/templates/orderDetails.html:143
+#: apps/orders/templates/orderDetails.html:188
+#: apps/products/templates/product.html:55
+#: apps/stock/templates/AddStock.html:41
+#: apps/stock/templates/UpdateStock.html:65 apps/stock/templates/stock.html:46
+#: apps/stock/templates/stock_all.html:50
+#: apps/stock/templates/stock_branch.html:33
+#: apps/stock_request/templates/createRequests.html:33
+#: apps/stock_request/templates/requestDetails.html:65
+msgid "Product Code"
+msgstr "Code produit"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:79
+#: apps/orders/templates/invoiceDetail.html:96
+#: apps/orders/templates/orderDetails.html:144
+#: apps/orders/templates/orderDetails.html:189
+#: apps/stock/templates/stock.html:48 apps/stock/templates/stock_all.html:53
+#: apps/stock/templates/stock_branch.html:35
+#: apps/stock_request/templates/requestDetails.html:66
+msgid "Product Name"
+msgstr "Nom du produit"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:96
+#: apps/orders/templates/invoiceDetail.html:113
+#: apps/orders/templates/orderDetails.html:161
+#: apps/orders/templates/orderDetails.html:209
+msgid "No items found for this order"
+msgstr "Aucun article trouvé pour cette commande"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:124
+#: apps/orders/templates/invoiceDetail.html:142
+#: apps/orders/templates/orderDetails.html:236
+#: apps/orders/templates/orderDetails.html:275
+#: apps/stock_request/templates/requestDetails.html:97
+msgid "Approve"
+msgstr "Approuver"
+
+#: apps/oldinvoice/templates/invoiceDetails.html:127
+#: apps/stock_request/templates/requestDetails.html:100
+msgid "Decline"
+msgstr "Déclin"
+
+#: apps/oldinvoice/templates/paymentHistory.html:12
+#: apps/orders/templates/paymentInvoiceHistory.html:12
+msgid "Payment History for Invoice"
+msgstr "Historique des paiements pour la facture"
+
+#: apps/oldinvoice/templates/paymentHistory.html:20
+#: apps/orders/templates/paymentInvoiceHistory.html:20
+#: apps/stock_request/templates/requests.html:44
+#: apps/stock_request/templates/transit-requests.html:28
+msgid "Date"
+msgstr "Date"
+
+#: apps/oldinvoice/templates/paymentHistory.html:29
+#: apps/orders/templates/makePayment.html:23
+#: apps/orders/templates/paymentInvoiceHistory.html:29
+msgid "Invoice Total"
+msgstr "Total de la facture"
+
+#: apps/oldinvoice/templates/paymentHistory.html:35
+#: apps/orders/templates/paymentInvoiceHistory.html:35
+msgid "Total Amount Paid"
+msgstr "Montant total payé"
+
+#: apps/oldinvoice/templates/paymentHistory.html:41
+#: apps/orders/templates/paymentInvoiceHistory.html:41
+msgid "Total Amount Due"
+msgstr "Montant total dû"
+
+#: apps/oldinvoice/templates/paymentHistory.html:47
+#: apps/orders/templates/paymentInvoiceHistory.html:47
+msgid "Percentage Paid"
+msgstr "Pourcentage payé"
+
+#: apps/oldinvoice/templates/paymentHistory.html:53
+#: apps/orders/templates/paymentInvoiceHistory.html:53
+msgid "Percentage Left"
+msgstr "Pourcentage reastant"
+
+#: apps/oldinvoice/templates/paymentHistory.html:64
+#: apps/orders/templates/paymentInvoiceHistory.html:64
+msgid "Payment Date"
+msgstr "Date de paiement"
+
+#: apps/oldinvoice/templates/paymentHistory.html:67
+#: apps/orders/templates/paymentInvoiceHistory.html:67
+msgid "Account Details"
+msgstr "Détails du compte"
+
+#: apps/oldinvoice/templates/paymentHistory.html:81
+#: apps/orders/templates/paymentInvoiceHistory.html:81
+msgid "No payment history available for this invoice"
+msgstr "Aucun historique de paiement n'est disponible pour cette facture"
+
+#: apps/oldinvoice/views.py:145 apps/orders/views.py:217
+msgid "Invalid form submission. Please correct the errors."
+msgstr "Soumission de formulaire invalide. Veuillez corriger les erreurs."
+
+#: apps/oldinvoice/views.py:200 apps/oldinvoice/views.py:202
+#: apps/orders/views.py:285 apps/orders/views.py:287
+msgid "Invalid item index provided."
+msgstr "L'index de l'article fourni n'est pas valide."
+
+#: apps/oldinvoice/views.py:256
+msgid "Old Invoice Created Successfully."
+msgstr "Ancienne facture créée avec succès."
+
+#: apps/oldinvoice/views.py:261
+msgid "No items in the order or missing order details."
+msgstr "Aucun article dans la commande ou détails de la commande manquants."
+
+#: apps/oldinvoice/views.py:292 apps/orders/views.py:720
+msgid "Payment amount cannot exceed the invoice's grand total."
+msgstr ""
+"Le montant du paiement ne peut pas dépasser le total général de la facture."
+
+#: apps/oldinvoice/views.py:295 apps/orders/views.py:722
+msgid "Payment amount cannot exceed the remaining amount due."
+msgstr "Le montant du paiement ne peut pas dépasser le montant restant dû."
+
+#: apps/oldinvoice/views.py:309
+msgid "Payment added successfully!"
+msgstr "Paiement ajouté avec succès !"
+
+#: apps/oldinvoice/views.py:312 apps/orders/views.py:750
+msgid "Error adding payment. Please check the form."
+msgstr "Erreur lors de l'ajout d'un paiement. Veuillez vérifier le formulaire."
+
+#: apps/orders/forms.py:79
+#, python-brace-format
+msgid ""
+"Insufficient stock: only {stock.quantity} units available for {stock.product."
+"generic_name_dosage}."
+msgstr ""
+"Stock insuffisant : seulement {stock.quantity} unités disponibles pour "
+"{stock.product.generic_name_dosage}."
+
+#: apps/orders/forms.py:98 apps/orders/templates/makePayment.html:35
+msgid "Payment Mode"
+msgstr "Mode de paiement"
+
+#: apps/orders/forms.py:99
+msgid "Account Paid to"
+msgstr "Compte payé à"
+
+#: apps/orders/forms.py:117
+msgid "Amount paid must be greater than zero."
+msgstr "Le montant payé doit être supérieur à zéro."
+
+#: apps/orders/templates/CreditReport.html:83
+msgid "Recent Invoices"
+msgstr "Factures récentes"
+
+#: apps/orders/templates/addOrderItems.html:16
+#: apps/orders/templates/createPurchaseOrder.html:7
+msgid "Create Purchase Order"
+msgstr "Créer un bon de commande"
+
+#: apps/orders/templates/invoiceDetail.html:7
+#: apps/orders/templates/invoiceDetail.html:11
+#: apps/orders/templates/invoiceDetail.html:16
+msgid "Invoice Details"
+msgstr "Détails de la facture"
+
+#: apps/orders/templates/invoiceDetail.html:15
+msgid "Invoice"
+msgstr "Facture"
+
+#: apps/orders/templates/invoiceDetail.html:68
+#: apps/orders/templates/invoiceList.html:40
+#: apps/orders/templates/orderDetails.html:87
+#: apps/orders/templates/orderList.html:54
+#: apps/recommendations/templates/recommend.html:30
+#: apps/stock/templates/stock.html:50 apps/stock/templates/stock_all.html:55
+#: apps/stock/templates/stock_branch.html:37
+#: apps/stock_request/templates/requestDetails.html:53
+#: apps/stock_request/templates/requests.html:45
+#: apps/stock_request/templates/transit-requests.html:29
+msgid "Status"
+msgstr "Statut"
+
+#: apps/orders/templates/invoiceDetail.html:71
+#: apps/orders/templates/invoiceList.html:60
+msgid "UnPaid"
+msgstr "Non payé"
+
+#: apps/orders/templates/invoiceDetail.html:73
+#: apps/orders/templates/invoiceList.html:62
+msgid "Payment Ongoing"
+msgstr "Paiement en cours"
+
+#: apps/orders/templates/invoiceDetail.html:75
+#: apps/orders/templates/invoiceList.html:64
+msgid "Payment Completed"
+msgstr "Paiement effectué"
+
+#: apps/orders/templates/invoiceDetail.html:145
+#: apps/orders/templates/invoiceDetail.html:182
+#: apps/orders/templates/orderDetails.html:239
+#: apps/orders/templates/orderDetails.html:302
+msgid "Reject"
+msgstr "Rejeter"
+
+#: apps/orders/templates/invoiceDetail.html:152
+msgid "Cancel Order"
+msgstr "Annuler la commande"
+
+#: apps/orders/templates/invoiceDetail.html:159
+#: apps/orders/templates/orderDetails.html:253
+msgid "Download Purchase Order PDF"
+msgstr "Télécharger l'ordre d'achat PDF"
+
+#: apps/orders/templates/invoiceDetail.html:169
+#: apps/orders/templates/orderDetails.html:289
+msgid "Reject Order"
+msgstr "Rejeter l'ordre"
+
+#: apps/orders/templates/invoiceDetail.html:176
+#: apps/orders/templates/orderDetails.html:296
+msgid "Rejection Notes"
+msgstr "Notes de rejet"
+
+#: apps/orders/templates/invoiceList.html:37
+msgid "Total Paid"
+msgstr "Total payé"
+
+#: apps/orders/templates/makePayment.html:16
+msgid "Invoice Payment"
+msgstr "Paiement de la facture"
+
+#: apps/orders/templates/makePayment.html:48
+msgid "Submit Payment"
+msgstr "Soumettre le paiement"
+
+#: apps/orders/templates/orderDetails.html:65
+msgid "Get Customer Report"
+msgstr "Obtenir un rapport sur les clients"
+
+#: apps/orders/templates/orderDetails.html:77
+msgid "Get Credit Report"
+msgstr "Obtenir un rapport de crédit"
+
+#: apps/orders/templates/orderDetails.html:90
+#: apps/orders/templates/orderList.html:29
+#: apps/orders/templates/orderList.html:73
+#: apps/stock_request/templates/requests.html:24
+#: apps/stock_request/templates/requests.html:59
+#: apps/stock_request/templates/transit-requests.html:43
+msgid "Pending"
+msgstr "En attente"
+
+#: apps/orders/templates/orderDetails.html:92
+#: apps/orders/templates/orderList.html:30
+#: apps/orders/templates/orderList.html:75
+msgid "Approved"
+msgstr "Approuvé"
+
+#: apps/orders/templates/orderDetails.html:94
+#: apps/orders/templates/orderList.html:31
+#: apps/orders/templates/orderList.html:77
+#: apps/stock_request/templates/requests.html:26
+#: apps/stock_request/templates/requests.html:63
+#: apps/stock_request/templates/transit-requests.html:47
+msgid "Rejected"
+msgstr "Rejeté"
+
+#: apps/orders/templates/orderDetails.html:110
+msgid "Rejection Reason"
+msgstr "Motif du rejet"
+
+#: apps/orders/templates/orderDetails.html:126
+msgid "Edit Prices"
+msgstr "Modifier les prix"
+
+#: apps/orders/templates/orderDetails.html:135
+msgid "Edit Prices for Order"
+msgstr "Modifier les prix pour la commande"
+
+#: apps/orders/templates/orderDetails.html:145
+msgid "Current Price"
+msgstr "Prix actuel"
+
+#: apps/orders/templates/orderDetails.html:146
+msgid "New Temporary Price"
+msgstr "Nouveau prix temporaire"
+
+#: apps/orders/templates/orderDetails.html:168
+msgid "Reason for Price Change"
+msgstr "Raison du changement de prix"
+
+#: apps/orders/templates/orderDetails.html:174
+msgid "Save Changes"
+msgstr "Enregistrer les modifications"
+
+#: apps/orders/templates/orderDetails.html:246
+msgid "Order"
+msgstr "Commande"
+
+#: apps/orders/templates/orderDetails.html:262
+msgid "Approve Order"
+msgstr "Approbation de la commande"
+
+#: apps/orders/templates/orderDetails.html:269
+msgid "Approval Notes"
+msgstr "Notes d'approbation"
+
+#: apps/orders/templates/orderList.html:7
+#: apps/orders/templates/orderList.html:41
+msgid "Order List"
+msgstr "Liste de Commandes"
+
+#: apps/orders/templates/orderList.html:26
+#: apps/stock_request/templates/requests.html:20
+msgid "Filter by Status"
+msgstr "Filtrer par statut"
+
+#: apps/orders/templates/orderList.html:28
+#: apps/stock/templates/stock_all.html:21
+#: apps/stock_request/templates/requests.html:23
+msgid "All"
+msgstr "Tous"
+
+#: apps/orders/templates/orderList.html:32
+#: apps/orders/templates/orderList.html:79
+msgid "Canceled"
+msgstr "Annulé"
+
+#: apps/orders/templates/orderList.html:46
+msgid "Order ID"
+msgstr "ID de la commande"
+
+#: apps/orders/templates/orderList.html:53
+msgid "Approved By"
+msgstr "Approuvé par"
+
+#: apps/orders/templates/salesRepCreditReport.html:7
+msgid "Sales Rep Credit report"
+msgstr "Représentant des ventes Rapport de crédit"
+
+#: apps/orders/templates/salesRepCreditReport.html:12
+msgid "Sales Rep Credit Status/ Credit Report"
+msgstr "Statut de crédit du représentant commercial/ Rapport de crédit"
+
+#: apps/orders/templates/salesRepCreditReport.html:19
+#: apps/orders/templates/salesRepCreditReport.html:34
+msgid "Sales Rep Credit Report"
+msgstr "Rapport de crédit du représentant commercial"
+
+#: apps/orders/templates/salesRepCreditReport.html:49
+msgid "Sale Rep ID"
+msgstr "ID"
+
+#: apps/orders/templates/salesRepCreditReport.html:83
+msgid "Current Invoices"
+msgstr "Factures courantes"
+
+#: apps/orders/templates/salesRepCreditReport.html:141
+msgid "No credit history found for this Sale Rep"
+msgstr ""
+"Aucun historique de crédit n'a été trouvé pour ce représentant de commerce"
+
+#: apps/orders/views.py:268
+msgid "Invalid form input. Please correct the errors."
+msgstr "Entrée de formulaire non valide. Veuillez corriger les erreurs."
+
+#: apps/orders/views.py:335 apps/orders/views.py:340
+msgid "Purchase order submitted successfully."
+msgstr "Le bon de commande a été soumis avec succès."
+
+#: apps/orders/views.py:365
+msgid "Approval notes are required."
+msgstr "Des notes d'approbation sont nécessaires."
+
+#: apps/orders/views.py:370 apps/orders/views.py:481
+msgid "This order has already been processed."
+msgstr "Cette commande a déjà été traitée."
+
+#: apps/orders/views.py:425
+msgid "Order approved and invoice generated successfully."
+msgstr "Commande approuvée et facture générée avec succès."
+
+#: apps/orders/views.py:488
+msgid "Rejection notes are required."
+msgstr "Des notes de rejet sont nécessaires."
+
+#: apps/orders/views.py:496
+msgid "Order rejected successfully."
+msgstr "Client créé avec succès."
+
+#: apps/orders/views.py:510
+msgid "Only approved orders can be canceled."
+msgstr "Seules les commandes approuvées peuvent être annulées."
+
+#: apps/orders/views.py:535
+msgid "Order canceled and stock levels restored successfully."
+msgstr ""
+"La commande a été annulée et les niveaux de stock ont été rétablis avec "
+"succès."
+
+#: apps/orders/views.py:560
+msgid "Please provide a reason for the price change."
+msgstr "Veuillez indiquer la raison du changement de prix."
+
+#: apps/orders/views.py:590
+msgid "Prices and grand total updated successfully for this order."
+msgstr ""
+"Les prix et le total général ont été mis à jour avec succès pour cette "
+"commande."
+
+#: apps/pack_size/forms.py:10
+msgid "Enter Pack Size"
+msgstr "Saisir la taille de l'emballage"
+
+#: apps/pack_size/forms.py:13 apps/pack_size/templates/add_packsize.html:6
+#: apps/pack_size/templates/add_packsize.html:51 apps/products/forms.py:41
+#: apps/products/forms.py:77 apps/products/forms.py:92
+#: apps/products/forms.py:109 apps/products/templates/product.html:58
+msgid "Pack Size"
+msgstr "Taille de l'emballage"
+
+#: apps/pack_size/templates/add_packsize.html:20
+#: apps/pack_size/templates/add_packsize.html:30
+#: apps/products/templates/product.html:25
+msgid "Add Pack Size"
+msgstr "Ajouter la taille de l'emballage"
+
+#: apps/pack_size/templates/add_packsize.html:28
+msgid "Update Pack Size"
+msgstr "Mise à jour de la taille du paquet"
+
+#: apps/pack_size/templates/add_packsize.html:45
+msgid "Product Pack Size List"
+msgstr "Liste des tailles des paquets de produits"
+
+#: apps/pack_size/templates/delete_packsize.html:6
+#: apps/pack_size/templates/delete_packsize.html:25
+msgid "Manage Pack Sizes"
+msgstr "Gérer les tailles d'emballage"
+
+#: apps/pack_size/views.py:32
+msgid "Pack Size added successfully!"
+msgstr "Taille de l'emballage ajoutée avec succès !"
+
+#: apps/pack_size/views.py:51
+msgid "Pack Size updated successfully!"
+msgstr "La taille de l'emballage a été mise à jour avec succès !"
+
+#: apps/pack_size/views.py:72
+msgid "Pack Size deleted successfully!"
+msgstr "Pack Size supprimé avec succès !"
+
+#: apps/products/forms.py:15 apps/products/forms.py:42
+#: apps/products/forms.py:78 apps/products/forms.py:93
+#: apps/products/forms.py:110 apps/products/templates/add_batchNumber.html:50
+#: apps/products/templates/product.html:60
+msgid "Batch Number"
+msgstr "Numéro de lot"
+
+#: apps/products/forms.py:16 apps/products/forms.py:39
+#: apps/products/forms.py:75 apps/products/forms.py:90
+#: apps/products/forms.py:107 apps/products/templates/product.html:57
+msgid "Generic Name & Dosage"
+msgstr "DCI"
+
+#: apps/products/forms.py:17 apps/products/templates/product.html:61
+msgid "Expiry Date"
+msgstr "Date d'expiration"
+
+#: apps/products/forms.py:25
+msgid "Select the generic name from the list"
+msgstr "Sélectionnez le nom générique dans la liste"
+
+#: apps/products/forms.py:56
+msgid "Unit Price of the product"
+msgstr "Prix unitaire du produit"
+
+#: apps/products/templates/addProduct.html:9
+#: apps/products/templates/addProduct.html:27
+#: apps/products/templates/product.html:87
+msgid "Edit Product"
+msgstr "Modifier Produits"
+
+#: apps/products/templates/addProduct.html:11
+#: apps/products/templates/addProduct.html:29
+#: apps/products/templates/addProduct.html:42
+#: apps/products/templates/product.html:31
+msgid "Add Product"
+msgstr "Ajouter un produit"
+
+#: apps/products/templates/addProduct.html:40
+msgid "Update Product"
+msgstr "Mise à jour du produit"
+
+#: apps/products/templates/add_batchNumber.html:6
+#: apps/products/templates/add_batchNumber.html:20
+#: apps/products/templates/add_batchNumber.html:30
+#: apps/products/templates/product.html:19
+msgid "Add Batch Number"
+msgstr "Ajouter un numéro de lot"
+
+#: apps/products/templates/add_batchNumber.html:28
+msgid "Update Batch"
+msgstr "Mise à jour du lot"
+
+#: apps/products/templates/add_batchNumber.html:45
+msgid "Batch Number List"
+msgstr "Liste des numéros de lots"
+
+#: apps/products/templates/add_batchNumber.html:52
+msgid "Exipry Date"
+msgstr "Date d'expiration"
+
+#: apps/products/templates/deleteBatch.html:6
+#: apps/products/templates/deleteBatch.html:25
+msgid "Manage Batch"
+msgstr "Gérer les lots"
+
+#: apps/products/templates/deleteBatch.html:34
+msgid "Are you sure you want to delete this"
+msgstr "Êtes-vous sûr de vouloir supprimer"
+
+#: apps/products/templates/deleteProduct.html:6
+#: apps/products/templates/deleteProduct.html:25
+msgid "Manage Products"
+msgstr "Gérer les produits"
+
+#: apps/products/templates/product.html:6
+msgid "Poducts"
+msgstr "Produits"
+
+#: apps/products/templates/product.html:50
+msgid "Product List"
+msgstr "Liste des Produits"
+
+#: apps/products/templates/product.html:82
+msgid "Add Price"
+msgstr "Ajouter un prix"
+
+#: apps/products/views.py:78
+msgid "Batch number added successfully!"
+msgstr "Numéro de lot ajouté avec succès !"
+
+#: apps/products/views.py:114
+msgid "Product added successfully!"
+msgstr "Produit ajouté avec succès !"
+
+#: apps/products/views.py:137
+msgid "Product updated successfully!"
+msgstr "Produit mis à jour avec succès !"
+
+#: apps/products/views.py:161
+msgid "Product price updated successfully!"
+msgstr "Le prix du produit a été mis à jour avec succès !"
+
+#: apps/products/views.py:186
+msgid "Product deleted successfully!"
+msgstr "Produit supprimé avec succès !"
+
+#: apps/products/views.py:205
+msgid "Batch edited successfully!"
+msgstr "L'édition par lots a été réalisée avec succès !"
+
+#: apps/products/views.py:227
+msgid "Batch deleted successfully!"
+msgstr "Suppression par lots réussie !"
+
+#: apps/recommendations/forms.py:10
+msgid "Enter Product"
+msgstr "Saisir le produit"
+
+#: apps/recommendations/forms.py:11
+msgid "Enter quantity"
+msgstr "Saisir la quantité"
+
+#: apps/recommendations/forms.py:12
+msgid "Enter reason (optional)"
+msgstr "Saisir le motif"
+
+#: apps/recommendations/forms.py:17
+#: apps/recommendations/templates/recommend.html:27
+msgid "Reason"
+msgstr "Raison"
+
+#: apps/recommendations/forms.py:18
+msgid "Recommendation Document"
+msgstr "Recommendation Document"
+
+#: apps/recommendations/templates/newRecommend.html:8
+msgid "New Recommedation"
+msgstr "Nouvelle recommandation"
+
+#: apps/recommendations/templates/newRecommend.html:16
+msgid "Send a new recommendation"
+msgstr "Envoyer une nouvelle recommandation"
+
+#: apps/recommendations/templates/newRecommend.html:24
+msgid "Send"
+msgstr "Envoyer"
+
+#: apps/recommendations/templates/recommend.html:6
+#: apps/recommendations/templates/recommend.html:20
+#: templates/layout/partials/menu/vertical/vertical_menu.html:149
+msgid "Recommendations"
+msgstr "Recommandations"
+
+#: apps/recommendations/templates/recommend.html:11
+msgid "New Recommendation"
+msgstr "Nouvelle recommandation"
+
+#: apps/recommendations/templates/recommend.html:29
+msgid "Document"
+msgstr "Document"
+
+#: apps/recommendations/templates/recommend.html:42
+msgid "View Document"
+msgstr "Voir le document"
+
+#: apps/recommendations/views.py:50
+msgid "Recommendation sent successfully!"
+msgstr "Recommandation envoyée avec succès !"
+
+#: apps/sales_rep/templates/sales-rep.html:6
+#: apps/sales_rep/templates/sales-rep.html:18
+msgid "Sales Rep List"
+msgstr "Liste de Représentant commercial"
+
+#: apps/sales_rep/templates/sales-rep.html:23
+msgid "Sales Rep ID"
+msgstr "ID"
+
+#: apps/sales_rep/templates/sales-rep.html:24 apps/workers/forms.py:12
+#: apps/workers/templates/workers.html:28
+msgid "First Name"
+msgstr "Prénom"
+
+#: apps/sales_rep/templates/sales-rep.html:25 apps/workers/forms.py:17
+#: apps/workers/templates/workers.html:29
+msgid "Last Name"
+msgstr "Dernier nom"
+
+#: apps/sales_rep/templates/sales-rep.html:26
+#: apps/workers/templates/workers.html:33
+msgid "Phone Number"
+msgstr "Numéro de téléphone"
+
+#: apps/sales_rep/templates/sales-rep.html:29
+msgid "Manager"
+msgstr "Manager"
+
+#: apps/stock/templates/AddStock.html:6
+msgid "Add Stocks"
+msgstr "Ajouter des stocks"
+
+#: apps/stock/templates/AddStock.html:17 apps/stock/templates/AddStock.html:81
+#: apps/stock/templates/stock.html:15 apps/stock/templates/stock_branch.html:12
+msgid "Add Stock"
+msgstr "Ajouter un stock"
+
+#: apps/stock/templates/AddStock.html:26
+#: apps/stock/templates/UpdateStock.html:49
+msgid "Add to List"
+msgstr "Ajouter à la liste"
+
+#: apps/stock/templates/AddStock.html:36
+#: apps/stock/templates/UpdateStock.html:60
+msgid "New Stock List"
+msgstr "Nouvelle liste de stocks"
+
+#: apps/stock/templates/AddStock.html:68
+#: apps/stock/templates/UpdateStock.html:92
+msgid "No items in the list"
+msgstr "Aucun élément dans la liste"
+
+#: apps/stock/templates/UpdateStock.html:6
+msgid "Update Stocks"
+msgstr "Mise à jour des stocks"
+
+#: apps/stock/templates/stock.html:3 apps/stock/templates/stock_all.html:6
+#: apps/stock/templates/stock_all.html:12
+#: apps/stock/templates/stock_branch.html:6
+#: templates/layout/partials/menu/vertical/vertical_menu.html:267
+msgid "Track Stocks"
+msgstr "Suivi des stocks"
+
+#: apps/stock/templates/stock.html:9
+msgid "Stock Levels"
+msgstr "Niveaux de stock"
+
+#: apps/stock/templates/stock.html:12
+msgid "All stock"
+msgstr "Tous les stocks"
+
+#: apps/stock/templates/stock.html:22
+msgid "Stock Levels for"
+msgstr "Niveaux de stock pour"
+
+#: apps/stock/templates/stock.html:27
+msgid "Select which warehouse you want to view"
+msgstr "Sélectionnez l'entrepôt que vous souhaitez consulter"
+
+#: apps/stock/templates/stock.html:33 apps/stock/templates/stock_all.html:45
+#: apps/stock/templates/stock_branch.html:21
+msgid "Stock Details"
+msgstr "Détails du stock"
+
+#: apps/stock/templates/stock.html:36
+msgid "Central Warehouse"
+msgstr "Entrepôt central"
+
+#: apps/stock/templates/stock.html:49
+msgid "Quantity Available"
+msgstr "Quantité disponible"
+
+#: apps/stock/templates/stock.html:56
+msgid "Loading stock data..."
+msgstr "Chargement des données sur les stocks..."
+
+#: apps/stock/templates/stock_all.html:19
+msgid "Filter by Branch"
+msgstr "Filtrer par branche"
+
+#: apps/stock/templates/stock_all.html:28
+msgid "Filter"
+msgstr "Filtre"
+
+#: apps/stock/templates/stock_all.html:34
+msgid "Search Product (Product Code or Generic Name)"
+msgstr "Rechercher un produit (code produit ou DCI)"
+
+#: apps/stock/templates/stock_all.html:36
+msgid "Select Product"
+msgstr "Sélectionner un produit"
+
+#: apps/stock/templates/stock_all.html:68
+#: apps/stock/templates/stock_branch.html:48
+msgid "In Stock"
+msgstr "En stock"
+
+#: apps/stock/templates/stock_all.html:70
+msgid "Out of Stock"
+msgstr "En rupture de stock"
+
+#: apps/stock/templates/stock_all.html:76
+msgid "No stock to display yet"
+msgstr "Pas de stock à afficher pour l'instant"
+
+#: apps/stock/templates/stock_branch.html:25
+msgid "No branch affiliated"
+msgstr "Aucune branche affiliée"
+
+#: apps/stock/templates/stock_branch.html:68
+msgid "No stock details available for this branch"
+msgstr "Aucun détail sur les stocks n'est disponible pour cette branche"
+
+#: apps/stock/templates/update_stock_entry.html:9
+msgid "Update Stock for"
+msgstr "Mise à jour du stock pour"
+
+#: apps/stock/views.py:102
+msgid "Item added to temporary stock list."
+msgstr "Article ajouté à la liste des stocks temporaires."
+
+#: apps/stock/views.py:104
+msgid "Invalid data. Please check the form."
+msgstr "Données non valides. Veuillez vérifier le formulaire."
+
+#: apps/stock/views.py:117 apps/stock/views.py:231
+msgid "Item removed from the temporary stock list."
+msgstr "Article retiré de la liste du stock temporaire."
+
+#: apps/stock/views.py:148
+msgid "Stock updated successfully."
+msgstr "Le stock a été mis à jour avec succès."
+
+#: apps/stock/views.py:181
+msgid "Quantity must be greater than zero."
+msgstr "La quantité doit être supérieure à zéro."
+
+#: apps/stock/views.py:183
+msgid "Invalid quantity. Please enter a number greater than zero."
+msgstr "Quantité non valide. Veuillez saisir un nombre supérieur à zéro."
+
+#: apps/stock/views.py:206
+msgid "Please select a valid product and branch."
+msgstr "Veuillez sélectionner un produit et une branche valides."
+
+#: apps/stock/views.py:235
+msgid "No items in the update list to update."
+msgstr "Aucun élément de la liste de mise à jour n'est à mettre à jour."
+
+#: apps/stock/views.py:258
+msgid "Stock updates applied successfully."
+msgstr "Les mises à jour du stock ont été appliquées avec succès."
+
+#: apps/stock_request/templates/createRequests.html:5
+#: apps/stock_request/templates/createRequests.html:14
+msgid "Create Stock Request"
+msgstr "Créer une demande de stock"
+
+#: apps/stock_request/templates/createRequests.html:22
+msgid "Add to Request List"
+msgstr "Ajouter à la liste des demandes"
+
+#: apps/stock_request/templates/createRequests.html:28
+msgid "Stock Request List"
+msgstr "Liste des demandes de stock"
+
+#: apps/stock_request/templates/createRequests.html:60
+msgid "No items in the request list"
+msgstr "Aucun élément dans la liste des demandes"
+
+#: apps/stock_request/templates/createRequests.html:73
+msgid "Submit Request"
+msgstr "Soumettre une demande"
+
+#: apps/stock_request/templates/requestDetails.html:6
+#: apps/stock_request/templates/requestDetails.html:10
+msgid "Stock Request Details"
+msgstr "Demande de stock Détails"
+
+#: apps/stock_request/templates/requestDetails.html:15
+msgid "Request Details"
+msgstr "Demande de détails"
+
+#: apps/stock_request/templates/requestDetails.html:60
+msgid "Product Details"
+msgstr "Détails du produit"
+
+#: apps/stock_request/templates/requestDetails.html:79
+msgid "No products found for this request"
+msgstr "Aucun produit trouvé pour cette demande"
+
+#: apps/stock_request/templates/requestDetails.html:107
+msgid "Download Picking List"
+msgstr "Télécharger la liste de sélection"
+
+#: apps/stock_request/templates/requestDetails.html:109
+msgid "No Picking List"
+msgstr "Pas de liste de sélection"
+
+#: apps/stock_request/templates/requestDetails.html:117
+msgid "Stock Received"
+msgstr "Stock reçu"
+
+#: apps/stock_request/templates/requests.html:25
+#: apps/stock_request/templates/transit-requests.html:45
+msgid "In Transit"
+msgstr "En transit"
+
+#: apps/stock_request/templates/requests.html:28
+msgid "Apply"
+msgstr "Appliquer"
+
+#: apps/stock_request/templates/requests.html:40
+#: apps/stock_request/templates/transit-requests.html:24
+msgid "Request ID"
+msgstr "Request ID"
+
+#: apps/stock_request/templates/requests.html:61
+msgid "Accepted"
+msgstr "Accepté"
+
+#: apps/stock_request/templates/requests.html:85
+msgid "No stock requests found"
+msgstr "Aucune demande de stock n'a été trouvée"
+
+#: apps/stock_request/templates/transit-requests.html:67
+msgid "No stock in transit found"
+msgstr "Aucun stock en transit n'a été trouvé"
+
+#: apps/stock_request/views.py:67 apps/stock_request/views.py:69
+msgid "Item added to temporary stock request list."
+msgstr "Article ajouté à la liste des demandes de stock temporaire."
+
+#: apps/stock_request/views.py:81
+msgid "Item removed from the temporary stock request list."
+msgstr "Article retiré de la liste des demandes de stock temporaire."
+
+#: apps/stock_request/views.py:94
+msgid "Stock request submitted successfully."
+msgstr "Demande de stock soumise avec succès."
+
+#: apps/stock_request/views.py:114
+msgid "You do not have access to manage stock requests."
+msgstr "Vous n'avez pas accès à la gestion des demandes de stock."
+
+#: apps/stock_request/views.py:197
+msgid "Central warehouse not found. Please ensure it exists."
+msgstr ""
+"L'entrepôt central n'a pas été trouvé. Veuillez vous assurer qu'il existe."
+
+#: apps/stock_request/views.py:233
+msgid "Some items have insufficient stock."
+msgstr "Certains articles sont en stock insuffisant."
+
+#: apps/stock_request/views.py:256
+msgid "Stock request approved. Picking list generated and stocks updated."
+msgstr ""
+"Demande de stock approuvée. La liste de prélèvement est générée et les "
+"stocks sont mis à jour."
+
+#: apps/stock_request/views.py:268
+msgid "Stock request declined."
+msgstr "Demande de stock refusée."
+
+#: apps/stock_request/views.py:275
+msgid "Invalid request."
+msgstr "Demande non valide."
+
+#: apps/stock_request/views.py:322
+msgid "Stock received and branch warehouse updated successfully."
+msgstr ""
+"Réception du stock et mise à jour de l'entrepôt de la succursale avec succès."
+
+#: apps/stock_request/views.py:327
+msgid "Invalid request method."
+msgstr "Méthode de requête non valide."
+
+#: apps/stock_request/views.py:347
+msgid "You do not have access to view stocks in transit."
+msgstr "Vous n'avez pas accès aux actions en transit."
+
 #: apps/workers/forms.py:11
 msgid "Enter first name"
 msgstr "Saisir le prénom"
 
-#: apps/workers/forms.py:12 apps/workers/templates/workers.html:28
-msgid "First Name"
-msgstr "Prénom"
-
 #: apps/workers/forms.py:16
 msgid "Enter last name"
 msgstr "Saisir le nom de famille"
-
-#: apps/workers/forms.py:17 apps/workers/templates/workers.html:29
-msgid "Last Name"
-msgstr "Dernier nom"
-
-#: apps/workers/forms.py:20
-msgid "Enter email"
-msgstr "Saisir l'email"
-
-#: apps/workers/forms.py:21 apps/workers/templates/workers.html:31
-msgid "Email"
-msgstr "Email"
 
 #: apps/workers/forms.py:24
 msgid "Enter password"
@@ -570,14 +2118,6 @@ msgstr "Rôle"
 #: apps/workers/forms.py:39
 msgid "Company"
 msgstr "Entreprise"
-
-#: apps/workers/forms.py:46 apps/workers/forms.py:134
-msgid "Branch"
-msgstr "Branche"
-
-#: apps/workers/forms.py:52 apps/workers/forms.py:135
-msgid "Telephone"
-msgstr "Telephone"
 
 #: apps/workers/forms.py:57 apps/workers/forms.py:136
 #: apps/workers/templates/workers.html:34
@@ -608,13 +2148,6 @@ msgstr "Editer l'employée"
 #: apps/workers/templates/manage_privileges.html:11
 msgid "Add Worker"
 msgstr "Ajouter un Employée"
-
-#: apps/workers/templates/addWorker.html:24
-#: apps/workers/templates/create_privilege.html:21
-#: apps/workers/templates/manage_privileges.html:19
-#: apps/workers/templates/privilege_details.html:12
-msgid "Dashboard"
-msgstr "Tableau de bord"
 
 #: apps/workers/templates/addWorker.html:25
 msgid "Manage Workers"
@@ -676,6 +2209,10 @@ msgstr "Choisir un rôle"
 msgid "Get Privileges"
 msgstr "Obtenir des privilèges"
 
+#: apps/workers/templates/privilege_details.html:44
+msgid "Privileges for"
+msgstr "Gérer les privilèges pour"
+
 #: apps/workers/templates/privilege_details.html:52
 msgid "No privileges found for the selected role"
 msgstr "Aucun privilège n'a été trouvé pour le rôle sélectionné"
@@ -700,18 +2237,9 @@ msgstr "ID de l'employé"
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: apps/workers/templates/workers.html:33
-msgid "Phone Number"
-msgstr "Numéro de téléphone"
-
-#: apps/workers/templates/workers.html:36
-msgid "Actions"
-msgstr "Actions"
-
 #: apps/workers/views.py:52
 msgid "Employee Credentials created successfully!"
-msgstr ""
-"Les données d'identification des employés ont été créées avec succès !"
+msgstr "Les données d'identification des employés ont été créées avec succès !"
 
 #: apps/workers/views.py:71
 msgid "Employee Credentials updated successfully!"
@@ -727,8 +2255,7 @@ msgstr "Privilège créé avec succès !"
 
 #: apps/workers/views.py:122
 msgid "Error creating privilege. Please check the input."
-msgstr ""
-"Erreur lors de la création d'un privilège. Veuillez vérifier l'entrée."
+msgstr "Erreur lors de la création d'un privilège. Veuillez vérifier l'entrée."
 
 #: config/settings.py:180
 msgid "English"
@@ -753,11 +2280,6 @@ msgstr "Accueil"
 msgid "Customers"
 msgstr "Clients"
 
-#: templates/layout/partials/menu/vertical/vertical_menu.html:119
-#: templates/layout/partials/menu/vertical/vertical_menu.html:249
-msgid "Sales Rep"
-msgstr "Représentant commercial"
-
 #: templates/layout/partials/menu/vertical/vertical_menu.html:131
 msgid "Stocks"
 msgstr "Stocks"
@@ -766,10 +2288,6 @@ msgstr "Stocks"
 #: templates/layout/partials/menu/vertical/vertical_menu.html:158
 msgid "Stock Request"
 msgstr "Demande de stocks"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:149
-msgid "Recommendations"
-msgstr "Recommandations"
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:170
 #: templates/layout/partials/menu/vertical/vertical_menu.html:273
@@ -780,10 +2298,6 @@ msgstr "Stock en transit"
 msgid "Transferred Stock"
 msgstr "Stock transféré"
 
-#: templates/layout/partials/menu/vertical/vertical_menu.html:200
-msgid "Old Invoice"
-msgstr "Ancienne facture"
-
 #: templates/layout/partials/menu/vertical/vertical_menu.html:209
 msgid "Invoices"
 msgstr "Factures"
@@ -791,10 +2305,6 @@ msgstr "Factures"
 #: templates/layout/partials/menu/vertical/vertical_menu.html:243
 msgid "Roles & Privileges"
 msgstr "Rôles et privilèges"
-
-#: templates/layout/partials/menu/vertical/vertical_menu.html:267
-msgid "Track Stocks"
-msgstr "Suivi des stocks"
 
 #: templates/layout/partials/navbar/navbar.html:15
 msgid "Welcome Back"

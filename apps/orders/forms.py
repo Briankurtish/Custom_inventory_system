@@ -4,6 +4,7 @@ from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
 from apps.workers.models import Worker
+from django.utils.translation import gettext_lazy as _
 
 
 class PurchaseOrderForm(forms.ModelForm):
@@ -14,10 +15,10 @@ class PurchaseOrderForm(forms.ModelForm):
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
         }
         labels = {
-            'branch': 'Branch',
-            'customer': 'Customer',
-            'sales_rep': 'Sales Representative',
-            'payment_method': 'Payment Method',
+            'branch': _('Branch'),
+            'customer': _('Customer'),
+            'sales_rep': _('Sales Representative'),
+            'payment_method': _('Payment Method'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -51,10 +52,10 @@ class PurchaseOrderItemForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
         labels = {
-            'stock': 'Product',
-            'quantity': 'Quantity',
-            'temp_price': 'Price',
-            'reason': "Note"
+            'stock': _('Product'),
+            'quantity': _('Quantity'),
+            'temp_price': _('Price'),
+            'reason': _("Note")
         }
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +76,7 @@ class PurchaseOrderItemForm(forms.ModelForm):
 
         if stock and quantity > stock.quantity:
             raise forms.ValidationError(
-                f"Insufficient stock: only {stock.quantity} units available for {stock.product.generic_name_dosage}."
+                _(f"Insufficient stock: only {stock.quantity} units available for {stock.product.generic_name_dosage}.")
             )
         return quantity
     
@@ -92,6 +93,12 @@ class InvoicePaymentForm(forms.ModelForm):
             'payment_mode': forms.Select(attrs={'class': 'form-control'}),
             'account_paid_to': forms.TextInput(attrs={'class': 'form-control'}),
         }
+        labels = {
+            'amount_paid': _('Amount Paid'),  # Translatable label
+            'payment_mode': _('Payment Mode'),  # Translatable label
+            'account_paid_to': _('Account Paid to'),  # Translatable label
+            
+        }
 
     def __init__(self, *args, **kwargs):
         self.invoice = kwargs.pop('invoice', None)  # Pass the invoice instance to the form
@@ -107,7 +114,7 @@ class InvoicePaymentForm(forms.ModelForm):
             if amount_paid > self.invoice.amount_due:
                 raise forms.ValidationError(f"Amount paid cannot exceed the remaining amount due ({self.invoice.amount_due}).")
             if amount_paid <= 0:
-                raise forms.ValidationError("Amount paid must be greater than zero.")
+                raise forms.ValidationError(_("Amount paid must be greater than zero."))
 
         return amount_paid
 

@@ -4,7 +4,7 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}Invoice List{% endblock %}
+{% block title %}{% trans "Invoice List" %}{% endblock %}
 
 {% block content %}
 
@@ -22,22 +22,22 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Invoice List</h5>
+  <h5 class="card-header">{% trans "Invoice List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Invoice ID</th>
-          <th>Branch ID</th>
-          <th>Created By</th>
-          <th>Customer</th>
-          <th>Sales Rep</th>
-          <th>Total Amount</th>
-          <th>Total Paid</th>
-          <th>Total Due</th>
-          <th>Created At</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{% trans "Invoice ID" %}</th>
+          <th>{% trans "Branch ID" %}</th>
+          <th>{% trans "Created By" %}</th>
+          <th>{% trans "Customer" %}</th>
+          <th>{% trans "Sales Rep" %}</th>
+          <th>{% trans "Total Amount" %}</th>
+          <th>{% trans "Total Paid" %}</th>
+          <th>{% trans "Total Due" %}</th>
+          <th>{% trans "Created At" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -56,11 +56,11 @@
 
           <td>
             {% if order.status|lower == "unpaid" %}
-              <span class="badge bg-label-warning me-1">UnPaid</span>
+              <span class="badge bg-label-warning me-1">{% trans "UnPaid" %}</span>
             {% elif order.status|lower == "payment ongoing" %}
-              <span class="badge bg-label-info me-1">Payment Ongoing</span>
+              <span class="badge bg-label-info me-1">{% trans "Payment Ongoing" %}</span>
             {% elif order.status|lower == "payment completed" %}
-              <span class="badge bg-label-success me-1">Payment Completed</span>
+              <span class="badge bg-label-success me-1">{% trans "Payment Completed" %}</span>
             {% else %}
               <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
             {% endif %}
@@ -74,10 +74,10 @@
                 <a 
                   class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
                   href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
-                  <i class="bx bx-credit-card me-1"></i> Add Payment
+                  <i class="bx bx-credit-card me-1"></i> {% trans "Add Payment" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
-                  <i class="bx bx-history me-1"></i> Payment History
+                  <i class="bx bx-history me-1"></i> {% trans "Payment History" %}
                 </a>
                 {% comment %} 
                 <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
@@ -90,7 +90,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">No Invoices available</td>
+          <td colspan="11" class="text-center">{% trans "No Invoices available" %}</td>
         </tr>
         {% endfor %}
       </tbody>

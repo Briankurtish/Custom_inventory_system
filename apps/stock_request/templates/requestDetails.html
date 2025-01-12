@@ -3,16 +3,16 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Stock Request Details{% endblock %}
+{% block title %}{% trans "Stock Request Details" %}{% endblock %}
 
 {% block content %}
 
-<h4 class="text">Stock Request Details</h4>
+<h4 class="text">{% trans "Stock Request Details" %}</h4>
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboard</a></li>
-      <li class="breadcrumb-item active"><a href="{% url 'requests' %}">Stock Requests</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Request Details</li>
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'requests' %}">{% trans "Stock Requests" %}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Request Details" %}</li>
     </ol>
 </nav>
 <hr class="my-8">
@@ -27,19 +27,19 @@
         <div class="row">
             <!-- First Column -->
             <div class="col-md-4">
-                <small class="text m-3">Branch ID</small>
+                <small class="text m-3">{% trans "Branch ID" %}</small>
                 <h6 class=" mx-3">{{ stock_request.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
             <div class="col-md-4">
-                <small class="text m-3">Branch Name</small>
+                <small class="text m-3">{% trans "Branch Name" %}</small>
                 <h6 class=" mx-3">{{ stock_request.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
             <div class="col-md-4">
-                <small class="text m-3">Created By</small>
+                <small class="text m-3">{% trans "Created By" %}</small>
                 <h6 class=" mx-3">{{ stock_request.requested_by.get_full_name }}</h6>
             </div>
         </div>
@@ -50,21 +50,21 @@
         <div class="row">
             <!-- Third Column -->
             <div class="col-md-4">
-                <small class="text m-3">Status</small>
+                <small class="text m-3">{% trans "Status" %}</small>
                 <h6 class="text-warning mx-3">{{ stock_request.status }}</h6>
             </div>
         </div>
     </div>
 
     <div class="card">
-      <h5 class="card-header">Product Details</h5>
+      <h5 class="card-header">{% trans "Product Details" %}</h5>
       <div class="table-responsive text-nowrap">
           <table class="table table-hover">
               <thead>
                   <tr>
-                      <th>Product Code</th>
-                      <th>Product Name</th>
-                      <th>Quantity</th>
+                      <th>{% trans "Product Code" %}</th>
+                      <th>{% trans "Product Name" %}</th>
+                      <th>{% trans "Quantity" %}</th>
                   </tr>
               </thead>
               <tbody>
@@ -76,7 +76,7 @@
                       </tr>
                   {% empty %}
                       <tr>
-                          <td colspan="3" class="text-center">No products found for this request.</td>
+                          <td colspan="3" class="text-center">{% trans "No products found for this request" %}</td>
                       </tr>
                   {% endfor %}
               </tbody>
@@ -94,19 +94,19 @@
     <form action="{% url 'approve_or_decline_request' request_id=stock_request.id %}" method="post">
         {% csrf_token %}
         <button type="submit" name="action" value="approve" class="btn btn-success">
-            <span class="tf-icons bx bx-check bx-18px me-2"></span> Approve
+            <span class="tf-icons bx bx-check bx-18px me-2"></span> {% trans "Approve" %}
         </button>
         <button type="submit" name="action" value="decline" class="btn btn-danger">
-            <span class="tf-icons bx bx-x bx-18px me-2"></span> Decline
+            <span class="tf-icons bx bx-x bx-18px me-2"></span> {% trans "Decline" %}
         </button>
     </form>
     {% endif %}
   {% endif %}
 
   {% if stock_request.picking_list %}
-  <a href="{{ stock_request.picking_list.url }}" target="_blank">Download Picking List</a>
+  <a href="{{ stock_request.picking_list.url }}" target="_blank">{% trans "Download Picking List" %}</a>
   {% else %}
-    <p>No Picking List</p>
+    <p>{% trans "No Picking List" %}</p>
   {% endif %}
 
   <!-- Stock Received Form -->
@@ -114,7 +114,7 @@
   <form action="{% url 'stock_received' request_id=stock_request.id %}" method="post">
       {% csrf_token %}
       <button type="submit" name="action" value="stock_received" class="btn btn-primary">
-        <span class="tf-icons bx bx-package bx-18px me-2"></span> Stock Received
+        <span class="tf-icons bx bx-package bx-18px me-2"></span> {% trans "Stock Received" %}
       </button>
   </form>
   {% endif %}

@@ -3,13 +3,13 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Customer List{% endblock %}
+{% block title %}{% trans "Customer List" %}{% endblock %}
 
 {% block content %}
 
 {% if 'Add Customers' in worker_privileges %}
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-customers' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>Add Customer
+  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Customer" %}
 </button>
 {% endif %}
 
@@ -20,22 +20,22 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">Customer List</h5>
+  <h5 class="card-header">{% trans "Customer List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Client ID</th>
-          <th>Name</th>
-          <th>Postal Code</th>
-          <th>Sales Rep</th>
-          <th>Contact Person</th>
-          <th>Telephone</th>
-          <th>Email</th>
-          <th>Agreement Number</th>
-          <th>Tax Payer Number</th>
-          <th>Location Plan</th>
-          <th>Actions</th>
+          <th>{% trans "Client ID" %}</th>
+          <th>{% trans "Name" %}</th>
+          <th>{% trans "Postal Code" %}</th>
+          <th>{% trans "Sales Rep" %}</th>
+          <th>{% trans "Contact Person" %}</th>
+          <th>{% trans "Telephone" %}</th>
+          <th>{% trans "Email" %}</th>
+          <th>{% trans "Agreement Number" %}</th>
+          <th>{% trans "Tax Payer Number" %}</th>
+          <th>{% trans "Location Plan" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
@@ -57,11 +57,11 @@
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
                 {% if 'View Customer Credits' in worker_privileges %}
-                  <a class="dropdown-item" href="{% url 'credit_report' customer.id %}"><i class="bx bx-credit-card me-1"></i> View Credits</a>
+                  <a class="dropdown-item" href="{% url 'credit_report' customer.id %}"><i class="bx bx-credit-card me-1"></i> {% trans "View Credits" %}</a>
                 {% endif %}
                 {% if 'Add Customers' in worker_privileges %}
-                  <a class="dropdown-item" href="{% url 'edit-customer' customer.id %}"><i class="bx bx-edit-alt me-1"></i> Edit</a>
-                  <a class="dropdown-item" href="{% url 'delete-customer' customer.id %}"><i class="bx bx-trash me-1"></i> Delete</a>
+                  <a class="dropdown-item" href="{% url 'edit-customer' customer.id %}"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
+                  <a class="dropdown-item" href="{% url 'delete-customer' customer.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
                 {% endif %}
                 
               </div>
