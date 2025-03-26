@@ -22,12 +22,12 @@
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Manage Workers" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Manage Employees" %}</a></li>
     <li class="breadcrumb-item active" aria-current="page">
       {% if is_editing %}
-        {% trans "Edit Worker" %}
+        {% trans "Edit Employee" %}
       {% else %}
-        {% trans "Add Worker" %}
+        {% trans "Add Employee" %}
       {% endif %}
     </li>
   </ol>
@@ -39,8 +39,8 @@
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{% trans "Employee Information" %}</h5> 
-        <hr> 
+        <h5 class="mb-0">{% trans "Employee Information" %}</h5>
+        <hr>
       </div>
       <div class="card-body">
         <form method="POST">
@@ -49,12 +49,12 @@
           {{ form|crispy }}
 
           <br>
-          
+
           <button type="submit" class="btn btn-primary">
             {% if is_editing %}
-              {% trans "Update Worker" %}
+              {% trans "Update" %}
             {% else %}
-              {% trans "Add Worker" %}
+              {% trans "Submit" %}
             {% endif %}
           </button>
         </form>
@@ -65,7 +65,7 @@
 {% endblock %}
 
 
-{% block page_js %} 
+{% block page_js %}
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {

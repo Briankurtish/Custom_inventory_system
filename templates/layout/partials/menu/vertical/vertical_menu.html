@@ -72,7 +72,7 @@
       {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
     </a>
   </li>
-  
+
 {% endif %}
 
 {# Dynamically display menus based on privileges #}
@@ -103,6 +103,15 @@
               <div class="text-truncate" data-i18n="Customers">{% trans "Customers" %}</div>
               {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
             </a>
+          </li>
+        {% endif %}
+
+        {% if privilege.name == 'Add Employee' %}
+          <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
+              <a href="{% url 'workers' %}" class="menu-link">
+                  <i class="menu-icon fa-regular fa-user"></i>
+                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
+              </a>
           </li>
         {% endif %}
 
@@ -212,60 +221,119 @@
 {% endif %}
 
 {% if user.is_superuser %}
+
     <li class="menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashbord-phar/' in request.path %}active open{% endif %}">
         <a href="{% url 'index-phar' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-home-smile"></i>
+            <i class="menu-icon fa-solid fa-house"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Home" %}</div>
         </a>
     </li>
     <li class="menu-item {% if 'branches' == request.resolver_match.url_name or '/branches/' in request.path %}active open{% endif %}">
         <a href="{% url 'branches' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-building-house"></i>
+            <i class="menu-icon fas fa-house-user"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Branches" %}</div>
         </a>
     </li>
+    <li class="menu-item {% if 'recommend' == request.resolver_match.url_name or '/recommendations/' in request.path %}active open{% endif %}">
+          <a href="{% url 'recommend' %}" class="menu-link">
+            <i class="menu-icon fa-regular fa-comment-dots"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Recommendations" %}</div>
+          </a>
+      </li>
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Human Resource</span>
+    </li>
     <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
         <a href="{% url 'workers' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user-circle"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Workers" %}</div>
+            <i class="menu-icon fa-regular fa-user"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
         </a>
     </li>
     <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
         <a href="{% url 'privileges' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user-circle"></i>
+            <i class="menu-icon fa-solid fa-user-lock"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
         </a>
     </li>
     <li class="menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active open{% endif %}">
         <a href="{% url 'sales-rep' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-briefcase"></i>
+            <i class="menu-icon fa-regular fa-user"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
         </a>
     </li>
-    <li class="menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active open{% endif %}">
-        <a href="{% url 'customers' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Customers" %}</div>
-        </a>
+
+
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Inventory Management</span>
     </li>
     <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
         <a href="{% url 'products' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-box"></i>
+            <i class="menu-icon fa-solid fa-boxes-stacked"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Products" %}</div>
         </a>
     </li>
     <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
         <a href="{% url 'stock' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-line-chart"></i>
+            <i class="menu-icon fa-solid fa-cubes"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Track Stocks" %}</div>
         </a>
     </li>
-    <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks-in-transit/' in request.path %}active open{% endif %}">
-        <a href="{% url 'stocks_in_transit' %}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-line-chart"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock In Transit" %}</div>
+
+      <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
+          <a href="{% url 'requests' %}" class="menu-link">
+            <i class="menu-icon fa-solid fa-circle-exclamation"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Request" %}</div>
+            {% if pending_request_count > 0 %}
+            <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
+          <a href="{% url 'stocks_in_transit' %}" class="menu-link">
+            <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
+          </a>
+        </li>
+
+        <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Orders and Invoices</span>
+    </li>
+
+    <li class="menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active open{% endif %}">
+        <a href="{% url 'customers' %}" class="menu-link">
+            <i class="menu-icon fa-regular fa-user"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Customers" %}</div>
         </a>
     </li>
+
+    <li class="menu-item {% if 'orders' == request.resolver_match.url_name or '/orders/' in request.path %}active open{% endif %}">
+          <a href="{% url 'orders' %}" class="menu-link">
+            <i class="menu-icon fa-solid fa-clipboard-list"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Orders" %}</div>
+            {% if pending_orders_count > 0 %}
+            <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active open{% endif %}">
+          <a href="{% url 'invoices' %}" class="menu-link">
+            <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Invoices" %}</div>
+            {% if unpaid_invoices_count > 0 %}
+            <span class="badge bg-warning rounded-pill ms-auto">{{ unpaid_invoices_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+
+    <li class="menu-item {% if 'old-invoice' == request.resolver_match.url_name or '/old-invoice/' in request.path %}active open{% endif %}">
+          <a href="{% url 'old-invoice' %}" class="menu-link">
+            <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="text-truncate" data-i18n="Dashboards">{% trans "Old Invoice" %}</div>
+          </a>
+        </li>
+
 {% endif %}
 
 

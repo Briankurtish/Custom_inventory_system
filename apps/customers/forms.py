@@ -11,7 +11,7 @@ class CustomerForm(forms.ModelForm):
         ]
         widgets = {
             'customer_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter customer name')}),
-            'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter postal code')}),
+            'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter Address')}),
             'branch': forms.Select(attrs={'class': 'form-control'}),
             'sales_rep': forms.Select(attrs={'class': 'form-control'}),
             'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter Contact Person Name')}),
@@ -23,7 +23,7 @@ class CustomerForm(forms.ModelForm):
         }
         labels = {
             'customer_name': _('Customer Name'),
-            'postal_code': _('Postal Code'),
+            'postal_code': _('Address'),
             'branch': _('Branch'),
             'sales_rep': _('Sales Rep'),
             'contact_person': _('Contact Person'),

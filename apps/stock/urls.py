@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import add_stock_view, ManageStockView, update_stock_entry_view, update_existing_stock_view, get_branches, get_stock_data, ManageStockBranchView, track_stocks
+from .views import add_stock_view, ManageStockView, delete_stock_page, update_stock_entry_view, update_existing_stock_view, get_branches, get_stock_data, ManageStockBranchView, track_stocks, delete_stock_api
 
 
 
@@ -26,10 +26,13 @@ urlpatterns = [
         name="update-stock",
     ),
     path('update-stock-entry/<int:stock_id>/', update_stock_entry_view, name='update-stock-entry'),
-    
+
     path('get-branches/', get_branches, name='get-branches'),
-    
+
     path('get-stock-data/', get_stock_data, name='get-stock-data'),
-    
+
     path("track-stocks/", track_stocks, name="track-stocks"),
+
+    path('delete-stock/', delete_stock_api, name='delete-stock-api'),
+    path("delete-stock/<int:stock_id>/", delete_stock_page, name="delete-stock"),
 ]

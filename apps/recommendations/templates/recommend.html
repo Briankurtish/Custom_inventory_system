@@ -8,7 +8,7 @@
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'new-recommend' %}'">
-  <span class="tf-icons bx bx-plus bx-18px me-2"></span>{% trans "New Recommendation" %}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "New Recommendation" %}
 </button>
 
 <hr class="my-8">
@@ -35,7 +35,7 @@
         {% for recommendation in recommendation %}
         <tr>
           <td> <span>{{recommendation.product}}</span></td>
-          <td>{{recommendation.quantity}}</td> 
+          <td>{{recommendation.quantity}}</td>
 
           <td><span class="text  me-1">{{recommendation.reason}}</span></td>
           <td><span class="text  me-1">{{recommendation.date_created}}</span></td>
@@ -43,10 +43,10 @@
           <td><span class="badge bg-label-info me-1">{{recommendation.status}}</span></td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
-                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
+                <a class="dropdown-item" href="javascript:void(0);"><i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}</a>
+                <a class="dropdown-item" href="javascript:void(0);"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
               </div>
             </div>
           </td>

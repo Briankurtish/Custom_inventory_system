@@ -15,7 +15,7 @@ class Customer(models.Model):
         null=True,
         blank=True,
         related_name='customers'
-       
+
     )
     postal_code = models.CharField(
         max_length=20, blank=True, null=True
@@ -27,10 +27,11 @@ class Customer(models.Model):
         blank=True,
         related_name='customers',
         limit_choices_to={'role': 'Sales Rep'} # Only include workers with role "Sales Rep"
-        
+
     )
     contact_person = models.CharField(
-        max_length=255
+        max_length=255,
+        blank=True, null=True,
     )
     telephone = models.CharField(
         max_length=20, blank=True, null=True
@@ -44,7 +45,7 @@ class Customer(models.Model):
     tax_payer_number = models.CharField(
         max_length=100, blank=True, null=True
     )
-    location_plan = models.FileField(upload_to='location_plan/')
+    location_plan = models.FileField(upload_to='location_plan/', blank=True, null=True)
     note = models.CharField(
         max_length=100, blank=True, null=True
     )

@@ -2,7 +2,7 @@
 
 {% load static %}
 {% load i18n %}
-
+{% load humanize %}
 {% block title %}{% trans "Poducts" %}{% endblock %}
 
 {% block content %}
@@ -10,25 +10,25 @@
 {% if user.worker_profile.privileges.all %}
     {% for privilege in user.worker_profile.privileges.all %}
         {% if privilege.name == 'Add Products' %}
-          
+
         <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
-          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Generic Name" %}
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Generic Name" %}
         </button>
         <span>➡️</span>
         <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
-          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Batch Number" %}
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Batch Number" %}
         </button>
-        
+
         <span>➡️</span>
-        
+
         <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
-          <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Pack Size" %}
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Pack Size" %}
         </button>
-        
+
         <hr>
         <div class="mt-5">
           <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
-            <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Product" %}
+            <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
           </button>
         </div>
 
@@ -37,6 +37,32 @@
 
         {% endif %}
     {% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
+  <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Add Generic Name" %}
+  </button>
+  <span>➡️</span>
+  <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Add Batch Number" %}
+  </button>
+
+  <span>➡️</span>
+
+  <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Add Pack Size" %}
+  </button>
+
+  <hr>
+  <div class="mt-5">
+    <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
+      <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
+    </button>
+  </div>
+
+  <hr class="my-8">
+
 {% endif %}
 
 
@@ -52,6 +78,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Product Code" %}</th>
           <th>{% trans "Brand Name" %}</th>
           <th>{% trans "Generic Name & Dosage" %}</th>
@@ -65,28 +92,34 @@
       <tbody class="table-border-bottom-0">
         {% for product in products %}
         <tr>
+          <td><span>{{forloop.counter}}</span></td>
           <td><span>{{product.product_code}}</span></td>
           <td>{{ product.brand_name.brand_name }}</td>
           <td>{{ product.generic_name_dosage.generic_name }}</td>
           <td>{{product.pack_size}}</td>
-          <td>{{product.unit_price}}</td>
+          <td>{{product.unit_price|floatformat:0|intcomma}} CFA</td>
           <td>{{ product.batch.batch_number }}</td>
           <td>{{ product.batch.expiry_date }}</td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div class="dropdown-menu">
                 {% if user.worker_profile.privileges.all %}
                     {% for privilege in user.worker_profile.privileges.all %}
                         {% if privilege.name == 'Add Product Prices' %}
-                          <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="bx bx-money me-1"></i> {% trans "Add Price" %}</a>
+                          <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}</a>
                         {% endif %}
                     {% endfor %}
                 {% endif %}
-                
-                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit Product" %}</a>
-                <a class="dropdown-item" href="{% url 'delete-product' product.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
-                
+                  <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}</a>
+                {% if user.is_superuser %}
+
+
+                {% endif %}
+
+                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit Product" %}</a>
+                <a class="dropdown-item" href="{% url 'delete-product' product.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
+
               </div>
             </div>
           </td>
@@ -110,13 +143,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in products.paginator.page_range %}
       <li class="page-item {% if products.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if products.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">

@@ -37,7 +37,7 @@ if not SECRET_KEY:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", 'False').lower() in ['true', 'yes', '1']
+DEBUG = True
 
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
@@ -140,11 +140,23 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": 'gcpahrma',
-        "USER": 'cipher',
+        "NAME": 'gcpharma',
+        "USER": 'postgres',
         "PASSWORD": 'cipher',
     }
 }
+
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://145.223.83.168',
+    'https://pharmamgtsystemgc.com',
+]
+
+
+CSRF_COOKIE_SECURE = True  # Set to True for production with HTTPS
+CSRF_COOKIE_HTTPONLY = True  # Ensures the cookie is accessible only to the server
+CSRF_USE_SESSIONS = True  # Use session-based CSRF tokens
 
 
 
@@ -245,3 +257,13 @@ LOGIN_URL = 'auth-login-basic'
 MEDIA_ROOT = (BASE_DIR / 'media/')
 
 MEDIA_URL = '/media/'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.hostinger.com'
+EMAIL_PORT = 587 # or 465 for SSL
+EMAIL_USE_TLS = True # or
+EMAIL_HOST_USER = 'admin@pharmamgtsystemgc.com' # Your email address
+EMAIL_HOST_PASSWORD = 'Password2025#@#' # Your email password
+DEFAULT_FROM_EMAIL = 'admin@pharmamgtsystemgc.com'

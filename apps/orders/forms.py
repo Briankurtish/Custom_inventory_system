@@ -26,21 +26,24 @@ class PurchaseOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user_branch:
-            # Filter branches by the user's branch and set it as read-only
-            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['branch'].widget.attrs.update({'class': 'form-control', 'readonly': 'readonly'})
-            
-            # Filter sales reps based on the user's branch and role
-            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role="Sales Rep")
+            if user_branch.is_superuser:
+                # Superuser: Allow access to all branches and sales reps
+                self.fields['branch'].queryset = Branch.objects.all()
+                self.fields['sales_rep'].queryset = Worker.objects.filter(role="Sales Rep")
+            else:
+                # Regular users: Restrict to their branch
+                self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+                self.fields['branch'].disabled = True  # Make the field immutable
 
+                # Restrict sales reps to the user's branch
+                self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role="Sales Rep")
 
-        # Set the customer queryset to all customers
+        # Set customer queryset to all customers (modify if filtering is needed)
         self.fields['customer'].queryset = Customer.objects.all()
 
-        # Apply the form-control class to all fields for styling
-        self.fields['branch'].widget.attrs.update({'class': 'form-control'})
-        self.fields['customer'].widget.attrs.update({'class': 'form-control'})
-        self.fields['sales_rep'].widget.attrs.update({'class': 'form-control'})
+        # Apply consistent styling to all fields
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
 
 
 
@@ -79,10 +82,24 @@ class PurchaseOrderItemForm(forms.ModelForm):
                 _(f"Insufficient stock: only {stock.quantity} units available for {stock.product.generic_name_dosage}.")
             )
         return quantity
-    
-    
-    
-    
+
+    def clean_temp_price(self):
+        temp_price = self.cleaned_data.get('temp_price')
+        stock = self.cleaned_data.get('stock')
+
+        if stock:
+            stock_price = stock.product.unit_price
+            if temp_price < stock_price:
+                raise forms.ValidationError(
+                    _(f"The entered price ({temp_price}) cannot be below the base price ({stock_price}).")
+                )
+        return temp_price
+
+
+
+
+
+
 
 class InvoicePaymentForm(forms.ModelForm):
     class Meta:
@@ -97,7 +114,7 @@ class InvoicePaymentForm(forms.ModelForm):
             'amount_paid': _('Amount Paid'),  # Translatable label
             'payment_mode': _('Payment Mode'),  # Translatable label
             'account_paid_to': _('Account Paid to'),  # Translatable label
-            
+
         }
 
     def __init__(self, *args, **kwargs):

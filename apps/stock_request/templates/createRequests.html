@@ -12,17 +12,17 @@
 
   <div class="container mt-4 mb-6">
     <h1 class="text-center">{% trans "Create Stock Request" %}</h1>
-  
+
     <!-- Stock Request Form -->
     <form method="post">
       {% csrf_token %}
       {{ form|crispy }}
-  
+
       <div class="d-flex justify-content-end mt-3">
         <button type="submit" class="btn btn-info" name="add_to_request_list" value="true">{% trans "Add to Request List" %}</button>
       </div>
     </form>
-  
+
     <!-- Temporary Stock Request List -->
     <div class="card mt-5">
       <h5 class="card-header">{% trans "Stock Request List" %}</h5>
@@ -64,7 +64,7 @@
         </table>
       </div>
     </div>
-  
+
     <!-- Submit Stock Request -->
     <div class="d-flex justify-content-center mt-4">
       <form method="post">

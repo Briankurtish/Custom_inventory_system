@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-12 01:18+0000\n"
+"POT-Creation-Date: 2025-01-19 16:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,7 +62,7 @@ msgstr ""
 #: apps/oldinvoice/templates/invoiceDetails.html:30
 #: apps/orders/templates/invoiceDetail.html:35
 #: apps/orders/templates/orderDetails.html:42
-#: apps/stock/templates/stock.html:47 apps/stock/templates/stock_all.html:52
+#: apps/stock/templates/stock.html:48 apps/stock/templates/stock_all.html:52
 #: apps/stock/templates/stock_branch.html:34
 #: apps/stock_request/templates/requestDetails.html:36
 #: apps/stock_request/templates/requests.html:42
@@ -72,7 +72,8 @@ msgid "Branch Name"
 msgstr ""
 
 #: apps/branches/forms.py:25 apps/branches/templates/branches.html:27
-#: apps/workers/forms.py:62 apps/workers/forms.py:137
+#: apps/customers/forms.py:26 apps/customers/templates/customers.html:31
+#: apps/workers/forms.py:76 apps/workers/forms.py:151 apps/workers/forms.py:178
 #: apps/workers/templates/workers.html:35
 msgid "Address"
 msgstr ""
@@ -82,7 +83,6 @@ msgid "Branch Type"
 msgstr ""
 
 #: apps/branches/templates/addBranch.html:6
-#: apps/branches/templates/addBranch.html:33
 msgid "Add Branch"
 msgstr ""
 
@@ -95,7 +95,18 @@ msgid "New Branch Details"
 msgstr ""
 
 #: apps/branches/templates/addBranch.html:31
-msgid "Update Branch"
+#: apps/branches/templates/addBranch.html:33
+#: apps/customers/templates/addCustomer.html:45
+#: apps/customers/templates/addCustomer.html:47
+#: apps/genericName/templates/add_genericName.html:27
+#: apps/oldinvoice/templates/addInvoiceOrderItems.html:65
+#: apps/oldinvoice/templates/addPayment.html:24
+#: apps/pack_size/templates/add_packsize.html:30
+#: apps/products/templates/addProduct.html:42
+#: apps/products/templates/add_batchNumber.html:30
+#: apps/stock/templates/AddStock.html:83
+#: apps/workers/templates/addWorker.html:57
+msgid "Submit"
 msgstr ""
 
 #: apps/branches/templates/branches.html:6
@@ -112,12 +123,12 @@ msgid "Branch List"
 msgstr ""
 
 #: apps/branches/templates/branches.html:25
-#: apps/oldinvoice/templates/OldInvoiceList.html:24
+#: apps/oldinvoice/templates/OldInvoiceList.html:25
 #: apps/oldinvoice/templates/invoiceDetails.html:24
 #: apps/orders/templates/invoiceDetail.html:31
 #: apps/orders/templates/invoiceList.html:32
 #: apps/orders/templates/orderDetails.html:38
-#: apps/orders/templates/orderList.html:47
+#: apps/orders/templates/orderList.html:53
 #: apps/stock/templates/stock_all.html:51
 #: apps/stock_request/templates/requestDetails.html:30
 #: apps/stock_request/templates/requests.html:41
@@ -130,10 +141,10 @@ msgid "Type"
 msgstr ""
 
 #: apps/branches/templates/branches.html:46
-#: apps/customers/templates/customers.html:63
+#: apps/customers/templates/customers.html:71
 #: apps/genericName/templates/add_genericName.html:63
 #: apps/pack_size/templates/add_packsize.html:65
-#: apps/products/templates/add_batchNumber.html:67
+#: apps/products/templates/add_batchNumber.html:69
 #: apps/recommendations/templates/recommend.html:48
 #: apps/stock_request/templates/requests.html:77
 #: apps/workers/templates/workers.html:63
@@ -141,16 +152,17 @@ msgid "Edit"
 msgstr ""
 
 #: apps/branches/templates/branches.html:47
-#: apps/customers/templates/customers.html:64
+#: apps/customers/templates/customers.html:72
 #: apps/dashboards/templates/dashboard_analytics.html:61
 #: apps/dashboards/templates/dashboard_analytics.html:84
 #: apps/dashboards/templates/dashboard_analytics.html:161
 #: apps/dashboards/templates/dashboard_analytics.html:185
 #: apps/genericName/templates/add_genericName.html:68
 #: apps/pack_size/templates/add_packsize.html:67
-#: apps/products/templates/add_batchNumber.html:69
-#: apps/products/templates/product.html:88
+#: apps/products/templates/add_batchNumber.html:71
+#: apps/products/templates/product.html:116
 #: apps/recommendations/templates/recommend.html:49
+#: apps/stock/templates/delete_stock.html:27
 #: apps/stock_request/templates/requests.html:78
 #: apps/workers/templates/workers.html:66
 msgid "Delete"
@@ -166,6 +178,7 @@ msgstr ""
 #: apps/pack_size/templates/delete_packsize.html:33
 #: apps/products/templates/deleteBatch.html:33
 #: apps/products/templates/deleteProduct.html:33
+#: apps/workers/templates/deleteWorker.html:33
 msgid "Warning"
 msgstr ""
 
@@ -173,6 +186,7 @@ msgstr ""
 #: apps/genericName/templates/delete_genericName.html:34
 #: apps/pack_size/templates/delete_packsize.html:34
 #: apps/products/templates/deleteProduct.html:34
+#: apps/workers/templates/deleteWorker.html:34
 msgid "Are you sure you want to delete"
 msgstr ""
 
@@ -186,6 +200,8 @@ msgstr ""
 #: apps/pack_size/templates/delete_packsize.html:41
 #: apps/products/templates/deleteBatch.html:41
 #: apps/products/templates/deleteProduct.html:41
+#: apps/stock/templates/delete_stock.html:26
+#: apps/workers/templates/deleteWorker.html:41
 msgid "Cancel"
 msgstr ""
 
@@ -194,6 +210,7 @@ msgstr ""
 #: apps/pack_size/templates/delete_packsize.html:44
 #: apps/products/templates/deleteBatch.html:44
 #: apps/products/templates/deleteProduct.html:44
+#: apps/workers/templates/deleteWorker.html:44
 msgid "Yes"
 msgstr ""
 
@@ -214,7 +231,7 @@ msgid "Enter customer name"
 msgstr ""
 
 #: apps/customers/forms.py:14
-msgid "Enter postal code"
+msgid "Enter Address"
 msgstr ""
 
 #: apps/customers/forms.py:17
@@ -225,7 +242,7 @@ msgstr ""
 msgid "Enter telephone"
 msgstr ""
 
-#: apps/customers/forms.py:19 apps/workers/forms.py:20
+#: apps/customers/forms.py:19 apps/workers/forms.py:32
 msgid "Enter email"
 msgstr ""
 
@@ -247,53 +264,49 @@ msgstr ""
 msgid "Customer Name"
 msgstr ""
 
-#: apps/customers/forms.py:26 apps/customers/templates/customers.html:30
-msgid "Postal Code"
-msgstr ""
-
 #: apps/customers/forms.py:27 apps/oldinvoice/forms.py:25
 #: apps/orders/forms.py:18 apps/sales_rep/templates/sales-rep.html:28
-#: apps/stock/templates/AddStock.html:44
-#: apps/stock/templates/UpdateStock.html:68
-#: apps/stock_request/templates/createRequests.html:36 apps/workers/forms.py:46
-#: apps/workers/forms.py:134
+#: apps/stock/templates/AddStock.html:45
+#: apps/stock/templates/updateStock.html:68
+#: apps/stock_request/templates/createRequests.html:36 apps/workers/forms.py:58
+#: apps/workers/forms.py:148
 msgid "Branch"
 msgstr ""
 
-#: apps/customers/forms.py:28 apps/customers/templates/customers.html:31
-#: apps/oldinvoice/templates/OldInvoiceList.html:27
+#: apps/customers/forms.py:28 apps/customers/templates/customers.html:32
+#: apps/oldinvoice/templates/OldInvoiceList.html:28
 #: apps/orders/templates/invoiceList.html:35
-#: apps/orders/templates/orderList.html:50
+#: apps/orders/templates/orderList.html:56
 #: apps/orders/templates/salesRepCreditReport.html:43
 #: templates/layout/partials/menu/vertical/vertical_menu.html:119
 #: templates/layout/partials/menu/vertical/vertical_menu.html:249
 msgid "Sales Rep"
 msgstr ""
 
-#: apps/customers/forms.py:29 apps/customers/templates/customers.html:32
+#: apps/customers/forms.py:29 apps/customers/templates/customers.html:33
 msgid "Contact Person"
 msgstr ""
 
-#: apps/customers/forms.py:30 apps/customers/templates/customers.html:33
-#: apps/workers/forms.py:52 apps/workers/forms.py:135
+#: apps/customers/forms.py:30 apps/customers/templates/customers.html:34
+#: apps/workers/forms.py:64 apps/workers/forms.py:149 apps/workers/forms.py:177
 msgid "Telephone"
 msgstr ""
 
-#: apps/customers/forms.py:31 apps/customers/templates/customers.html:34
-#: apps/sales_rep/templates/sales-rep.html:27 apps/workers/forms.py:21
+#: apps/customers/forms.py:31 apps/customers/templates/customers.html:35
+#: apps/sales_rep/templates/sales-rep.html:27 apps/workers/forms.py:33
 #: apps/workers/templates/workers.html:31
 msgid "Email"
 msgstr ""
 
-#: apps/customers/forms.py:32 apps/customers/templates/customers.html:35
+#: apps/customers/forms.py:32 apps/customers/templates/customers.html:36
 msgid "Agreement Number"
 msgstr ""
 
-#: apps/customers/forms.py:33 apps/customers/templates/customers.html:36
+#: apps/customers/forms.py:33 apps/customers/templates/customers.html:37
 msgid "Tax Payer Number"
 msgstr ""
 
-#: apps/customers/forms.py:34 apps/customers/templates/customers.html:37
+#: apps/customers/forms.py:34 apps/customers/templates/customers.html:38
 msgid "Location Plan"
 msgstr ""
 
@@ -308,7 +321,6 @@ msgid "Edit Customer"
 msgstr ""
 
 #: apps/customers/templates/addCustomer.html:10
-#: apps/customers/templates/addCustomer.html:47
 #: apps/customers/templates/customers.html:12
 msgid "Add Customer"
 msgstr ""
@@ -319,10 +331,6 @@ msgstr ""
 
 #: apps/customers/templates/addCustomer.html:30
 msgid "Customer Information"
-msgstr ""
-
-#: apps/customers/templates/addCustomer.html:45
-msgid "Update Customer"
 msgstr ""
 
 #: apps/customers/templates/customerCreditReport.html:6
@@ -343,9 +351,11 @@ msgstr ""
 #: apps/stock/templates/stock_all.html:11
 #: apps/stock_request/templates/requestDetails.html:13
 #: apps/workers/templates/addWorker.html:24
+#: apps/workers/templates/change_password.html:20
 #: apps/workers/templates/create_privilege.html:21
 #: apps/workers/templates/manage_privileges.html:19
 #: apps/workers/templates/privilege_details.html:12
+#: apps/workers/templates/updateProfile.html:20
 msgid "Dashboard"
 msgstr ""
 
@@ -357,6 +367,7 @@ msgstr ""
 #: apps/orders/templates/orderDetails.html:17
 #: apps/orders/templates/salesRepCreditReport.html:17
 #: templates/layout/partials/menu/vertical/vertical_menu.html:188
+#: templates/layout/partials/menu/vertical/vertical_menu.html:282
 msgid "Orders"
 msgstr ""
 
@@ -426,11 +437,11 @@ msgid "Invoice Date"
 msgstr ""
 
 #: apps/customers/templates/customerCreditReport.html:88
-#: apps/oldinvoice/templates/OldInvoiceList.html:28
+#: apps/oldinvoice/templates/OldInvoiceList.html:29
 #: apps/orders/templates/CreditReport.html:90
 #: apps/orders/templates/CreditReport.html:126
 #: apps/orders/templates/invoiceList.html:36
-#: apps/orders/templates/orderList.html:51
+#: apps/orders/templates/orderList.html:57
 #: apps/orders/templates/salesRepCreditReport.html:90
 #: apps/orders/templates/salesRepCreditReport.html:125
 msgid "Total Amount"
@@ -445,7 +456,7 @@ msgid "Paid Amount"
 msgstr ""
 
 #: apps/customers/templates/customerCreditReport.html:90
-#: apps/oldinvoice/templates/OldInvoiceList.html:30
+#: apps/oldinvoice/templates/OldInvoiceList.html:31
 #: apps/orders/templates/CreditReport.html:92
 #: apps/orders/templates/CreditReport.html:128
 #: apps/orders/templates/makePayment.html:31
@@ -467,29 +478,35 @@ msgid "Customer List"
 msgstr ""
 
 #: apps/customers/templates/customers.html:28
+#: apps/oldinvoice/templates/OldInvoiceList.html:23
+#: apps/products/templates/product.html:81
+msgid "No"
+msgstr ""
+
+#: apps/customers/templates/customers.html:29
 #: apps/orders/templates/CreditReport.html:49
 msgid "Client ID"
 msgstr ""
 
-#: apps/customers/templates/customers.html:29
+#: apps/customers/templates/customers.html:30
 msgid "Name"
 msgstr ""
 
-#: apps/customers/templates/customers.html:38
+#: apps/customers/templates/customers.html:39
 #: apps/genericName/templates/add_genericName.html:47
-#: apps/oldinvoice/templates/OldInvoiceList.html:32
+#: apps/oldinvoice/templates/OldInvoiceList.html:33
 #: apps/oldinvoice/templates/addInvoiceOrderItems.html:34
 #: apps/orders/templates/addOrderItems.html:37
 #: apps/orders/templates/invoiceList.html:41
-#: apps/orders/templates/orderList.html:55
+#: apps/orders/templates/orderList.html:61
 #: apps/pack_size/templates/add_packsize.html:52
-#: apps/products/templates/add_batchNumber.html:53
-#: apps/products/templates/product.html:62
+#: apps/products/templates/add_batchNumber.html:54
+#: apps/products/templates/product.html:89
 #: apps/recommendations/templates/recommend.html:31
 #: apps/sales_rep/templates/sales-rep.html:30
-#: apps/stock/templates/AddStock.html:45
-#: apps/stock/templates/UpdateStock.html:69 apps/stock/templates/stock.html:51
+#: apps/stock/templates/AddStock.html:46 apps/stock/templates/stock.html:52
 #: apps/stock/templates/stock_branch.html:38
+#: apps/stock/templates/updateStock.html:69
 #: apps/stock_request/templates/createRequests.html:37
 #: apps/stock_request/templates/requests.html:46
 #: apps/stock_request/templates/transit-requests.html:30
@@ -497,7 +514,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: apps/customers/templates/customers.html:60
+#: apps/customers/templates/customers.html:68
 #: apps/sales_rep/templates/sales-rep.html:49
 msgid "View Credits"
 msgstr ""
@@ -623,6 +640,7 @@ msgid "Total Stock"
 msgstr ""
 
 #: apps/dashboards/templates/dashboard_analytics.html:88
+#: apps/workers/forms.py:16
 msgid "Sales"
 msgstr ""
 
@@ -690,6 +708,7 @@ msgstr ""
 #: apps/oldinvoice/templates/addInvoiceOrderItems.html:7
 #: apps/orders/templates/addOrderItems.html:9
 #: apps/orders/templates/orderList.html:15
+#: apps/orders/templates/orderList.html:23
 msgid "Create Order"
 msgstr ""
 
@@ -781,14 +800,14 @@ msgstr ""
 #: apps/dashboards/templates/dashboard_cstm.html:170
 #: templates/layout/partials/menu/vertical/vertical_menu.html:90
 #: templates/layout/partials/menu/vertical/vertical_menu.html:99
-#: templates/layout/partials/menu/vertical/vertical_menu.html:261
+#: templates/layout/partials/menu/vertical/vertical_menu.html:276
 msgid "Products"
 msgstr ""
 
 #: apps/dashboards/templates/dashboard_cstm.html:171
-#: apps/stock/templates/UpdateStock.html:40
-#: apps/stock/templates/UpdateStock.html:105 apps/stock/templates/stock.html:18
-#: apps/stock/templates/stock_branch.html:15
+#: apps/stock/templates/stock.html:18 apps/stock/templates/stock_branch.html:15
+#: apps/stock/templates/updateStock.html:40
+#: apps/stock/templates/updateStock.html:105
 #: apps/stock/templates/update_stock_entry.html:3
 #: apps/stock/templates/update_stock_entry.html:16
 msgid "Update Stock"
@@ -883,15 +902,16 @@ msgstr ""
 #: apps/genericName/templates/add_genericName.html:45
 #: apps/products/templates/add_batchNumber.html:51
 #: apps/stock/templates/AddStock.html:42
-#: apps/stock/templates/UpdateStock.html:66
+#: apps/stock/templates/updateStock.html:66
 #: apps/stock_request/templates/createRequests.html:34
 msgid "Generic Name"
 msgstr ""
 
 #: apps/genericName/forms.py:15
 #: apps/genericName/templates/add_genericName.html:46 apps/products/forms.py:40
-#: apps/products/forms.py:76 apps/products/forms.py:91
-#: apps/products/forms.py:108 apps/products/templates/product.html:56
+#: apps/products/forms.py:76 apps/products/forms.py:98
+#: apps/products/forms.py:115 apps/products/templates/add_batchNumber.html:52
+#: apps/products/templates/product.html:83
 msgid "Brand Name"
 msgstr ""
 
@@ -900,13 +920,17 @@ msgid "Edit Generic Name"
 msgstr ""
 
 #: apps/genericName/templates/add_genericName.html:19
-#: apps/genericName/templates/add_genericName.html:27
 #: apps/products/templates/product.html:15
+#: apps/products/templates/product.html:44
 msgid "Add Generic Name"
 msgstr ""
 
 #: apps/genericName/templates/add_genericName.html:27
-msgid "Update Generic Name"
+#: apps/pack_size/templates/add_packsize.html:28
+#: apps/products/templates/addProduct.html:40
+#: apps/products/templates/add_batchNumber.html:28
+#: apps/workers/templates/addWorker.html:55
+msgid "Update"
 msgstr ""
 
 #: apps/genericName/templates/add_genericName.html:39
@@ -950,7 +974,7 @@ msgstr ""
 msgid "Payment Method"
 msgstr ""
 
-#: apps/oldinvoice/forms.py:29 apps/oldinvoice/templates/OldInvoiceList.html:29
+#: apps/oldinvoice/forms.py:29 apps/oldinvoice/templates/OldInvoiceList.html:30
 #: apps/oldinvoice/templates/paymentHistory.html:65 apps/orders/forms.py:97
 #: apps/orders/templates/makePayment.html:27
 #: apps/orders/templates/paymentInvoiceHistory.html:65
@@ -976,10 +1000,9 @@ msgstr ""
 #: apps/orders/templates/invoiceDetail.html:98
 #: apps/orders/templates/orderDetails.html:192 apps/recommendations/forms.py:16
 #: apps/recommendations/templates/recommend.html:26
-#: apps/stock/templates/AddStock.html:43
-#: apps/stock/templates/UpdateStock.html:67
-#: apps/stock/templates/stock_all.html:54
+#: apps/stock/templates/AddStock.html:44 apps/stock/templates/stock_all.html:55
 #: apps/stock/templates/stock_branch.html:36
+#: apps/stock/templates/updateStock.html:67
 #: apps/stock_request/templates/createRequests.html:35
 #: apps/stock_request/templates/requestDetails.html:67
 msgid "Quantity"
@@ -1002,6 +1025,7 @@ msgstr ""
 #: apps/oldinvoice/templates/createInvoiceOrder.html:14
 #: apps/orders/templates/paymentInvoiceHistory.html:7
 #: templates/layout/partials/menu/vertical/vertical_menu.html:200
+#: templates/layout/partials/menu/vertical/vertical_menu.html:307
 msgid "Old Invoice"
 msgstr ""
 
@@ -1015,55 +1039,55 @@ msgstr ""
 msgid "Invoice List"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:23
+#: apps/oldinvoice/templates/OldInvoiceList.html:24
 #: apps/orders/templates/invoiceList.html:31
 msgid "Invoice ID"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:25
+#: apps/oldinvoice/templates/OldInvoiceList.html:26
 #: apps/oldinvoice/templates/invoiceDetails.html:36
 #: apps/orders/templates/invoiceDetail.html:39
 #: apps/orders/templates/invoiceList.html:33
 #: apps/orders/templates/orderDetails.html:46
-#: apps/orders/templates/orderList.html:48
+#: apps/orders/templates/orderList.html:54
 #: apps/stock_request/templates/requestDetails.html:42
 #: apps/stock_request/templates/requests.html:43
 #: apps/stock_request/templates/transit-requests.html:27
 msgid "Created By"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:26
-#: apps/orders/templates/orderList.html:49
+#: apps/oldinvoice/templates/OldInvoiceList.html:27
+#: apps/orders/templates/orderList.html:55
 msgid "Client"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:31
+#: apps/oldinvoice/templates/OldInvoiceList.html:32
 #: apps/orders/templates/invoiceList.html:39
-#: apps/orders/templates/orderList.html:52
+#: apps/orders/templates/orderList.html:58
 msgid "Created At"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:55
-#: apps/orders/templates/orderList.html:91
+#: apps/oldinvoice/templates/OldInvoiceList.html:57
+#: apps/orders/templates/orderList.html:97
 #: apps/stock_request/templates/transit-requests.html:59
 msgid "View"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:60
+#: apps/oldinvoice/templates/OldInvoiceList.html:62
 #: apps/oldinvoice/templates/addPayment.html:7
 #: apps/orders/templates/invoiceList.html:78
 #: apps/orders/templates/makePayment.html:9
 msgid "Add Payment"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:63
+#: apps/oldinvoice/templates/OldInvoiceList.html:65
 #: apps/orders/templates/invoiceList.html:81
 msgid "Payment History"
 msgstr ""
 
-#: apps/oldinvoice/templates/OldInvoiceList.html:71
+#: apps/oldinvoice/templates/OldInvoiceList.html:73
 #: apps/orders/templates/invoiceList.html:95
-#: apps/orders/templates/orderList.html:105
+#: apps/orders/templates/orderList.html:111
 msgid "No Invoices available"
 msgstr ""
 
@@ -1083,8 +1107,8 @@ msgstr ""
 #: apps/oldinvoice/templates/invoiceDetails.html:80
 #: apps/orders/templates/addOrderItems.html:34
 #: apps/orders/templates/invoiceDetail.html:97
-#: apps/orders/templates/orderDetails.html:190 apps/products/forms.py:111
-#: apps/products/templates/product.html:59
+#: apps/orders/templates/orderDetails.html:190 apps/products/forms.py:118
+#: apps/products/templates/product.html:86
 msgid "Unit Price"
 msgstr ""
 
@@ -1098,8 +1122,8 @@ msgstr ""
 
 #: apps/oldinvoice/templates/addInvoiceOrderItems.html:49
 #: apps/orders/templates/addOrderItems.html:54
-#: apps/stock/templates/AddStock.html:61
-#: apps/stock/templates/UpdateStock.html:85
+#: apps/stock/templates/AddStock.html:63
+#: apps/stock/templates/updateStock.html:85
 #: apps/stock_request/templates/createRequests.html:53
 msgid "Remove"
 msgstr ""
@@ -1112,17 +1136,8 @@ msgstr ""
 msgid "Grand Total"
 msgstr ""
 
-#: apps/oldinvoice/templates/addInvoiceOrderItems.html:65
-#: apps/orders/templates/addOrderItems.html:70
-msgid "Submit Order"
-msgstr ""
-
 #: apps/oldinvoice/templates/addPayment.html:14
 msgid "Invoice Payment History"
-msgstr ""
-
-#: apps/oldinvoice/templates/addPayment.html:24
-msgid "Submit"
 msgstr ""
 
 #: apps/oldinvoice/templates/createInvoiceOrder.html:7
@@ -1150,11 +1165,11 @@ msgstr ""
 #: apps/orders/templates/invoiceDetail.html:95
 #: apps/orders/templates/orderDetails.html:143
 #: apps/orders/templates/orderDetails.html:188
-#: apps/products/templates/product.html:55
-#: apps/stock/templates/AddStock.html:41
-#: apps/stock/templates/UpdateStock.html:65 apps/stock/templates/stock.html:46
+#: apps/products/templates/product.html:82
+#: apps/stock/templates/AddStock.html:41 apps/stock/templates/stock.html:46
 #: apps/stock/templates/stock_all.html:50
 #: apps/stock/templates/stock_branch.html:33
+#: apps/stock/templates/updateStock.html:65
 #: apps/stock_request/templates/createRequests.html:33
 #: apps/stock_request/templates/requestDetails.html:65
 msgid "Product Code"
@@ -1164,7 +1179,7 @@ msgstr ""
 #: apps/orders/templates/invoiceDetail.html:96
 #: apps/orders/templates/orderDetails.html:144
 #: apps/orders/templates/orderDetails.html:189
-#: apps/stock/templates/stock.html:48 apps/stock/templates/stock_all.html:53
+#: apps/stock/templates/stock.html:49 apps/stock/templates/stock_all.html:53
 #: apps/stock/templates/stock_branch.html:35
 #: apps/stock_request/templates/requestDetails.html:66
 msgid "Product Name"
@@ -1304,6 +1319,10 @@ msgstr ""
 msgid "Create Purchase Order"
 msgstr ""
 
+#: apps/orders/templates/addOrderItems.html:70
+msgid "Submit Order"
+msgstr ""
+
 #: apps/orders/templates/invoiceDetail.html:7
 #: apps/orders/templates/invoiceDetail.html:11
 #: apps/orders/templates/invoiceDetail.html:16
@@ -1317,9 +1336,9 @@ msgstr ""
 #: apps/orders/templates/invoiceDetail.html:68
 #: apps/orders/templates/invoiceList.html:40
 #: apps/orders/templates/orderDetails.html:87
-#: apps/orders/templates/orderList.html:54
+#: apps/orders/templates/orderList.html:60
 #: apps/recommendations/templates/recommend.html:30
-#: apps/stock/templates/stock.html:50 apps/stock/templates/stock_all.html:55
+#: apps/stock/templates/stock.html:51 apps/stock/templates/stock_all.html:56
 #: apps/stock/templates/stock_branch.html:37
 #: apps/stock_request/templates/requestDetails.html:53
 #: apps/stock_request/templates/requests.html:45
@@ -1389,8 +1408,8 @@ msgid "Get Credit Report"
 msgstr ""
 
 #: apps/orders/templates/orderDetails.html:90
-#: apps/orders/templates/orderList.html:29
-#: apps/orders/templates/orderList.html:73
+#: apps/orders/templates/orderList.html:35
+#: apps/orders/templates/orderList.html:79
 #: apps/stock_request/templates/requests.html:24
 #: apps/stock_request/templates/requests.html:59
 #: apps/stock_request/templates/transit-requests.html:43
@@ -1398,14 +1417,14 @@ msgid "Pending"
 msgstr ""
 
 #: apps/orders/templates/orderDetails.html:92
-#: apps/orders/templates/orderList.html:30
-#: apps/orders/templates/orderList.html:75
+#: apps/orders/templates/orderList.html:36
+#: apps/orders/templates/orderList.html:81
 msgid "Approved"
 msgstr ""
 
 #: apps/orders/templates/orderDetails.html:94
-#: apps/orders/templates/orderList.html:31
-#: apps/orders/templates/orderList.html:77
+#: apps/orders/templates/orderList.html:37
+#: apps/orders/templates/orderList.html:83
 #: apps/stock_request/templates/requests.html:26
 #: apps/stock_request/templates/requests.html:63
 #: apps/stock_request/templates/transit-requests.html:47
@@ -1453,31 +1472,31 @@ msgid "Approval Notes"
 msgstr ""
 
 #: apps/orders/templates/orderList.html:7
-#: apps/orders/templates/orderList.html:41
+#: apps/orders/templates/orderList.html:47
 msgid "Order List"
 msgstr ""
 
-#: apps/orders/templates/orderList.html:26
+#: apps/orders/templates/orderList.html:32
 #: apps/stock_request/templates/requests.html:20
 msgid "Filter by Status"
 msgstr ""
 
-#: apps/orders/templates/orderList.html:28
+#: apps/orders/templates/orderList.html:34
 #: apps/stock/templates/stock_all.html:21
 #: apps/stock_request/templates/requests.html:23
 msgid "All"
 msgstr ""
 
-#: apps/orders/templates/orderList.html:32
-#: apps/orders/templates/orderList.html:79
+#: apps/orders/templates/orderList.html:38
+#: apps/orders/templates/orderList.html:85
 msgid "Canceled"
 msgstr ""
 
-#: apps/orders/templates/orderList.html:46
+#: apps/orders/templates/orderList.html:52
 msgid "Order ID"
 msgstr ""
 
-#: apps/orders/templates/orderList.html:53
+#: apps/orders/templates/orderList.html:59
 msgid "Approved By"
 msgstr ""
 
@@ -1556,19 +1575,15 @@ msgstr ""
 
 #: apps/pack_size/forms.py:13 apps/pack_size/templates/add_packsize.html:6
 #: apps/pack_size/templates/add_packsize.html:51 apps/products/forms.py:41
-#: apps/products/forms.py:77 apps/products/forms.py:92
-#: apps/products/forms.py:109 apps/products/templates/product.html:58
+#: apps/products/forms.py:77 apps/products/forms.py:99
+#: apps/products/forms.py:116 apps/products/templates/product.html:85
 msgid "Pack Size"
 msgstr ""
 
 #: apps/pack_size/templates/add_packsize.html:20
-#: apps/pack_size/templates/add_packsize.html:30
 #: apps/products/templates/product.html:25
+#: apps/products/templates/product.html:54
 msgid "Add Pack Size"
-msgstr ""
-
-#: apps/pack_size/templates/add_packsize.html:28
-msgid "Update Pack Size"
 msgstr ""
 
 #: apps/pack_size/templates/add_packsize.html:45
@@ -1593,19 +1608,21 @@ msgid "Pack Size deleted successfully!"
 msgstr ""
 
 #: apps/products/forms.py:15 apps/products/forms.py:42
-#: apps/products/forms.py:78 apps/products/forms.py:93
-#: apps/products/forms.py:110 apps/products/templates/add_batchNumber.html:50
-#: apps/products/templates/product.html:60
+#: apps/products/forms.py:78 apps/products/forms.py:100
+#: apps/products/forms.py:117 apps/products/templates/add_batchNumber.html:50
+#: apps/products/templates/product.html:87
+#: apps/stock/templates/AddStock.html:43 apps/stock/templates/stock.html:47
+#: apps/stock/templates/stock_all.html:54
 msgid "Batch Number"
 msgstr ""
 
 #: apps/products/forms.py:16 apps/products/forms.py:39
-#: apps/products/forms.py:75 apps/products/forms.py:90
-#: apps/products/forms.py:107 apps/products/templates/product.html:57
+#: apps/products/forms.py:75 apps/products/forms.py:97
+#: apps/products/forms.py:114 apps/products/templates/product.html:84
 msgid "Generic Name & Dosage"
 msgstr ""
 
-#: apps/products/forms.py:17 apps/products/templates/product.html:61
+#: apps/products/forms.py:17 apps/products/templates/product.html:88
 msgid "Expiry Date"
 msgstr ""
 
@@ -1619,37 +1636,29 @@ msgstr ""
 
 #: apps/products/templates/addProduct.html:9
 #: apps/products/templates/addProduct.html:27
-#: apps/products/templates/product.html:87
+#: apps/products/templates/product.html:115
 msgid "Edit Product"
 msgstr ""
 
 #: apps/products/templates/addProduct.html:11
 #: apps/products/templates/addProduct.html:29
-#: apps/products/templates/addProduct.html:42
 #: apps/products/templates/product.html:31
+#: apps/products/templates/product.html:60
 msgid "Add Product"
-msgstr ""
-
-#: apps/products/templates/addProduct.html:40
-msgid "Update Product"
 msgstr ""
 
 #: apps/products/templates/add_batchNumber.html:6
 #: apps/products/templates/add_batchNumber.html:20
-#: apps/products/templates/add_batchNumber.html:30
 #: apps/products/templates/product.html:19
+#: apps/products/templates/product.html:48
 msgid "Add Batch Number"
-msgstr ""
-
-#: apps/products/templates/add_batchNumber.html:28
-msgid "Update Batch"
 msgstr ""
 
 #: apps/products/templates/add_batchNumber.html:45
 msgid "Batch Number List"
 msgstr ""
 
-#: apps/products/templates/add_batchNumber.html:52
+#: apps/products/templates/add_batchNumber.html:53
 msgid "Exipry Date"
 msgstr ""
 
@@ -1671,39 +1680,39 @@ msgstr ""
 msgid "Poducts"
 msgstr ""
 
-#: apps/products/templates/product.html:50
+#: apps/products/templates/product.html:76
 msgid "Product List"
 msgstr ""
 
-#: apps/products/templates/product.html:82
+#: apps/products/templates/product.html:110
 msgid "Add Price"
 msgstr ""
 
-#: apps/products/views.py:78
+#: apps/products/views.py:81
 msgid "Batch number added successfully!"
 msgstr ""
 
-#: apps/products/views.py:114
+#: apps/products/views.py:127
 msgid "Product added successfully!"
 msgstr ""
 
-#: apps/products/views.py:137
+#: apps/products/views.py:150
 msgid "Product updated successfully!"
 msgstr ""
 
-#: apps/products/views.py:161
+#: apps/products/views.py:174
 msgid "Product price updated successfully!"
 msgstr ""
 
-#: apps/products/views.py:186
+#: apps/products/views.py:199
 msgid "Product deleted successfully!"
 msgstr ""
 
-#: apps/products/views.py:205
+#: apps/products/views.py:218
 msgid "Batch edited successfully!"
 msgstr ""
 
-#: apps/products/views.py:227
+#: apps/products/views.py:240
 msgid "Batch deleted successfully!"
 msgstr ""
 
@@ -1743,6 +1752,7 @@ msgstr ""
 #: apps/recommendations/templates/recommend.html:6
 #: apps/recommendations/templates/recommend.html:20
 #: templates/layout/partials/menu/vertical/vertical_menu.html:149
+#: templates/layout/partials/menu/vertical/vertical_menu.html:261
 msgid "Recommendations"
 msgstr ""
 
@@ -1771,13 +1781,13 @@ msgstr ""
 msgid "Sales Rep ID"
 msgstr ""
 
-#: apps/sales_rep/templates/sales-rep.html:24 apps/workers/forms.py:12
-#: apps/workers/templates/workers.html:28
+#: apps/sales_rep/templates/sales-rep.html:24 apps/workers/forms.py:24
+#: apps/workers/forms.py:160 apps/workers/templates/workers.html:28
 msgid "First Name"
 msgstr ""
 
-#: apps/sales_rep/templates/sales-rep.html:25 apps/workers/forms.py:17
-#: apps/workers/templates/workers.html:29
+#: apps/sales_rep/templates/sales-rep.html:25 apps/workers/forms.py:29
+#: apps/workers/forms.py:166 apps/workers/templates/workers.html:29
 msgid "Last Name"
 msgstr ""
 
@@ -1794,34 +1804,58 @@ msgstr ""
 msgid "Add Stocks"
 msgstr ""
 
-#: apps/stock/templates/AddStock.html:17 apps/stock/templates/AddStock.html:81
-#: apps/stock/templates/stock.html:15 apps/stock/templates/stock_branch.html:12
+#: apps/stock/templates/AddStock.html:17 apps/stock/templates/stock.html:15
+#: apps/stock/templates/stock_branch.html:12
 msgid "Add Stock"
 msgstr ""
 
 #: apps/stock/templates/AddStock.html:26
-#: apps/stock/templates/UpdateStock.html:49
+#: apps/stock/templates/updateStock.html:49
 msgid "Add to List"
 msgstr ""
 
 #: apps/stock/templates/AddStock.html:36
-#: apps/stock/templates/UpdateStock.html:60
+#: apps/stock/templates/updateStock.html:60
 msgid "New Stock List"
 msgstr ""
 
-#: apps/stock/templates/AddStock.html:68
-#: apps/stock/templates/UpdateStock.html:92
+#: apps/stock/templates/AddStock.html:70
+#: apps/stock/templates/updateStock.html:92
 msgid "No items in the list"
 msgstr ""
 
-#: apps/stock/templates/UpdateStock.html:6
-msgid "Update Stocks"
+#: apps/stock/templates/delete_stock.html:4
+msgid "Delete Stock"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:8
+msgid "Confirm Deletion"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:9
+msgid "Are you sure you want to delete the following stock item?"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:13
+msgid "Product Code:"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:14
+msgid "Product Name:"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:15
+msgid "Quantity Available:"
+msgstr ""
+
+#: apps/stock/templates/delete_stock.html:22
+msgid "Enter your password to confirm deletion:"
 msgstr ""
 
 #: apps/stock/templates/stock.html:3 apps/stock/templates/stock_all.html:6
 #: apps/stock/templates/stock_all.html:12
 #: apps/stock/templates/stock_branch.html:6
-#: templates/layout/partials/menu/vertical/vertical_menu.html:267
+#: templates/layout/partials/menu/vertical/vertical_menu.html:300
 msgid "Track Stocks"
 msgstr ""
 
@@ -1850,11 +1884,11 @@ msgstr ""
 msgid "Central Warehouse"
 msgstr ""
 
-#: apps/stock/templates/stock.html:49
+#: apps/stock/templates/stock.html:50
 msgid "Quantity Available"
 msgstr ""
 
-#: apps/stock/templates/stock.html:56
+#: apps/stock/templates/stock.html:57
 msgid "Loading stock data..."
 msgstr ""
 
@@ -1874,16 +1908,16 @@ msgstr ""
 msgid "Select Product"
 msgstr ""
 
-#: apps/stock/templates/stock_all.html:68
+#: apps/stock/templates/stock_all.html:70
 #: apps/stock/templates/stock_branch.html:48
 msgid "In Stock"
 msgstr ""
 
-#: apps/stock/templates/stock_all.html:70
+#: apps/stock/templates/stock_all.html:72
 msgid "Out of Stock"
 msgstr ""
 
-#: apps/stock/templates/stock_all.html:76
+#: apps/stock/templates/stock_all.html:78
 msgid "No stock to display yet"
 msgstr ""
 
@@ -1895,43 +1929,47 @@ msgstr ""
 msgid "No stock details available for this branch"
 msgstr ""
 
+#: apps/stock/templates/updateStock.html:6
+msgid "Update Stocks"
+msgstr ""
+
 #: apps/stock/templates/update_stock_entry.html:9
 msgid "Update Stock for"
 msgstr ""
 
-#: apps/stock/views.py:102
+#: apps/stock/views.py:107
 msgid "Item added to temporary stock list."
 msgstr ""
 
-#: apps/stock/views.py:104
+#: apps/stock/views.py:109
 msgid "Invalid data. Please check the form."
 msgstr ""
 
-#: apps/stock/views.py:117 apps/stock/views.py:231
+#: apps/stock/views.py:122 apps/stock/views.py:307
 msgid "Item removed from the temporary stock list."
 msgstr ""
 
-#: apps/stock/views.py:148
+#: apps/stock/views.py:158
 msgid "Stock updated successfully."
 msgstr ""
 
-#: apps/stock/views.py:181
+#: apps/stock/views.py:257
 msgid "Quantity must be greater than zero."
 msgstr ""
 
-#: apps/stock/views.py:183
+#: apps/stock/views.py:259
 msgid "Invalid quantity. Please enter a number greater than zero."
 msgstr ""
 
-#: apps/stock/views.py:206
+#: apps/stock/views.py:282
 msgid "Please select a valid product and branch."
 msgstr ""
 
-#: apps/stock/views.py:235
+#: apps/stock/views.py:311
 msgid "No items in the update list to update."
 msgstr ""
 
-#: apps/stock/views.py:258
+#: apps/stock/views.py:334
 msgid "Stock updates applied successfully."
 msgstr ""
 
@@ -2059,52 +2097,68 @@ msgstr ""
 msgid "You do not have access to view stocks in transit."
 msgstr ""
 
-#: apps/workers/forms.py:11
+#: apps/workers/forms.py:12
+msgid "Human Resources"
+msgstr ""
+
+#: apps/workers/forms.py:13
+msgid "Stock Management"
+msgstr ""
+
+#: apps/workers/forms.py:14
+msgid "Finance"
+msgstr ""
+
+#: apps/workers/forms.py:15
+msgid "Management"
+msgstr ""
+
+#: apps/workers/forms.py:23
 msgid "Enter first name"
 msgstr ""
 
-#: apps/workers/forms.py:16
+#: apps/workers/forms.py:28
 msgid "Enter last name"
 msgstr ""
 
-#: apps/workers/forms.py:24
+#: apps/workers/forms.py:36
 msgid "Enter password"
 msgstr ""
 
-#: apps/workers/forms.py:25
+#: apps/workers/forms.py:37
 msgid "Password"
 msgstr ""
 
-#: apps/workers/forms.py:28
+#: apps/workers/forms.py:40
 msgid "Confirm password"
 msgstr ""
 
-#: apps/workers/forms.py:29
+#: apps/workers/forms.py:41
 msgid "Confirm Password"
 msgstr ""
 
-#: apps/workers/forms.py:34 apps/workers/templates/workers.html:32
+#: apps/workers/forms.py:46 apps/workers/templates/workers.html:32
 msgid "Role"
 msgstr ""
 
-#: apps/workers/forms.py:39
+#: apps/workers/forms.py:51
 msgid "Company"
 msgstr ""
 
-#: apps/workers/forms.py:57 apps/workers/forms.py:136
+#: apps/workers/forms.py:69 apps/workers/forms.py:150
 #: apps/workers/templates/workers.html:34
 msgid "Department"
 msgstr ""
 
-#: apps/workers/forms.py:133
+#: apps/workers/forms.py:147
 msgid "Worker Role"
 msgstr ""
 
-#: apps/workers/forms.py:155
+#: apps/workers/forms.py:213
 msgid "Privilege Name"
 msgstr ""
 
-#: apps/workers/forms.py:156
+#: apps/workers/forms.py:214
 msgid "Privilege Description"
 msgstr ""
 
@@ -2116,7 +2170,6 @@ msgstr ""
 
 #: apps/workers/templates/addWorker.html:11
 #: apps/workers/templates/addWorker.html:30
-#: apps/workers/templates/addWorker.html:57
 #: apps/workers/templates/manage_privileges.html:11
 msgid "Add Worker"
 msgstr ""
@@ -2129,8 +2182,14 @@ msgstr ""
 msgid "Employee Information"
 msgstr ""
 
-#: apps/workers/templates/addWorker.html:55
-msgid "Update Worker"
+#: apps/workers/templates/change_password.html:8
+#: apps/workers/templates/change_password.html:22
+#: apps/workers/templates/change_password.html:45
+msgid "Change Password"
+msgstr ""
+
+#: apps/workers/templates/change_password.html:33
+msgid "Password Reset"
 msgstr ""
 
 #: apps/workers/templates/create_privilege.html:8
@@ -2139,6 +2198,11 @@ msgstr ""
 #: apps/workers/templates/create_privilege.html:52
 #: apps/workers/templates/workers.html:14
 msgid "Create Privilege"
+msgstr ""
+
+#: apps/workers/templates/deleteWorker.html:6
+#: apps/workers/templates/deleteWorker.html:25
+msgid "Delete Worker"
 msgstr ""
 
 #: apps/workers/templates/manage_privileges.html:20
@@ -2189,6 +2253,16 @@ msgstr ""
 msgid "No privileges found for the selected role"
 msgstr ""
 
+#: apps/workers/templates/updateProfile.html:8
+#: apps/workers/templates/updateProfile.html:22
+#: apps/workers/templates/updateProfile.html:45
+msgid "Update Profile"
+msgstr ""
+
+#: apps/workers/templates/updateProfile.html:33
+msgid "Personal Information"
+msgstr ""
+
 #: apps/workers/templates/workers.html:6
 msgid "Workers List"
 msgstr ""
@@ -2209,31 +2283,39 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: apps/workers/views.py:52
+#: apps/workers/views.py:57
 msgid "Employee Credentials created successfully!"
 msgstr ""
 
-#: apps/workers/views.py:71
+#: apps/workers/views.py:87
+msgid "Worker and associated user deleted successfully!"
+msgstr ""
+
+#: apps/workers/views.py:108
 msgid "Employee Credentials updated successfully!"
 msgstr ""
 
-#: apps/workers/views.py:97
+#: apps/workers/views.py:130
+msgid "Worker profile updated successfully!"
+msgstr ""
+
+#: apps/workers/views.py:180
 msgid "Employee Privileges updated successfully!"
 msgstr ""
 
-#: apps/workers/views.py:119
+#: apps/workers/views.py:202
 msgid "Privilege created successfully!"
 msgstr ""
 
-#: apps/workers/views.py:122
+#: apps/workers/views.py:205
 msgid "Error creating privilege. Please check the input."
 msgstr ""
 
-#: config/settings.py:180
+#: config/settings.py:192
 msgid "English"
 msgstr "english"
 
-#: config/settings.py:181
+#: config/settings.py:193
 msgid "French"
 msgstr "french"
 
@@ -2258,11 +2340,11 @@ msgstr ""
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:140
 #: templates/layout/partials/menu/vertical/vertical_menu.html:158
+#: templates/layout/partials/menu/vertical/vertical_menu.html:267
 msgid "Stock Request"
 msgstr ""
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:170
-#: templates/layout/partials/menu/vertical/vertical_menu.html:273
 msgid "Stock In Transit"
 msgstr ""
 
@@ -2271,6 +2353,7 @@ msgid "Transferred Stock"
 msgstr ""
 
 #: templates/layout/partials/menu/vertical/vertical_menu.html:209
+#: templates/layout/partials/menu/vertical/vertical_menu.html:291
 msgid "Invoices"
 msgstr ""
 

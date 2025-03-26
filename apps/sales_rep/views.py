@@ -16,20 +16,19 @@ This file is a view controller for multiple pages as a module.
 Here you can override the page view layout.
 Refer to tables/urls.py file for more pages.
 """
-
-
+@login_required
 def ManageSalesRepView(request):
     # Filter workers whose role is "Sales Rep" from the Worker table
     salesRep = Worker.objects.filter(role__iexact="Sales Rep")  # Case-insensitive match for "Sales Rep"
     worker = request.user.worker_profile
     worker_privileges = worker.privileges.values_list('name', flat=True)
-    
-    
-    paginator = Paginator(salesRep, 10) 
+
+
+    paginator = Paginator(salesRep, 10)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_slaes_rep = paginator.get_page(page_number)
-    
-    # Create a new context dictionary for this view 
+
+    # Create a new context dictionary for this view
     view_context = {
         "salesRep": paginated_slaes_rep,
         'worker_privileges': worker_privileges,
@@ -41,10 +40,10 @@ def ManageSalesRepView(request):
     return render(request, 'sales-rep.html', context)
 
 
-
+@login_required
 def add_salesRep_view(request, pk=None):
-    salesRep = SalesAgent.objects.all() 
-    
+    salesRep = SalesAgent.objects.all()
+
     if pk:
         salesRep = get_object_or_404(SalesAgent, pk=pk)  # Fetch the product for editing
         form = SalesAgentForm(request.POST or None, instance=salesRep)  # Bind the form to the existing product
@@ -57,18 +56,18 @@ def add_salesRep_view(request, pk=None):
         if form.is_valid():
             form.save()  # Save the product (create or update based on `pk`)
             return redirect('sales-rep')  # Redirect to the product list after saving
-    branch = Branch.objects.all() 
+    branch = Branch.objects.all()
     view_context = {
         "form": form,
-        "salesRep": salesRep,  
-        "branch": branch,  
+        "salesRep": salesRep,
+        "branch": branch,
         "is_editing": bool(pk),  # Flag to indicate if we are editing
     }
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addSalesRep.html', context)
 
-
+@login_required
 def update_salesRep_view(request, pk):
     salesRep = get_object_or_404(SalesAgent, pk=pk)  # Get the product by ID
 
@@ -125,9 +124,9 @@ def get_sales_rep_credit_history(request, worker_id):
     ).annotate(
         calculated_amount_due=F("grand_total") - F("amount_paid")  # Calculate amount due
     ).order_by("-created_at")
-    
+
     current_invoice = credit_invoices.first()
-    
+
 
     # Calculate total due for the sales rep
     total_due = credit_invoices.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
@@ -139,8 +138,8 @@ def get_sales_rep_credit_history(request, worker_id):
         "current_invoice": current_invoice,
         "total_due": total_due,
     }
-    
+
     context = TemplateLayout.init(request, view_context)
-    
+
 
     return render(request, "salesRepCreditReport.html", context)

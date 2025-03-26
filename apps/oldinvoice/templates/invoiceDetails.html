@@ -88,7 +88,7 @@
                             <td>{{ item.stock.product.product_code }}</td>
                             <td>{{ item.stock.product.generic_name_dosage }}</td>
                             <td>{{ item.price|floatformat:0|intcomma }} CFA</td>
-                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.quantity|intacomma }}</td>
                             <td>{{ item.total_price|floatformat:0|intcomma }} CFA</td>
                         </tr>
                     {% empty %}

@@ -17,23 +17,23 @@
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{% trans "Add Batch Number" %}</h5> 
+        <h5 class="mb-0">{% trans "Add Batch Number" %}</h5>
       </div>
       <div class="card-body">
         <form method='POST'>
           {% csrf_token %}
           {{ form|crispy }}
-          
+
           {% if is_editing %}
-            <button type="submit" class="btn btn-warning">{% trans "Update Batch" %}</button>
+            <button type="submit" class="btn btn-warning">{% trans "Update" %}</button>
           {% else %}
-            <button type="submit" class="btn btn-primary">{% trans "Add Batch Number" %}</button>
+            <button type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
           {% endif %}
         </form>
       </div>
     </div>
   </div>
- 
+
 </div>
 
 <hr class="my-8">
@@ -47,8 +47,11 @@
     <table class="table table-hover">
       <thead>
         <tr>
+        <th>No</th>
           <th>{% trans "Batch Number" %}</th>
+          <th>{% trans "BOL Number" %}</th>
           <th>{% trans "Generic Name" %}</th>
+          <th>{% trans "Brand Name" %}</th>
           <th>{% trans "Exipry Date" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
@@ -56,17 +59,20 @@
       <tbody class="table-border-bottom-0">
         {% for batch in batches %}
         <tr>
+          <td><span>{{forloop.counter}}</span></td>
           <td><span>{{batch.batch_number}}</span></td>
-          <td><span>{{batch.generic_name}}</span></td>
+          <td><span>{{batch.bl_number}}</span></td>
+          <td><span>{{batch.generic_name.generic_name}}</span></td>
+          <td><span>{{batch.generic_name.brand_name}}</span></td>
           <td>{{batch.expiry_date}}</td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'edit-batch' batch.id %}">
-                  <i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'delete-batch' batch.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
+                <a class="dropdown-item" href="{% url 'delete-batch' batch.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
               </div>
             </div>
           </td>

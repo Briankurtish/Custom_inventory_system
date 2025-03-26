@@ -23,22 +23,24 @@
           <div class="app-brand justify-content-center">
             <a href="{% url 'index' %}" class="app-brand-link gap-2">
               <span class="app-brand-logo demo">{% include 'partials/logo.html' with withbg="#696cff" %}</span>
-              <span class="app-brand-text demo text-heading fw-bold">{% get_theme_variables 'template_name' %}</span>
+              <span class="app-brand-text demo text-heading fw-bold">PMS GC</span>
             </a>
           </div>
           <!-- /Logo -->
-          <h4 class="mb-1">{% trans "Welcome to"%} {% get_theme_variables 'template_name' %}! 👋</h4>
-          <p class="mb-6">{% trans "Please sign-in to your account and start the adventure"%}</p>
+          <h4 class="mb-1">{% trans "Welcome to"%} PMS GC!</h4>
+          <p class="mb-6">{% trans "Please sign-in to your account."%}</p>
 
           <form id="formAuthentication" class="mb-6" method="POST">
             {% csrf_token %}
             {{form|crispy}}
             <div class="mb-6">
-              <button class="btn btn-primary d-grid w-100" type="submit">{% trans "Login"%}</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              {% trans "Login"%}</button>
             </div>
           </form>
 
-          
+
         </div>
       </div>
       <!-- /Login -->

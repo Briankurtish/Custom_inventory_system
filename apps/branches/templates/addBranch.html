@@ -19,24 +19,24 @@
           {% else %}
            {% trans "New Branch Details"%}
           {% endif %}
-        </h5> 
+        </h5>
       </div>
       <div class="card-body">
         <form method="POST">
           {% csrf_token %}
           {{form|crispy}}
-          
+
           <button type="submit" class="btn btn-primary">
             {% if is_editing %}
-              {% trans "Update Branch"%}
+              {% trans "Submit"%}
             {% else %}
-              {% trans "Add Branch"%}
+              {% trans "Submit"%}
             {% endif %}
           </button>
         </form>
       </div>
     </div>
   </div>
- 
+
 </div>
 {% endblock %}

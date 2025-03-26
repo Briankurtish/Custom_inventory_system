@@ -46,22 +46,33 @@ Refer to tables/urls.py file for more pages.
 #     view_context = {
 #         "orders": orders,
 #     }
-    
+
 #     context = TemplateLayout.init(request, view_context)
-    
+
 #     return render(request, "orderList.html", context)
 
 
 @login_required
 def order_list(request):
-    # Fetch the user's branch
-    user_branch = request.user.worker_profile.branch
+    # Get the current user
+    user = request.user
+
+    # Check if the user is an Accountant or a superuser
+    is_accountant_or_superuser = (
+        user.worker_profile.role == "Accountant" or user.is_superuser
+    )
+
+    # Fetch orders based on the user's role
+    if is_accountant_or_superuser:
+        # Fetch all orders for Accountants and superusers
+        orders = PurchaseOrder.objects.all()
+    else:
+        # Fetch orders for the user's branch
+        user_branch = user.worker_profile.branch
+        orders = PurchaseOrder.objects.filter(branch=user_branch)
 
     # Get the status filter from the query parameters
     status_filter = request.GET.get("status")
-
-    # Filter orders by branch and optionally by status
-    orders = PurchaseOrder.objects.filter(branch=user_branch)
     if status_filter:
         orders = orders.filter(status__iexact=status_filter)
 
@@ -74,6 +85,7 @@ def order_list(request):
         "-created_at",
     )
 
+    # Paginate the orders
     paginator = Paginator(orders, 10)
     page_number = request.GET.get("page")  # Get the current page number from the request
     paginated_orders = paginator.get_page(page_number)
@@ -95,30 +107,41 @@ def invoice_list(request):
 
     # Fetch orders only for the user's branch
     invoices = Invoice.objects.filter(branch=user_branch)
-    
+
     # Count unpaid invoices
-    
-    
-    paginator = Paginator(invoices, 10) 
+
+
+    paginator = Paginator(invoices, 10)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_invoice = paginator.get_page(page_number)
 
     # Prepare context for rendering
     view_context = {
         "invoices": paginated_invoice,
-        
+
     }
     context = TemplateLayout.init(request, view_context)
-    
+
     return render(request, "invoiceList.html", context)
 
 
 @login_required
 def order_details(request, order_id):
-    # Fetch the purchase order and related items
-    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+    user = request.user
+    worker = user.worker_profile
 
-     # Annotate the total price for each item (quantity * temp price or unit price)
+    # Check if the user is a superuser or has "Accountant" privileges
+    is_accountant_or_superuser = user.is_superuser or worker.role == "Accountant"
+
+    # Fetch the purchase order based on the user's role
+    if is_accountant_or_superuser:
+        # Superusers or Accountants can view all orders
+        order = get_object_or_404(PurchaseOrder, id=order_id)
+    else:
+        # Other users can view only orders tied to their branch
+        order = get_object_or_404(PurchaseOrder, id=order_id, branch=worker.branch)
+
+    # Annotate the total price for each item (quantity * temp price or unit price)
     order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
         effective_price=Case(
             When(temp_price__isnull=False, then=F('temp_price')),
@@ -127,23 +150,22 @@ def order_details(request, order_id):
         ),
         total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
     )
-    
-     # Calculate total quantity
+
+    # Calculate total quantity
     total_quantity = order_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
-    
+
     # Fetch the worker's privileges
-    worker = request.user.worker_profile
     worker_privileges = worker.privileges.values_list('name', flat=True)
 
     # Context for the template
     view_context = {
         "order": order,
         "order_items": order_items,
-         "total_quantity": total_quantity,
-        'worker_privileges': worker_privileges,
+        "total_quantity": total_quantity,
+        "worker_privileges": worker_privileges,
     }
     context = TemplateLayout.init(request, view_context)
-    
+
     return render(request, "orderDetails.html", context)
 
 
@@ -160,7 +182,7 @@ def credit_report(request, order_id):
         "order_items": order_items,
     }
     context = TemplateLayout.init(request, view_context)
-    
+
     return render(request, "customerCreditReport.html", context)
 
 
@@ -196,16 +218,24 @@ def payment_history(request, invoice_id):
 
 @login_required
 def create_purchase_order(request):
-    user_branch = request.user.worker_profile.branch
+    """
+    Create a purchase order. Superusers can access all branches, while regular users are restricted to their branch.
+    """
+
+    # Determine the user's branch or all branches if the user is a superuser
+    if request.user.is_superuser:
+        user_branch = None  # Superuser should see all branches
+    else:
+        user_branch = request.user.worker_profile.branch
 
     if request.method == "POST":
         # Create form instance, passing the user's branch to limit branch selection
         po_form = PurchaseOrderForm(data=request.POST, user_branch=user_branch)
-        
+
         if po_form.is_valid():
             # Save the form data to the session instead of creating the purchase order immediately
             request.session["purchase_order_details"] = {
-                "branch": user_branch.id,  # Save the branch ID for later use
+                "branch": po_form.cleaned_data["branch"].id if request.user.is_superuser else user_branch.id,
                 "customer": po_form.cleaned_data["customer"].id,  # Save customer ID
                 "sales_rep": po_form.cleaned_data["sales_rep"].id,  # Save sales rep ID
                 "payment_method": po_form.cleaned_data["payment_method"],  # Save payment method
@@ -224,6 +254,7 @@ def create_purchase_order(request):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, "createPurchaseOrder.html", context)
+
 
 @login_required
 def add_order_items(request):
@@ -258,7 +289,7 @@ def add_order_items(request):
                         "stock_id": stock.id,
                         "stock_name": str(stock.product.generic_name_dosage),
                         "temp_price": float(temp_price),  # Convert Decimal to float
-                        "reason": reason,  
+                        "reason": reason,
                         "quantity": quantity,
                         "total_price": float(temp_price * quantity),
                     })
@@ -364,7 +395,7 @@ def approve_order(request, order_id):
     if not notes:
         messages.error(request, _("Approval notes are required."))
         return redirect(reverse('order_details', args=[order_id]))
-    
+
     # Check if the order is already approved or rejected
     if order.status != 'Pending':
         messages.error(request, _("This order has already been processed."))
@@ -397,7 +428,7 @@ def approve_order(request, order_id):
             # Update the status of the order to 'Approved'
             order.status = 'Approved'
             order.approved_by = request.user.worker_profile  # Assign Worker instance to approved_by
-            order.notes = f"[Approval Note]: {notes} ({timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"   
+            order.notes = f"[Approval Note]: {notes} ({timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"
             order.save()
 
             # Generate an invoice for the approved order
@@ -441,7 +472,7 @@ def approve_order(request, order_id):
 def generate_purchase_order_pdf(request, order_id):
     order = get_object_or_404(PurchaseOrder, id=order_id)
     # order_items = PurchaseOrderItem.objects.filter(purchase_order=order)
-    
+
      # Annotate the total price for each item (quantity * temp price or unit price)
     order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
         effective_price=Case(
@@ -495,7 +526,7 @@ def reject_order(request, order_id):
 
         messages.success(request, _("Order rejected successfully."))
         return redirect(reverse('order_details', args=[order_id]))
-    
+
     # If not POST, return error response
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
@@ -620,13 +651,13 @@ def get_customer_report(request, customer_id):
     ).annotate(
         calculated_amount_due=F("grand_total") - F("amount_paid"),
     ).order_by("-created_at")
-    
+
     current_invoice = current_credit_orders.first()
 
     # Calculate total dues for both tables
     total_due_old = old_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
     total_due_current = current_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
-    
+
     total_due_general = total_due_old + total_due_current
 
     # Prepare context for the template
@@ -639,7 +670,7 @@ def get_customer_report(request, customer_id):
         "total_due_current": total_due_current,
         "total_due_general": total_due_general,
          "current_date": now(),
-        
+
     }
 
     # Use TemplateLayout for consistent UI
@@ -664,23 +695,23 @@ def get_sales_rep_credit_history(request, worker_id):
     ).annotate(
         calculated_amount_due=F("grand_total") - F("amount_paid")  # Calculate amount due
     ).order_by("-created_at")
-    
+
     # Fetch current credit orders from Invoice
     current_credit_orders = Invoice.objects.filter(
         sales_rep=worker, payment_method="Credit"
     ).annotate(
         calculated_amount_due=F("grand_total") - F("amount_paid"),
     ).order_by("-created_at")
-    
+
     current_invoice = current_credit_orders.first()
-    
+
 
     # Calculate total due for the sales rep
     total_due_old = credit_invoices.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
     total_due_current = current_credit_orders.aggregate(total_due=Sum("calculated_amount_due"))["total_due"] or 0
-    
+
     total_due_general = total_due_old + total_due_current
-    
+
 
     # Context data for the template
     view_context = {
@@ -693,9 +724,9 @@ def get_sales_rep_credit_history(request, worker_id):
         "total_due_general": total_due_general,
          "current_date": now(),
     }
-    
+
     context = TemplateLayout.init(request, view_context)
-    
+
 
     return render(request, "salesRepCreditReport.html", context)
 
@@ -755,9 +786,9 @@ def add_invoice_payment(request, invoice_id):
         'invoice': invoice,
         'form': form,
     }
-    
+
     context = TemplateLayout.init(request, view_context)
-    
+
     return render(request, 'makePayment.html', context)
 
 
@@ -867,8 +898,8 @@ def add_invoice_payment(request, invoice_id):
 #         "order_items": enhanced_items,
 #         "grand_total": grand_total,
 #     }
-    
+
 #     context = TemplateLayout.init(request, view_context)
-    
+
 
 #     return render(request, "createOrder.html", context)

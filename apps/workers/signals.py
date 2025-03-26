@@ -1,13 +1,16 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Worker, Privilege
 
 @receiver(post_save, sender=Worker)
 def assign_default_privileges(sender, instance, created, **kwargs):
     """
-    Signal to assign default privileges to a worker after creation.
+    Signal to assign default privileges to a worker after creation and send a welcome email.
     """
     if created:  # Only when a new Worker is created
+        # Assign default privileges based on the role
         default_privileges = {
             'Director': ['Manage Users', 'View Reports', 'Manage Inventory'],
             'Marketing Director': ['View Stocks', 'Request Stock'],
@@ -23,3 +26,24 @@ def assign_default_privileges(sender, instance, created, **kwargs):
         for privilege_name in role_privileges:
             privilege, _ = Privilege.objects.get_or_create(name=privilege_name)
             instance.privileges.add(privilege)
+
+        # Send the welcome email to the newly created worker
+        try:
+            subject = "Welcome to GC Pharma Inventory Management System"
+            message = (
+                f"Hello {instance.employee_id},\n\n"
+                "Your account has been created successfully. Below are your login credentials:\n\n"
+                f"Username: {instance.employee_id}\n"
+                "Password: Password2023#\n\n"
+                "Please log in to your account and update your details if necessary."
+            )
+
+            # Correct way to set the sender with a name
+            from_email = "GC PHARMA <admin@pharmamgtsystemgc.com>"
+
+            # Send the email
+            recipient_list = [instance.user.email]
+            send_mail(subject, message, from_email, recipient_list)
+
+        except Exception as e:
+            print(f"Error sending email: {e}")

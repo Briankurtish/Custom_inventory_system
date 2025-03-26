@@ -8,7 +8,7 @@
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-branch' %}'">
-  <span class="tf-icons bx bx-plus bx-18px me-2"></span>{% trans "Add New Branch"%}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add New Branch"%}
 </button>
 
 <hr class="my-8">
@@ -40,10 +40,10 @@
           <td>{{ branch.get_branch_type_display }}</td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'edit-branch' branch.id %}"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit"%}</a>
-                <a class="dropdown-item" href="{% url 'delete-branch' branch.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete"%}</a>
+                <a class="dropdown-item" href="{% url 'edit-branch' branch.id %}"><i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit"%}</a>
+                <a class="dropdown-item" href="{% url 'delete-branch' branch.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete"%}</a>
               </div>
             </div>
           </td>
@@ -68,13 +68,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in branch.paginator.page_range %}
       <li class="page-item {% if branch.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if branch.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ branch.next_page_number }}" aria-label="Next">

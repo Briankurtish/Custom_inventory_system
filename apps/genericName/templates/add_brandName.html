@@ -1,0 +1,86 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Brand Name" %}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'products' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% if is_editing %}{% trans "Edit Brand Name" %}{% else %}{% trans "Add Brand Name" %}{% endif %}</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <button type="submit" class="btn {% if is_editing %}btn-warning{% else %}btn-primary{% endif %}">
+            {% if is_editing %}{% trans "Update" %}{% else %}{% trans "Submit" %}{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Brand Name List" %}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>{% trans "Generic Name" %}</th>
+          <th>{% trans "Brand Name" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for item in brand_names %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.generic_name.generic_name }}</td>  <!-- Display the associated generic name -->
+          <td>{{ item.brand_name }}</td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'edit-brandName' item.id %}">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                </a>
+                <form method="POST" action="{% url 'delete-brandName' item.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item text-danger" style="border:none; background:none;">
+                    <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">{% trans "No brand names found." %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+{% endblock %}

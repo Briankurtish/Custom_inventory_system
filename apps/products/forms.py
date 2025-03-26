@@ -7,16 +7,17 @@ from django.utils.translation import gettext_lazy as _
 class BatchForm(forms.ModelForm):
     class Meta:
         model = Batch
-        fields = ['batch_number', 'generic_name', 'expiry_date']
+        fields = ['batch_number', 'generic_name', 'bl_number', 'expiry_date']
         widgets = {
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for expiry date
         }
         labels = {
             'batch_number': _('Batch Number'),  # Translatable label
             'generic_name': _('Generic Name & Dosage'),  # Translatable label
+            'bl_number': _('Bill of Lading'),  # Translatable label
             'expiry_date': _('Expiry Date'),  # Translatable label
         }
-    
+
     # Change 'generic_name' to a ModelChoiceField to fetch data from GenericName table
     generic_name = forms.ModelChoiceField(
         queryset=GenericName.objects.all(),
@@ -72,11 +73,18 @@ class AddProductForm(forms.ModelForm):
             'product_code': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
         labels = {
-            'generic_name_dosage': _('Generic Name & Dosage'),  # Translatable label
-            'brand_name': _('Brand Name'),  # Translatable label
-            'pack_size': _('Pack Size'),  # Translatable label
-            'batch': _('Batch Number'),  # Translatable label
+            'generic_name_dosage': _('Generic Name & Dosage'),
+            'brand_name': _('Brand Name'),
+            'pack_size': _('Pack Size'),
+            'batch': _('Batch Number'),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate the brand_name field with distinct brand names
+        self.fields['brand_name'].queryset = GenericName.objects.filter(brand_name__isnull=False).distinct('brand_name')
+        self.fields['brand_name'].label_from_instance = lambda obj: obj.brand_name
+        self.fields['brand_name'].empty_label = "Select a Brand Name"
 
 
 class EditProductForm(forms.ModelForm):

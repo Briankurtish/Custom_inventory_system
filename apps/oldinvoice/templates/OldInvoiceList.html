@@ -8,7 +8,7 @@
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Add Invoice" %}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Invoice" %}
 </button>
 
 <hr class="my-8">
@@ -20,6 +20,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Invoice ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Created By" %}</th>
@@ -35,6 +36,7 @@
       <tbody class="table-border-bottom-0">
         {% for order in old_invoice %}
         <tr>
+          <td><span>{{ forloop.counter }}</span></td>
           <td><span>{{ order.id }}</span></td>
           <td>{{ order.branch.branch_id }}</td>
           <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
@@ -43,24 +45,24 @@
           <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
           <td class="text-success"><strong>{{ order.amount_paid|floatformat:0|intcomma }}<small> CFA</small></strong></td>
           <td class="text-danger"><strong>{{ order.amount_due|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-          
+
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'invoice_details' order.id %}">
-                  <i class="bx bx-book-open me-1"></i> {% trans "View" %}
+                  <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                 </a>
-                <a 
-                  class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
+                <a
+                  class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}"
                   href="{% if order.amount_due > 0 %}{% url 'add_old_invoice_payment' order.id %}{% endif %}">
-                  <i class="bx bx-credit-card me-1"></i> {% trans "Add Payment" %}
+                  <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Payment" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'old_payment_history' order.id %}">
-                  <i class="bx bx-history me-1"></i> {% trans "Payment History" %}
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i> {% trans "Payment History" %}
                 </a>
               </div>
             </div>
@@ -74,7 +76,7 @@
       </tbody>
     </table>
   </div>
-  
+
 </div>
 <!--/ Hoverable Table rows -->
 
@@ -90,13 +92,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in orders.paginator.page_range %}
       <li class="page-item {% if orders.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if orders.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">

@@ -8,6 +8,6 @@ class GenericName(models.Model):
     brand_name = models.CharField(
         max_length=255, null=True, blank=True
     )
-    
+
     def __str__(self):
-        return f"{self.generic_name} - {self.brand_name or 'No Brand'}"
+        return f"{self.generic_name}"

@@ -29,29 +29,29 @@
           {% else %}
             {% trans "Customer Information" %}
           {% endif %}
-        </h5> 
+        </h5>
       </div>
       <div class="card-body">
         <form method="POST" enctype="multipart/form-data">
           {% csrf_token %}
 
           {{form|crispy}}
-         
+
            <br>
-          
-          
+
+
           <button type="submit" class="btn btn-primary">
             {% if is_editing %}
-              {% trans "Update Customer" %}
+              {% trans "Submit" %}
             {% else %}
-              {% trans "Add Customer" %}
+              {% trans "Submit" %}
             {% endif %}
           </button>
         </form>
       </div>
     </div>
   </div>
- 
+
 </div>
 {% endblock %}
 

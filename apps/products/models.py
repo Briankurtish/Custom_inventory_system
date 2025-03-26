@@ -10,8 +10,11 @@ class Batch(models.Model):
     generic_name = models.ForeignKey(
         GenericName, on_delete=models.CASCADE, related_name='batches'
     )
+    bl_number = models.CharField(
+        max_length=255, blank=True
+    )
     expiry_date = models.DateField(help_text="Expiry Date")
-    
+
     def __str__(self):
         return f"Batch: {self.batch_number} -- {self.generic_name.generic_name} - Expiry: {self.expiry_date}"
 
@@ -29,10 +32,10 @@ class Product(models.Model):
     pack_size = models.ForeignKey(
         "pack_size.PackSize", on_delete=models.CASCADE, related_name="products")
     unit_price = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
+        max_digits=10,
+        decimal_places=2,
         default=0.00,  # Default value for unit_price
-        
+
     )
     batch = models.ForeignKey(
         Batch, on_delete=models.CASCADE, related_name="products"

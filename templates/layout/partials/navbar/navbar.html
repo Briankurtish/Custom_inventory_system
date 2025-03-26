@@ -6,7 +6,7 @@
   {% if not navbar_hide_toggle %}
   <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
     <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
-      <i class="bx bx-menu bx-md"></i>
+      <i class="fa-solid fa-bars"></i>
     </a>
   </div>
   {% endif %}
@@ -26,20 +26,20 @@
     <!-- /Search -->
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">
-      <strong class="">{{user.worker_profile.role}}</strong>
+      {% comment %} <strong class="">{{user.worker_profile.role}}</strong> {% endcomment %}
 
 
       <li class="nav-item dropdown">
         <form action="{% url 'set_language' %}" method="post" class="d-inline">
-            {% csrf_token %}
-            <select name="language" onchange="this.form.submit()">
-                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
-                <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>French</option>
-            </select>
-            <input type="hidden" name="next" value="{{ request.path }}">
-        </form>
+          {% csrf_token %}
+          <select name="language" onchange="this.form.submit()">
+              <option value="en" {% if request.LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+              <option value="fr" {% if request.LANGUAGE_CODE == 'fr' %}selected{% endif %}>French</option>
+          </select>
+          <input type="hidden" name="next" value="{{ request.path }}">
+      </form>
     </li>
-    
+
 
       {% comment %} <li class="nav-item dropdown">
         <form action="{% url 'set_language' %}" method="post">
@@ -59,7 +59,7 @@
           </li>
         </ul>
       </li> {% endcomment %}
-      
+
     &nbsp
     &nbsp
     &nbsp
@@ -76,14 +76,14 @@
           <li>
             <a class="dropdown-item" href="javascript:void(0);">
               <div class="d-flex">
-                <div class="flex-shrink-0 me-3">
+                {% comment %} <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
                     <img src="{% static 'img/avatars/1.png' %}" alt class="w-px-40 h-auto rounded-circle">
                   </div>
-                </div>
+                </div> {% endcomment %}
                 <div class="flex-grow-1">
-                  <h6 class="mb-0">John Doe</h6>
-                  <small class="text-muted">Admin</small>
+                  <h6 class="mb-0">{{user.first_name}} {{user.last_name}}</h6>
+                  <small class="text-muted">{{user.worker_profile.role}}</small>
                 </div>
               </div>
             </a>
@@ -92,13 +92,15 @@
             <div class="dropdown-divider my-1"></div>
           </li>
           <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-             <i class="bx bx-user bx-md me-3"></i><span>My Profile</span>
+            <a class="dropdown-item" href="{% url 'edit_worker_profile' pk=user.worker_profile.id %}">
+                <i class="fa-regular fa-user me-3"></i><span>My Profile</span>
             </a>
+
+
           </li>
           <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <i class="bx bx-cog bx-md me-3"></i><span>Settings</span>
+            <a class="dropdown-item" href="{% url 'password_change' %}">
+              <i class="fa-solid fa-gear me-3"></i><span>Settings</span>
             </a>
           </li>
           {% comment %} <li>

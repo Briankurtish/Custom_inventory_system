@@ -34,17 +34,17 @@ class OldInvoiceOrderForm(forms.ModelForm):
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
 
-        if user_branch:
-            # Filter branches by the user's branch
-            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['branch'].widget.attrs.update({
-                'class': 'form-control',
-                'readonly': False,
-                'disabled': False,
-            })
+        # if user_branch:
+        #     # Filter branches by the user's branch
+        #     self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+        #     self.fields['branch'].widget.attrs.update({
+        #         'class': 'form-control',
+        #         'readonly': False,
+        #         'disabled': False,
+        #     })
 
-            # Filter sales reps based on the user's branch
-            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role="Sales Rep")
+        # Filter sales reps based on the user's branch
+        self.fields['sales_rep'].queryset = Worker.objects.filter(role="Sales Rep")
 
         # Set the customer queryset to all customers
         self.fields['customer'].queryset = Customer.objects.all()
@@ -93,7 +93,7 @@ class OldInvoiceOrderItemForm(forms.ModelForm):
         quantity = self.cleaned_data.get('quantity')
         stock = self.cleaned_data.get('stock')
 
-        
+
         return quantity
 
 

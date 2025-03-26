@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load i18n %}
+{% load humanize %}
 {% load crispy_forms_tags %}
 
 {% block title %}{% trans "Create Order" %}{% endblock %}
@@ -21,7 +22,7 @@
           <hr>
           <button type="submit" name="action" value="add_item" class="btn btn-info">{% trans "Add Item" %}</button>
         </form>
-        
+
         <br>
         <h5>{% trans "Order Items" %}</h5>
         <table class="table table-hover">
@@ -38,9 +39,9 @@
               {% for item in order_items %}
               <tr>
                   <td>{{ item.stock_name }}</td>
-                  <td>{{ item.quantity }}</td>
-                  <td>{{ item.unit_price }}</td>
-                  <td>{{ item.total_price|floatformat:2 }}</td>
+                  <td>{{ item.quantity|intcomma }}</td>
+                  <td>{{ item.unit_price|floatformat:0|intcomma }}</td>
+                  <td>{{ item.total_price|floatformat:0|intcomma }}</td>
                   <td>
                     <form method="POST" action="{% url 'add_invoice_items' %}">
                       {% csrf_token %}
@@ -53,18 +54,18 @@
               {% endfor %}
           </tbody>
         </table>
-        
+
         <br>
-        <h5>{% trans "Grand Total" %}: {{ grand_total }} CFA</h5>
+        <h5>{% trans "Grand Total" %}: {{ grand_total|intacomma }} CFA</h5>
         <hr>
 
         <!-- Move Submit Order Button to the Bottom -->
         <form method="post">
           {% csrf_token %}
           <br>
-          <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Submit Order" %}</button>
+          <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Submit" %}</button>
         </form>
-        
+
       </div>
     </div>
   </div>

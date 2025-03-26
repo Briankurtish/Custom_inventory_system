@@ -3,9 +3,20 @@ from django.contrib.auth.models import User
 from .models import Worker, Privilege
 from apps.branches.models import Branch
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 class UserCreationForm(forms.ModelForm):
+
+    DEPARTMENT_CHOICES = [
+    ('SR', 'Commercial | Sales & Marketing'),
+    ('FIN', 'Finance'),
+    ('PH', 'Pharmacie | Pharmacy'),
+    ('HR', 'Ressoure Humaine | Human Resource'),
+    # More choices...
+]
+
+
     first_name = forms.CharField(
         max_length=150,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter first name')}),
@@ -17,16 +28,22 @@ class UserCreationForm(forms.ModelForm):
         label= _("Last Name")
     )
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': _('Enter email')}),
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': _('Enter email'), 'autocomplete': 'off'}),
         label= _("Email")
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Enter password')}),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Enter password'), 'autocomplete': 'new-password'}),
         label= _("Password")
     )
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Confirm password')}),
         label= _("Confirm Password")
+    )
+    department = forms.ChoiceField(
+        choices=DEPARTMENT_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label=_("Department"),
+        required=False,
     )
     role = forms.ChoiceField(
         choices=Worker.ROLE_CHOICES,
@@ -51,11 +68,8 @@ class UserCreationForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
         label= _("Telephone")
     )
-    department = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
-        label= _("Department")
-    )
+
+
     address = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
@@ -64,7 +78,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = Worker
-        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'role', 'branch', 'telephone', 'department', 'address']
+        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'department', 'role', 'branch', 'telephone',  'address']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -75,7 +89,7 @@ class UserCreationForm(forms.ModelForm):
 
         if password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
-        
+
         if role == 'Sales Rep' and not company:
             self.add_error('company', "Company is required for Sales Rep role.")
 
@@ -121,23 +135,67 @@ class UserCreationForm(forms.ModelForm):
 class WorkerForm(forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ['role', 'branch', 'telephone', 'department', 'address']
+        fields = ['department','role', 'branch', 'telephone', 'address']
         widgets = {
+            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
             'role': forms.Select(attrs={'class': 'form-control'}),
             'branch': forms.Select(attrs={'class': 'form-control'}),
             'telephone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter telephone'}),
-            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter address'}),
         }
         labels = {
+            'department': _('Department'),
             'role': _('Worker Role'),
             'branch': _('Branch'),
             'telephone': _('Telephone'),
-            'department': _('Department'),
             'address': _('Address'),
         }
-        
-        
+
+class WorkerProfileForm(forms.ModelForm):
+    # Include fields from the User model
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label=_('First Name'),
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label=_('Last Name'),
+    )
+
+    class Meta:
+        model = Worker
+        fields = ['telephone', 'address']
+        widgets = {
+            'telephone': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+        labels = {
+            'telephone': _('Telephone'),
+            'address': _('Address'),
+        }
+
+    def save(self, commit=True):
+        """
+        Override save method to save both Worker and User data.
+        """
+        worker = super().save(commit=False)  # Save Worker fields
+        user = worker.user  # Access the related User instance
+
+        # Update User fields
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+
+        if commit:
+            user.save()  # Save User model
+            worker.save()  # Save Worker model
+
+        return worker
+
+
 class WorkerPrivilegeForm(forms.ModelForm):
     class Meta:
         model = Worker
@@ -145,7 +203,7 @@ class WorkerPrivilegeForm(forms.ModelForm):
         widgets = {
             'privileges': forms.CheckboxSelectMultiple(attrs={'class': 'privileges-list'})
         }
-        
+
 
 class PrivilegeForm(forms.ModelForm):
     class Meta:
@@ -155,3 +213,10 @@ class PrivilegeForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Privilege Name')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': _('Privilege Description'), 'rows': 3}),
         }
+
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter old password'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter new password'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm new password'}))

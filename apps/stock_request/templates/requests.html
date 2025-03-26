@@ -7,9 +7,9 @@
 
 {% block content %}
 
-{% if can_request_stock %}
+{% if can_request_stock or user.is_superuser%}
   <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
-    <span class="tf-icons bx bx-plus bx-18px me-2"></span>{% trans "New Stock Request" %}
+    <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Request" %}
   </button>
   <hr>
 {% endif %}
@@ -68,14 +68,14 @@
             <td>
               <div class="dropdown">
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                  <i class="bx bx-dots-vertical-rounded"></i>
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
-                    <i class="bx bx-book-open me-1"></i> View
+                    <i class="fa-solid fa-folder-open me-1"></i> View
                   </a>
-                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
-                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
+                  {% comment %} <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
+                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a> {% endcomment %}
                 </div>
               </div>
             </td>
@@ -103,13 +103,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in stock_requests.paginator.page_range %}
       <li class="page-item {% if stock_requests.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if stock_requests.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ stock_requests.next_page_number }}" aria-label="Next">

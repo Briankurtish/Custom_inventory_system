@@ -10,12 +10,18 @@
 
 {% if user.worker_profile.privileges.all %}
     {% for privilege in user.worker_profile.privileges.all %}
-        {% if privilege.name == 'Create Orders' %}
+        {% if privilege.name == 'Create Orders'%}
           <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-            <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Create Order" %}
+            <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
           </button>
         {% endif %}
     {% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
+  </button>
 {% endif %}
 
 <hr class="my-8">
@@ -64,7 +70,7 @@
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
           <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-          
+
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>{{ order.approved_by.user.get_full_name }}</td>
 
@@ -84,16 +90,16 @@
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'order_details' order.id %}">
-                  <i class="bx bx-book-open me-1"></i> {% trans "View" %}
+                  <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                 </a>
-                {% comment %} 
+                {% comment %}
                 <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
                   <i class="bx bx-trash me-1"></i> Delete
-                </a> 
+                </a>
                 {% endcomment %}
               </div>
             </div>
@@ -101,13 +107,13 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">{% trans "No Invoices available" %}</td>
+          <td colspan="11" class="text-center">{% trans "No Purchase Orders available" %}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  
+
 </div>
 <!--/ Hoverable Table rows -->
 
@@ -122,13 +128,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in orders.paginator.page_range %}
       <li class="page-item {% if orders.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if orders.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">

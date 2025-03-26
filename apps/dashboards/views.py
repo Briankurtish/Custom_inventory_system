@@ -4,11 +4,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.workers.models import Worker
 from apps.stock_request.models import StockRequest
 from django.utils.translation import activate
+from django.shortcuts import render
+
 
 class DashboardsView(LoginRequiredMixin, TemplateView):
     # Default fallback template
     template_name = "dashboard_analytics.html"
-    
+
     def get_template_names(self):
         """
         Dynamically select the template based on the worker's role.
@@ -44,8 +46,18 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         """
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         context['role'] = getattr(self.request.user.worker_profile, 'role', 'Unknown')
-        
-         # Add the count of pending stock requests
+
+        # Add the count of pending stock requests
         context['pending_request_count'] = StockRequest.objects.filter(status='Pending').count()
         context['accepted_request_count'] = StockRequest.objects.filter(status='Accepted').count()
+
+        # Check if the user is logging in for the first time (last_login is None)
+        show_password_modal = self.request.user.last_login is None
+        if show_password_modal:
+            # Refresh user object to ensure last_login is set
+            self.request.user.refresh_from_db()
+
+        # Add the flag to show the modal
+        context['show_password_modal'] = show_password_modal
+
         return context

@@ -18,7 +18,11 @@ class PurchaseOrder(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     sales_rep = models.ForeignKey(
-        Worker, on_delete=models.CASCADE, related_name='sales_rep_orders'
+        Worker,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sales_rep_orders',
+        limit_choices_to={'role': 'Sales Rep'}
     )
     payment_method = models.CharField(
         max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')]
@@ -122,13 +126,13 @@ class TemporaryStock(models.Model):
 
 
 class Invoice(models.Model):
-    
+
     STATUS_CHOICES = [
         ('Unpaid', 'Unpaid'),
         ('Payment Ongoing', 'Payment Ongoing'),
         ('Payment Completed', 'Payment Completed'),
     ]
-    
+
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     sales_rep = models.ForeignKey(
@@ -241,8 +245,8 @@ class InvoicePayment(models.Model):
     ]
 
     invoice = models.ForeignKey(
-        Invoice, 
-        on_delete=models.CASCADE, 
+        Invoice,
+        on_delete=models.CASCADE,
         related_name="invoice_payment",
         help_text="The invoice associated with this payment"
     )
@@ -254,8 +258,8 @@ class InvoicePayment(models.Model):
 
     def __str__(self):
         return f"Payment #{self.payment_number} for Invoice #{self.invoice.id}"
-    
-    
+
+
 
 class Receipt(models.Model):
     PAYMENT_METHODS = [

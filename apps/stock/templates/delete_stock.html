@@ -1,0 +1,31 @@
+{% extends layout_path %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Stock" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h4>{% trans "Confirm Deletion" %}</h4>
+  <p>{% trans "Are you sure you want to delete the following stock item?" %}</p>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <p><strong>{% trans "Product Code:" %}</strong> {{ stock.product.product_code }}</p>
+      <p><strong>{% trans "Product Name:" %}</strong> {{ stock.product.generic_name_dosage.generic_name }}</p>
+      <p><strong>{% trans "Quantity Available:" %}</strong> {{ stock.quantity }}</p>
+    </div>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="password" class="form-label">{% trans "Enter your password to confirm deletion:" %}</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="d-flex">
+      <a href="{% url 'stock' %}" class="btn btn-secondary me-3">{% trans "Cancel" %}</a>
+      <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

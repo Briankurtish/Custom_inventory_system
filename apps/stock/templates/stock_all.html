@@ -2,7 +2,7 @@
 
 {% load static %}
 {% load i18n %}
-
+{% load humanize %}
 {% block title %}{% trans "Track Stocks" %}{% endblock %}
 
 {% block content %}
@@ -51,6 +51,7 @@
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Branch Name" %}</th>
           <th>{% trans "Product Name" %}</th>
+          <th>{% trans "Batch Number" %}</th>
           <th>{% trans "Quantity" %}</th>
           <th>{% trans "Status" %}</th>
         </tr>
@@ -62,7 +63,8 @@
             <td>{{ stock.branch.branch_id }}</td>
             <td>{{ stock.branch.branch_name }}</td>
             <td>{{ stock.product.generic_name_dosage }}</td>
-            <td>{{ stock.quantity }}</td>
+            <td>{{ stock.product.batch.batch_number }}</td>
+            <td>{{ stock.quantity|intcomma }}</td>
             <td>
               {% if stock.quantity > 0 %}
                 <span class="badge bg-label-success">{% trans "In Stock" %}</span>
@@ -92,13 +94,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in stocks.paginator.page_range %}
       <li class="page-item {% if stocks.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if stocks.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ stocks.next_page_number }}" aria-label="Next">
@@ -126,7 +128,7 @@
     // On product selection, filter the table rows
     $("#product-search").on('change', function() {
       var searchQuery = $(this).val().toLowerCase();
-      
+
       // Show all rows first, then filter them
       $("#stock-table-body tr").each(function() {
         var productCode = $(this).data('product-code').toLowerCase();

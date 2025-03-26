@@ -1,0 +1,75 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% trans "Update Profile" %}
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'index' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+        {% trans "Update Profile" %}
+    </li>
+  </ol>
+</nav>
+<!-- End Breadcrumbs -->
+
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Personal Information" %}</h5>
+        <hr>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+
+          {{ form|crispy }}
+
+          <br>
+
+          <button type="submit" class="btn btn-primary">
+              {% trans "Update Profile" %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const roleField = document.getElementById("role");
+      const companyField = document.getElementById("company").closest(".form-group");
+
+      function toggleCompanyField() {
+          if (roleField.value === "Sales Rep") {
+              companyField.style.display = "block";
+          } else {
+              companyField.style.display = "none";
+          }
+      }
+
+      roleField.addEventListener("change", toggleCompanyField);
+      toggleCompanyField(); // Initial check
+  });
+</script>
+
+{% endblock page_js %}

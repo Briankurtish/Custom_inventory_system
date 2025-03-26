@@ -13,7 +13,7 @@ from django.utils.translation import gettext_lazy as _
 def ManageGenericView(request):
     genericName = GenericName.objects.all()
 
-    # Create a new context dictionary for this view 
+    # Create a new context dictionary for this view
     view_context = {
         "genericName": genericName,
     }
@@ -58,8 +58,8 @@ def edit_generic_view(request, pk):
     # Retrieve the GenericName instance or raise 404
     generic_name = get_object_or_404(GenericName, pk=pk)
     generic_names = GenericName.objects.all()
-    
-    
+
+
     if request.method == "POST":
         # Populate the form with POST data and bind it to the instance
         form = GenericNameForm(request.POST, instance=generic_name)
@@ -90,7 +90,7 @@ def edit_generic_view(request, pk):
 def delete_generic_view(request, pk):
     # Retrieve the GenericName instance or raise 404
     generic_name = get_object_or_404(GenericName, pk=pk)
-    
+
     if request.method == "POST":
         # Delete the instance on POST
         generic_name.delete()

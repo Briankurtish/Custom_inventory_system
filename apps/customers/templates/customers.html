@@ -7,9 +7,9 @@
 
 {% block content %}
 
-{% if 'Add Customers' in worker_privileges %}
+{% if 'Add Customers' in worker_privileges or user.is_superuser %}
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-customers' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Customer" %}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Customer" %}
 </button>
 {% endif %}
 
@@ -25,9 +25,10 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Client ID" %}</th>
           <th>{% trans "Name" %}</th>
-          <th>{% trans "Postal Code" %}</th>
+          <th>{% trans "Address" %}</th>
           <th>{% trans "Sales Rep" %}</th>
           <th>{% trans "Contact Person" %}</th>
           <th>{% trans "Telephone" %}</th>
@@ -42,6 +43,7 @@
 
         {% for customer in customers %}
         <tr>
+           <td>{{ forloop.counter }}</td>
           <td><span>{{customer.customer_id}}</span></td>
           <td>{{customer.customer_name}}</td>
           <td>{{customer.postal_code}}</td>
@@ -51,19 +53,25 @@
           <td>{{customer.email}}</td>
           <td>{{customer.agreement_number}}</td>
           <td>{{customer.tax_payer_number}}</td>
-          <td><a href="{{ customer.location_plan.url }}" target="_blank">View Location Plan</a></td>
+          <td>
+              {% if customer.location_plan %}
+                  <a href="{{ customer.location_plan.url }}" target="_blank">View Location Plan</a>
+              {% else %}
+                  <span>No Location Plan</span>
+              {% endif %}
+          </td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div class="dropdown-menu">
-                {% if 'View Customer Credits' in worker_privileges %}
-                  <a class="dropdown-item" href="{% url 'credit_report' customer.id %}"><i class="bx bx-credit-card me-1"></i> {% trans "View Credits" %}</a>
+                {% if 'View Customer Credits' in worker_privileges or user.is_superuser %}
+                  <a class="dropdown-item" href="{% url 'credit_report' customer.id %}"><i class="fa-solid fa-credit-card me-1"></i> {% trans "View Credits" %}</a>
                 {% endif %}
-                {% if 'Add Customers' in worker_privileges %}
-                  <a class="dropdown-item" href="{% url 'edit-customer' customer.id %}"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
-                  <a class="dropdown-item" href="{% url 'delete-customer' customer.id %}"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a>
+                {% if 'Add Customers' in worker_privileges or user.is_superuser  %}
+                  <a class="dropdown-item" href="{% url 'edit-customer' customer.id %}"><i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}</a>
+                  <a class="dropdown-item" href="{% url 'delete-customer' customer.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
                 {% endif %}
-                
+
               </div>
             </div>
           </td>
@@ -91,13 +99,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in customers.paginator.page_range %}
       <li class="page-item {% if customers.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if customers.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ customers.next_page_number }}" aria-label="Next">

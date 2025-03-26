@@ -45,6 +45,8 @@ def ManageProductView(request):
 @login_required
 def ManageBatchView(request):
     batch = Batch.objects.all()  # Fetch all batches
+    products = Product.objects.all()
+    
     
     # Handle form submission
     if request.method == "POST":
@@ -58,6 +60,7 @@ def ManageBatchView(request):
     # Create a context to pass to the template
     view_context = {
         "batch": batch,
+        "products": products,
         "form": form,  # Pass the form to the template
     }
     
@@ -100,6 +103,16 @@ def get_brand_name(request, generic_name_id):
 
     except GenericName.DoesNotExist:
         return JsonResponse({'brand_name': ''}, status=404)
+
+
+@login_required
+def fetch_brand_names(request):
+    generic_name_id = request.GET.get("generic_name_id")
+    if generic_name_id:
+        # Get all brand names associated with the selected generic name
+        brand_names = GenericName.objects.filter(id=generic_name_id).values("id", "brand_name")
+        return JsonResponse({"brand_names": list(brand_names)})
+    return JsonResponse({"brand_names": []})
 
 
 

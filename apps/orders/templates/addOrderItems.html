@@ -23,7 +23,7 @@
           <hr>
           <button type="submit" name="action" value="add_item" class="btn btn-info">{% trans "Add Item" %}</button>
         </form>
-        
+
         <br>
         <h5>Order Items</h5>
         <table class="table table-hover">
@@ -41,7 +41,7 @@
               {% for item in order_items %}
               <tr>
                   <td>{{ item.stock_name }}</td>
-                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.quantity|intcomma }}</td>
                   <td>{{ item.temp_price|floatformat:0|intcomma }}</td>
                   <td>{{ item.total_price|floatformat:0|intcomma }}</td>
                   <td>{{ item.reason }}</td>
@@ -58,9 +58,9 @@
               {% endfor %}
           </tbody>
         </table>
-        
+
         <br>
-        <h5>{% trans "Grand Total" %}: {{ grand_total }} CFA</h5>
+        <h5>{% trans "Grand Total" %}: {{ grand_total|intcomma }} CFA</h5>
         <hr>
 
         <!-- Move Submit Order Button to the Bottom -->
@@ -69,7 +69,7 @@
           <br>
           <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Submit Order" %}</button>
         </form>
-        
+
       </div>
     </div>
   </div>

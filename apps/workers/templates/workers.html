@@ -8,10 +8,10 @@
 {% block content %}
 
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Add Employee"%}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee"%}
 </button>
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
-  <span class="tf-icons bx bx-user-plus bx-18px me-2"></span>{% trans "Create Privilege"%}
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
 </button>
 
 <hr class="my-8">
@@ -23,6 +23,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No"%}</th>
           <th>{% trans "Employee ID"%}</th>
           <th>{% trans "Branch Name" %}</th>
           <th>{% trans "First Name" %}</th>
@@ -33,6 +34,7 @@
           <th>{% trans "Phone Number" %}</th>
           <th>{% trans "Department" %}</th>
           <th>{% trans "Address" %}</th>
+          <th>{% trans "Date Created" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
@@ -40,6 +42,7 @@
 
         {% for worker in workers %}
         <tr>
+          <td><span>{{ forloop.counter }}</span></td>
           <td><span>{{ worker.employee_id }}</span></td>
           <td><span>{{ worker.branch.branch_name }}</span></td>
           <td>{{ worker.user.first_name }}</td>
@@ -50,20 +53,34 @@
           <td>{{ worker.telephone }}</td>
           <td>{{ worker.department }}</td>
           <td>{{ worker.address }}</td>
+          <td>{{ worker.date_joined }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
                 <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
-                  <i class="bx bx-key me-1"></i> {% trans "Manage Privileges" %}
+                  <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
-                  <i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}
+                {% if user.worker_profile.privileges.all %}
+                    {% for privilege in user.worker_profile.privileges.all %}
+                        {% if privilege.name == 'Update Employee'%}
+                           <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
+                              <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if user.is_superuser %}
+                 <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
                 </a>
-                <a class="dropdown-item" href="javascript:void(0);">
-                  <i class="bx bx-trash me-1"></i> {% trans "Delete" %}
+                {% endif %}
+
+                <a class="dropdown-item" href="{% url 'delete-worker' worker.id %}">
+                  <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
                 </a>
               </div>
             </div>
@@ -87,13 +104,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in workers.paginator.page_range %}
       <li class="page-item {% if workers.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if workers.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ workers.next_page_number }}" aria-label="Next">

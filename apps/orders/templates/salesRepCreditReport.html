@@ -19,7 +19,7 @@
       <li class="breadcrumb-item active" aria-current="page">{% trans "Sales Rep Credit Report" %}</li>
     </ol>
   </nav>
-    
+
 
 <hr class="my-8">
 <a href="{{ request.META.HTTP_REFERER|default:'#' }}" class="btn btn-outline-secondary mb-4">
@@ -71,12 +71,12 @@
                 <small class="text m-3">{% trans "Total Due" %}</small>
                 <h6 class="m-3 text-danger">{{ total_due_general|floatformat:0|intcomma }} <small>CFA</small></h6>
             </div>
-            
+
         </div>
     </div>
     <hr>
 
-   
+
 
     <div class="card">
 
@@ -108,7 +108,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
+
         </div>
 
         <br>
@@ -143,9 +143,9 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
+
         </div>
-        
+
     </div>
 </div>
 

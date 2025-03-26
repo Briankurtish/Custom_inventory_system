@@ -24,7 +24,7 @@
           {{ form|crispy }}
 
           <button type="submit" class="btn {% if is_editing %}btn-warning{% else %}btn-primary{% endif %}">
-            {% if is_editing %}{% trans "Update Generic Name" %}{% else %}{% trans "Add Generic Name" %}{% endif %}
+            {% if is_editing %}{% trans "Update" %}{% else %}{% trans "Submit" %}{% endif %}
           </button>
         </form>
       </div>
@@ -41,7 +41,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>No</th>
           <th>{% trans "Generic Name" %}</th>
           <th>{% trans "Brand Name" %}</th>
           <th>{% trans "Actions" %}</th>
@@ -50,22 +50,22 @@
       <tbody class="table-border-bottom-0">
         {% for item in generic_names %}
         <tr>
-          <td>{{ item.id }}</td>
+          <td>{{ forloop.counter}}</td>
           <td>{{ item.generic_name }}</td>
           <td>{{ item.brand_name }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'edit-genericName' item.id %}">
-                  <i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
                 </a>
                 <form method="POST" action="{% url 'delete-genericName' item.id %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="dropdown-item text-danger" style="border:none; background:none;">
-                    <i class="bx bx-trash me-1"></i> {% trans "Delete" %}
+                    <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
                   </button>
                 </form>
               </div>
