@@ -1,0 +1,346 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receipt</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+      }
+      time {
+        font-size: 10px;
+      }
+      .container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+      }
+      .header .date {
+        font-size: 14px;
+      }
+      .header h1 {
+        font-size: 12px;
+        margin: 0;
+      }
+      .header .title-container {
+        background-color: #f0f0f0;
+        padding: 10px 20px;
+        border-radius: 4px;
+      }
+      .header .logo img {
+        max-width: 50px;
+        height: auto;
+      }
+      .bill-to-container {
+        margin-top: 10px;
+      }
+      .bill-to {
+        border: 1px solid #000;
+        padding: 10px;
+      }
+      .bill-to strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .bill-to-container strong {
+        margin-bottom: 5px;
+        display: block;
+      }
+      .company-info {
+        text-align: right;
+        margin-top: -90px;
+        margin-right: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 50px 0 0;
+        table-layout: fixed;
+      }
+      table th,
+      table td {
+        border: 1px solid #ccc;
+        padding: 5px;
+        font-size: 9px;
+        text-align: left;
+      }
+      table th {
+        background-color: #f8f8f8;
+        font-weight: bold;
+      }
+      .totals {
+        margin-top: 20px;
+        display: flex;
+        justify-content: end;
+        align-items: flex-start;
+        width: 100%;
+      }
+      .totals div {
+        width: 48%;
+      }
+      .totals table {
+        width: 100%;
+        margin-top: 10px;
+      }
+      .totals table th,
+      .totals table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+      }
+      .totals table th {
+        background-color: #f8f8f8;
+      }
+      .signatures {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .signatures .section {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .signatures .section strong {
+        display: block;
+        background-color: #f0f0f0;
+        padding: 5px;
+        border-radius: 4px;
+      }
+      .signatures .section .row {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 10px;
+        text-align: center;
+      }
+      .signatures .section .line {
+        width: 230px;
+        border-top: 1px solid #000;
+        text-align: center;
+        margin: 10px auto 5px;
+      }
+      .po-number {
+        text-align: center;
+        font-size: 9px;
+      }
+      .footer {
+        display: flex;
+        justify-content: end;
+        margin-top: 30px;
+        font-size: 9px;
+      }
+      .totals-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Aligns content to the right */
+        text-align: right;
+        width: 50%; /* Ensures it does not shrink too much */
+      }
+      .totals-section p {
+        margin: 2px 0; /* Reduces the space between paragraphs */
+        line-height: 1.2; /* Adjusts spacing between lines */
+      }
+      .release-note-container {
+        border: 1px solid #ccc; /* Adds a grey border */
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 2px; /* Rounded corners */
+      }
+      .line {
+        width: 700px;
+        border-top: 1px solid #000;
+        text-align: center;
+        margin: 10px auto 5px;
+      }
+      .amount-words {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .payment-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      .no-column {
+        width: 50px; /* Adjust the width as needed */
+      }
+      .generic-name-column {
+        width: 150px; /* Adjust the width as needed */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="date">
+          <time>{{ receipt.payment_date|date:"M d, Y H:i" }}</time>
+        </div>
+        <div>
+          <div class="column">
+            <h1 class="title-container">Receipt (Reçu)</h1>
+            <p class="po-number">{{ receipt.receipt_id }}</p>
+          </div>
+        </div>
+        <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
+        </div>
+      </div>
+
+      <div class="bill-to-container">
+        <strong>Bill To:</strong>
+        <div class="bill-to">
+          <p>
+            Customer ID: {{ invoice.customer.customer_id }}<br />
+            Customer Name: {{ invoice.customer.customer_name }}<br />
+            Address: {{ invoice.customer.postal_code }}<br />
+            Tel: {{ invoice.customer.telephone }}
+          </p>
+        </div>
+      </div>
+
+      <div class="company-info">
+        <p>
+          Global Distributors Global Distributors of Pharmaceutical Products<br />
+          Carrefour Diderot, Carrefour Diderot, Ahala, BP 7761 Yaounde,
+          Cameroon<br />
+          Email: info@gcpharma.org<br />
+          Tel: 222-216-754
+        </p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="no-column">No</th>
+            <th>Invoice Number</th>
+            <th>Product ID</th>
+            <th class="generic-name-column">Generic Name</th>
+            <th class="generic-name-column">Brand Name</th>
+            <th>Qty</th>
+            <th>U Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tbody>
+            {% for item in invoice_items %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{% if is_return_receipt %}
+                    {{ invoice.return_invoice_id }}
+                  {% else %}
+                    {{ invoice.invoice_id }}
+                  {% endif %}
+                </td>
+                <td>{{ item.stock.product.product_code }}</td>
+                <td>{{ item.stock.product.generic_name_dosage }}</td>
+                <td>{{ item.stock.product.brand_name.brand_name }}</td>
+                <td>{{ item.quantity|intcomma }}</td>
+                <td>
+                  {% if is_return_receipt %}
+                    {{ item.temp_price|floatformat:2|intcomma }} CFA
+                  {% else %}
+                    {{ item.price|floatformat:2|intcomma }} CFA
+                  {% endif %}
+                </td>
+                <td>{{ item.get_total_price|floatformat:2|intcomma }} CFA</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+
+      </table>
+
+
+
+      <div class="payment-row">
+        <p>Payment Mode: {{ receipt.payment_method }}</p>
+        <p>Date Payment Received: {{ receipt.payment_date|date:"M d, Y H:i" }}</p>
+        <p>Total(THT):</p>
+        <strong><p>{{ invoice.grand_total|floatformat:2|intcomma }} CFA</p></strong>
+
+        <p>Total(TTC):</p>
+        <strong><p>{{total_with_taxes|floatformat:2|intcomma }} CFA</p></strong>
+      </div>
+
+      <div class="totals">
+        <div class="totals-section">
+          <strong><p>Amount Paid: {{ receipt.amount_paid|floatformat:2|intcomma }} CFA</p></strong>
+          <strong><p>Amount Due: {{ invoice.amount_due|floatformat:2|intcomma }} CFA</p></strong>
+
+        </div>
+      </div>
+
+      <br />
+      <div class="amount-words">
+        <p style="margin: 0; white-space: nowrap">
+          <i>Amount paid in words / Montant payé en mots:</i>&nbsp;&nbsp;
+        </p>
+        <div>
+          <div><i>{{amount_paid_words}} frs</i></div>
+        </div>
+      </div>
+
+      <div class="signatures">
+        <!-- Release Note Section inside a grey-bordered container -->
+        <div class="section">
+          <br /><br />
+          <div class="row" style="display: flex; align-items: center; gap: 5px">
+            <div
+              style="display: flex; flex-direction: column; align-items: center"
+            >
+              <div class="line"></div>
+              <div>Client Signature</div>
+            </div>
+            <div
+              style="display: flex; flex-direction: column; align-items: center"
+            >
+              <div class="line"></div>
+              <div>Cashier Signature</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p class="">NIU: M022014416253M</p>
+        &nbsp; &nbsp;
+        <p class="">|</p>
+        &nbsp; &nbsp;
+        <p class="">Reg No: RC/YAO/2020/B/239</p>
+      </div>
+
+
+      <a class="btn btn-sm btn-info float-right mr-1 d-print-none " href="#" onclick="javascript:window.print();" data-abc="true">
+        <i class="fa fa-print"></i> Print</a>
+
+      <a class="btn btn-sm btn-secondary float-right mr-1 d-print-none " href="{% url 'invoices' %}" data-abc="true">
+        <i class="fa fa-print"></i> Back</a>
+
+      <br>
+    </div>
+  </body>
+</html>

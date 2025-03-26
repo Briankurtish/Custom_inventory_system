@@ -20,6 +20,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No"%}</th>
           <th>{% trans "Sales Rep ID"%}</th>
           <th>{% trans "First Name" %}</th>
           <th>{% trans "Last Name" %}</th>
@@ -27,12 +28,12 @@
           <th>{% trans "Email" %}</th>
           <th>{% trans "Branch" %}</th>
           <th>{% trans "Manager" %}</th>
-          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
         {% for salesRep in salesRep %}
         <tr>
+          <td><span>{{forloop.counter}}</span></td>
           <td><span>{{salesRep.employee_id}}</span></td>
           <td><span>{{salesRep.user.first_name}}</span></td>
           <td><span>{{salesRep.user.last_name}}</span></td>
@@ -41,17 +42,17 @@
           <td>{{ salesRep.branch.branch_name }}</td>
           <td>{{ salesRep.manager }}</td>
 
-          <td>
+          {% comment %} <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
               <div class="dropdown-menu">
                 {% if 'View Customer Credits' in worker_privileges %}
                   <a class="dropdown-item" href="{% url 'sales_rep_credit_history' worker_id=salesRep.id %}"><i class="bx bx-credit-card me-1"></i> {% trans "View Credits" %}</a>
                 {% endif %}
-                
+
               </div>
             </div>
-          </td>
+          </td> {% endcomment %}
         </tr>
         {% endfor %}
       </tbody>
@@ -72,13 +73,13 @@
         </a>
       </li>
       {% endif %}
-      
+
       {% for num in salesRep.paginator.page_range %}
       <li class="page-item {% if salesRep.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
-      
+
       {% if salesRep.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ salesRep.next_page_number }}" aria-label="Next">

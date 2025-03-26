@@ -16,16 +16,16 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Stock Requests" %}</h5>
+  <h5 class="card-header">{% trans "Stock In Transit" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>{% trans "Request ID" %}</th>
+          <th>No</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Branch Name" %}</th>
-          <th>{% trans "Created By" %}</th>
-          <th>{% trans "Date" %}</th>
+          <th>{% trans "Requested By" %}</th>
+          <th>{% trans "Date Requested" %}</th>
           <th>{% trans "Status" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
@@ -33,10 +33,10 @@
       <tbody class="table-border-bottom-0">
         {% for request in stocks_in_transit %}
           <tr>
-            <td><span>{{ request.id }}</span></td>
+            <td><span>{{ forloop.counter }}</span></td>
             <td><span>{{ request.branch.branch_id }}</span></td>
             <td><span>{{ request.branch.branch_name }}</span></td>
-            <td><span>{{ request.requested_by.get_full_name }}</span></td>
+            <td><span>{{ request.requested_by.user.first_name }} {{ request.requested_by.user.last_name }}</span></td>
             <td><span>{{ request.requested_at|date:"d-m-Y" }}</span></td>
             <td>
               {% if request.status|lower == "pending" %}
@@ -52,11 +52,11 @@
             <td>
               <div class="dropdown">
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                  <i class="bx bx-dots-vertical-rounded"></i>
+                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
-                    <i class="bx bx-book-open me-1"></i> {% trans "View" %}
+                    <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                   </a>
                 </div>
               </div>
@@ -72,5 +72,13 @@
   </div>
 </div>
 <!--/ Hoverable Table rows -->
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'request-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 {% endblock %}

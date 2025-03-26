@@ -38,8 +38,10 @@
       <table class="table table-hover">
         <thead>
           <tr>
+            <th>{% trans "No" %}</th>
             <th>{% trans "Product Code" %}</th>
             <th>{% trans "Generic Name" %}</th>
+            <th>{% trans "Brand Name" %}</th>
             <th>{% trans "Batch Number" %}</th>
             <th>{% trans "Quantity" %}</th>
             <th>{% trans "Branch" %}</th>
@@ -50,8 +52,10 @@
           {% if temp_stock %}
             {% for item in temp_stock %}
               <tr>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ item.product_code }}</td>
                 <td>{{ item.product_name }}</td>
+                <td>{{ item.brand_name }}</td>
                 <td>{{ item.batch_number }}</td>
                 <td>{{ item.quantity|intcomma }}</td>
                 <td>{{ item.branch_name }}</td>
@@ -60,6 +64,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="product_code" value="{{ item.product_code }}" />
                     <input type="hidden" name="branch" value="{{ item.branch_id }}" />
+                    <input type="hidden" name="batch_number" value="{{ item.batch_number }}" />
                     <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">{% trans "Remove" %}</button>
                   </form>
                 </td>
@@ -67,7 +72,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="4" class="text-center">{% trans "No items in the list" %}</td>
+              <td colspan="7" class="text-center">{% trans "No items in the list" %}</td>
             </tr>
           {% endif %}
         </tbody>
@@ -87,7 +92,6 @@
 
 {% endblock %}
 
-
 {% block page_js %}
 
 <script>
@@ -100,6 +104,5 @@
     });
   });
 </script>
-
 
 {% endblock %}

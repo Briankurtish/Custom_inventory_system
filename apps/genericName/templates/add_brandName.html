@@ -44,6 +44,7 @@
           <th>No</th>
           <th>{% trans "Generic Name" %}</th>
           <th>{% trans "Brand Name" %}</th>
+          <th>{% trans "Old Brand Name" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
@@ -53,6 +54,7 @@
           <td>{{ forloop.counter }}</td>
           <td>{{ item.generic_name.generic_name }}</td>  <!-- Display the associated generic name -->
           <td>{{ item.brand_name }}</td>
+          <td>{{ item.old_brand_name }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

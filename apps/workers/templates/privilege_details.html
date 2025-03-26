@@ -1,8 +1,9 @@
 {% extends layout_path %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+
 {% block title %}
-{% trans "Roles and Privileges" %}
+  {% trans "Roles and Privileges" %}
 {% endblock %}
 
 {% block content %}
@@ -34,22 +35,38 @@
           </select>
         </div>
         <div class="col-md-6 d-flex align-items-end">
-          <button type="submit" class="btn btn-primary">{% trans "Get Privileges" %}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> {% trans "Get Privileges" %}
+          </button>
         </div>
       </div>
     </form>
 
     <hr>
 
-    <h5>{% trans "Privileges for" %} {{ selected_role|default:"Selected Role" }}</h5>
+    <h5 class="mt-4">{% trans "Privileges for" %} <strong>{{ selected_role|default:"Selected Role" }}</strong></h5>
+
     {% if privileges %}
-      <ul class="list-group">
-        {% for privilege in privileges %}
-          <li class="list-group-item">{{ privilege }}</li>
-        {% endfor %}
-      </ul>
+      <div class="table-responsive">
+        <table class="table table-bordered mt-3">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Privilege Name" %}</th>
+              <th>{% trans "Description" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for privilege in privileges %}
+              <tr>
+                <td><strong>{{ privilege.name }}</strong></td>
+                <td>{{ privilege.description|default:_("No description available") }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% else %}
-      <p class="text-muted">{% trans "No privileges found for the selected role"%}.</p>
+      <p class="text-muted">{% trans "No privileges found for the selected role" %}.</p>
     {% endif %}
   </div>
 </div>

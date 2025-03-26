@@ -4,13 +4,20 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}{% trans "Old Invoice" %}{% endblock %}
+{% block title %}{% trans "Payment Invoice History" %}{% endblock %}
 
 {% block content %}
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Payment History for Invoice" %} <strong>{{ invoice.invoice_id }}</strong></h5>
-  
+  <h5 class="card-header">{% trans "Payment History for Invoice" %} <strong>
+    {% if is_return_invoice %}
+      {{ invoice.return_invoice_id }}
+    {% else %}
+      {{ invoice.invoice_id }}
+    {% endif %}
+
+  </strong></h5>
+
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-8">
@@ -27,31 +34,31 @@
         <!-- First Column -->
         <div class="col-md-2">
             <small class="text m-3">{% trans "Invoice Total" %}</small>
-            <h5 class="mx-3">{{ invoice.grand_total|floatformat:0|intcomma }} CFA</h5>
+            <h5 class="mx-3">{{ invoice.grand_total|floatformat:2|intcomma }} CFA</h5>
         </div>
 
         <!-- Second Column -->
         <div class="col-md-2">
             <small class="text m-3">{% trans "Total Amount Paid" %}</small>
-            <h5 class="mx-3">{{ invoice.amount_paid|floatformat:0|intcomma }} CFA</h5>
+            <h5 class="mx-3">{{ invoice.amount_paid|floatformat:2|intcomma }} CFA</h5>
         </div>
 
         <!-- Third Column -->
         <div class="col-md-2">
             <small class="text m-3">{% trans "Total Amount Due" %}</small>
-            <h5 class=" mx-3">{{ invoice.amount_due|floatformat:0|intcomma }} CFA</h5>
+            <h5 class=" mx-3">{{ invoice.amount_due|floatformat:2|intcomma }} CFA</h5>
         </div>
 
         <!-- Fourth Column -->
         <div class="col-md-2">
           <small class="text m-3">{% trans "Percentage Paid" %}</small>
-          <h5 class=" mx-3">{{ percentage_paid|floatformat:0|intcomma }}%</h5>
+          <h5 class=" mx-3">{{ percentage_paid|floatformat:2|intcomma }}%</h5>
         </div>
 
         <!-- Fifth Column -->
         <div class="col-md-2">
           <small class="text m-3">{% trans "Percentage Left" %}</small>
-          <h5 class=" mx-3">{{ percentage_left|floatformat:0|intcomma }}%</h5>
+          <h5 class=" mx-3">{{ percentage_left|floatformat:2|intcomma }}%</h5>
         </div>
     </div>
   </div>
@@ -64,7 +71,7 @@
           <th>{% trans "Payment Date" %}</th>
           <th>{% trans "Amount Paid" %}</th>
           <th>{% trans "Payment Method" %}</th>
-          <th>{% trans "Account Details" %}</th>
+          <th>{% trans "Receipts" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -72,9 +79,36 @@
         <tr>
           <td>{{ forloop.counter }}</td>
           <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
-          <td class="text-success"><strong>{{ payment.amount_paid|floatformat:0|intcomma }}<small> Frs</small></strong></td>
+          <td class="text-success"><strong>{{ payment.amount_paid|floatformat:2|intcomma }}<small> Frs</small></strong></td>
           <td>{{ payment.payment_mode }}</td>
-          <td>{{ payment.account_paid_to }}</td>
+          <td>
+            {% if is_return_invoice %}
+                {% with payment.receipts.all as return_receipts %}
+                    {% if return_receipts %}
+                        {% for receipt in return_receipts %}
+                            <a href="{% url 'receipt_doc' receipt_id=receipt.receipt_id %}" class="btn btn-primary btn-sm">
+                                {% trans "View Receipt" %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">{% trans "No Receipt" %}</span>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                {% with payment.receipts.all as normal_receipts %}
+                    {% if normal_receipts %}
+                        {% for receipt in normal_receipts %}
+                            <a href="{% url 'receipt_doc' receipt_id=receipt.receipt_id %}" class="btn btn-primary btn-sm">
+                                {% trans "View Receipt" %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">{% trans "No Receipt" %}</span>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        </td>
+
         </tr>
         {% empty %}
         <tr>

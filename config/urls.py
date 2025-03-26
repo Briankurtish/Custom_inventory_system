@@ -31,9 +31,9 @@ urlpatterns = i18n_patterns(
     path("admin/", admin.site.urls),
 
     path('rosetta/', include('rosetta.urls')),
-    
+
     path('set_language/', set_language, name='set_language'),
-    
+
     # Dashboard urls
     path("", include("apps.dashboards.urls")),
 
@@ -66,63 +66,66 @@ urlpatterns = i18n_patterns(
 
     # Tables urls
     path("", include("apps.tables.urls")),
-    
+
     path("test/", include("tests.urls")),
-    
+
     # Workers urls
     path("", include("apps.workers.urls")),
-    
+
     # Customers Urls
     path("", include("apps.customers.urls")),
-    
+
     # Products Urls
     path("", include("apps.products.urls")),
-    
+
     # Orders Urls
     path("", include("apps.orders.urls")),
-    
+
      # Branches Urls
     path("", include("apps.branches.urls")),
-    
+
      # Sales rep Urls
     path("", include("apps.sales_rep.urls")),
-    
+
      # Requests Urls
     path("", include("apps.stock_request.urls")),
-    
+
      # Approved Request Urls
     path("", include("apps.approved_request.urls")),
-    
+
     # Requests Urls
     path("", include("apps.stock.urls")),
-    
+
     # Transfer Stock Urls
     path("", include("apps.transfer_stock.urls")),
-    
+
     # Recommendation Urls
     path("", include("apps.recommendations.urls")),
-    
+
     # Brand Name Urls
     path("", include("apps.brandName.urls")),
-    
+
     # Generic Name Urls
     path("", include("apps.genericName.urls")),
-    
+
     # Pack Size Urls
     path("", include("apps.pack_size.urls")),
-    
-    
+
+
+    path("", include("apps.custom_clearance.urls")),
+
+
     # Old Invoice Urls
     path("", include("apps.oldinvoice.urls")),
-    
+
     path('i18n/', include('django.conf.urls.i18n')),
-    
+
     path('i18n/setlang/', django.views.i18n.set_language, name='set_language'),
-    
-    
-    
-    
-    
+
+
+
+
+
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = SystemView.as_view(template_name="pages_misc_error.html", status=404)

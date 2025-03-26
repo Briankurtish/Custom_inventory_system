@@ -11,8 +11,7 @@
 <div class="card">
 
   <div class="container mt-4 mb-6">
-    <h1 class="text-center">{% trans "Create Stock Request" %}</h1>
-
+    <h5 class="card-header">{% trans "Create Stock Request" %}</h5>
     <!-- Stock Request Form -->
     <form method="post">
       {% csrf_token %}
@@ -30,8 +29,11 @@
         <table class="table table-hover">
           <thead>
             <tr>
+              <th>{% trans "No" %}</th>
               <th>{% trans "Product Code" %}</th>
+              <th>{% trans "Batch Number" %}</th>
               <th>{% trans "Generic Name" %}</th>
+              <th>{% trans "Brand Name" %}</th>
               <th>{% trans "Quantity" %}</th>
               <th>{% trans "Branch" %}</th>
               <th>{% trans "Actions" %}</th>
@@ -41,14 +43,18 @@
             {% if temp_stock_request %}
               {% for item in temp_stock_request %}
                 <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>{{ item.product_code }}</td>
+                  <td>{{ item.batch_number }}</td>
                   <td>{{ item.product_name }}</td>
+                  <td>{{ item.brand_name }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ item.branch_name }}</td>
                   <td>
                     <form method="post" class="d-inline">
                       {% csrf_token %}
                       <input type="hidden" name="product_code" value="{{ item.product_code }}" />
+                      <input type="hidden" name="batch_number" value="{{ item.batch_number }}" />
                       <input type="hidden" name="branch" value="{{ item.branch_id }}" />
                       <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">{% trans "Remove" %}</button>
                     </form>

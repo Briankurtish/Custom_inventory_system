@@ -49,6 +49,8 @@
         <tr>
           <th>No</th>
           <th>{% trans "Pack Size" %}</th>
+          <th>{% trans "Added By" %}</th>
+          <th>{% trans "Date Added" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
@@ -57,6 +59,8 @@
         <tr>
           <td><span>{{forloop.counter}}</span></td>
           <td>{{pack_size.pack_size}}</td>
+          <td>{{pack_size.created_by}}</td>
+          <td>{{pack_size.date_added}}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -77,6 +81,12 @@
 <!--/ Hoverable Table rows -->
 
 
+{% if user.is_superuser %}
 
+<hr>
+
+<a href="{% url 'packsize-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 {% endblock %}

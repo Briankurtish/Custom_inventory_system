@@ -1,0 +1,156 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Customs Clearing" %}{% endblock %}
+
+{% block content %}
+    <!-- Start New Process Button with Modal Trigger -->
+    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#confirmStartModal">
+        ➕ Start New Clearance Process
+    </button>
+
+    <!-- View History -->
+    <a href="{% url 'clearance_history' %}" class="btn btn-secondary mb-3">
+        📜 View Clearance History
+    </a>
+    <br>
+
+    <!-- Progress Bar Heading -->
+    <h5 class="mb-2">Clearance Progress (Session: #{{ process_group.id }})</h5>
+
+    <!-- Progress Bar -->
+    <div class="progress mb-4" style="height: 15px;">
+        <div class="progress-bar bg-primary text-white fw-bold d-flex align-items-center justify-content-center"
+             role="progressbar"
+             style="width: {{ progress_percentage|floatformat:0 }}%; font-size: 12px;"
+             aria-valuenow="{{ progress_percentage|floatformat:0 }}"
+             aria-valuemin="0"
+             aria-valuemax="100">
+            {{ progress_percentage|floatformat:0 }}%
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    {% if next_step or is_editing %}
+    <div class="row">
+        <div class="col-xl">
+            <div class="card mb-6">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    {% if is_editing %}
+                        <h5 class="mb-0">Edit Process Details for {{ form.instance.step.name }}</h5>
+                    {% else %}
+                        <h5 class="mb-0">Upload Cost & Document for {{ next_step.name }}</h5>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" name="submit_process" class="btn btn-primary">
+                            {% if is_editing %}Update{% else %}Submit{% endif %}
+                        </button>
+                        <!-- Cancel Edit Button (Visible only in Edit Mode) -->
+                        {% if is_editing %}
+                            <a href="?process_id={{ process_group.id }}" class="btn btn-secondary">Cancel Edit</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <p>All clearance steps completed! ✅</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Table Section -->
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <tr>
+                    <th>No.</th>
+                    <th>Step</th>
+                    <th>Document</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>Completed Date</th>
+                    <th>Actions</th>  <!-- New Column for Actions -->
+                </tr>
+                {% for step in steps %}
+                    <tr>
+                        <td>{{ step.step_number }}</td>
+                        <td>{{ step.name }}</td>
+                        <td>
+                            {% for process in completed_steps %}
+                                {% if process.step == step %}
+                                    <a href="{{ process.document.url }}" target="_blank">📄 View Document</a>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for process in completed_steps %}
+                                {% if process.step == step %}
+                                    {{ process.cost|floatformat:0|intcomma }} CFA
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if step.id in completed_step_ids %}
+                                <span class="badge bg-label-success me-1">{% trans "Completed" %}</span>
+                            {% else %}
+                                <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for process in completed_steps %}
+                                {% if process.step == step %}
+                                    {{ process.completed_at|date:"F d, Y H:i" }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for process in completed_steps %}
+                                {% if process.step == step %}
+                                    <!-- Edit Button for Clearance Process -->
+                                    <a href="?process_id={{ process_group.id }}&edit_process_id={{ process.id }}" class="btn btn-sm btn-warning">
+                                        Edit
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for Confirmation -->
+    <div class="modal fade" id="confirmStartModal" tabindex="-1" aria-labelledby="confirmStartModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmStartModalLabel">Confirm New Clearance Process</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to start a new clearance process? Your previous records will be kept.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'add_clearance_process' %}" class="btn btn-primary">Yes, Start</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_superuser %}
+    <hr>
+    <a href="{% url 'custom_logs' %}" class="text-primary">See Logs</a>
+    {% endif %}
+
+{% endblock %}

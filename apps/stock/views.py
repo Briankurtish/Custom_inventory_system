@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
-from .forms import StockUpdateForm, UpdateStockForm
+from .forms import BeginningInventoryForm, StockAddForm, StockUpdateForm, UpdateStockForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from apps.products.models import Product
@@ -18,6 +18,10 @@ from django.contrib.auth import authenticate
 import json
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.http import Http404
+from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 
@@ -33,21 +37,57 @@ TEMP_UPDATE_LIST = []  # Temporary list for selected stocks
 
 @login_required
 def ManageStockView(request):
-    stocks = Stock.objects.all()
+    stocks = Stock.objects.all().order_by("product__generic_name__brand_name")
 
-    paginator = Paginator(stocks, 10)
+
+    paginator = Paginator(stocks, 100)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_stocks = paginator.get_page(page_number)
+
+    offset = (paginated_stocks.number - 1) * paginator.per_page
 
     # Create a new context dictionary for this view
     view_context = {
         "stocks": paginated_stocks,
+        "offset": offset,
     }
 
     # Initialize the template layout and merge the view context
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'stock.html', context)
+
+
+@login_required
+def ManageBranchStockView(request):
+    # Get the branch associated with the logged-in worker
+    user_branch = request.user.worker_profile.branch
+
+    if not user_branch:
+        raise Http404("You are not affiliated with any branch.")  # Handle unaffiliated workers gracefully
+
+    # Filter stocks by the user's branch
+    stocks = Stock.objects.filter(branch=user_branch)
+
+    # Paginate the filtered stocks
+    paginator = Paginator(stocks, 10)
+    page_number = request.GET.get('page')  # Get the current page number from the request
+    paginated_stocks = paginator.get_page(page_number)
+
+    # Calculate offset for the current page
+    offset = (paginated_stocks.number - 1) * paginator.per_page
+
+    # Create a context dictionary with paginated stocks and offset
+    view_context = {
+        "stocks": paginated_stocks,
+        "offset": offset,
+        "user_branch_name": user_branch.branch_name,  # Pass branch name to display in the template
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'stock_branch.html', context)
 
 @login_required
 def ManageStockBranchView(request):
@@ -78,44 +118,87 @@ def ManageStockBranchView(request):
     return render(request, 'stock_branch.html', context)
 
 
+
+@login_required
+def StockAuditLogView(request):
+    logs = InventoryTransaction.objects.all().order_by('-transaction_date')
+    paginator = Paginator(logs, 100)  # Paginate logs with 10 logs per page
+    page_number = request.GET.get("page")  # Get the current page number from the request
+    paginated_logs = paginator.get_page(page_number)  # Get the page object
+    offset = (paginated_logs.number - 1) * paginator.per_page
+    # Create a context dictionary for the view
+    view_context = {
+        "logs": paginated_logs,
+        "offset": offset,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "stock_logs.html", context)
+
+
+
 @login_required
 def add_stock_view(request):
-    form = StockUpdateForm()
+    form = StockAddForm()
 
     # Retrieve temporary stock list from session or create an empty list
     temp_stock_list = request.session.get("TEMP_STOCK_LIST", [])
 
     if request.method == "POST":
         if "add_to_list" in request.POST:  # Handle adding to the temporary list
-            form = StockUpdateForm(request.POST)
+            form = StockAddForm(request.POST)
             if form.is_valid():
                 product = form.cleaned_data["product"]
                 quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
+                batch_number = product.batch.batch_number if product.batch else None  # Get batch number
 
-                # Add item to temporary list
-                temp_stock_list.append({
-                    "product_code": product.product_code,
-                    "product_name": str(product.generic_name_dosage),
-                    "quantity": quantity,
-                    "branch_id": branch.id,
-                    "branch_name": branch.branch_name,
-                    "batch_number": product.batch.batch_number  # Add batch number to the temporary list
-                })
+                # Check if the same product (with same batch number and branch) already exists
+                existing_item = next(
+                    (item for item in temp_stock_list
+                    if item["product_code"] == product.product_code
+                    and item["branch_id"] == branch.id
+                    and item["batch_number"] == batch_number),  # Ensure batch number is checked
+                    None
+                )
+
+                if existing_item:
+                    # If the same product with the same batch and branch exists, update the quantity
+                    existing_item["quantity"] += quantity
+                    messages.success(request, _("Quantity updated for existing item in the temporary stock list."))
+                else:
+                    # If it's a new batch or branch, add as a new entry
+                    temp_stock_list.append({
+                        "product_code": product.product_code,
+                        "product_name": str(product.generic_name_dosage),
+                        "brand_name": str(product.brand_name.brand_name),
+                        "quantity": quantity,
+                        "branch_id": branch.id,
+                        "branch_name": branch.branch_name,
+                        "batch_number": batch_number,  # Add batch number to the temporary list
+                    })
+                    messages.success(request, _("Item added to temporary stock list."))
+
                 # Store the updated temporary list in session
                 request.session["TEMP_STOCK_LIST"] = temp_stock_list
-                messages.success(request, _("Item added to temporary stock list."))
             else:
                 messages.error(request, _("Invalid data. Please check the form."))
 
         elif "remove_item" in request.POST:  # Handle removing from the temporary list
             product_code = request.POST.get("product_code")
             branch_id = request.POST.get("branch")
+            batch_number = request.POST.get("batch_number")
 
             # Remove matching item from the temporary list
             temp_stock_list = [
                 item for item in temp_stock_list
-                if not (item["product_code"] == product_code and item["branch_id"] == int(branch_id))
+                if not (
+                    item["product_code"] == product_code
+                    and item["branch_id"] == int(branch_id)
+                    and item["batch_number"] == batch_number
+                )
             ]
             # Store the updated list in session
             request.session["TEMP_STOCK_LIST"] = temp_stock_list
@@ -134,7 +217,10 @@ def add_stock_view(request):
                 stock, created = Stock.objects.update_or_create(
                     product=product,
                     branch=branch,
-                    defaults={"quantity": item["quantity"]}
+                    defaults={
+                        "quantity": item["quantity"],
+                        "created_by": request.user.worker_profile  # Set the created_by field
+                    }
                 )
 
                 # Create a transaction record
@@ -166,6 +252,262 @@ def add_stock_view(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'AddStock.html', context)
+
+
+@login_required
+def add_beginning_inventory_view(request):
+    form = BeginningInventoryForm()
+    temp_beginning_inventory_list = request.session.get("TEMP_BEGINNING_INVENTORY_LIST", [])
+
+    if request.method == "POST":
+        if "add_to_list" in request.POST:
+            form = BeginningInventoryForm(request.POST)
+            if form.is_valid():
+                product = form.cleaned_data["product"]
+                branch = form.cleaned_data["branch"]
+                fixed_beginning_inventory = form.cleaned_data["fixed_beginning_inventory"]
+                batch_number = product.batch.batch_number if product.batch else None
+
+                # Check if stock exists at this branch
+                stock = Stock.objects.filter(product=product, branch=branch).first()
+
+                if stock and stock.fixed_beginning_inventory > 0:
+                    messages.warning(request, f"⚠️ Beginning inventory already exists for {product.generic_name_dosage} at {branch.branch_name}.", extra_tags="warning")
+                else:
+                    temp_beginning_inventory_list.append({
+                        "product_code": product.product_code,
+                        "product_name": str(product.generic_name_dosage),
+                        "brand_name": str(product.brand_name.brand_name),
+                        "branch_id": branch.id,
+                        "branch_name": branch.branch_name,
+                        "fixed_beginning_inventory": fixed_beginning_inventory,
+                        "batch_number": batch_number,
+                    })
+                    request.session["TEMP_BEGINNING_INVENTORY_LIST"] = temp_beginning_inventory_list
+                    messages.success(request, "✅ Item added to the temporary beginning inventory list.")
+
+            else:
+                messages.error(request, "❌ Invalid data. Please check the form.")
+
+        elif "remove_item" in request.POST:
+            product_code = request.POST.get("product_code")
+            branch_id = request.POST.get("branch")
+            batch_number = request.POST.get("batch_number")
+
+            temp_beginning_inventory_list = [
+                item for item in temp_beginning_inventory_list
+                if not (item["product_code"] == product_code and
+                        item["branch_id"] == int(branch_id) and
+                        item["batch_number"] == batch_number)
+            ]
+            request.session["TEMP_BEGINNING_INVENTORY_LIST"] = temp_beginning_inventory_list
+            messages.success(request, "🗑️ Item removed from the temporary list.")
+
+        elif "submit_inventory" in request.POST:
+            if not temp_beginning_inventory_list:
+                messages.error(request, "⚠️ No items in the list to submit.")
+            else:
+                for item in temp_beginning_inventory_list:
+                    try:
+                        product = Product.objects.filter(
+                            product_code=item["product_code"],
+                            batch__batch_number=item["batch_number"]
+                        ).first()
+
+                        if not product:
+                            messages.error(request, f"❌ Product {item['product_name']} (Batch {item['batch_number']}) not found.")
+                            continue
+
+                        branch = Branch.objects.get(id=item["branch_id"])
+
+                        stock, created = Stock.objects.get_or_create(product=product, branch=branch)
+
+                        if stock.fixed_beginning_inventory > 0:
+                            messages.warning(request, f"⚠️ Beginning inventory already exists for {item['product_name']} at {branch.branch_name}.", extra_tags="warning")
+                            continue
+
+                        # Update both fixed_beginning_inventory and beginning_inventory
+                        stock.fixed_beginning_inventory = item["fixed_beginning_inventory"]
+                        stock.beginning_inventory = item["fixed_beginning_inventory"]
+                        stock.save()
+
+                        # Log the transaction
+                        InventoryTransaction.objects.create(
+                            product=product,
+                            branch=branch,
+                            quantity=item["fixed_beginning_inventory"],
+                            transaction_type="Add Beginning Inventory",
+                            transaction_date=now(),
+                            worker=request.user.worker_profile
+                        )
+
+                        messages.success(request, f"✅ Beginning inventory added for {item['product_name']} at {branch.branch_name}.")
+
+                    except Branch.DoesNotExist:
+                        messages.error(request, f"❌ Branch with ID {item['branch_id']} not found.")
+                    except Exception as e:
+                        messages.error(request, f"❌ An error occurred: {e}")
+
+                request.session.pop("TEMP_BEGINNING_INVENTORY_LIST", None)
+                return redirect("stock")
+
+    view_context = {
+        "form": form,
+        "temp_stock": temp_beginning_inventory_list,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'AddInventoryStock.html', context)
+
+
+
+@csrf_exempt
+def edit_beginning_inventory(request, stock_id):
+    if request.method == "POST":
+        try:
+            # Parse the incoming JSON body
+            data = json.loads(request.body)
+            new_inventory = data.get("beginning_inventory")
+
+            # Fetch the stock object
+            stock = get_object_or_404(Stock, id=stock_id)
+            stock.beginning_inventory = new_inventory  # Update the inventory
+            stock.save()
+
+            # Ensure user is authenticated before accessing worker_profile
+            if not request.user.is_authenticated:
+                return JsonResponse({"success": False, "error": "User not authenticated"})
+
+            # Ensure worker profile exists
+            if not hasattr(request.user, 'worker_profile'):
+                return JsonResponse({"success": False, "error": "Worker profile not found"})
+
+            # Log the transaction
+            InventoryTransaction.objects.create(
+                product=stock.product,
+                branch=stock.branch,
+                quantity=new_inventory,
+                transaction_type="Update Beginning Inventory",
+                transaction_date=now(),
+                worker=request.user.worker_profile,
+            )
+
+            # Set a success message
+            messages.success(request, "Beginning inventory updated successfully.")
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            print(f"Error updating inventory: {e}")  # Log error to console for debugging
+            messages.error(request, f"Error updating inventory: {str(e)}")
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+
+
+@login_required
+def update_stock_view(request):
+    form = StockUpdateForm()
+    temp_stock_list = request.session.get("TEMP_UPDATE_STOCK_LIST", [])
+
+    if request.method == "POST":
+        if "add_to_list" in request.POST:
+            form = StockUpdateForm(request.POST)
+            if form.is_valid():
+                product = form.cleaned_data["product"]
+                new_quantity = form.cleaned_data["quantity"]
+                branch = form.cleaned_data["branch"]
+
+                try:
+                    # Ensure a stock record exists for the given product at the branch.
+                    stock_entry = Stock.objects.get(product=product, branch=branch)
+                except Stock.DoesNotExist:
+                    messages.error(request, _("No stock record found for this product in the selected branch."))
+                else:
+                    # Check if the product is already in the temporary update list.
+                    existing_item = next(
+                        (item for item in temp_stock_list if item["product_code"] == product.product_code and item["branch_id"] == branch.id),
+                        None
+                    )
+                    if existing_item:
+                        # Update the quantity in the temporary list (add to existing)
+                        existing_item["new_quantity"] += new_quantity
+                        messages.success(request, _("Quantity updated in the update list."))
+                    else:
+                        # Add the item to the temporary update list.
+                        temp_stock_list.append({
+                            "product_code": product.product_code,
+                            "product_name": str(product.generic_name_dosage),
+                            "brand_name": str(product.brand_name.brand_name),
+                            "current_quantity": stock_entry.quantity,
+                            "new_quantity": new_quantity,
+                            "branch_id": branch.id,
+                            "branch_name": branch.branch_name,
+                            "batch_number": product.batch.batch_number
+                        })
+                        messages.success(request, _("Stock added to the update list."))
+
+                    request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
+            else:
+                messages.error(request, _("Please correct the errors in the form."))
+
+        elif "remove_item" in request.POST:
+            product_code = request.POST.get("product_code")
+            branch_id = int(request.POST.get("branch"))
+            # Remove the matching item from the temporary list.
+            temp_stock_list = [
+                item for item in temp_stock_list
+                if not (item["product_code"] == product_code and item["branch_id"] == branch_id)
+            ]
+            request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
+            messages.success(request, _("Item removed from the update list."))
+
+        elif "update_stock" in request.POST:
+            if not temp_stock_list:
+                messages.error(request, _("No items in the update list."))
+            else:
+                for item in temp_stock_list:
+                    # Retrieve the correct product using product_code and batch_number.
+                    product = Product.objects.get(
+                        product_code=item["product_code"],
+                        batch__batch_number=item["batch_number"]
+                    )
+                    branch = Branch.objects.get(id=item["branch_id"])
+
+                    # Fetch and update the existing stock record.
+                    stock = Stock.objects.get(product=product, branch=branch)
+                    previous_quantity = stock.quantity
+
+                    # Instead of overriding, we now **add** the quantity.
+                    stock.quantity += item["new_quantity"]
+                    stock.total_stock = (stock.begining_inventory or 0) + stock.quantity
+                    stock.save()
+
+                    # Log the update transaction.
+                    InventoryTransaction.objects.create(
+                        product=product,
+                        branch=branch,
+                        quantity=item["new_quantity"],  # Logging only the added quantity
+                        transaction_type="update",
+                        transaction_date=now(),
+                        worker=request.user.worker_profile
+                    )
+                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage}."))
+
+                # Clear the temporary update list.
+                request.session.pop("TEMP_UPDATE_STOCK_LIST", None)
+                messages.success(request, _("Stock updated successfully."))
+                return redirect("stock")
+
+    view_context = {
+        "form": form,
+        "temp_stock": temp_stock_list,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "updateStock.html", context)
+
+
 
 
 @login_required
@@ -273,6 +615,7 @@ def update_existing_stock_view(request):
                         "product_id": product.id,
                         "product_code": product.product_code,
                         "product_name": product.generic_name_dosage,
+                        "brand_name": product.brand_name.brand_name,
                         "quantity": quantity,
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
@@ -341,7 +684,7 @@ def update_existing_stock_view(request):
     }
     context = TemplateLayout.init(request, view_context)
 
-    return render(request, "UpdateStock.html", context)
+    return render(request, "update_stock_entry.html", context)
 
 
 
@@ -384,43 +727,46 @@ def get_stock_data(request):
 
     try:
         if get_all:  # Fetch all stock data
-            stocks = Stock.objects.select_related('product__batch').all()
-            stock_data = [
-                {
-                    "id": stock.id,
-                    "product_code": stock.product.product_code,
-                    "batch_batch_number": stock.product.batch.batch_number,  # Include batch number
-                    "branch_id": stock.branch.id,
-                    "branch_name": stock.branch.branch_name,
-                    "product_name": str(stock.product.generic_name_dosage),
-                    "quantity": stock.quantity,
-                }
-                for stock in stocks
-            ]
-            return JsonResponse({"branch_name": "All Branches", "stocks": stock_data})
+            stocks = Stock.objects.select_related('product__batch', 'product__brand_name') \
+                                 .order_by("product__product_code", "product__batch__batch_number")
 
         elif branch_id:  # Fetch stock data for a specific branch
             branch = Branch.objects.get(id=branch_id)
-            stocks = Stock.objects.filter(branch=branch).select_related('product__batch')
-            stock_data = [
-                {
-                    "id": stock.id,
-                    "product_code": stock.product.product_code,
-                    "batch_batch_number": stock.product.batch.batch_number,  # Include batch number
-                    "branch_id": stock.branch.id,
-                    "branch_name": stock.branch.branch_name,
-                    "product_name": str(stock.product.generic_name_dosage),
-                    "quantity": stock.quantity,
-                }
-                for stock in stocks
-            ]
-            return JsonResponse({"branch_name": branch.branch_name, "stocks": stock_data})
+            stocks = Stock.objects.filter(branch=branch) \
+                                 .select_related('product__batch', 'product__brand_name') \
+                                 .order_by("product__product_code", "product__batch__batch_number")
 
         else:  # No branch_id or 'all' parameter provided
             return JsonResponse({"error": "Branch ID not provided"}, status=400)
 
+        stock_data = [
+            {
+                "id": stock.id,
+                "product_code": stock.product.product_code,
+                "batch_batch_number": stock.product.batch.batch_number,
+                "branch_id": stock.branch.id,
+                "branch_name": stock.branch.branch_name,
+                "product_name": str(stock.product.generic_name_dosage),
+                "brand_name": stock.product.brand_name.brand_name if stock.product.brand_name else "N/A",
+                "quantity": stock.quantity,
+                "total_inventory": stock.total_inventory,
+                "begining_inventory": stock.begining_inventory,
+                "fixed_beginning_inventory": stock.fixed_beginning_inventory,
+                "total_stock": stock.total_stock,
+                "total_sold": stock.total_sold,
+                "quantity_transferred": stock.quantity_transferred,
+            }
+            for stock in stocks
+        ]
+
+        return JsonResponse({"branch_name": branch.branch_name if branch_id else "All Branches", "stocks": stock_data})
+
     except Branch.DoesNotExist:
         return JsonResponse({"error": "Branch not found"}, status=404)
+
+
+
+
 
 
 
@@ -436,44 +782,48 @@ def get_branches(request):
 
 @login_required
 def track_stocks(request):
-    # Get all branches for the branch filter dropdown
+    # Get all branches for the filter dropdown
     branches = Branch.objects.all()
 
-    # Get the branch filter and search query from the GET request
-    branch_filter = request.GET.get('branch_filter', '')
-    search_query = request.GET.get('search_query', '')
+    # Get filter and search query from request
+    branch_filter = request.GET.get('branch_filter', '').strip()
+    search_query = request.GET.get('search_query', '').strip()
 
-    # Fetch all stock data across all branches
-    all_stocks = Stock.objects.select_related('product', 'branch')
+    # Fetch stock data with related models for efficiency
+    all_stocks = Stock.objects.select_related('product', 'product__generic_name_dosage', 'branch')
 
-    paginator = Paginator(all_stocks, 10)
-    page_number = request.GET.get('page')  # Get the current page number from the request
-    paginated_all_stocks = paginator.get_page(page_number)
-
-    # Apply branch filter if provided
+    # Apply branch filter
     if branch_filter:
-        all_stocks = all_stocks.filter(branch__id=branch_filter)
+        all_stocks = all_stocks.filter(branch_id=branch_filter)
 
-    # Apply search filter if provided (search by product code or generic name)
+    # Apply search filter
     if search_query:
         all_stocks = all_stocks.filter(
             Q(product__product_code__icontains=search_query) |
-            Q(product__generic_name_dosage__icontains=search_query)  # Ensure this field exists
+            Q(product__generic_name_dosage__generic_name__icontains=search_query)| # Correct lookup
+            Q(product__brand_name__brand_name__icontains=search_query)| # Correct lookup
+            Q(product__batch__batch_number__icontains=search_query)
         )
 
-    # Get all products for the Select2 dropdown
+    # Paginate results
+    paginator = Paginator(all_stocks, 100)
+    page_number = request.GET.get('page')
+    paginated_stocks = paginator.get_page(page_number)
+    offset = (paginated_stocks.number - 1) * paginator.per_page
+
+    # Get all products for Select2 dropdown
     all_products = Product.objects.all()
 
     # Prepare context
     view_context = {
-        "stocks": paginated_all_stocks,
-        "branches": branches,  # Pass the branches for the filter dropdown
-        "search_query": search_query,  # Include the search query to pre-populate the search input
-        "branch_filter": branch_filter,  # Include the selected branch filter value
-        "all_products": all_products,  # Pass the products for the Select2 dropdown
+        "stocks": paginated_stocks,
+        "branches": branches,
+        "search_query": search_query,
+        "branch_filter": branch_filter,
+        "all_products": all_products,
+        "offset": offset,
     }
 
     context = TemplateLayout.init(request, view_context)
 
-    # Render the page with context
     return render(request, "stock_all.html", context)

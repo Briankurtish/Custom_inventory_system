@@ -1,15 +1,9 @@
 {% extends layout_path %}
-
 {% load static %}
 {% load i18n %}
-{% load crispy_forms_tags %}
 
 {% block title %}
-  {% if is_editing %}
-  {% trans "Edit Worker" %}
-  {% else %}
-  {% trans "Add Worker" %}
-  {% endif %}
+  {% trans "Manage Privileges" %}
 {% endblock %}
 
 {% block content %}
@@ -18,39 +12,87 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
     <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Workers" %}</a></li>
-    <li class="breadcrumb-item"><a href="">{% trans "Manage Privileges" %}</a></li>
-    {% comment %} <li class="breadcrumb-item active" aria-current="page">
-      {% if is_editing %}
-        Edit Worker
-      {% else %}
-        Add Worker
-      {% endif %}
-    </li> {% endcomment %}
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Privileges" %}</li>
   </ol>
 </nav>
 <!-- End Breadcrumbs -->
 
-<!-- Basic Layout -->
+<!-- Manage Privileges Section -->
 <div class="row">
-  <div class="col-xl">
-    <div class="card mb-6">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{% trans "Manage Privileges for" %} {{ worker.user.get_full_name }}</></h5> 
-        <hr> 
+  <div class="col-lg-8 mx-auto">
+    <div class="card shadow-lg border-0">
+      <div class="card-header">
+        <h5 class="mb-0">
+          {% trans "Manage Privileges for" %} <strong>{{ worker.user.get_full_name }}</strong>
+        </h5>
+        <p class="text-muted">
+          {% trans "Default role-based privileges are pre-selected and cannot be removed." %}
+        </p>
       </div>
+
       <div class="card-body">
         <form method="POST">
           {% csrf_token %}
 
-          {{ form|crispy }}
+          <!-- Search Privileges -->
+          <div class="mb-3">
+            <input type="text" id="searchPrivileges" class="form-control" placeholder="🔍 {% trans 'Search privileges...' %}">
+          </div>
+
+          <!-- Display Privileges in Columns -->
+          <div class="row">
+            {% for privilege in all_privileges %}
+              <div class="col-md-4">
+                <div class="form-check privilege-item">
+                  <input class="form-check-input" type="checkbox" name="privileges" value="{{ privilege.id }}"
+                    id="privilege{{ privilege.id }}"
+                    {% if privilege in role_privileges %}checked disabled{% endif %}
+                    {% if privilege in worker_privileges %}checked{% endif %}>
+                  <label class="form-check-label {% if privilege in role_privileges %}text-muted{% endif %}"
+                         for="privilege{{ privilege.id }}">
+                    {{ privilege.name }}
+                    {% if privilege in role_privileges %}
+                      <span class="badge bg-secondary">{% trans "Role-based" %}</span>
+                    {% endif %}
+                  </label>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
 
           <br>
-          
-          <button type="submit" class="btn btn-primary">{% trans "Save Privileges" %}</button>
-          <a href="{% url 'workers' %}" class="btn btn-secondary">{% trans "Back to Workers" %}</a>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'workers' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> {% trans "Back to Workers" %}
+            </a>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-save"></i> {% trans "Save Privileges" %}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+{% endblock %}
+
+{% block page_js %}
+<!-- JavaScript for Search Filter -->
+<script>
+  document.getElementById("searchPrivileges").addEventListener("keyup", function() {
+    let filter = this.value.toLowerCase();
+    let items = document.querySelectorAll(".privilege-item");
+    items.forEach(item => {
+      let text = item.textContent.toLowerCase();
+      if (text.includes(filter)) {
+        item.style.display = "block";
+      } else {
+        item.style.display = "none";
+      }
+    });
+  });
+</script>
 {% endblock %}

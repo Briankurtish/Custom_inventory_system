@@ -1,0 +1,170 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% trans "Add Clearance Process" %}
+  {% comment %} {% if is_editing %}
+    {% trans "Edit Product" %}
+  {% else %}
+    {% trans "Add Product" %}
+  {% endif %} {% endcomment %}
+{% endblock %}
+
+{% block content %}
+<!-- Basic Layout -->
+
+<a href="{{ request.META.HTTP_REFERER|default:'#' }}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          {% trans "Add Clearance Process" %}
+          {% comment %} {% if is_editing %}
+            {% trans "Edit Product" %}
+          {% else %}
+            {% trans "Add Product" %}
+          {% endif %} {% endcomment %}
+        </h5>
+      </div>
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <button type="submit" class="btn btn-primary">
+            {% trans "Submit" %}
+            {% comment %} {% if is_editing %}
+              {% trans "Update" %}
+            {% else %}
+              {% trans "Submit" %}
+            {% endif %} {% endcomment %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block page_js %}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const genericNameSelect = document.getElementById("id_generic_name_dosage");
+        const brandNameSelect = document.getElementById("id_brand_name");
+        const batchSelect = document.getElementById("id_batch");
+
+        genericNameSelect.addEventListener("change", function() {
+            const selectedGenericNameId = genericNameSelect.value;
+
+            if (selectedGenericNameId) {
+                fetch(`/get-brand-and-batches/${selectedGenericNameId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear previous options
+                        brandNameSelect.innerHTML = '<option value="">Select Brand Name</option>';
+                        batchSelect.innerHTML = '<option value="">Select Batch Number</option>';
+
+                        // Populate brand name options
+                        data.brand_names.forEach(brand => {
+                            const option = document.createElement("option");
+                            option.value = brand;
+                            option.textContent = brand;
+                            brandNameSelect.appendChild(option);
+                        });
+
+                        // Populate batch options
+                        data.batches.forEach(batch => {
+                            const option = document.createElement("option");
+                            option.value = batch;
+                            option.textContent = batch;
+                            batchSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            } else {
+                brandNameSelect.innerHTML = '<option value="">Select Brand Name</option>';
+                batchSelect.innerHTML = '<option value="">Select Batch Number</option>';
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+  document.addEventListener('input', function (e) {
+      if (e.target.id === 'unit_price') {
+          // Remove commas and ensure the value is a valid number
+          let value = e.target.value.replace(/,/g, '');
+          if (!isNaN(value) && value !== "") {
+              e.target.value = parseFloat(value).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+              });
+          }
+      }
+  });
+  </>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_generic_name_dosage").select2({
+      placeholder: "Search Generic Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_brand_name").select2({
+      placeholder: "Search for Brand Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_batch").select2({
+      placeholder: "Search for Batch Number",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  document.getElementById('id_dosage_form').addEventListener('change', function() {
+    const dosageFormId = this.value;
+    fetch(`/get-dosage-types/?dosage_form_id=${dosageFormId}`)
+      .then(response => response.json())
+      .then(data => {
+        const dosageTypeSelect = document.getElementById('id_dosage_type');
+        dosageTypeSelect.innerHTML = '';
+        data.forEach(dosageType => {
+          const option = document.createElement('option');
+          option.value = dosageType.id;
+          option.textContent = dosageType.name;
+          dosageTypeSelect.appendChild(option);
+        });
+      });
+  });
+</script>
+{% endblock %}

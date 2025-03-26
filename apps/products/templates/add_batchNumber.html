@@ -38,6 +38,14 @@
 
 <hr class="my-8">
 
+<form method="GET" action="{% url 'add-batch' %}" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search_query" class="form-control"
+               placeholder="Search batch number or generic name..." value="{{ search_query }}">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
 
 
 <!-- Hoverable Table rows -->
@@ -52,7 +60,10 @@
           <th>{% trans "BOL Number" %}</th>
           <th>{% trans "Generic Name" %}</th>
           <th>{% trans "Brand Name" %}</th>
+          <th>{% trans "Production Date" %}</th>
           <th>{% trans "Exipry Date" %}</th>
+          <th>{% trans "Added By" %}</th>
+          <th>{% trans "Date Added" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
@@ -64,7 +75,10 @@
           <td><span>{{batch.bl_number}}</span></td>
           <td><span>{{batch.generic_name.generic_name}}</span></td>
           <td><span>{{batch.generic_name.brand_name}}</span></td>
+          <td>{{batch.prod_date}}</td>
           <td>{{batch.expiry_date}}</td>
+          <td>{{batch.batch_created_by}}</td>
+          <td>{{batch.batch_date_added}}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -84,6 +98,15 @@
 </div>
 <!--/ Hoverable Table rows -->
 
+
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'batch-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 
 

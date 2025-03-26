@@ -1,0 +1,309 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Picking List</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+      }
+      time {
+        font-size: 10px;
+      }
+      .container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+      }
+      .header .date {
+        font-size: 14px;
+      }
+      .header h1 {
+        font-size: 12px;
+        margin: 0;
+      }
+      .header .title-container {
+        background-color: #f0f0f0;
+        padding: 10px 20px;
+        border-radius: 4px;
+      }
+      .header .logo img {
+        max-width: 50px;
+        height: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0 0;
+        table-layout: fixed;
+      }
+      table th,
+      table td {
+        border: 1px solid #ccc;
+        padding: 5px;
+        font-size: 9px;
+        text-align: left;
+      }
+      table th {
+        background-color: #f8f8f8;
+        font-weight: bold;
+      }
+      .totals {
+        margin-top: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+      }
+      .totals div {
+        width: 48%;
+      }
+      .totals table {
+        width: 100%;
+        margin-top: 10px;
+      }
+      .totals table th,
+      .totals table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+      }
+      .totals table th {
+        background-color: #f8f8f8;
+      }
+      .signatures {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .signatures .section {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .signatures .section strong {
+        display: block;
+        background-color: #f0f0f0;
+        padding: 5px;
+        border-radius: 4px;
+      }
+      .signatures .section .row {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 10px;
+        text-align: center;
+      }
+      .signatures .section .line {
+        width: 230px;
+        border-top: 1px solid #000;
+        text-align: center;
+        margin: 10px auto 5px;
+      }
+      .po-number {
+        text-align: center;
+        font-size: 9px;
+      }
+      .footer {
+        display: flex;
+        justify-content: end;
+        margin-top: 30px;
+        font-size: 9px;
+      }
+      .totals-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Aligns content to the right */
+        text-align: right;
+        width: 50%; /* Ensures it does not shrink too much */
+      }
+      .totals-section p {
+        margin: 2px 0; /* Reduces the space between paragraphs */
+        line-height: 1.2; /* Adjusts spacing between lines */
+      }
+      .release-note-container {
+        border: 1px solid #ccc; /* Adds a grey border */
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 2px; /* Rounded corners */
+      }
+
+      .header-cont {
+        text-align: center;
+        margin: 2px 0; /* Reduced margin to decrease spacing */
+      }
+
+      .header-cont h1 {
+        margin-top: 10px;
+        font-size: 12px;
+      }
+
+      .header-cont p {
+        margin: 5px 0;
+      }
+
+      .container-down {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid #ccc;
+        margin: 0px auto; /* Reduced margin to decrease spacing */
+        width: 100%;
+        max-width: 1000px;
+      }
+
+      .container-header {
+        border: 1px solid #ccc;
+        margin: 0px auto; /* Reduced margin to decrease spacing */
+        width: 100%;
+        max-width: 1000px;
+      }
+
+      .branch {
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+
+      .branch h2 {
+        margin: 0 0 10px 0;
+        font-size: 12px;
+      }
+
+      .branch p {
+        margin: 5px 0;
+      }
+      .note {
+        font-size: 9px;
+        display: flex;
+        justify-content: start;
+        margin-top: 30px;
+      }
+
+      .no-column {
+        width: 50px; /* Adjust the width as needed */
+      }
+
+      .generic-name-column {
+        width: 150px; /* Adjust the width as needed */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="date">
+          <time>{{ order.created_at|date:"M d, Y H:i" }}</time>
+        </div>
+        <div>
+          <div class="column">
+            <h1 class="title-container">Picking List(Bon de Ramassage)</h1>
+            <p class="po-number">{{ order.purchase_order_id }}</p>
+          </div>
+        </div>
+        <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
+        </div>
+      </div>
+
+      <div class="header-cont container-header">
+        <h1>Global Distributors of Pharmaceutical Products</h1>
+        <p>Tel: 222-216-754| Email: info@gcpharma.org</p>
+        <p>Carrefour Diderot, Ahala, BP 7761 Yaounde, Cameroon</p>
+      </div>
+
+      <div class="container-header">
+        <div class="branch">
+          <p><strong>Branch Name:</strong> {{ order.branch.branch_name }}</p>
+          <p><strong>Branch ID: {{ order.branch.branch_id }}</strong></p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="no-column">No</th>
+            <th>Product ID</th>
+            <th>Batch Number</th>
+            <th class="generic-name-column">Generic Name</th>
+            <th>Brand Name</th>
+            <th>Dosage Form</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order_items %}
+          <tr>
+            <td>{{forloop.counter}}</td>
+            <td>{{item.stock.product.product_code}}</td>
+            <td>{{item.stock.product.batch.batch_number}}</td>
+            <td>{{item.stock.product.generic_name_dosage}}</td>
+            <td>{{item.stock.product.brand_name.brand_name}}</td>
+            <td>{{item.stock.product.dosage_form}}</td>
+            <td>{{item.quantity|intcomma}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="signatures">
+        <!-- Release Note Section inside a grey-bordered container -->
+        <div class="section">
+          <br /><br />
+          <div class="row" style="display: flex; align-items: center; gap: 5px">
+            <p style="margin: 0; white-space: nowrap">Stock Manager:</p>
+            <div
+              style="display: flex; flex-direction: column; align-items: center"
+            >
+              <div class="line"></div>
+              <div>Name</div>
+            </div>
+            <div
+              style="display: flex; flex-direction: column; align-items: center"
+            >
+              <div class="line"></div>
+              <div>Signature</div>
+            </div>
+            <div
+              style="display: flex; flex-direction: column; align-items: center"
+            >
+              <div class="line"></div>
+              <div>Date</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <p class="">NIU: M022014416253M</p>
+        &nbsp; &nbsp;
+        <p class="">-</p>
+        &nbsp; &nbsp;
+        <p class="">Reg No: RC/YAO/2020/B/239</p>
+      </div>
+      <a class="btn btn-sm btn-info float-right mr-1 d-print-none " href="#" onclick="javascript:window.print();" data-abc="true">
+        <i class="fa fa-print"></i> Print</a>
+
+      <br>
+      <br>
+    </div>
+  </body>
+</html>

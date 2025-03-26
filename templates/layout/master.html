@@ -28,14 +28,41 @@
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon/favicon.ico' %}" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-
     <!-- Include the styles partial -->
-    {% include "./partials/styles.html" %} {% block vendor_css %}{% endblock vendor_css %}
+    {% include "./partials/styles.html" %}
+    {% block vendor_css %}{% endblock vendor_css %}
 
-    <!--Page CSS-->
-    {% block page_css %}{% endblock page_css %}
+    <!-- Page CSS -->
+    {% block page_css %}
+    <style>
 
-    <!-- Include the scripts partial (required ) -->
+      * {
+          font-size: 10px !important;
+      }
+
+      table th {
+        text-transform: unset !important;/* Disable text transformation for table headers */
+      }
+
+      .menu-item {
+        margin-bottom: 1px; /* Adjust this value as needed */
+        padding: 2px 2px; /* Adjust to control the internal spacing */
+      }
+    </style>
+
+    <style>
+        .hidden-field {
+            display: none; /* Hide fields initially */
+        }
+        label[for="id_momo_account"],
+        label[for="id_check_account"],
+        label[for="id_bank_deposit_account"] {
+            display: none; /* Hide labels */
+        }
+    </style>
+    {% endblock page_css %}
+
+    <!-- Include the scripts partial (required) -->
     {% include "./partials/scripts_includes.html" %}
   </head>
 
@@ -66,16 +93,16 @@
       });
     </script>
 
-    {% block layout %} {% endblock layout %} {% include "./partials/scripts.html" %}
+    {% block layout %} {% endblock layout %}
+    {% include "./partials/scripts.html" %}
 
-    <!--Vendors Javascript-->
+    <!-- Vendors Javascript -->
     {% block vendor_js %} {% endblock vendor_js %}
 
-    <!--Page Javascript-->
+    <!-- Page Javascript -->
     {% block page_js %} {% endblock page_js %}
 
     {% block scripts %}
-
     {% endblock scripts %}
   </body>
 

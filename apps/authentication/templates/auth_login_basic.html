@@ -39,6 +39,11 @@
               {% trans "Login"%}</button>
             </div>
           </form>
+          <p class="text-center mb-5">
+            <a href="{% url 'password_reset' %}">
+              <span>Forgot Password?</span>
+            </a>
+          </p>
 
 
         </div>
@@ -46,16 +51,6 @@
       <!-- /Login -->
     </div>
   </div>
-
-  {% comment %} {% if messages %}
-<div>
-    {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %} {% endcomment %}
 
 </div>
 {% endblock %}

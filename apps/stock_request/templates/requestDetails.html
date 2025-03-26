@@ -17,30 +17,95 @@
 </nav>
 <hr class="my-8">
 
+<!-- Modal for Confirming Stock Received -->
+<div class="modal fade" id="confirmStockReceivedModal" tabindex="-1" aria-labelledby="confirmStockReceivedModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmStockReceivedModalLabel">{% trans "Confirm Stock Received" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="stockReceivedForm" action="{% url 'stock_received' request_id=stock_request.id %}" method="post">
+          {% csrf_token %}
+
+          <!-- NEW: Date Received Field -->
+          <div class="mb-3">
+            <label for="date_received" class="form-label">{% trans "Date Received" %}</label>
+            <input type="date" name="date_received" id="date_received" class="form-control" required>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>{% trans "Generic Name" %}</th>
+                  <th>{% trans "Brand Name" %}</th>
+                  <th>{% trans "Batch Number" %}</th>
+                  <th>{% trans "Requested Quantity" %}</th>
+                  <th>{% trans "Actual Quantity Received" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in in_transit_items %}
+                  <tr>
+                    <td>{{ item.product.generic_name_dosage }}</td>
+                    <td>{{ item.product.brand_name.brand_name }}</td>
+                    <td>{{ item.product.batch.batch_number }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                      <input type="number" name="actual_quantity_{{ item.id }}" class="form-control" min="0" required>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="5" class="text-center">{% trans "No items found for this request." %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+            <button type="submit" class="btn btn-primary">{% trans "Confirm Receipt" %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <div class="card">
     <div class="row">
-        <h5 class="text col-md-5 m-3">#{{ stock_request.request_number }}</h5>
+        <h5 class="text col-md-5 m-3">{{ stock_request.request_number }}</h5>
     </div>
     <hr>
 
     <div class="container">
         <div class="row">
             <!-- First Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">{% trans "Branch ID" %}</small>
                 <h6 class=" mx-3">{{ stock_request.branch.branch_id }}</h6>
             </div>
 
             <!-- Second Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <small class="text m-3">{% trans "Branch Name" %}</small>
                 <h6 class=" mx-3">{{ stock_request.branch.branch_name }}</h6>
             </div>
 
             <!-- Third Column -->
-            <div class="col-md-4">
-                <small class="text m-3">{% trans "Created By" %}</small>
-                <h6 class=" mx-3">{{ stock_request.requested_by.get_full_name }}</h6>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Requested By" %}</small>
+                <h6 class=" mx-3">{{ stock_request.requested_by.user.first_name }} {{ stock_request.requested_by.user.last_name }}</h6>
+            </div>
+
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Date Requested" %}</small>
+                <h6 class=" mx-3">{{ stock_request.requested_at|date:"M d, Y" }}</h6>
             </div>
         </div>
     </div>
@@ -50,8 +115,18 @@
         <div class="row">
             <!-- Third Column -->
             <div class="col-md-4">
-                <small class="text m-3">{% trans "Status" %}</small>
-                <h6 class="text-warning mx-3">{{ stock_request.status }}</h6>
+              <small class="text m-3">{% trans "Status" %}</small>
+              <h6 class="mx-3
+                  {% if stock_request.status == 'Pending' %}badge bg-label-warning
+                  {% elif stock_request.status == 'Accepted' %}badge bg-label-success
+                  {% elif stock_request.status == 'Received' %}badge bg-label-info
+                  {% endif %}">
+                  {{ stock_request.status }}
+              </h6>
+          </div>
+            <div class="col-md-4">
+                <small class="text m-3">{% trans "Request Type" %}</small>
+                <h6 class="mx-3 badge bg-label-danger">{{ stock_request.request_type }}</h6>
             </div>
         </div>
     </div>
@@ -63,7 +138,11 @@
               <thead>
                   <tr>
                       <th>{% trans "Product Code" %}</th>
-                      <th>{% trans "Product Name" %}</th>
+                      <th>{% trans "Generic Name" %}</th>
+                      <th>{% trans "Brand Name" %}</th>
+                      <th>{% trans "Batch Number" %}</th>
+                      <th>{% trans "Dosage Form" %}</th>
+                      <th>{% trans "Pack Size" %}</th>
                       <th>{% trans "Quantity" %}</th>
                   </tr>
               </thead>
@@ -72,6 +151,10 @@
                       <tr>
                           <td>{{ item.product.product_code }}</td>
                           <td>{{ item.product.generic_name_dosage }}</td>
+                          <td>{{ item.product.brand_name.brand_name }}</td>
+                          <td>{{ item.product.batch.batch_number }}</td>
+                          <td>{{ item.product.dosage_form }}</td>
+                          <td>{{ item.product.pack_size }}</td>
                           <td>{{ item.quantity }}</td>
                       </tr>
                   {% empty %}
@@ -90,7 +173,24 @@
 
   {% if stock_request.status == "Pending" %}
     <!-- Approve or Decline Form -->
-    {% if user.worker_profile.role == "Pharmacist" or user.is_superuser %}
+
+    {% if role_privileges %}
+        {% for privilege in role_privileges %}
+            {% if privilege.name == 'Accept or Decline Stock Requisition' %}
+              <form action="{% url 'approve_or_decline_request' request_id=stock_request.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" name="action" value="approve" class="btn btn-success">
+                      <span class="tf-icons bx bx-check bx-18px me-2"></span> {% trans "Approve" %}
+                  </button>
+                  <button type="submit" name="action" value="decline" class="btn btn-danger">
+                      <span class="tf-icons bx bx-x bx-18px me-2"></span> {% trans "Decline" %}
+                  </button>
+              </form>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if user.is_superuser %}
     <form action="{% url 'approve_or_decline_request' request_id=stock_request.id %}" method="post">
         {% csrf_token %}
         <button type="submit" name="action" value="approve" class="btn btn-success">
@@ -103,21 +203,35 @@
     {% endif %}
   {% endif %}
 
-  {% if stock_request.picking_list %}
-  <a href="{{ stock_request.picking_list.url }}" target="_blank">{% trans "Download Picking List" %}</a>
-  {% else %}
-    <p>{% trans "No Picking List" %}</p>
+  {% comment %} {% if stock_request.picking_list %}
+  <a href="{{ stock_request.picking_list.url }}" target="_blank">{% trans "Download Picking List" %}</a> {% endcomment %}
+  {% if stock_request.status == "Accepted"%}
+        {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}
+          <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Download Picking List" %}</a>
+        {% endif %}
+        <a href="{% url 'transfer_slip_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Transfer Slip/Bon de Transfer " %}</a>
   {% endif %}
 
+
   <!-- Stock Received Form -->
+{% if stock_request.status == "Accepted" %}
   {% if user.worker_profile.role == "Stock Manager" or user.is_superuser %}
-  <form action="{% url 'stock_received' request_id=stock_request.id %}" method="post">
-      {% csrf_token %}
-      <button type="submit" name="action" value="stock_received" class="btn btn-primary">
-        <span class="tf-icons bx bx-package bx-18px me-2"></span> {% trans "Confirm Stock Received" %}
-      </button>
-  </form>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
+      <span class="tf-icons bx bx-package bx-18px me-2"></span> {% trans "Confirm Stock Received" %}
+    </button>
   {% endif %}
+{% endif %}
+
+  {% if stock_request.status == "Received"%}
+    {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}
+      <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Download Picking List" %}</a>
+    {% endif %}
+    <a href="{% url 'transfer_slip_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Transfer Slip/Bon de Transfer " %}</a>
+    {% if stock_request.request_type != "Surplus" and stock_request.request_type != "Deficit" %}
+      <a href="{% url 'receipt_note_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Goods Receipt Note/Bon de Recu " %}</a>
+    {% endif %}
+  {% endif %}
+
 </div>
 
 {% endblock %}

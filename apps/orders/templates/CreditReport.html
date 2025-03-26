@@ -19,7 +19,7 @@
       <li class="breadcrumb-item active" aria-current="page">{% trans "Credit Report" %}</li>
     </ol>
   </nav>
-    
+
 
 <hr class="my-8">
 <a href="{{ request.META.HTTP_REFERER|default:'#' }}" class="btn btn-outline-secondary mb-4">
@@ -69,14 +69,14 @@
             <!-- First Column -->
             <div class="col-md-4">
                 <small class="text m-3">{% trans "Total Due" %}</small>
-                <h6 class="m-3 text-danger">{{ total_due_general|floatformat:0|intcomma }} <small>CFA</small></h6>
+                <h6 class="m-3 text-danger">{{ total_due_general|floatformat:2|intcomma }} <small>CFA</small></h6>
             </div>
-            
+
         </div>
     </div>
     <hr>
 
-   
+
 
     <div class="card">
 
@@ -97,9 +97,9 @@
                         <tr>
                             <td>{{ order.invoice_id }}</td>
                             <td>{{ order.created_at|date:"Y-m-d" }}</td>
-                            <td>{{ order.grand_total|floatformat:0|intcomma }} <small>CFA</small></td>
-                            <td class="text-success">{{ order.amount_paid|floatformat:0|intcomma }} <small>CFA</small></td>
-                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:0|intcomma }} <small>CFA</small></td>
+                            <td>{{ order.grand_total|floatformat:2|intcomma }} <small>CFA</small></td>
+                            <td class="text-success">{{ order.amount_paid|floatformat:2|intcomma }} <small>CFA</small></td>
+                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:2|intcomma }} <small>CFA</small></td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -108,7 +108,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
+
         </div>
 
         <br>
@@ -133,9 +133,9 @@
                         <tr>
                             <td>#INV_{{ order.id }}</td>
                             <td>{{ order.created_at|date:"Y-m-d" }}</td>
-                            <td>{{ order.grand_total|floatformat:0|intcomma }} <small>CFA</small></td>
-                            <td class="text-success">{{ order.amount_paid|floatformat:0|intcomma }} <small>CFA</small></td>
-                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:0|intcomma }} <small>CFA</small></td>
+                            <td>{{ order.grand_total|floatformat:2|intcomma }} <small>CFA</small></td>
+                            <td class="text-success">{{ order.amount_paid|floatformat:2|intcomma }} <small>CFA</small></td>
+                            <td class="text-danger">{{ order.calculated_amount_due|floatformat:2|intcomma }} <small>CFA</small></td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -144,9 +144,9 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
+
         </div>
-        
+
     </div>
 </div>
 

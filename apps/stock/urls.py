@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import add_stock_view, ManageStockView, delete_stock_page, update_stock_entry_view, update_existing_stock_view, get_branches, get_stock_data, ManageStockBranchView, track_stocks, delete_stock_api
+from .views import *
 
 
 
@@ -11,6 +11,14 @@ urlpatterns = [
         name="stock",
     ),
     path(
+        "stock-logs/", StockAuditLogView, name="stock-logs",
+    ),
+    path(
+        "branch-stock/",
+        ManageBranchStockView,
+        name="branch-stock",
+    ),
+    path(
         "stock-branch/",
         ManageStockBranchView,
         name="stock-branch",
@@ -20,6 +28,7 @@ urlpatterns = [
         add_stock_view,
         name="add-stock",
     ),
+    path("update-stock/", update_stock_view, name="update_stock"),
     path(
         "update-stock/",
         update_existing_stock_view,
@@ -35,4 +44,6 @@ urlpatterns = [
 
     path('delete-stock/', delete_stock_api, name='delete-stock-api'),
     path("delete-stock/<int:stock_id>/", delete_stock_page, name="delete-stock"),
+
+    path('beginning-inventory/', add_beginning_inventory_view, name="add-beginning-inventory"),
 ]

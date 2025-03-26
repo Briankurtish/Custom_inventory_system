@@ -1,0 +1,152 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% trans "Security Pin" %}
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'index' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+        {% trans "Change Password" %}
+    </li>
+  </ol>
+</nav>
+<!-- End Breadcrumbs -->
+
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          {% if worker.security_pin %}
+            Update Security PIN
+          {% else %}
+            Create Security PIN
+          {% endif %}
+        </h5>
+        <hr>
+      </div>
+      <div class="card-body">
+        <form method="POST" id="security-pin-form">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <br>
+          <button type="button" class="btn btn-primary" id="open-modal-button">
+            {% if worker.security_pin %}
+              Update PIN
+            {% else %}
+              Create PIN
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Confirmation Modal -->
+<div class="modal fade" id="passwordConfirmationModal" tabindex="-1" aria-labelledby="passwordConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordConfirmationModalLabel">Confirm Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="password-confirmation-form">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="password" class="form-label">Enter your password to confirm:</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirm-password-button">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const openModalButton = document.getElementById('open-modal-button');
+    const confirmPasswordButton = document.getElementById('confirm-password-button');
+    const passwordInput = document.getElementById('password');
+    const securityPinForm = document.getElementById('security-pin-form');
+    const pinInput = document.querySelector('input[name="pin"]'); // Assuming the PIN input field has name="pin"
+
+    console.log("JavaScript loaded successfully!");
+
+    // Function to validate the PIN
+    function validatePin() {
+        const pin = pinInput ? pinInput.value : null;
+        console.log("PIN input value:", pin);
+        if (!pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
+            alert('Please enter a valid 4-digit PIN.');
+            return false;
+        }
+        return true;
+    }
+
+    // Open the modal only if the PIN is valid
+    openModalButton.addEventListener('click', function () {
+        console.log("Open modal button clicked.");
+        if (validatePin()) {
+            const modal = new bootstrap.Modal(document.getElementById('passwordConfirmationModal'));
+            console.log("Opening password confirmation modal...");
+            modal.show();
+        }
+    });
+
+    // Handle password confirmation
+    confirmPasswordButton.addEventListener('click', function () {
+        console.log("Confirm button clicked!");
+
+        const password = passwordInput.value;
+        console.log("Password entered:", password);
+
+        fetch("{% url 'validate_password' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ password: password }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data);
+            if (data.valid) {
+                console.log("Password is valid! Submitting form...");
+                securityPinForm.submit();
+            } else {
+                alert('Invalid password. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+
+</script>
+{% endblock %}

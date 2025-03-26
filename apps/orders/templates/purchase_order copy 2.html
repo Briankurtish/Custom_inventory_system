@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <style>
+        .card {
+    margin-bottom: 1.5rem
+}
+
+.card {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid #c8ced3;
+    border-radius: .25rem
+}
+
+.card-header:first-child {
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0
+}
+
+.card-header {
+    padding: .75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: #f0f3f5;
+    border-bottom: 1px solid #c8ced3
+}
+    </style>
+
+  </head>
+  <body>
+    <div class="container-fluid">
+    <div id="ui-view" data-select2-id="ui-view">
+        <div>
+            <div class="card">
+                <div class="card-header">Bon de Commande
+                    <strong>#{{ order.purchase_order_id }}</strong>
+                    <a class="btn btn-sm btn-secondary float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+                        <i class="fa fa-print"></i> Print</a>
+                    {% comment %} <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" data-abc="true">
+                        <i class="fa fa-save"></i> Save</a> {% endcomment %}
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-sm-4">
+                            <h6 class="mb-3">From:</h6>
+                            <div class="mt-2">
+                                <a href="https://imgbb.com/">
+                                  <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
+                                </a>
+                            </div>
+                            <div>
+                                <strong>GC PHARMA</strong>
+                            </div>
+                            <div>Global Distributors of Pharmaceutical Products</div>
+                            <div>BP 7761 Douala-Cameroon</div>
+                            <div>Email: info@gcpharma.org</div>
+                            <div>Tel: 222-316-754</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <h6 class="mb-3">To:</h6>
+                            <div>
+                                <strong>{{ order.customer.customer_name }}</strong>
+                            </div>
+                            <div>Address: {{ order.customer.postal_code }}</div>
+                            <div>{{ order.customer.branch.branch_name }}, Cameroon</div>
+                            <div>Email: {{ order.customer.email }}</div>
+                            <div>Phone: {{ order.customer.telephone }}</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <h6 class="mb-3">Details:</h6>
+                            <div>
+                                <strong>#{{ order.order_id }}</strong>
+                            </div>
+                            <div>April 30, 2019</div>
+                            <div>Bank Name: <b>NFC Bank</div>
+                            <div>Account Name: <b>GC PHARMA</b></div>
+                            <div>Mtn Momo(Yde): <b>674524363</b></div>
+                            <div>Currency: <b>XAF</b></div>
+                        </div>
+                    </div>
+                    <div class="table-responsive-sm">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="center">#</th>
+                                    <th>Product Code</th>
+                                    <th>Generic Name / DCI</th>
+                                    <th>Brand Name</th>
+                                    <th class="center">Unit Price</th>
+                                    <th class="right">Quantity</th>
+                                    <th class="right">Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td class="center">{{forloop.counter}}</td>
+                                    <td class="left">{{item.stock.product.product_code}}</td>
+                                    <td class="left">{{item.stock.product.generic_name_dosage}}</td>
+                                    <td class="left">{{item.stock.product.brand_name.brand_name}}</td>
+                                    <td class="center">{{item.stock.product.unit_price}} CFA</td>
+                                    <td class="right">{{item.quantity}}</td>
+                                    <td class="right">{{item.total_price}} CFA</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        {% comment %} <div class="col-lg-4 col-sm-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</div> {% endcomment %}
+                        <div class="col-lg-4 col-sm-5 ml-auto">
+                            <table class="table table-clear">
+                                <tbody>
+                                    <tr>
+                                        <td class="left">
+                                            <strong>Subtotal</strong>
+                                        </td>
+                                        <td class="right">$8.497,00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="left">
+                                            <strong>Discount (20%)</strong>
+                                        </td>
+                                        <td class="right">$1,699,40</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="left">
+                                            <strong>VAT (10%)</strong>
+                                        </td>
+                                        <td class="right">$679,76</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="left">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td class="right">
+                                            <strong>{{order.grand_total}} CFA</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            {% comment %} <a class="btn btn-success" href="#" data-abc="true">
+                                <i class="fa fa-usd"></i> Proceed to Payment</a> {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+      $('#printInvoice').click(function(){
+            Popup($('.invoice')[0].outerHTML);
+            function Popup(data)
+            {
+                window.print();
+                return true;
+            }
+        });
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice / Facture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center; /* Ensures logo and title align on the same line */
+      margin-bottom: 20px;
+    }
+
+    .header .title {
+      flex: 2;
+      text-align: left;
+    }
+
+    .header .title h3 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+
+    .header .logo {
+      text-align: right;
+      flex: 1;
+    }
+
+    .header .logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .company-details {
+      text-align: right;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .bill-to {
+      width: 48%;
+    }
+
+    .bill-to p {
+      margin: 5px 0;
+    }
+
+    .payment-info {
+      width: 48%;
+      text-align: left;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #000;
+    }
+
+    table th {
+      background-color: #f0f0f0;
+    }
+
+    table td {
+      text-align: center; /* Center-aligns numeric values for better readability */
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <div class="header">
+    <div class="title">
+      <h3>Purchase Order / Bon de Commande</h3>
+      <p><strong>Order No:</strong> {{ order.id }}</p>
+      <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+    <div class="logo">
+      <img src="apps/gcpharma.jpg" alt="Company Logo">
+      <div class="company-details">
+        <p><strong>Global Distributors of Pharmaceutical Products</strong></p>
+        <p>BP 7761 Douala-Cameroon, Carrefour Diderot Ahala</p>
+        <p><strong>Email:</strong> info@gcpharma.org</p>
+        <p><strong>Tel:</strong> 222-316-754</p>
+        <p><strong>Bank Name:</strong> NFC Bank</p>
+        <p><strong>Bank Account:</strong> 17201081794</p>
+        <p><strong>Momo:</strong> 672463345</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="bill-to">
+      <p><strong>Bill To:</strong></p>
+      <p><strong>Customer ID:</strong> {{ order.customer.customer_id }}</p>
+      <p><strong>Customer Name:</strong> {{ order.customer.customer_name }}</p>
+      <p><strong>Address:</strong> {{ order.customer.address }}</p>
+      <p><strong>Phone No:</strong> {{ order.customer.telephone }}</p>
+    </div>
+    <div class="payment-info">
+      <p><strong>Currency:</strong> XAF</p>
+      <p><strong>Payment Terms:</strong> Credit / Cash / Electronic</p>
+      <p><strong>No of Payments:</strong> 3</p>
+      <p><strong>Due Date:</strong> Date...</p>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <table>
+    <thead>
+      <tr>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ item.stock.product.product_code }}</td>
+            <td>{{ item.stock.product.generic_name_dosage.generic_name }}</td>
+            <td>{{ item.get_effective_price|floatformat:0 }} CFA</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price|floatformat:0 }} CFA</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No items found for this order.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Footer Section -->
+  <div class="footer">
+    <p>Thank you for your business!</p>
+    <p>Please contact us for any queries or concerns regarding this purchase order.</p>
+  </div>
+</body>
+</html> {% endcomment %}

@@ -7,7 +7,19 @@
 
 {% block content %}
 
-{% if can_request_stock or user.is_superuser%}
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Request Stock' %}
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
+            <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Request" %}
+          </button>
+          <hr>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+{% if user.is_superuser%}
   <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
     <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Request" %}
   </button>
@@ -37,11 +49,12 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Request ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Branch Name" %}</th>
-          <th>{% trans "Created By" %}</th>
-          <th>{% trans "Date" %}</th>
+          <th>{% trans "Requested By" %}</th>
+          <th>{% trans "Date Requested" %}</th>
           <th>{% trans "Status" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
@@ -49,10 +62,11 @@
       <tbody class="table-border-bottom-0">
         {% for request in stock_requests %}
           <tr>
+            <td><span>{{ forloop.counter }}</span></td>
             <td><span>{{ request.request_number }}</span></td>
             <td><span>{{ request.branch.branch_id }}</span></td>
             <td><span>{{ request.branch.branch_name }}</span></td>
-            <td><span>{{ request.requested_by.get_full_name }}</span></td>
+            <td><span>{{ request.requested_by }}</span></td>
             <td><span>{{ request.requested_at|date:"d-m-Y" }}</span></td>
             <td>
               {% if request.status|lower == "pending" %}
@@ -73,6 +87,9 @@
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
                     <i class="fa-solid fa-folder-open me-1"></i> View
+                  </a>
+                  <a class="dropdown-item" href="{% url 'upload_stock_request_document' request.id %}">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
                   </a>
                   {% comment %} <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
                   <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a> {% endcomment %}
@@ -120,5 +137,14 @@
     </ul>
   </nav>
 </div>
+
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'request-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 {% endblock %}

@@ -69,49 +69,57 @@
       <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
           <div class="avatar avatar-online">
-            <img src="{% static 'img/avatars/1.png' %}" alt class="w-px-40 h-auto rounded-circle">
+            <img src="{{ user.worker_profile.profile_image.url }}" alt="User Avatar" class="w-px-10 h-auto rounded-circle">
+
           </div>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <div class="d-flex">
-                {% comment %} <div class="flex-shrink-0 me-3">
-                  <div class="avatar avatar-online">
-                    <img src="{% static 'img/avatars/1.png' %}" alt class="w-px-40 h-auto rounded-circle">
-                  </div>
-                </div> {% endcomment %}
-                <div class="flex-grow-1">
-                  <h6 class="mb-0">{{user.first_name}} {{user.last_name}}</h6>
-                  <small class="text-muted">{{user.worker_profile.role}}</small>
-                </div>
-              </div>
-            </a>
-          </li>
-          <li>
-            <div class="dropdown-divider my-1"></div>
-          </li>
-          <li>
-            <a class="dropdown-item" href="{% url 'edit_worker_profile' pk=user.worker_profile.id %}">
-                <i class="fa-regular fa-user me-3"></i><span>My Profile</span>
-            </a>
+   <ul class="dropdown-menu dropdown-menu-end">
+  <li>
+    <a class="dropdown-item" href="javascript:void(0);">
+      <div class="d-flex">
+        <div class="flex-grow-1">
+          <h6 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h6>
+          <small class="text-muted">{{ user.worker_profile.role }}</small>
+        </div>
+      </div>
+    </a>
+  </li>
+  <li>
+    <div class="dropdown-divider my-1"></div>
+  </li>
+  <li>
+    <a class="dropdown-item" href="{% url 'online-workers' %}">
+      <i class="fa-regular fa-user me-3"></i><span>Users Online</span>
+      <span class="badge bg-success rounded-pill ms-auto">{{ online_users_count }}</span>
+    </a>
+  </li>
+  <li>
+    <a class="dropdown-item" href="{% url 'edit_worker_profile' pk=user.worker_profile.id %}">
+      <i class="fa-regular fa-user me-3"></i><span>My Profile</span>
+    </a>
+  </li>
+  <li>
+    <a class="dropdown-item" href="{% url 'password_change' %}">
+      <i class="fa-solid fa-gear me-3"></i><span>Settings</span>
+    </a>
+  </li>
 
+  <!-- Conditionally show Create/Update Security PIN -->
+  {% if not user.worker_profile.security_pin %}
+    <li>
+      <a class="dropdown-item" href="{% url 'create_security_pin' %}">
+        <i class="fa-solid fa-key me-3"></i><span>Create Security PIN</span>
+      </a>
+    </li>
+  {% else %}
+    <li>
+      <a class="dropdown-item" href="{% url 'update_security_pin' %}">
+        <i class="fa-solid fa-key me-3"></i><span>Update Security PIN</span>
+      </a>
+    </li>
+  {% endif %}
 
-          </li>
-          <li>
-            <a class="dropdown-item" href="{% url 'password_change' %}">
-              <i class="fa-solid fa-gear me-3"></i><span>Settings</span>
-            </a>
-          </li>
-          {% comment %} <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <span class="d-flex align-items-center align-middle">
-                <i class="flex-shrink-0 bx bx-credit-card bx-md me-3"></i><span class="flex-grow-1 align-middle">Billing Plan</span>
-                <span class="flex-shrink-0 badge rounded-pill bg-danger">4</span>
-              </span>
-            </a>
-          </li> {% endcomment %}
-          <li>
+  <li>
             <div class="dropdown-divider my-1"></div>
           </li>
           <li>
@@ -122,6 +130,16 @@
               </a>
             </div>
           </li>
+</ul>
+          {% comment %} <li>
+            <a class="dropdown-item" href="javascript:void(0);">
+              <span class="d-flex align-items-center align-middle">
+                <i class="flex-shrink-0 bx bx-credit-card bx-md me-3"></i><span class="flex-grow-1 align-middle">Billing Plan</span>
+                <span class="flex-shrink-0 badge rounded-pill bg-danger">4</span>
+              </span>
+            </a>
+          </li> {% endcomment %}
+
         </ul>
       </li>
       <!--/ User -->

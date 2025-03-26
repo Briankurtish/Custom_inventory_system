@@ -1,0 +1,156 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+
+{% block title %}{% trans "Return Items" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Return Order Items" %}</h5>
+      </div>
+
+       <div class="container">
+        <!-- invoice Information -->
+        <div class="row">
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Customer" %}</small>
+                <h6 class="mx-3">{{ invoice.customer.customer_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Branch" %}</small>
+                <h6 class="mx-3">{{ invoice.branch.branch_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Sales Rep" %}</small>
+                <h6 class="mx-3">{{ invoice.sales_rep.user.get_full_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Invoice Date" %}</small>
+                <h6 class="mx-3">{{ invoice.created_at|date:"d-m-Y" }}</h6>
+            </div>
+        </div>
+    </div>
+      <br>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <!-- Purchase invoice Form -->
+          {{ item_form|crispy }}
+
+          <br>
+          <button type="submit" name="action" value="add_item" class="btn btn-info">{% trans "Add Item" %}</button>
+        </form>
+
+        <br>
+        <h5>Return Items</h5>
+        <table class="table table-hover">
+          <thead>
+              <tr>
+                  <th>{% trans "No" %}</th>
+                  <th>{% trans "Product" %}</th>
+                  <th>{% trans "Quantity Returned" %}</th>
+                  <th>{% trans "Note" %}</th>
+                  <th>{% trans "Actions" %}</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for item in return_items %}
+              <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ item.stock_name }}</td>
+                  <td>{{ item.quantity_returned|intcomma }}</td>
+                  <td>{{ item.reason_for_return }}</td>
+
+                  <td>
+                    <form method="POST" action="{% url 'process_return' invoice.id %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="remove_item">
+                      <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">  <!-- Pass the item index -->
+                      <button type="submit" class="btn btn-danger">{% trans "Remove" %}</button>
+                    </form>
+                  </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+        </table>
+
+        <form method="post">
+          {% csrf_token %}
+          <br>
+          <button type="submit" name="action" value="submit_return" class="btn btn-primary">{% trans "Submit Return" %}</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_customer").select2({
+      placeholder: "Search for a Customer",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_sales_rep").select2({
+      placeholder: "Search for a Sales Rep",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_stock").select2({
+      placeholder: "Search for a Product",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#payment_mode").change(function () {
+            var selectedMode = $(this).val();
+
+            // Hide all fields first
+            $(".hidden-field").hide();
+
+            // Show the relevant field based on selection
+            if (selectedMode === "Mobile Money") {
+                $("#id_momo_account").show();
+            } else if (selectedMode === "Check") {
+                $("#id_check_account").show();
+            } else if (selectedMode === "Bank Deposit") {
+                $("#id_bank_deposit_account").show();
+            }
+        });
+    });
+</script>
+
+
+
+
+{% endblock %}

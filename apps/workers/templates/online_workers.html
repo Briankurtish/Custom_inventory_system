@@ -1,0 +1,123 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Online Users List"%} - GC PHARMA{% endblock %}
+
+{% block content %}
+
+{% comment %} <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee"%}
+</button>
+<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
+</button> {% endcomment %}
+
+{% comment %} <hr class="my-8"> {% endcomment %}
+
+{% comment %} <div class="mb-3">
+  <label for="employee-search" class="form-label"></label>
+  <input
+    type="text"
+    id="employee-search"
+    class="form-control"
+    placeholder="{% trans 'Type to search for an employee...' %}"
+  />
+</div> {% endcomment %}
+
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Online Users "%} ({{ online_users_count }})</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>{% trans "No"%}</th>
+          <th>{% trans "First Name" %}</th>
+          <th>{% trans "Last Name" %}</th>
+          <th>{% trans "Role" %}</th>
+          <th>{% trans "Branch Name" %}</th>
+          <th>{% trans "Company" %}</th>
+          <th>{% trans "Status" %}</th>
+        </tr>
+      </thead>
+      <tbody id="employee-table-body" class="table-border-bottom-0">
+
+        {% for worker in workers %}
+        <tr>
+          <td>{{ forloop.counter|add:offset }}</td>
+          <td>{{ worker.user.first_name }}</td>
+          <td>{{ worker.user.last_name }}</td>
+          <td>{{ worker.role }}</td>
+          <td><span>{{ worker.branch.branch_name }}</span></td>
+          <td>{{ worker.company }}</td>
+          <td>
+            {% if worker.is_online %}
+              <span class="badge bg-success">{% trans "Online" %}</span>
+            {% else %}
+              <span class="badge bg-danger">{% trans "Offline" %}</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if workers.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ workers.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in workers.paginator.page_range %}
+      <li class="page-item {% if workers.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+
+      {% if workers.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ workers.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+{% endblock %}
+
+
+{% block page_js %}
+  <script>
+    $(document).ready(function () {
+      // Handle the input in the search field
+      $("#employee-search").on("keyup", function () {
+        const searchText = $(this).val().toLowerCase(); // Get the typed value, converted to lowercase
+
+        // Loop through table rows and filter based on the input
+        $("#employee-table-body tr").each(function () {
+          const rowText = $(this).text().toLowerCase(); // Get the text content of the row
+          if (rowText.includes(searchText)) {
+            $(this).show(); // Show rows that match the search input
+          } else {
+            $(this).hide(); // Hide rows that don't match
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

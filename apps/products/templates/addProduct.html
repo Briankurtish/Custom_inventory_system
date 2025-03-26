@@ -48,7 +48,7 @@
   </div>
 </div>
 
-<script type="text/javascript">
+{% comment %} <script type="text/javascript">
   // This function will auto-populate the brand name based on the selected generic name
   document.addEventListener("DOMContentLoaded", function () {
       // Get the generic_name dropdown and brand_name input
@@ -80,7 +80,7 @@
           }
       });
   });
-</script>
+</script> {% endcomment %}
 
 
 
@@ -90,6 +90,51 @@
 
 
 {% block page_js %}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const genericNameSelect = document.getElementById("id_generic_name_dosage");
+        const brandNameSelect = document.getElementById("id_brand_name");
+        const batchSelect = document.getElementById("id_batch");
+
+        genericNameSelect.addEventListener("change", function() {
+            const selectedGenericNameId = genericNameSelect.value;
+
+            if (selectedGenericNameId) {
+                fetch(`/get-brand-and-batches/${selectedGenericNameId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear previous options
+                        brandNameSelect.innerHTML = '<option value="">Select Brand Name</option>';
+                        batchSelect.innerHTML = '<option value="">Select Batch Number</option>';
+
+                        // Populate brand name options
+                        data.brand_names.forEach(brand => {
+                            const option = document.createElement("option");
+                            option.value = brand;
+                            option.textContent = brand;
+                            brandNameSelect.appendChild(option);
+                        });
+
+                        // Populate batch options
+                        data.batches.forEach(batch => {
+                            const option = document.createElement("option");
+                            option.value = batch;
+                            option.textContent = batch;
+                            batchSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            } else {
+                brandNameSelect.innerHTML = '<option value="">Select Brand Name</option>';
+                batchSelect.innerHTML = '<option value="">Select Batch Number</option>';
+            }
+        });
+    });
+</script>
+
+
 
 <script>
   document.addEventListener('input', function (e) {
@@ -138,4 +183,22 @@
     });
   });
 </script>
+
+{% comment %} <script>
+  document.getElementById('id_dosage_form').addEventListener('change', function() {
+    const dosageFormId = this.value;
+    fetch(`/get-dosage-types/?dosage_form_id=${dosageFormId}`)
+      .then(response => response.json())
+      .then(data => {
+        const dosageTypeSelect = document.getElementById('id_dosage_type');
+        dosageTypeSelect.innerHTML = '';
+        data.forEach(dosageType => {
+          const option = document.createElement('option');
+          option.value = dosageType.id;
+          option.textContent = dosageType.name;
+          dosageTypeSelect.appendChild(option);
+        });
+      });
+  });
+</script> {% endcomment %}
 {% endblock %}

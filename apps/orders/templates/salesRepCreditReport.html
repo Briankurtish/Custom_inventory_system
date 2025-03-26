@@ -67,9 +67,25 @@
     <div class="container">
         <div class="row">
             <!-- First Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Total Sold" %}</small>
+                <h6 class="m-3 text-success">{{ total_sold|floatformat:0|intcomma }} <small>CFA</small></h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Total Paid" %}</small>
+                <h6 class="m-3 text-success">{{ total_amount_paid|floatformat:0|intcomma }} <small>CFA</small></h6>
+            </div>
+            <div class="col-md-3">
                 <small class="text m-3">{% trans "Total Due" %}</small>
                 <h6 class="m-3 text-danger">{{ total_due_general|floatformat:0|intcomma }} <small>CFA</small></h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Total Percentage Paid" %}</small>
+                <h6 class="m-3 text-success">{{ total_percentage_paid|floatformat:0|intcomma }} <small>%</small></h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Total Percentage Due" %}</small>
+                <h6 class="m-3 text-danger">{{ total_percentage_left|floatformat:0|intcomma }} <small>%</small></h6>
             </div>
 
         </div>

@@ -22,10 +22,13 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No"%}</th>
           <th>{% trans "Branch ID"%}</th>
           <th>{% trans "Branch Name"%}</th>
           <th>{% trans "Address"%}</th>
           <th>{% trans "Type"%}</th>
+          <th>{% trans "Added By"%}</th>
+          <th>{% trans "Date Added"%}</th>
           {% comment %} <th>Status</th> {% endcomment %}
           <th>Actions</th>
         </tr>
@@ -33,11 +36,14 @@
       <tbody class="table-border-bottom-0">
         {% for branch in branch %}
         <tr>
+          <td> <span>{{forloop.counter}}</span></td>
           <td> <span>{{branch.branch_id}}</span></td>
           <td>{{branch.branch_name}}</td>
 
           <td><span class="text  me-1">{{branch.address}}</span></td>
           <td>{{ branch.get_branch_type_display }}</td>
+          <td>{{ branch.created_by }}</td>
+          <td>{{ branch.branch_date_added }}</td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -85,6 +91,19 @@
     </ul>
   </nav>
 </div>
+
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'branch-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
+
+
+
+
 
 
 {% endblock %}

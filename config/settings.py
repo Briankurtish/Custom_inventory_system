@@ -41,7 +41,7 @@ DEBUG = True
 
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["pharmamgtsystemgc.com", '145.223.83.168' ]
 
 # Current DJANGO_ENVIRONMENT
 ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", default="local")
@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'rosetta',
     'parler',
+    'apps.custom_clearance',
 ]
 
 MIDDLEWARE = [
@@ -119,6 +120,7 @@ TEMPLATES = [
                 "config.context_processors.my_setting",
                 "config.context_processors.environment",
                 'web_project.context_processors.pending_counts',
+                'web_project.context_processors.role_privileges',
             ],
             "libraries": {
                 "theme": "web_project.template_tags.theme",
@@ -264,6 +266,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.hostinger.com'
 EMAIL_PORT = 587 # or 465 for SSL
 EMAIL_USE_TLS = True # or
-EMAIL_HOST_USER = 'admin@pharmamgtsystemgc.com' # Your email address
-EMAIL_HOST_PASSWORD = 'Password2025#@#' # Your email password
-DEFAULT_FROM_EMAIL = 'admin@pharmamgtsystemgc.com'
+EMAIL_HOST_USER = 'info@pharmamgtsystemgc.com' # Your email address
+EMAIL_HOST_PASSWORD = 'Password2023#@#' # Your email password
+DEFAULT_FROM_EMAIL = 'info@pharmamgtsystemgc.com'

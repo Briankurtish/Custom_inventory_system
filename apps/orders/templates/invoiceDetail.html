@@ -92,6 +92,7 @@
         <table class="table table-hover">
             <thead>
                 <tr>
+                    <th>{% trans "No" %}</th>
                     <th>{% trans "Product Code" %}</th>
                     <th>{% trans "Product Name" %}</th>
                     <th>{% trans "Unit Price" %}</th>
@@ -102,11 +103,12 @@
             <tbody>
                 {% for item in order_items %}
                 <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ item.stock.product.product_code }}</td>
                     <td>{{ item.stock.product.generic_name_dosage }}</td>
-                    <td>{{ item.get_effective_price|floatformat:0|intcomma }} CFA</td>
+                    <td>{{ item.get_effective_price|floatformat:2|intcomma }} CFA</td>
                     <td>{{ item.quantity|intacomma }}</td>
-                    <td>{{ item.total_price|floatformat:0|intcomma }} <small>CFA</small></td>
+                    <td>{{ item.total_price|floatformat:2|intcomma }} <small>CFA</small></td>
                 </tr>
                 {% empty %}
                 <tr>

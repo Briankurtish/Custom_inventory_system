@@ -1,0 +1,154 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}{% trans "Create Payment Schedule" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Payment Schedule" %}</h5>
+      </div>
+      <br>
+
+        <div class="container">
+          <div class="row">
+              <!-- First Column -->
+              {% if return_invoice %}
+                <div class="col-md-2">
+                  <small class="text m-3">{% trans "Total(THT)" %}</small>
+                  <h5 class="mx-3">{{ return_invoice.grand_total|floatformat:2|intcomma }} CFA</h5>
+              </div>
+              {% else %}
+                <div class="col-md-2">
+                  <small class="text m-3">{% trans "Total(THT)" %}</small>
+                  <h5 class="mx-3">{{ purchase_order.grand_total|floatformat:2|intcomma }} CFA</h5>
+              </div>
+              {% endif %}
+
+
+
+
+              <div class="col-md-2">
+                  <small class="text m-3">{% trans "IR Tax" %}({{tax_details.tax_rate}}%)</small>
+                  <h5 class="mx-3">{{ tax_details.tax_amount|floatformat:2|intcomma }} CFA</h5>
+              </div>
+
+              <div class="col-md-2">
+                  <small class="text m-3">{% trans "PreCompte" %}({{tax_details.precompte}}%)</small>
+                  <h5 class="mx-3">{{ tax_details.precompte_amount|floatformat:2|intcomma }} CFA</h5>
+              </div>
+
+              <div class="col-md-2">
+                  <small class="text m-3">{% trans "TVA" %}({{tax_details.tva}}%)</small>
+                  <h5 class="mx-3">{{ tax_details.tva_amount|floatformat:2|intcomma }} CFA</h5>
+              </div>
+
+              <div class="col-md-2">
+                  <small class="text m-3">{% trans "Total(TTC)" %}</small>
+                  <h5 class="mx-3">{{ total_with_taxes|floatformat:2|intcomma }} CFA</h5>
+              </div>
+
+              <!-- Second Column -->
+              <div class="col-md-2">
+                  <small class="text m-3">{% trans "Amount Left" %}</small>
+                  <h5 class="mx-3">{{ amount_left|floatformat:2|intcomma }} CFA</h5>
+              </div>
+
+          </div>
+        </div>
+
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <br>
+          <button type="submit" name="action" value="add_schedule" class="btn btn-primary">{% trans "Add Payment Schedule" %}</button>
+        </form>
+
+        <br>
+        <h5>{% trans "Payment Schedules" %}</h5>
+
+        <table class="table table-hover">
+          <thead>
+              <tr>
+                  <th>#</th>
+                  <th>{% trans "When" %}</th>
+                  <th>{% trans "Amount" %}</th>
+                  <th>{% trans "Due Date" %}</th>
+                  <th>{% trans "Actions" %}</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% if return_invoice %}
+                {% for schedule in return_payment_schedules %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ schedule.when }}</td>
+                        <td>{{ schedule.amount|floatformat:2|intcomma }}</td>
+                        <td>{{ schedule.payment_date }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'create_return_payment_schedule' return_invoice.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="schedule_index" value="{{ forloop.counter0 }}">
+                                <button type="submit" name="action" value="remove_schedule" class="btn btn-danger btn-sm">
+                                    {% trans "Remove" %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">{% trans "No return payment schedules added yet." %}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                {% for schedule in payment_schedules %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ schedule.when }}</td>
+                        <td>{{ schedule.amount|floatformat:2|intcomma }}</td>
+                        <td>{{ schedule.payment_date }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'create_payment_schedule' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="schedule_index" value="{{ forloop.counter0 }}">
+                                <button type="submit" name="action" value="remove_schedule" class="btn btn-danger btn-sm">
+                                    {% trans "Remove" %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">{% trans "No payment schedules added yet." %}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+
+          </tbody>
+        </table>
+
+
+        <form method="post" action="{% if return_invoice %}{% url 'create_return_payment_schedule' return_invoice.id %}{% else %}{% url 'create_payment_schedule' %}{% endif %}">
+          {% csrf_token %}
+          <br>
+          <button type="submit" name="action" value="submit_schedules" class="btn btn-success"
+              {% if return_invoice and not return_payment_schedules or not return_invoice and not payment_schedules %}disabled{% endif %}>
+              {% trans "Submit Payment Schedule" %}
+          </button>
+      </form>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

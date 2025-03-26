@@ -1,11 +1,14 @@
 from django.urls import path
-from .views import ManageBranchView, add_branch_view, update_branch_view, delete_branch_view
+from .views import ManageBranchView, add_branch_view, update_branch_view, delete_branch_view, BranchAuditLogView
 
 
 
 urlpatterns = [
     path(
         "branches-list/", ManageBranchView, name="branches",
+    ),
+    path(
+        "branch-logs/", BranchAuditLogView, name="branch-logs",
     ),
     path(
         "add-branch/", add_branch_view, name="add-branch",

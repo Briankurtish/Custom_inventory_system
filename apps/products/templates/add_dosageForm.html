@@ -1,0 +1,102 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Add Dosage Form" %}{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<a href="{% url 'products' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Add Dosage Form" %}</h5>
+      </div>
+      <div class="card-body">
+        <form method='POST'>
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          {% if is_editing %}
+            <button type="submit" class="btn btn-warning">{% trans "Update" %}</button>
+          {% else %}
+            <button type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="my-8">
+
+<button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-dosage-type' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Add Dosage Type" %}
+  </button>
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Dosage Form List" %}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+        <th>No</th>
+          <th>{% trans "Dosage Form" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for item in dosage_form %}
+        <tr>
+          <td><span>{{forloop.counter}}</span></td>
+          <td><span>{{item.name}}</span></td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'edit-dosage-form' item.id %}">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'delete-dosage-form' item.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+
+
+
+
+{% endblock %}
+
+
+{% block page_js %}
+
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_generic_name").select2({
+      placeholder: "Search Generic Name",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+{% endblock %}

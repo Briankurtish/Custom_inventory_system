@@ -1,0 +1,86 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Order Logs"%} - GC PHARMA{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'orders' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Purchase Order Logs"%}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>{% trans "No"%}</th>
+          <th>{% trans "Timestamp"%}</th>
+          <th>{% trans "User"%}</th>
+          <th>{% trans "Operation"%}</th>
+          <th>{% trans "Order Id"%}</th>
+          <th>{% trans "Branch"%}</th>
+          <th>{% trans "Details"%}</th>
+          {% comment %} <th>Status</th> {% endcomment %}
+          {% comment %} <th>Actions</th> {% endcomment %}
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for log in logs %}
+         <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.user }}</td>
+                    <td>{{ log.get_action_display }}</td>
+                    <td>{{ log.order }}</td>
+                    <td>{{ log.branch }}</td>
+                    <td>{{ log.details|default:"-" }}</td>
+                </tr>
+
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if logs.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for page_num in logs.paginator.page_range %}
+      <li class="page-item {% if branch.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+      </li>
+      {% endfor %}
+
+      {% if logs.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+
+
+
+
+{% endblock %}

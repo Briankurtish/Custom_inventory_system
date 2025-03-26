@@ -1,10 +1,14 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.workers.models import Worker
+from apps.workers.models import Worker, RolePrivilege
 from apps.stock_request.models import StockRequest
 from django.utils.translation import activate
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Notice
+from .forms import NoticeForm
 
 
 class DashboardsView(LoginRequiredMixin, TemplateView):
@@ -24,7 +28,7 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
                     'Pharmacist': 'dashboard_pharmacist.html',
                     'Marketing Director': 'dashboard_md.html',
                     'Central Stock Manager': 'dashboard_cstm.html',
-                    'Stock Manager': 'dashboard_cstm.html',
+                    'Stock Manager': 'dashboard_stkm.html',
                     'Stock Keeper': 'dashboard_stock_keeper.html',
                     'Accountant': 'dashboard_acc.html',
                     'Cashier': 'dashboard_cash.html',
@@ -51,6 +55,10 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         context['pending_request_count'] = StockRequest.objects.filter(status='Pending').count()
         context['accepted_request_count'] = StockRequest.objects.filter(status='Accepted').count()
 
+
+        # Add the notices to the context
+        context['notices'] = Notice.objects.filter(is_active=True).order_by("-created_at")
+
         # Check if the user is logging in for the first time (last_login is None)
         show_password_modal = self.request.user.last_login is None
         if show_password_modal:
@@ -60,4 +68,41 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         # Add the flag to show the modal
         context['show_password_modal'] = show_password_modal
 
+
+
         return context
+
+
+@login_required
+def notice_board(request):
+    notices = Notice.objects.filter(is_active=True).order_by("-created_at")
+    form = NoticeForm()
+
+    if request.method == "POST":
+        form = NoticeForm(request.POST)
+        if form.is_valid():
+            notice = form.save(commit=False)
+            notice.created_by = request.user.worker_profile  # Assuming worker_profile is linked
+            notice.save()
+            messages.success(request, "Notice posted successfully!")
+            return redirect("notice_board")
+
+    context = TemplateLayout.init(
+        request,
+        {"notices": notices, "form": form}
+    )
+
+    return render(request, "new_notice.html", context)
+
+
+
+
+@login_required
+def delete_notice(request, pk):
+    try:
+        notice = Notice.objects.get(pk=pk)
+        notice.delete()
+        messages.success(request, "Notice deleted successfully!")
+    except Notice.DoesNotExist:
+        messages.error(request, "Notice not found.")
+    return redirect("notice_board")

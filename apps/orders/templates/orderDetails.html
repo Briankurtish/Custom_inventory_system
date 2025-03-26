@@ -27,7 +27,11 @@
 
 <div class="card">
     <div class="row">
-        <h5 class="text col-md-4 m-3">{{ order.purchase_order_id }}</h5>
+        {% if order_type == "purchase_order" %}
+          <h5 class="text col-md-4 m-3">{{ order.purchase_order_id }}</h5>
+          {% elif order_type == "return_purchase_order" %}
+            <h5 class="text col-md-4 m-3">{{ order.return_order_id }}</h5>
+          {% endif %}
     </div>
     <hr>
 
@@ -60,9 +64,18 @@
             <div class="col-md-3">
                 <small class="text m-3">{% trans "Customer Name" %}</small>
                 <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
-                {% if 'View Customer Credits' in worker_privileges or user.is_superuser %}
+                {% if user.worker_profile.privileges.all %}
+                  {% for privilege in user.worker_profile.privileges.all %}
+                      {% if privilege.name == 'View Customer Credits' %}
+                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'customer_credit_report' customer_id=order.customer.id %}'">
+                            <span class="fa-solid fa-file me-2"></span>{% trans "Get Customer Report" %}
+                        </button>
+                      {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if user.is_superuser %}
                 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'customer_credit_report' customer_id=order.customer.id %}'">
-                    <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Get Customer Report" %}
+                    <span class="fa-solid fa-file me-2"></span>{% trans "Get Customer Report" %}
                 </button>
 
 
@@ -71,10 +84,21 @@
             <div class="col-md-3">
                 <small class="text m-3">{% trans "Sales Representative" %}</small>
                 <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
-                {% if 'View Sales Rep Credits' in worker_privileges or user.is_superuser %}
+                {% if user.worker_profile.privileges.all %}
+                  {% for privilege in user.worker_profile.privileges.all %}
+                      {% if privilege.name == 'View Sales Rep Credits' %}
+                        <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
+                        </button>
+                    </form>
+                      {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if user.is_superuser %}
                     <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
                         <button type="submit" class="btn btn-primary">
-                            <span class="tf-icons bx bx-file bx-18px me-2"></span> {% trans "Get Credit Report" %}
+                            <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
                         </button>
                     </form>
                 {% endif %}
@@ -93,7 +117,7 @@
                     {% elif order.status|lower == "rejected" %}
                     <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
                     {% else %}
-                    <span class="badge bg-label-info me-1">{{ order.status }}</span>
+                    <span class="badge bg-label-secondary me-1">{{ order.status }}</span>
                     {% endif %}
                 </h6>
             </div>
@@ -116,12 +140,119 @@
     </div>
     {% endif %}
 
+        <div class="container">
+            <!-- Order Information -->
+            <div class="row">
+                <div class="col-md-2">
+                    <small class="text m-3">Tax(Taux)</small>
+                    <h6 class="mx-3">{{ order.tax_rate }}%</h6>
+                </div>
+                <div class="col-md-2">
+                    <small class="text m-3">Pre Compte</small>
+                    <h6 class="mx-3">{{ order.precompte }}%</h6>
+                </div>
+                <div class="col-md-2">
+                    <small class="text m-3">TVA</small>
+                    <h6 class="mx-3">{{ order.tva }}%</h6>
+                </div>
+                <div class="col-md-2">
+                    <small class="text m-3">Special Customer</small>
+                    <h6 class="mx-3">{{ order.is_special_customer }}</h6>
+                </div>
+
+                {% comment %} {% if user.worker_profile.privileges.all %}
+                  {% for privilege in user.worker_profile.privileges.all %}
+                      {% if privilege.name == 'Add Tax' %}
+                        {% if order.status == "Pending"%}
+                          <div class="col-md-2">
+                              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaxModal">
+                                  {% if order.tax_rate is not None %}{% trans "Update Tax" %}{% else %}{% trans "Add Tax" %}{% endif %}
+                              </button>
+                          </div>
+                        {% endif %}
+                      {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if user.is_superuser %}
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaxModal">
+                            {% if order.tax_rate is not None %}{% trans "Update Tax" %}{% else %}{% trans "Add Tax" %}{% endif %}
+                        </button>
+                    </div>
+                {% endif %} {% endcomment %}
+
+            </div>
+        </div>
+    <hr>
+
+
+
 
 <!-- Order Items -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">{% trans "Order Items" %}</h5>
-        {% if order.status == "Pending" and 'Edit Order Prices' in worker_privileges or user.is_superuser %}
+        {% if user.worker_profile.privileges.all %}
+                  {% for privilege in user.worker_profile.privileges.all %}
+                      {% if privilege.name == 'Edit Order Prices' %}
+                        <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">{% trans "Edit Prices" %}</a>
+
+                          <!-- Modal -->
+                          <div class="modal fade" id="editPricesModal" tabindex="-1" aria-labelledby="editPricesModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-lg">
+                                  <div class="modal-content">
+                                      <form action="{% url 'edit_prices' order.id %}" method="post">
+                                          {% csrf_token %}
+                                          <div class="modal-header">
+                                              <h5 class="modal-title" id="editPricesModalLabel">{% trans "Edit Prices for Order" %}{{ order.id }}</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                          </div>
+                                          <div class="modal-body">
+                                              <div class="table-responsive text-nowrap">
+                                                  <table class="table table-hover">
+                                                      <thead>
+                                                          <tr>
+                                                              <th>{% trans "Product Code" %}</th>
+                                                              <th>{% trans "Product Name" %}</th>
+                                                              <th>{% trans "Current Price" %}</th>
+                                                              <th>{% trans "New Temporary Price" %}</th>
+                                                          </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                          {% for item in order_items %}
+                                                          <tr>
+                                                              <td>{{ item.stock.product.product_code }}</td>
+                                                              <td>{{ item.stock.product.generic_name_dosage }}</td>
+                                                              <td>{{ item.effective_price|floatformat:0|intcomma }} CFA</td>
+                                                              <td>
+                                                                  <input type="number" name="prices[{{ item.id }}]" class="form-control" step="0.01" min="0" value="{{ item.temp_price|default:item.stock.product.unit_price }}">
+                                                              </td>
+                                                          </tr>
+                                                          {% empty %}
+                                                          <tr>
+                                                              <td colspan="4" class="text-center">{% trans "No items found for this order" %}</td>
+                                                          </tr>
+                                                          {% endfor %}
+                                                      </tbody>
+                                                  </table>
+                                              </div>
+                                              <div class="form-group mt-3">
+                                                  <label for="editPriceNote">{% trans "Reason for Price Change" %}:</label>
+                                                  <textarea name="edit_price_note" id="editPriceNote" class="form-control" rows="3" placeholder="Enter the reason for the price change"></textarea>
+                                              </div>
+                                          </div>
+                                          <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                              <button type="submit" class="btn btn-success">{% trans "Save Changes" %}</button>
+                                          </div>
+                                      </form>
+                                  </div>
+                              </div>
+                          </div>
+                      {% endif %}
+                  {% endfor %}
+                {% endif %}
+        {% if user.is_superuser %}
             <!-- Edit Prices Button -->
             <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPricesModal">{% trans "Edit Prices" %}</a>
 
@@ -151,7 +282,7 @@
                                             <tr>
                                                 <td>{{ item.stock.product.product_code }}</td>
                                                 <td>{{ item.stock.product.generic_name_dosage }}</td>
-                                                <td>{{ item.effective_price|floatformat:0|intcomma }} CFA</td>
+                                                <td>{{ item.effective_price|floatformat:2|intcomma }} CFA</td>
                                                 <td>
                                                     <input type="number" name="prices[{{ item.id }}]" class="form-control" step="0.01" min="0" value="{{ item.temp_price|default:item.stock.product.unit_price }}">
                                                 </td>
@@ -182,42 +313,53 @@
 
     </div>
     <div class="table-responsive text-nowrap">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>{% trans "Product Code" %}</th>
-                    <th>{% trans "Product Name" %}</th>
-                    <th>{% trans "Unit Price" %}</th>
-                    <th>{% trans "Note" %}</th>
-                    <th>{% trans "Quantity" %}</th>
-                    <th>{% trans "Total Price" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in order_items %}
-                <tr>
-                    <td>{{ item.stock.product.product_code }}</td>
-                    <td>{{ item.stock.product.generic_name_dosage }}</td>
-                    <td>{{ item.get_effective_price|floatformat:0|intcomma }} CFA</td>
-                    <td>{{ item.reason }}</td>
-                    <td>{{ item.quantity|intcomma }}</td>
-                    <td>{{ item.total_price|floatformat:0|intcomma }} <small>CFA</small></td>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>{% trans "No" %}</th>
+                <th>{% trans "Product Code" %}</th>
+                <th>{% trans "Product Name" %}</th>
+                <th>{% trans "Batch Number" %}</th>
+                <th>{% trans "Unit Price" %}</th>
+                <th>{% trans "Note" %}</th>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Total Price" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.stock.product.product_code }}</td>
+                <td>{{ item.stock.product.generic_name_dosage }}</td>
+                <td>{{ item.stock.product.batch.batch_number }}</td>
+                <td>{{ item.get_effective_price|floatformat:2|intcomma }} CFA</td>
+                <td class="text-danger">{{ item.reason }}</td>
+                <td>{{ item.quantity|intcomma }}</td>
+                <td>{{ item.total_price|floatformat:2|intcomma }} <small>CFA</small></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">{% trans "No items found for this order" %}</td>
+            </tr>
+            {% endfor %}
+            <!-- Grand Total Row -->
+            <tr>
+                <td colspan="6"><strong>Total(THT)</strong></td>  <!-- Empty columns for alignment -->
+                <td><strong><h6>{{ total_quantity|intcomma }}</h6></strong></td>
+                <td class="text-primary"><strong>{{ order.grand_total|floatformat:2|intcomma }} CFA</strong></td>
+            </tr>
 
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">{% trans "No items found for this order" %}</td>
-                </tr>
-                {% endfor %}
-                <!-- Grand Total Row -->
-                <tr>
-                    <td colspan="4"><strong><h4>{% trans "Grand Total" %}</h4></strong></td>
-                    <td><strong><h6>{{total_quantity|intcomma}}</h6></strong></td>
-                    <td class="text-primary"><strong>{{ order.grand_total|floatformat:0|intcomma }} CFA</strong></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <tr>
+                <td colspan="6"><strong>Total(TTC)</strong></td>  <!-- Empty columns for alignment -->
+                <td><strong></strong></td>
+                <td class="text-primary"><strong>{{ total_with_taxes|floatformat:2|intcomma }} CFA</strong></td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
 
 </div>
 
@@ -230,28 +372,150 @@
 </div>
 
 <!-- Action Buttons -->
-<div class="mt-3">
-    {% if order.status == "Pending" and 'Approve or decline Orders' in worker_privileges or user.is_superuser %}
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" >{% trans "Approve" %}</button>
+{% if order.status != "Canceled" %}
+  <div class="mt-3 d-flex gap-2">
+      {% if order.status == "Pending"%}
 
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-            {% trans "Reject" %}
-        </button>
-    {% endif %}
+        {% if role_privileges %}
+            {% for privilege in role_privileges %}
+                {% if privilege.name == 'Approve or decline Orders' %}
+                    {% if order_type == "purchase_order" %}
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                            {% trans "Approve" %}
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            {% trans "Reject" %}
+                        </button>
+                    {% endif %}
 
-    {% if order.status == "Approved" and 'Cancel Order' in worker_privileges or user.is_superuser %}
-        <form method="post" action="{% url 'cancel_order' order.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">{% trans "Cancel" %} {% trans "Order" %}</button>
-        </form>
-    {% endif %}
-</div>
+                    {% if order_type == "return_purchase_order" %}
 
-<div class="mt-3">
-    {% if order.status == "Approved" and 'Generate Purchase Order' in worker_privileges  or user.is_superuser%}
-        <a href="{% url 'generate_purchase_order_pdf' order.id %}" target="_blank" class="btn btn-primary">{% trans "Download Purchase Order PDF" %}</a>
-    {% endif %}
-</div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_superuser %}
+            {% if order_type == "purchase_order" %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    {% trans "Approve" %}
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    {% trans "Reject" %}
+                </button>
+            {% endif %}
+
+            {% if order_type == "return_purchase_order" %}
+
+            {% endif %}
+        {% endif %}
+      {% endif %}
+
+
+
+      {% comment %} {% if order.status == "Approved"%}
+
+        {% if role_privileges %}
+            {% for privilege in role_privileges %}
+                {% if privilege.name == 'Cancel Order' %}
+                   {% if order_type == "purchase_order" %}
+                        <form method="post" action="{% url 'cancel_order' order.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">{% trans "Cancel Order" %}</button>
+                        </form>
+                    {% endif %}
+
+                    {% if order_type == "return_purchase_order" %}
+
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_superuser %}
+            {% if order_type == "purchase_order" %}
+            <form method="post" action="{% url 'cancel_order' order.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">{% trans "Cancel Order" %}</button>
+            </form>
+            {% endif %}
+
+            {% if order_type == "return_purchase_order" %}
+
+            {% endif %}
+        {% endif %} {% endcomment %}
+
+
+        {% comment %} {% if order_type == "purchase_order" %}
+          <form method="post" action="{% url 'cancel_order' order.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">{% trans "Cancel Order" %}</button>
+          </form>
+        {% endif %}
+
+        {% if order_type == "return_purchase_order" %}
+
+        {% endif %} {% endcomment %}
+
+      {% endif %}
+  </div>
+
+  <div class="mt-3 d-flex gap-2">
+      {% if order.status == "Approved" %}
+
+        {% if role_privileges %}
+            {% for privilege in role_privileges %}
+                {% if privilege.name == 'Generate Purchase Order' %}
+                    {% if order_type == "purchase_order" %}
+                        <a href="{% url 'purchase-order' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Purchase Order" %}
+                        </a>
+                    {% elif order_type == "return_purchase_order" %}
+                        <a href="{% url 'purchase-order' purchase_order_id=order.return_order_id %}" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Return Purchase Order" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if role_privileges %}
+            {% for privilege in role_privileges %}
+                {% if privilege.name == 'Generate Picking List' %}
+                    {% if order_type == "purchase_order" %}
+                        <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Picking List" %}
+                        </a>
+                    {% elif order_type == "return_purchase_order" %}
+
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_superuser %}
+              {% if order_type == "purchase_order" %}
+                  <a href="{% url 'purchase-order' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                      {% trans "Generate Purchase Order" %}
+                  </a>
+              {% elif order_type == "return_purchase_order" %}
+                  <a href="{% url 'purchase-order' purchase_order_id=order.return_order_id %}" target="_blank" class="btn btn-primary">
+                      {% trans "Generate Return Purchase Order" %}
+                  </a>
+              {% endif %}
+          {% endif %}
+          {% if user.is_superuser %}
+              {% if order_type == "purchase_order" %}
+                  <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                      {% trans "Generate Picking List" %}
+                  </a>
+              {% elif order_type == "return_purchase_order" %}
+
+              {% endif %}
+          {% endif %}
+      {% endif %}
+  </div>
+
 
 <!-- Approval Modal -->
 <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
@@ -278,6 +542,63 @@
     </div>
 </div>
 
+
+<!-- Add Tax Modal -->
+<div class="modal fade" id="addTaxModal" tabindex="-1" aria-labelledby="addTaxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">  <!-- Centered Modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaxModalLabel">{% trans "Add Tax to Order" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_tax_to_order' order.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Tax Rate Field -->
+                    <div class="mb-3">
+                        <label for="taxType" class="form-label">{% trans "Tax" %}</label>
+                        <select class="form-select" id="taxType" name="tax_rate" required>
+                            <option value="0.0">{% trans "0.0%" %}</option>
+                            <option value="2.0">{% trans "2.0%" %}</option>
+                            <option value="2.2">{% trans "2.2%" %}</option>
+                            <option value="5.0">{% trans "5.0%" %}</option>
+                            <option value="5.50">{% trans "5.50%" %}</option>
+                        </select>
+                    </div>
+
+                    <!-- Precompte Field -->
+                    <div class="mb-3">
+                        <label for="precompte" class="form-label">{% trans "Pre Compte" %}</label>
+                        <select class="form-select" id="precompte" name="precompte" required>
+                            <option value="0.0">0.0%</option>
+                            <option value="2.0">2.0%</option>
+                            <option value="5.0">5.0%</option>
+                        </select>
+                    </div>
+
+                    <!-- TVA Field -->
+                    <div class="mb-3">
+                        <label for="tva" class="form-label">{% trans "TVA" %}</label>
+                        <select class="form-select" id="tva" name="tva" required>
+                            <option value="0.0">0.0%</option>
+                            <option value="19.25">19.25%</option>
+                        </select>
+                    </div>
+
+                    <!-- Special Customer Checkbox -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isSpecialCustomer" name="is_special_customer" {% if order.is_special_customer %}checked{% endif %}>
+                        <label class="form-check-label" for="isSpecialCustomer">{% trans "Is a Special Customer" %}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-success">{% if order.tax_rate is not None %}Update Tax{% else %}Add Tax{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 <!-- Reject Modal -->

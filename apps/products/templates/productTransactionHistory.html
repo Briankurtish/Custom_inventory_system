@@ -1,0 +1,115 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Product Transaction History" %} - GC PHARMA{% endblock %}
+
+{% block page_css %}
+<style>
+  .truncate {
+    max-width: 200px; /* Adjust based on table layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer; /* Indicate interactivity */
+  }
+
+  .table-responsive {
+    max-height: 500px; /* Adjust based on your desired table height */
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+
+  .table-responsive table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa !important; /* Force the background color */
+    z-index: 2; /* Ensure the header stays above the table rows */
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
+  }
+
+  .table-responsive table tbody td {
+    background-color: #fff; /* Ensure table rows have a solid background */
+    position: relative;
+    z-index: 1; /* Keep rows below the sticky header */
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'products' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">Transaction History for {{ product.brand_name.brand_name }} - ({{ product.product_code }})</h5>
+  <div class="table-responsive text-nowrap">
+    {% if sales_history %}
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "No" %}</th>
+            <th>{% trans "Invoice ID" %}</th>
+            <th>{% trans "Customer" %}</th>
+            <th>{% trans "Sales Rep" %}</th>
+            <th>{% trans "Branch" %}</th>
+            <th>{% trans "Quantity" %}</th>
+            <th>{% trans "Price" %}</th>
+            <th>{% trans "Date" %}</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for sale in sales_history %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ sale.invoice_order.old_invoice_id }}</td>
+              <td class="truncate" title="{{ sale.invoice_order.customer.customer_name }}">{{ sale.invoice_order.customer.customer_name }}</td>
+              <td>{{ sale.invoice_order.sales_rep.user.get_full_name }}</td>
+              <td>{{ sale.invoice_order.branch.branch_name }}</td>
+              <td>{{ sale.quantity }}</td>
+              <td>{{ sale.price|intcomma }} CFA</td>
+              <td>{{ sale.invoice_order.created_at|date:"d-m-Y" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No sales history available.</p>
+    {% endif %}
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if logs.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% endif %}
+
+      {% for page_num in logs.paginator.page_range %}
+        <li class="page-item {% if branch.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+        </li>
+      {% endfor %}
+
+      {% if logs.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+{% endblock %}

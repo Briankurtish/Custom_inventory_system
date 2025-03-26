@@ -1,7 +1,8 @@
 from django.views.generic import TemplateView
+from apps.workers.models import Worker
 from web_project import TemplateLayout
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Branch
+from .models import Branch, BranchAuditLog
 from .forms import BranchForm
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -22,11 +23,11 @@ Refer to tables/urls.py file for more pages.
 @login_required
 def ManageBranchView(request):
     branch = Branch.objects.all()
-    paginator = Paginator(branch, 10) 
+    paginator = Paginator(branch, 10)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_branch = paginator.get_page(page_number)  # Get the page object
 
-    # Create a new context dictionary for this view 
+    # Create a new context dictionary for this view
     view_context = {
         "branch": paginated_branch,
     }
@@ -37,24 +38,72 @@ def ManageBranchView(request):
     return render(request, 'branches.html', context)
 
 
+@login_required
+def BranchAuditLogView(request):
+    logs = BranchAuditLog.objects.all().order_by('-timestamp')
+    paginator = Paginator(logs, 100)  # Paginate logs with 10 logs per page
+    page_number = request.GET.get("page")  # Get the current page number from the request
+    paginated_logs = paginator.get_page(page_number)  # Get the page object
+    offset = (paginated_logs.number - 1) * paginator.per_page
+    # Create a context dictionary for the view
+    view_context = {
+        "logs": paginated_logs,
+        "offset": offset,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "branch_logs.html", context)
+
 
 @login_required
 def add_branch_view(request, pk=None):
-    # branches = Branch.objects.all() 
-    
     if pk:
-        branch = get_object_or_404(Branch, pk=pk)  
-        form = BranchForm(request.POST or None, instance=branch) 
+        branch = get_object_or_404(Branch, pk=pk)
+        form = BranchForm(request.POST or None, instance=branch)
+        action = "update"  # Specify the action for logs
     else:
-        product = None
-        form = BranchForm(request.POST or None)  
+        branch = None  # Initialize branch to None
+        form = BranchForm(request.POST or None)
+        action = "create"  # Specify the action for logs
 
     # Handle the POST request (form submission)
     if request.method == "POST":
         if form.is_valid():
-            form.save()  # Save the product (create or update based on `pk`)
-            messages.success(request, _("Branch Created Successfully"))
-            return redirect('branches')  # Redirect to the product list after saving
+            branch = form.save()  # Save the form and set the branch variable
+
+            # Capture the branch details before saving
+            branch_details = {
+                "id": branch.id,
+                "name": branch.branch_name,
+            }
+
+            # Handle the audit log
+            if request.user.username == "admin":
+                # Special case for admin account (no associated Worker)
+                BranchAuditLog.objects.create(
+                    user=None,  # No associated Worker
+                    branch_name=branch_details["name"],  # Store branch name directly
+                    action=action,
+                    details=f"Branch {action}d by admin."
+                )
+            else:
+                # Try to retrieve the Worker instance
+                try:
+                    worker = request.user.worker_profile
+                    BranchAuditLog.objects.create(
+                        user=worker,
+                        branch_name=branch_details["name"],  # Store branch name directly
+                        action=action,
+                        details=f"Branch {action}d by {worker}."
+                    )
+                except Worker.DoesNotExist:
+                    messages.error(request, "Worker profile not found for the current user.")
+                    return redirect("branches")  # Handle error appropriately
+
+            messages.success(request, _("Branch Created Successfully" if action == "create" else "Branch Updated Successfully"))
+            return redirect('branches')  # Redirect to the branch list after saving
 
     view_context = {
         "form": form,
@@ -67,14 +116,44 @@ def add_branch_view(request, pk=None):
 
 @login_required
 def update_branch_view(request, pk):
-    branch = get_object_or_404(Branch, pk=pk)  # Get the product by ID
+    branch = get_object_or_404(Branch, pk=pk)
 
     if request.method == "POST":
-        form = BranchForm(request.POST, instance=branch)  # Bind form to the product instance
+        form = BranchForm(request.POST, instance=branch)
         if form.is_valid():
-            form.save()
+            branch = form.save()
+
+            # Capture the branch details before saving
+            branch_details = {
+                "id": branch.id,
+                "name": branch.branch_name,
+            }
+
+            # Handle the audit log
+            if request.user.username == "admin":
+                # Special case for admin account (no associated Worker)
+                BranchAuditLog.objects.create(
+                    user=None,  # No associated Worker
+                    branch_name=branch_details["name"],  # Store branch name directly
+                    action="update",
+                    details=f"Branch updated by admin."
+                )
+            else:
+                # Try to retrieve the Worker instance
+                try:
+                    worker = request.user.worker_profile
+                    BranchAuditLog.objects.create(
+                        user=worker,
+                        branch_name=branch_details["name"],  # Store branch name directly
+                        action="update",
+                        details=f"Branch updated by {worker}."
+                    )
+                except Worker.DoesNotExist:
+                    messages.error(request, "Worker profile not found for the current user.")
+                    return redirect("branches")  # Handle error appropriately
+
             messages.success(request, _("Branch Updated Successfully"))
-            return redirect('branches')  # Redirect to the product list
+            return redirect("branches")
     else:
         form = BranchForm(instance=branch)
 
@@ -83,21 +162,54 @@ def update_branch_view(request, pk):
     view_context = {
         "form": form,
         "branches": branches,
-        "is_editing": True,  # Flag for edit operation
+        "is_editing": True,
     }
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'addBranch.html', context)
 
 
+
 @login_required
 def delete_branch_view(request, pk):
     """
-    Handles deleting a crypto wallet.
+    Handles saving the delete log for a branch and then deleting the branch.
     """
     branch = get_object_or_404(Branch, id=pk)
+
     if request.method == "POST":
+        # Capture branch details before deletion
+        branch_details = {
+            "id": branch.id,
+            "name": branch.branch_name,
+        }
+
+        # Handle the audit log before deletion
+        if request.user.username == "admin":
+            # Special case for admin account (no associated Worker)
+            BranchAuditLog.objects.create(
+                user=None,  # No associated Worker
+                branch_name=branch_details["name"],  # Store branch name directly
+                action="delete",
+                details=f"Branch '{branch_details['name']}' deleted by admin."
+            )
+        else:
+            # Try to retrieve the Worker instance
+            try:
+                worker = request.user.worker_profile
+                BranchAuditLog.objects.create(
+                    user=worker,
+                    branch_name=branch_details["name"],  # Store branch name directly
+                    action="delete",
+                    details=f"Branch '{branch_details['name']}' deleted by {worker}."
+                )
+            except Worker.DoesNotExist:
+                messages.error(request, "Worker profile not found for the current user.")
+                return redirect("branches")  # Handle error appropriately
+
+        # Now, delete the branch
         branch.delete()
+
         messages.success(request, _("Branch Deleted Successfully"))
         return redirect("branches")
 

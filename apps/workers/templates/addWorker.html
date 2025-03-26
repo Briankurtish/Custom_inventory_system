@@ -68,6 +68,17 @@
 {% block page_js %}
 
 <script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_manager").select2({
+      placeholder: "Search manager",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+
+<script>
   document.addEventListener("DOMContentLoaded", function() {
       const roleField = document.getElementById("role");
       const companyField = document.getElementById("company").closest(".form-group");

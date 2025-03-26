@@ -9,36 +9,84 @@
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{% trans "Track Stocks" %}</li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "All Stocks" %}</li>
   </ol>
 </nav>
 
-<form method="get" action="" class="mb-4">
-    <!-- Branch Filter -->
-    <div class="d-flex align-items-center">
-      <label for="branch_filter" class="me-2 mb-0">{% trans "Filter by Branch" %}:</label>
-      <select name="branch_filter" id="branch_filter" class="form-select form-select-sm" style="width: 180px;">
-        <option value="">{% trans "All" %}</option>
-        {% for branch in branches %}
-          <option value="{{ branch.id }}" {% if branch.id == branch_filter %}selected{% endif %}>
-            {{ branch.branch_name }}
-          </option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="btn btn-outline-primary btn-sm ms-2">{% trans "Filter" %}</button>
-    </div>
+{% comment %} <form method="get" action="{% url 'track-stocks' %}" class="mb-4">
+  <div class="mb-3">
+    <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
+    <input
+      type="text"
+      name="search_query"
+      id="stock-search"
+      class="form-control"
+      placeholder="{% trans 'Type to search for stock...' %}"
+      value="{{ search_query }}"
+    />
+  </div>
+
+  <!-- Branch Filter -->
+  <div class="d-flex align-items-center">
+    <label for="branch_filter" class="me-2 mb-0">{% trans "Filter by Branch" %}:</label>
+    <select name="branch_filter" id="branch_filter" class="form-select form-select-sm" style="width: 180px;">
+      <option value="">{% trans "All" %}</option>
+      {% for branch in branches %}
+        <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
+          {{ branch.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary btn-sm mt-2">{% trans "Filter & Search" %}</button>
+</form> {% endcomment %}
+
+
+<form method="get" action="{% url 'track-stocks' %}" class="mb-3 d-flex flex-wrap align-items-end">
+  <div class="mb-2 d-flex flex-column me-3">
+    <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
+    <input
+      type="text"
+      name="search_query"
+      id="stock-search"
+      class="form-control"
+      placeholder="{% trans 'Type to search for stock...' %}"
+      value="{{ search_query }}"
+    />
+  </div>
+
+  <div class="mb-2 d-flex flex-column me-3">
+   <label for="branch_filter" class="me-2 mb-0">{% trans "Filter by Branch" %}:</label>
+    <select name="branch_filter" id="branch_filter" class="form-select form-select-sm" style="width: 180px;">
+      <option value="">{% trans "All" %}</option>
+      {% for branch in branches %}
+        <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
+          {{ branch.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-2 d-flex align-items-center">
+    <button type="submit" class="btn btn-primary">{% trans "Search & Filter" %}</button>
+  </div>
 </form>
 
-<!-- Filter Section with Select2 -->
-<div class="mb-3">
-  <label for="product-search" class="form-label">{% trans "Search Product (Product Code or Generic Name)" %}</label>
-  <select id="product-search" class="form-select" style="width: 100%;">
-    <option value="">{% trans "Select Product" %}</option>
-    {% for product in all_products %}
-      <option value="{{ product.product_code }}">{{ product.product_code }} - {{ product.generic_name_dosage }}</option>
-    {% endfor %}
-  </select>
-</div>
+
+
+
+
+
+  {% comment %} <div class="mb-3">
+  <label for="stock-search" class="form-label"></label>
+  <input
+    type="text"
+    id="stock-search"
+    class="form-control"
+    placeholder="{% trans 'Type to search for stock...' %}"
+  />
+</div> {% endcomment %}
 
 <!-- Table displaying the stocks -->
 <div class="card">
@@ -47,24 +95,39 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Product Code" %}</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Branch Name" %}</th>
-          <th>{% trans "Product Name" %}</th>
+          <th>{% trans "Generic Name" %}</th>
+          <th>{% trans "Brand Name" %}</th>
           <th>{% trans "Batch Number" %}</th>
-          <th>{% trans "Quantity" %}</th>
+          <th>{% trans "Beginnig Inventory" %}</th>
+          <th>{% trans "Added Inventory" %}</th>
+          <th>{% trans "Total" %}</th>
+          <th>{% trans "Total Transfered" %}</th>
+          <th>{% trans "Total Sold" %}</th>
+          <th>{% trans "Available Inventory" %}</th>
           <th>{% trans "Status" %}</th>
+          <th>{% trans "Date Added" %}</th>
         </tr>
       </thead>
-      <tbody id="stock-table-body">
+      <tbody id="stock-table-body" class="table-border-bottom-0">
         {% for stock in stocks %}
           <tr data-product-code="{{ stock.product.product_code }}" data-generic-name="{{ stock.product.generic_name_dosage }}">
+            <td>{{ forloop.counter|add:offset }}</td>
             <td>{{ stock.product.product_code }}</td>
             <td>{{ stock.branch.branch_id }}</td>
             <td>{{ stock.branch.branch_name }}</td>
             <td>{{ stock.product.generic_name_dosage }}</td>
+            <td>{{ stock.product.brand_name.brand_name }}</td>
             <td>{{ stock.product.batch.batch_number }}</td>
+            <td>{{ stock.fixed_beginning_inventory|intcomma }}</td>
             <td>{{ stock.quantity|intcomma }}</td>
+            <td>{{ stock.total_inventory|intcomma }}</td>
+            <td>{{ stock.quantity_transferred|intcomma }}</td>
+            <td>{{ stock.total_sold|intcomma }}</td>
+            <td>{{ stock.total_stock|intcomma }}</td>
             <td>
               {% if stock.quantity > 0 %}
                 <span class="badge bg-label-success">{% trans "In Stock" %}</span>
@@ -72,6 +135,8 @@
                 <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
               {% endif %}
             </td>
+            <td>{{ stock.date_added }}</td>
+
           </tr>
         {% empty %}
           <tr>
@@ -116,7 +181,26 @@
 
 {% block page_js %}
 
-<script>
+  {% comment %} <script>
+    $(document).ready(function () {
+      // Handle the input in the search field
+      $("#stock-search").on("keyup", function () {
+        const searchText = $(this).val().toLowerCase(); // Get the typed value, converted to lowercase
+
+        // Loop through table rows and filter based on the input
+        $("#stock-table-body tr").each(function () {
+          const rowText = $(this).text().toLowerCase(); // Get the text content of the row
+          if (rowText.includes(searchText)) {
+            $(this).show(); // Show rows that match the search input
+          } else {
+            $(this).hide(); // Hide rows that don't match
+          }
+        });
+      });
+    });
+  </script> {% endcomment %}
+
+{% comment %} <script>
   $(document).ready(function () {
     // Initialize Select2 for product search
     $("#product-search").select2({
@@ -143,6 +227,6 @@
       });
     });
   });
-</script>
+</script> {% endcomment %}
 
 {% endblock %}

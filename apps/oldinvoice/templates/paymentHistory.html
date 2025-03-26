@@ -9,8 +9,8 @@
 {% block content %}
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Payment History for Invoice" %} #{{ invoice.id }}</h5>
-  
+  <h5 class="card-header">{% trans "Payment History for Invoice" %} {{ invoice.id }}</h5>
+
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-8">
@@ -64,7 +64,7 @@
           <th>{% trans "Payment Date" %}</th>
           <th>{% trans "Amount Paid" %}</th>
           <th>{% trans "Payment Method" %}</th>
-          <th>{% trans "Account Details" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -74,7 +74,11 @@
           <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
           <td class="text-success"><strong>{{ payment.amount_paid|intcomma }}<small> Frs</small></strong></td>
           <td>{{ payment.payment_mode }}</td>
-          <td>{{ payment.account_paid_to }}</td>
+          <td>
+            <a href="{% url 'edit-invoice-payment' invoice.id payment.id %}" class="btn btn-warning btn-sm">
+                {% trans "Edit" %}
+            </a>
+          </td>
         </tr>
         {% empty %}
         <tr>

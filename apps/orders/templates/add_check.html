@@ -1,0 +1,112 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Check Details" %}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'add-bank' %}" class="btn btn-outline-secondary mb-4">
+  Back
+</a>
+
+{% comment %} <a href="{% url 'add-check' %}" class="btn btn-outline-secondary mb-4">
+  Check Details
+</a>
+
+<a href="{% url 'add-deposit' %}" class="btn btn-outline-secondary mb-4">
+  Bank Deposit Details
+</a> {% endcomment %}
+
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% if is_editing %}{% trans "Edit Check Details" %}{% else %}{% trans "Add Check Details" %}{% endif %}</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <button type="submit" class="btn {% if is_editing %}btn-warning{% else %}btn-primary{% endif %}">
+            {% if is_editing %}{% trans "Update" %}{% else %}{% trans "Submit" %}{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Check Detail List" %}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>{% trans "Branch" %}</th>
+          <th>{% trans "Bank Name" %}</th>
+          <th>{% trans "Account Name" %}</th>
+          <th>{% trans "Bank Code" %}</th>
+          <th>{% trans "Agency Code" %}</th>
+          <th>{% trans "Account Number" %}</th>
+          <th>{% trans "RIB" %}</th>
+          <th>{% trans "Added By" %}</th>
+          <th>{% trans "Date Added" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for item in check_details %}
+        <tr>
+          <td>{{ forloop.counter}}</td>
+          <td>{{ item.branch.branch_name }}</td>
+          <td>{{ item.bank.name }}</td>
+          <td>{{ item.bank.account_name }}</td>
+          <td>{{ item.bank.bank_code }}</td>
+          <td>{{ item.bank.code_agency }}</td>
+          <td>{{ item.bank.account_number }}</td>
+          <td>{{ item.bank.rib }}</td>
+          <td>{{ item.bank.created_by }}</td>
+          <td>{{ item.bank.date_added }}</td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'edit-check' item.id %}">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'delete-check' item.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">{% trans "" %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+
+{% comment %} {% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'generic-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %} {% endcomment %}
+
+{% endblock %}

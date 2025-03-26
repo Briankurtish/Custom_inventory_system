@@ -7,15 +7,75 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
+<div>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-invoice-order' %}'">
   <span class="fa-solid fa-plus me-2"></span>{% trans "Add Invoice" %}
 </button>
+</div>
 
-<hr class="my-8">
+<br/>
+
+<form method="GET" class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">{% trans "Branch" %}</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">{% trans "All Branches" %}</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Month Filter -->
+  <div class="col-auto">
+    <label for="month" class="form-label">{% trans "Month" %}</label>
+    <select id="month" name="month" class="form-select form-select-sm">
+      <option value="">{% trans "All Months" %}</option>
+      {% for month in months %}
+        <option value="{{ month.id }}" {% if selected_month == month.id %}selected{% endif %}>
+          {{ month.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
+  </div>
+</form>
+
+
+
+
+<form method="GET">
+  <div class="mb-3">
+  <label for="old-invoice-search" class="form-label"></label>
+   <!-- Search Input -->
+  <input
+    type="text"
+    name="search_query"
+    class="form-control me-2"
+    placeholder="{% trans 'Search invoices...' %}"
+    value="{{ search_query }}"
+  />
+</div>
+</form>
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Invoice List" %}</h5>
+  <h5 class="card-header">{% trans "Old Invoice List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
@@ -23,29 +83,30 @@
           <th>{% trans "No" %}</th>
           <th>{% trans "Invoice ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
-          <th>{% trans "Created By" %}</th>
           <th>{% trans "Client" %}</th>
           <th>{% trans "Sales Rep" %}</th>
+          <th>{% trans "Payment Type" %}</th>
           <th>{% trans "Total Amount" %}</th>
           <th>{% trans "Amount Paid" %}</th>
           <th>{% trans "Amount Due" %}</th>
-          <th>{% trans "Created At" %}</th>
+          <th>{% trans "Created By" %}</th>
+          <th>{% trans "Date Created" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
-      <tbody class="table-border-bottom-0">
+      <tbody id="old-invoice-table-body" class="table-border-bottom-0">
         {% for order in old_invoice %}
         <tr>
           <td><span>{{ forloop.counter }}</span></td>
-          <td><span>{{ order.id }}</span></td>
+          <td><span>{{ order.old_invoice_id }}</span></td>
           <td>{{ order.branch.branch_id }}</td>
-          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
+          <td><span>{{ order.payment_method }}</span></td>
           <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
           <td class="text-success"><strong>{{ order.amount_paid|floatformat:0|intcomma }}<small> CFA</small></strong></td>
           <td class="text-danger"><strong>{{ order.amount_due|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-
+          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
             <div class="dropdown">
@@ -53,6 +114,9 @@
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
+              <a class="dropdown-item" href="{% url 'edit_invoice_order' order.id %}">
+                <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+              </a>
                 <a class="dropdown-item" href="{% url 'invoice_details' order.id %}">
                   <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                 </a>
@@ -64,6 +128,11 @@
                 <a class="dropdown-item" href="{% url 'old_payment_history' order.id %}">
                   <i class="fa-solid fa-clock-rotate-left me-1"></i> {% trans "Payment History" %}
                 </a>
+
+                <a class="dropdown-item text-danger" href="{% url 'delete_old_invoice' invoice_id=order.id %}">
+                    <i class="fa-solid fa-trash me-1"></i> {% trans "Delete Invoice" %}
+                </a>
+
               </div>
             </div>
           </td>
@@ -82,26 +151,27 @@
 
 
 <!-- Pagination -->
+<!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">
   <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center mt-3">
-      {% if orders.has_previous %}
+      {% if old_invoice.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
+        <a class="page-link" href="?page={{ old_invoice.previous_page_number }}" aria-label="Previous">
           <span aria-hidden="true">&laquo;</span>
         </a>
       </li>
       {% endif %}
 
-      {% for num in orders.paginator.page_range %}
-      <li class="page-item {% if orders.number == num %}active{% endif %}">
+      {% for num in old_invoice.paginator.page_range %}
+      <li class="page-item {% if old_invoice.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
       {% endfor %}
 
-      {% if orders.has_next %}
+      {% if old_invoice.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
+        <a class="page-link" href="?page={{ old_invoice.next_page_number }}" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
         </a>
       </li>
@@ -111,4 +181,34 @@
 </div>
 
 
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'old-invoice-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
+
+
+{% endblock %}
+
+
+{% block page_js %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const startDate = document.getElementById("start_date");
+    const endDate = document.getElementById("end_date");
+
+    function autoSubmit() {
+        if (startDate.value && endDate.value) {
+            this.form.submit();
+        }
+    }
+
+    startDate.addEventListener("change", autoSubmit);
+    endDate.addEventListener("change", autoSubmit);
+});
+</script>
 {% endblock %}

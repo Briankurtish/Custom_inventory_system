@@ -8,15 +8,74 @@
 
 {% block content %}
 
-{% comment %} {% if user.worker_profile.privileges.all %}
-    {% for privilege in user.worker_profile.privileges.all %}
-        {% if privilege.name == 'Create Orders' %}
-          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-            <span class="tf-icons bx bx-package bx-18px me-2"></span>Create Order
-          </button>
-        {% endif %}
-    {% endfor %}
-{% endif %} {% endcomment %}
+<hr class="my-8">
+
+<form method="GET" class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">{% trans "Branch" %}</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">{% trans "All Branches" %}</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="month" class="form-label">{% trans "Month" %}</label>
+    <select id="month" name="month" class="form-select form-select-sm">
+      <option value="">{% trans "All Months" %}</option>
+      {% for month in months %}
+        <option value="{{ month.id }}" {% if selected_month == month.id %}selected{% endif %}>
+          {{ month.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="status" class="form-label">{% trans "Status" %}</label>
+    <select id="status" name="status" class="form-select form-select-sm">
+      <option value="">{% trans "All Statuses" %}</option>
+      <option value="Unpaid" {% if status_filter == "Unpaid" %}selected{% endif %}>{% trans "Unpaid" %}</option>
+      <option value="Payment Ongoing" {% if status_filter == "Payment Ongoing" %}selected{% endif %}>{% trans "Payment Ongoing" %}</option>
+      <option value="Payment Completed" {% if status_filter == "Payment Completed" %}selected{% endif %}>{% trans "Payment Completed" %}</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="sales_rep" class="form-label">{% trans "Sales Rep" %}</label>
+    <select id="sales_rep" name="sales_rep" class="form-select form-select-sm">
+      <option value="">{% trans "All Sales Reps" %}</option>
+      {% for rep in sales_reps %}
+        <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == sales_rep_id %}selected{% endif %}>
+            {{ rep.user.first_name }} {{ rep.user.last_name }}
+        </option>
+        {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="search_query" class="form-label">{% trans "Search" %}</label>
+    <input type="text" id="search_query" name="search_query" class="form-control form-control-sm" placeholder="{% trans 'Search...' %}" value="{{ search_query }}">
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
+  </div>
+</form>
 
 <hr class="my-8">
 
@@ -27,14 +86,16 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Invoice ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
-          <th>{% trans "Created By" %}</th>
           <th>{% trans "Customer" %}</th>
           <th>{% trans "Sales Rep" %}</th>
-          <th>{% trans "Total Amount" %}</th>
+          <th>{% trans "Total(THT)" %}</th>
+          <th>{% trans "Total(TTC)" %}</th>
           <th>{% trans "Total Paid" %}</th>
           <th>{% trans "Total Due" %}</th>
+          <th>{% trans "Created By" %}</th>
           <th>{% trans "Created At" %}</th>
           <th>{% trans "Status" %}</th>
           <th>{% trans "Actions" %}</th>
@@ -43,15 +104,23 @@
       <tbody class="table-border-bottom-0">
         {% for order in invoices %}
         <tr>
-          <td><span>{{ order.invoice_id }}</span></td>
+          <td><span>{{ forloop.counter }}</span></td>
+
+          <td>
+            {% if order.return_invoice_id %}
+                <p class="text-danger">{{ order.return_invoice_id }}</p>
+            {% else %}
+                {{ order.invoice_id }}
+            {% endif %}
+          </td>
           <td>{{ order.branch.branch_id }}</td>
-          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-          <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-          <td><strong>{{ order.amount_paid|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-          <td><strong>{{ order.amount_due|floatformat:0|intcomma }}<small> CFA</small></strong></td>
-          
+          <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
+          <td>{{ order.total_with_taxes |floatformat:2|intcomma }}<small> CFA</small></td>
+          <td>{{ order.amount_paid|floatformat:2|intcomma }}<small> CFA</small></td>
+          <td>{{ order.amount_due|floatformat:2|intcomma }}<small> CFA</small></td>
+          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
 
           <td>
@@ -62,71 +131,141 @@
             {% elif order.status|lower == "payment completed" %}
               <span class="badge bg-label-success me-1">{% trans "Payment Completed" %}</span>
             {% else %}
-              <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
+              <span class="badge bg-label-secondary me-1">{{ order.status }}</span>
             {% endif %}
           </td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
-              </button>
-              <div class="dropdown-menu">
-                <a 
-                  class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}" 
-                  href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
-                  <i class="bx bx-credit-card me-1"></i> {% trans "Add Payment" %}
-                </a>
-                <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
-                  <i class="bx bx-history me-1"></i> {% trans "Payment History" %}
-                </a>
-                {% comment %} 
-                <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
-                  <i class="bx bx-trash me-1"></i> Delete
-                </a> 
-                {% endcomment %}
-              </div>
+              {% if order.status != "Canceled" %}
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'invoice-doc' order.id %}" target="_blank">
+                    <i class="fa-solid fa-download me-1"></i> Download Invoice
+                  </a>
+                  <a class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}"
+                     href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
+                    <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Payment" %}
+                  </a>
+                  <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i> {% trans "Payment History" %}
+                  </a>
+                  <a class="dropdown-item" href="{% url 'upload_invoice_document' order.id %}">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+                  </a>
+                  {% if order.return_purchase_order and order.status|lower == "unpaid" and order.return_purchase_order.id not in return_payment_schedules %}
+                      <a class="dropdown-item" href="{% url 'create_return_payment_schedule' order.id %}" class="btn btn-primary">
+                          <i class="fa-solid fa-money-bill me-1"></i>{% trans "Add Payment Schedule" %}
+                      </a>
+                  {% endif %}
+                  {% if order.status|lower == "unpaid" %}
+                    <a class="dropdown-item text-danger" href="{% url 'process_return' order.id %}">
+                      <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="11" class="text-center">{% trans "No Invoices available" %}</td>
+          <td colspan="12" class="text-center">{% trans "No Invoices available" %}</td>
         </tr>
         {% endfor %}
+
+        {% comment %} <tr>
+            <td colspan="10"></td>  <!-- Empty cells for spacing -->
+            <td class="text-end"><strong>{% trans "Total (THT)" %}:</strong></td>
+            <td class="text-end text-info"><strong>{{ total_tht|floatformat:2|intcomma }} CFA</strong></td>
+        </tr>
+        <tr>
+            <td colspan="10"></td>  <!-- Empty cells for spacing -->
+            <td class="text-end"><strong>{% trans "Total (TTC)" %}:</strong></td>
+            <td class="text-end text-info"><strong>{{ total_ttc|floatformat:2|intcomma }} CFA</strong></td>
+        </tr>
+        <tr>
+            <td colspan="10"></td>  <!-- Empty cells for spacing -->
+            <td class="text-end"><strong>{% trans "Total Paid" %}:</strong></td>
+            <td class="text-end text-info"><strong>{{ total_paid|floatformat:2|intcomma }} CFA</strong></td>
+        </tr>
+        <tr>
+            <td colspan="10"></td>  <!-- Empty cells for spacing -->
+            <td class="text-end"><strong>{% trans "Total Due" %}:</strong></td>
+            <td class="text-end text-info"><strong>{{ total_due|floatformat:2|intcomma }} CFA</strong></td>
+        </tr> {% endcomment %}
       </tbody>
     </table>
   </div>
-  
 </div>
-<!--/ Hoverable Table rows -->
+
 
 <!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">
   <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center mt-3">
-      {% if orders.has_previous %}
+      {% if invoices.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
+        <a class="page-link" href="?page=1" aria-label="First">
+          <span aria-hidden="true">&laquo;&laquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ invoices.previous_page_number }}" aria-label="Previous">
           <span aria-hidden="true">&laquo;</span>
         </a>
       </li>
       {% endif %}
-      
-      {% for num in orders.paginator.page_range %}
-      <li class="page-item {% if orders.number == num %}active{% endif %}">
+
+      {% for num in invoices.paginator.page_range %}
+      {% if num >= invoices.number|add:-2 and num <= invoices.number|add:2 %}
+      <li class="page-item {% if invoices.number == num %}active{% endif %}">
         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
       </li>
+      {% endif %}
       {% endfor %}
-      
-      {% if orders.has_next %}
+
+      {% if invoices.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
+        <a class="page-link" href="?page={{ invoices.next_page_number }}" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ invoices.paginator.num_pages }}" aria-label="Last">
+          <span aria-hidden="true">&raquo;&raquo;</span>
         </a>
       </li>
       {% endif %}
     </ul>
   </nav>
+</div>
+
+
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-body bg-white">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <small class="text-muted">{% trans "Total (THT)" %}</small>
+                    <h6 class="fw-bold">{{ total_tht|floatformat:2|intcomma }} CFA</h6>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">{% trans "Total (TTC)" %}</small>
+                    <h6 class="fw-bold">{{ total_ttc|floatformat:2|intcomma }} CFA</h6>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">{% trans "Total Paid" %}</small>
+                    <h6 class="fw-bold text-success">{{ total_paid|floatformat:2|intcomma }} CFA</h6>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">{% trans "Total Due" %}</small>
+                    <h6 class="fw-bold text-danger">{{ total_due|floatformat:2|intcomma }} CFA</h6>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 

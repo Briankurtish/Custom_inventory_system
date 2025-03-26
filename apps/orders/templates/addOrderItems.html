@@ -29,6 +29,7 @@
         <table class="table table-hover">
           <thead>
               <tr>
+                  <th>{% trans "No" %}</th>
                   <th>{% trans "Product" %}</th>
                   <th>{% trans "Quantity" %}</th>
                   <th>{% trans "Unit Price" %}</th>
@@ -40,10 +41,11 @@
           <tbody>
               {% for item in order_items %}
               <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>{{ item.stock_name }}</td>
                   <td>{{ item.quantity|intcomma }}</td>
-                  <td>{{ item.temp_price|floatformat:0|intcomma }}</td>
-                  <td>{{ item.total_price|floatformat:0|intcomma }}</td>
+                  <td>{{ item.temp_price|floatformat:2|intcomma }}</td>
+                  <td>{{ item.total_price|floatformat:2|intcomma }}</td>
                   <td>{{ item.reason }}</td>
 
                   <td>
@@ -60,14 +62,14 @@
         </table>
 
         <br>
-        <h5>{% trans "Grand Total" %}: {{ grand_total|intcomma }} CFA</h5>
+        <h5>{% trans "Grand Total" %}: {{ grand_total|floatformat:2|intcomma }} CFA</h5>
         <hr>
 
         <!-- Move Submit Order Button to the Bottom -->
         <form method="post">
           {% csrf_token %}
           <br>
-          <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Submit Order" %}</button>
+          <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Next:" %}{% trans "Payment Schedule" %}</button>
         </form>
 
       </div>

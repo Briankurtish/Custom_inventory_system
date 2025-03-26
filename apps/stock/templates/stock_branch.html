@@ -1,72 +1,125 @@
 {% extends layout_path %}
-
-{% load static %}
 {% load i18n %}
-
-{% block title %}{% trans "Track Stocks" %}{% endblock %}
+{% load humanize %}
+{% block title %}{% trans "Branch Stocks" %}{% endblock %}
 
 {% block content %}
-<hr class="my-5">
-
-<button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Add Stock" %}
-</button>
-<button type="button" class="btn btn-outline-warning mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
-  <span class="tf-icons bx bx-package bx-18px me-2"></span>{% trans "Update Stock" %}
-</button>
-
-<!-- Hoverable Table rows -->
-<div class="card">
-  <h5 class="card-header">
-    {% trans "Stock Details" %}
-    {% if user_branch_name %}
-    <small class="text-body float-end text-primary branch-name">{{ user_branch_name }}</small>
+<div class="container">
+  <h4 class="mb-4">
+    {% if user.worker_profile.role == "Central Stock Manager" or user.worker_profile.role == "Other" %}
+      {% trans "Stock Levels" %}
+      <div class="mt-3">
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'track-stocks' %}'">
+          <span class="fa-solid fa-boxes-stacked me-2"></span>{% trans "All stock" %}
+        </button>
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'add-stock' %}'">
+          <span class="fa-solid fa-plus bx-18px me-2"></span>{% trans "Add Stock" %}
+        </button>
+        <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'update-stock' %}'">
+          <span class="fa-solid fa-pen-to-square me-2"></span>{% trans "Update Stock" %}
+        </button>
+      </div>
     {% else %}
-    <small class="text-body float-end text-muted">{% trans "No branch affiliated" %}</small>
+      {% trans "Stock Levels for" %} {{ user.worker_profile.branch.branch_name }}
     {% endif %}
-  </h5>
-  <div class="table-responsive text-nowrap">
-    {% if stocks %}
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>{% trans "Product Code" %}</th>
-          <th>{% trans "Branch Name" %}</th>
-          <th>{% trans "Product Name" %}</th>
-          <th>{% trans "Quantity" %}</th>
-          <th>{% trans "Status" %}</th>
-          <th>{% trans "Actions" %}</th>
-        </tr>
-      </thead>
-      <tbody id="stock-table-body" class="table-border-bottom-0">
+  </h4>
+
+  {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}
+  <p>{% trans "Select which warehouse you want to view" %} </p>
+  <div id="branch-buttons-container" class="mb-4"></div>
+  {% endif %}
+
+  <div class="mb-3">
+  <label for="stock-search" class="form-label"></label>
+  <input
+    type="text"
+    id="stock-search"
+    class="form-control"
+    placeholder="{% trans 'Type to search for stock...' %}"
+  />
+</div>
+
+  <div class="card">
+    <h5 class="card-header">
+      {% trans "Stock Details" %}
+      <small class="text-body float-end text-primary branch-name">
+        {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}
+          {% trans "Central Warehouse" %}
+        {% else %}
+          {{ user.worker_profile.branch.branch_name }}
+        {% endif %}
+      </small>
+    </h5>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "No" %}</th>
+            <th>{% trans "Product Code" %}</th>
+            <th>{% trans "Batch Number" %}</th>
+            <th>{% trans "Branch Name" %}</th>
+            <th>{% trans "Product Name" %}</th>
+            <th>{% trans "Quantity Available" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th>{% trans "Date Added" %}</th>
+            {% comment %} <th>{% trans "Actions" %}</th> {% endcomment %}
+          </tr>
+        </thead>
+        <tbody id="stock-table-body" class="table-border-bottom-0">
         {% for stock in stocks %}
-        <tr>
-          <td><span>{{ stock.product.product_code }}</span></td>
-          <td><span>{{ stock.branch.branch_name }}</span></td>
-          <td>{{ stock.product.generic_name_dosage }}</td>
-          <td class="fw-medium">{{ stock.quantity }}</td>
-          <td><span class="badge bg-label-success me-1">{% trans "In Stock" %}</span></td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
-              </button>
-              <div class="dropdown-menu">
-                {% comment %} <a class="dropdown-item text-secondary" href="javascript:void(0);">
-                  <i class="bx bx-edit-alt me-1"></i> Request
-                </a> {% endcomment %}
-              </div>
-            </div>
-          </td>
-        </tr>
+          <tr data-product-code="{{ stock.product.product_code }}" data-generic-name="{{ stock.product.generic_name_dosage }}">
+            <td>{{ forloop.counter|add:offset }}</td>
+            <td>{{ stock.product.product_code }}</td>
+            <td>{{ stock.product.batch.batch_number }}</td>
+            <td>{{ stock.branch.branch_name }}</td>
+            <td>{{ stock.product.generic_name_dosage }}</td>
+            <td>{{ stock.quantity|intcomma }}</td>
+            <td>{{ stock.date_added }}</td>
+            <td>
+              {% if stock.quantity > 0 %}
+                <span class="badge bg-label-success">{% trans "In Stock" %}</span>
+              {% else %}
+                <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">{% trans "No stock to display yet" %}</td>
+          </tr>
         {% endfor %}
       </tbody>
-    </table>
-    {% else %}
-    <div class="text-center py-4">
-      <p class="text-muted">{% trans "No stock details available for this branch" %}</p>
+      </table>
     </div>
-    {% endif %}
   </div>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if stocks.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stocks.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in stocks.paginator.page_range %}
+      <li class="page-item {% if stocks.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+
+      {% if stocks.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stocks.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
 </div>
 {% endblock %}

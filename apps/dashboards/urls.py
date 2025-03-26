@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import DashboardsView
+from .views import *
 
 
 
@@ -24,4 +24,8 @@ urlpatterns = [
         DashboardsView.as_view(template_name="dashboard_sec.html"),
         name="index-sec",
     ),
+
+    path("notice-board/", notice_board, name="notice_board"),
+
+    path("notice/delete/<int:pk>/", delete_notice, name="delete_notice"),
 ]

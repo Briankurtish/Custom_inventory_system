@@ -8,9 +8,9 @@
 
 {% block content %}
 
-{% if user.worker_profile.privileges.all %}
-    {% for privilege in user.worker_profile.privileges.all %}
-        {% if privilege.name == 'Create Orders'%}
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Create Orders' %}
           <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
             <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
           </button>
@@ -26,7 +26,76 @@
 
 <hr class="my-8">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<form method="GET" class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <label for="search_query" class="form-label">{% trans "Search" %}</label>
+    <input type="text" id="search_query" name="search_query" class="form-control form-control-sm" placeholder="{% trans 'Search orders' %}" value="{{ search_query }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">{% trans "Branch" %}</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">{% trans "All Branches" %}</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="month" class="form-label">{% trans "Month" %}</label>
+    <select id="month" name="month" class="form-select form-select-sm">
+      <option value="">{% trans "All Months" %}</option>
+      {% for month in months %}
+        <option value="{{ month.id }}" {% if selected_month == month.id %}selected{% endif %}>
+          {{ month.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="sales_rep" class="form-label">{% trans "Sales Rep" %}</label>
+    <select id="sales_rep" name="sales_rep" class="form-select form-select-sm">
+      <option value="">{% trans "All Sales Reps" %}</option>
+      {% for rep in sales_reps %}
+        <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == sales_rep_id %}selected{% endif %}>
+            {{ rep.user.first_name }} {{ rep.user.last_name }}
+        </option>
+        {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="status" class="form-label">{% trans "Status" %}</label>
+    <select id="status" name="status" class="form-select form-select-sm">
+      <option value="">{% trans "All Statuses" %}</option>
+      <option value="Pending" {% if status_filter == "Pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+      <option value="Approved" {% if status_filter == "Approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+      <option value="Rejected" {% if status_filter == "Rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
+      <option value="Completed" {% if status_filter == "Completed" %}selected{% endif %}>{% trans "Completed" %}</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
+  </div>
+</form>
+
+
+{% comment %} <div class="d-flex justify-content-between align-items-center mb-3">
   <!-- Filter by Status -->
   <form method="get" action="" class="d-flex align-items-center">
     <label for="status" class="me-10">{% trans "Filter by Status" %}:</label>
@@ -38,7 +107,7 @@
       <option value="Canceled" {% if request.GET.status == "Canceled" %}selected{% endif %}>{% trans "Canceled" %}</option>
     </select>
   </form>
-</div>
+</div> {% endcomment %}
 
 <hr class="my-8">
 
@@ -49,12 +118,14 @@
     <table class="table table-hover">
       <thead>
         <tr>
+          <th>{% trans "No" %}</th>
           <th>{% trans "Order ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
-          <th>{% trans "Created By" %}</th>
           <th>{% trans "Client" %}</th>
           <th>{% trans "Sales Rep" %}</th>
-          <th>{% trans "Total Amount" %}</th>
+          <th>{% trans "Total(THT)" %}</th>
+          <th>{% trans "Total(TTC)" %}</th>
+          <th>{% trans "Created By" %}</th>
           <th>{% trans "Created At" %}</th>
           <th>{% trans "Approved By" %}</th>
           <th>{% trans "Status" %}</th>
@@ -62,60 +133,80 @@
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-        {% for order in orders %}
-        <tr>
-          <td><span>{{ order.purchase_order_id }}</span></td>
-          <td>{{ order.branch.branch_id }}</td>
-          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
-          <td>{{ order.customer.customer_name }}</td>
-          <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-          <td><strong>{{ order.grand_total|floatformat:0|intcomma }}<small> CFA</small></strong></td>
+    {% for order in orders %}
+    <tr class="{% if order.status|lower == 'canceled' %}text-muted bg-light{% endif %}">
+      <td><span>{{ forloop.counter }}</span></td>
+      <td>
+      {% if order.purchase_order_id %}
+        {{ order.purchase_order_id }}
+      {% else %}
+        {{ order.return_order_id }}
+      {% endif %}
+    </td>
+      <td>{{ order.branch.branch_id }}</td>
+      <td>{{ order.customer.customer_name }}</td>
+      <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
+      <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
+      <td>{{ order.new_total|floatformat:2|intcomma }}<small> CFA</small></td>
+      <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
+      <td>{{ order.created_at|date:"d-m-Y" }}</td>
+      <td>{{ order.approved_by.user.get_full_name }}</td>
 
-          <td>{{ order.created_at|date:"d-m-Y" }}</td>
-          <td>{{ order.approved_by.user.get_full_name }}</td>
+      <td>
+        {% if order.status|lower == "pending" %}
+          <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+        {% elif order.status|lower == "approved" %}
+          <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
+        {% elif order.status|lower == "rejected" %}
+          <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
+        {% elif order.status|lower == "canceled" %}
+          <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
+        {% else %}
+          <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
+        {% endif %}
+      </td>
+      <td>
+        <div class="dropdown">
+          <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="{% url 'order_details' order.id %}">
+              <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
+            </a>
+              <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}">
+                <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+              </a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="11" class="text-center">{% trans "No Purchase Orders available" %}</td>
+    </tr>
+    {% endfor %}
 
-          <td>
-            {% if order.status|lower == "pending" %}
-              <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
-            {% elif order.status|lower == "approved" %}
-              <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
-            {% elif order.status|lower == "rejected" %}
-              <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
-            {% elif order.status|lower == "canceled" %}
-              <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
-            {% else %}
-              <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
-            {% endif %}
-          </td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="fa-solid fa-ellipsis-vertical"></i>
-              </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
-                  <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
-                </a>
-                {% comment %}
-                <a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete({{ order.id }})">
-                  <i class="bx bx-trash me-1"></i> Delete
-                </a>
-                {% endcomment %}
-              </div>
-            </div>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="11" class="text-center">{% trans "No Purchase Orders available" %}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+
+    {% comment %} <tr>
+        <td colspan="9"></td>  <!-- Empty cells for spacing -->
+        <td class="text-end"><strong>{% trans "Total (THT)" %}:</strong></td>
+        <td class="text-end text-info"><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
+    </tr>
+    <tr>
+        <td colspan="9"></td>  <!-- Empty cells for spacing -->
+        <td class="text-end"><strong>{% trans "Total (TTC)" %}:</strong></td>
+        <td class="text-end text-info"><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
+    </tr> {% endcomment %}
+</tbody>
+
     </table>
   </div>
 
 </div>
 <!--/ Hoverable Table rows -->
+
+
 
 <!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">
@@ -145,6 +236,52 @@
     </ul>
   </nav>
 </div>
+
+
+
+
+
+
+{% comment %} <table class="table table-bordered">
+    <tbody>
+        <tr class="text-center">
+            <td colspan="5" class="text-muted"></td> <!-- Spanning the first five columns -->
+            <td class="fw-bold">{{ total_grand_total|floatformat:2|intcomma }} CFA</td> <!-- Aligning under Total (THT) -->
+            <td class="fw-bold">{{ total_new_total|floatformat:2|intcomma }} CFA</td> <!-- Aligning under Total (TTC) -->
+            <td colspan="4" class="text-muted"></td> <!-- Spanning remaining columns -->
+        </tr>
+
+    </tbody>
+</table> {% endcomment %}
+
+
+
+
+ <div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-body bg-white">
+            <div class="row text-center">
+                <div class="col-md-5">
+                    <small class="text-muted">{% trans "Total (THT)" %}</small>
+                    <h6 class="fw-bold">{{ total_grand_total|floatformat:2|intcomma }} CFA</h6>
+                </div>
+                <div class="col-md-5">
+                    <small class="text-muted">{% trans "Total (TTC)" %}</small>
+                    <h6 class="fw-bold">{{ total_new_total|floatformat:2|intcomma }} CFA</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'order-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 
 {% endblock %}

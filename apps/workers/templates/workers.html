@@ -1,87 +1,197 @@
 {% extends layout_path %}
-
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Workers List"%} - GC PHARMA{% endblock %}
+{% block title %}{% trans "Workers List" %} - GC PHARMA{% endblock %}
+
+{% block page_css %}
+<style>
+
+* {
+    font-size: 10px !important;
+}
+
+th {
+    text-transform: none !important;
+}
+
+
+  .truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
-  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee"%}
+<button type="button" class="btn btn-outline-primary" id="openPinModal">
+  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee" %}
 </button>
+
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
   <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
 </button>
 
 <hr class="my-8">
 
-<!-- Hoverable Table rows -->
+<form method="GET" class="row g-2 align-items-center mb-3">
+<div class="col-auto">
+    <label for="search_query" class="form-label">Search</label>
+    <input type="text" id="search_query" name="search_query" class="form-control form-control-sm"
+           placeholder="Search by name or ID" value="{{ search_query }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">Branch</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">All Branches</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_filter|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="role" class="form-label">Role</label>
+    <select id="role" name="role" class="form-select form-select-sm">
+      <option value="">All Roles</option>
+      {% for role, name in roles %}
+      <option value="{{ role }}" {% if role == role_filter %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="department" class="form-label">Department</label>
+    <select id="department" name="department" class="form-select form-select-sm">
+      <option value="">All Departments</option>
+      {% for dept, name in departments %}
+      <option value="{{ dept }}" {% if dept == department_filter %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="company" class="form-label">Company</label>
+    <select id="company" name="company" class="form-select form-select-sm">
+      <option value="">All Companies</option>
+      {% for company, name in companies %}
+      <option value="{{ company }}" {% if company == company_filter %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="status" class="form-label">Status</label>
+    <select id="status" name="status" class="form-select form-select-sm">
+      <option value="">All Statuses</option>
+      <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">Filter</button>
+  </div>
+</form>
+
+
+
 <div class="card">
   <h5 class="card-header">{% trans "Employee List"%}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>{% trans "No"%}</th>
-          <th>{% trans "Employee ID"%}</th>
+          <th>{% trans "No" %}</th>
+          <th>{% trans "Employee ID" %}</th>
           <th>{% trans "Branch Name" %}</th>
           <th>{% trans "First Name" %}</th>
           <th>{% trans "Last Name" %}</th>
-          <th>{% trans "Username" %}</th>
+          {% comment %} <th>{% trans "Username" %}</th> {% endcomment %}
           <th>{% trans "Email" %}</th>
           <th>{% trans "Role" %}</th>
+          <th>{% trans "Company" %}</th>
+          <th>{% trans "Manager" %}</th>
           <th>{% trans "Phone Number" %}</th>
           <th>{% trans "Department" %}</th>
           <th>{% trans "Address" %}</th>
+          <th>{% trans "Contract Type" %}</th>
+          <th>{% trans "Marital Status" %}</th>
+          <th>{% trans "Emergency Contact Name" %}</th>
+          <th>{% trans "Emergency Contact Number" %}</th>
+          <th>{% trans "Recruitment Date" %}</th>
+          <th>{% trans "Added By" %}</th>
           <th>{% trans "Date Created" %}</th>
+          <th>{% trans "Status" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
-      <tbody class="table-border-bottom-0">
-
+      <tbody id="employee-table-body" class="table-border-bottom-0">
         {% for worker in workers %}
         <tr>
-          <td><span>{{ forloop.counter }}</span></td>
+          <td>{{ forloop.counter|add:offset }}</td>
           <td><span>{{ worker.employee_id }}</span></td>
           <td><span>{{ worker.branch.branch_name }}</span></td>
           <td>{{ worker.user.first_name }}</td>
           <td>{{ worker.user.last_name }}</td>
-          <td>{{ worker.user.username }}</td>
+          {% comment %} <td>{{ worker.user.username }}</td> {% endcomment %}
           <td>{{ worker.user.email }}</td>
           <td>{{ worker.role }}</td>
+          <td>{{ worker.company }}</td>
+          <td>{{ worker.manager }}</td>
           <td>{{ worker.telephone }}</td>
           <td>{{ worker.department }}</td>
           <td>{{ worker.address }}</td>
+          <td>{{ worker.contract_type }}</td>
+          <td>{{ worker.marital_status }}</td>
+          <td>{{ worker.emergency_name }}</td>
+          <td>{{ worker.emergency_phone }}</td>
+          <td>{{ worker.recruitment_date }}</td>
+          <td>{{ worker.created_by }}</td>
           <td>{{ worker.date_joined }}</td>
+          <td>
+            {% if worker.is_active %}
+              <span class="badge bg-success">{% trans "Active" %}</span>
+            {% else %}
+              <span class="badge bg-danger">{% trans "Inactive" %}</span>
+            {% endif %}
+          </td>
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
-                <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
-                  <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
-                </a>
-                {% if user.worker_profile.privileges.all %}
-                    {% for privilege in user.worker_profile.privileges.all %}
-                        {% if privilege.name == 'Update Employee'%}
-                           <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
-                              <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
-                            </a>
+                  {% if not worker.user.is_superuser %}
+                    <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
+                      <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
+                    </a>
+                    <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
+                      <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                    </a>
+                    <a class="dropdown-item" href="{% url 'toggle_worker_status' worker.id %}">
+                        {% if worker.is_active %}
+                            <i class="fa-solid fa-toggle-on"></i> {% trans "Set Inactive" %}
+                        {% else %}
+                            <i class="fa-solid fa-toggle-off"></i> {% trans "Set Active" %}
                         {% endif %}
-                    {% endfor %}
-                {% endif %}
+                    </a>
 
-                {% if user.is_superuser %}
-                 <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
-                  <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
-                </a>
-                {% endif %}
-
-                <a class="dropdown-item" href="{% url 'delete-worker' worker.id %}">
-                  <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
-                </a>
+                    <a class="dropdown-item" href="{% url 'change-worker-password' worker.user.id %}">
+                        <i class="fa-solid fa-lock me-1"></i> {% trans "Change Password" %}
+                    </a>
+                    <a class="dropdown-item" href="{% url 'delete-worker' worker.id %}">
+                      <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+                    </a>
+                  {% endif %}
               </div>
             </div>
           </td>
@@ -91,35 +201,98 @@
     </table>
   </div>
 </div>
-<!--/ Hoverable Table rows -->
 
-<!-- Pagination -->
-<div class="d-flex justify-content-center mt-3">
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center mt-3">
-      {% if workers.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ workers.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-      {% endif %}
-
-      {% for num in workers.paginator.page_range %}
-      <li class="page-item {% if workers.number == num %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-      </li>
-      {% endfor %}
-
-      {% if workers.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ workers.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </nav>
+<!-- Warning Modal (No PIN Found) -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="warningModalLabel">{% trans "Warning" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans "You must create a Security PIN first." %}</p>
+        <a href="{% url 'create_security_pin' %}" class="btn btn-primary">{% trans "Create PIN" %}</a>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- Security PIN Modal -->
+<div class="modal fade" id="securityPinModal" tabindex="-1" aria-labelledby="securityPinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="securityPinModalLabel">{% trans "Enter Security PIN" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="securityPinForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="securityPinInput" class="form-label">{% trans "Security PIN" %}</label>
+            <input type="password" id="securityPinInput" class="form-control" maxlength="4" pattern="\d{4}" required>
+            <div class="form-text">{% trans "Enter your 4-digit security PIN" %}</div>
+          </div>
+          <button type="button" id="validatePinButton" class="btn btn-primary">{% trans "Confirm" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const openPinModal = document.getElementById('openPinModal');
+    const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+    const securityPinModal = new bootstrap.Modal(document.getElementById('securityPinModal'));
+
+    openPinModal.addEventListener('click', function () {
+        fetch("{% url 'check_security_pin' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_pin) {
+                    securityPinModal.show();
+                } else {
+                    warningModal.show();
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    });
+
+    document.getElementById('validatePinButton').addEventListener('click', function () {
+        const securityPinInput = document.getElementById('securityPinInput').value.trim();
+
+        if (securityPinInput.length !== 4 || !/^\d{4}$/.test(securityPinInput)) {
+            alert("Please enter a valid 4-digit PIN.");
+            return;
+        }
+
+        fetch("{% url 'validate_security_pin' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ pin: securityPinInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                window.location.href = "{% url 'add-workers' %}";
+            } else {
+                alert("Invalid PIN. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -7,7 +7,44 @@
 
 {% block content %}
 
-{% if user.worker_profile.privileges.all %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Add Products' %}
+            <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Generic Name" %}
+        </button>
+        <span>➡️</span>
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-batch' %}'">
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Batch Number" %}
+        </button>
+
+        <span>➡️</span>
+
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-packsize' %}'">
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Pack Size" %}
+        </button>
+
+         <span>➡️</span>
+
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-dosage-form' %}'">
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Dosage Form" %}
+        </button>
+
+        <hr>
+        <div class="mt-5">
+          <button type="button" class="btn btn-outline-primary" id="openProductPinModal">
+            <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
+          </button>
+
+        </div>
+
+        <hr class="my-8">
+        {% endif %}
+    {% endfor %}
+  {% endif %}
+
+{% comment %} {% if user.worker_profile.privileges.all %}
     {% for privilege in user.worker_profile.privileges.all %}
         {% if privilege.name == 'Add Products' %}
 
@@ -25,11 +62,18 @@
           <span class="fa-solid fa-plus me-2"></span>{% trans "Add Pack Size" %}
         </button>
 
+         <span>➡️</span>
+
+        <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-dosage-form' %}'">
+          <span class="fa-solid fa-plus me-2"></span>{% trans "Add Dosage Form" %}
+        </button>
+
         <hr>
         <div class="mt-5">
-          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
+          <button type="button" class="btn btn-outline-primary" id="openProductPinModal">
             <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
           </button>
+
         </div>
 
         <hr class="my-8">
@@ -37,7 +81,7 @@
 
         {% endif %}
     {% endfor %}
-{% endif %}
+{% endif %} {% endcomment %}
 
 {% if user.is_superuser %}
   <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-genericName' %}'">
@@ -54,17 +98,32 @@
     <span class="fa-solid fa-plus me-2"></span>{% trans "Add Pack Size" %}
   </button>
 
+  <span>➡️</span>
+
+  <button type="button" class="btn btn-outline-info m-1" onclick="window.location.href='{% url 'add-dosage-form' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Add Dosage Form" %}
+  </button>
+
   <hr>
   <div class="mt-5">
-    <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-product' %}'">
+    <button type="button" class="btn btn-outline-primary" id="openProductPinModal">
       <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
     </button>
+
   </div>
 
   <hr class="my-8">
 
 {% endif %}
 
+
+<form method="GET" action="{% url 'products' %}" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search_query" class="form-control"
+               placeholder="Search products..." value="{{ search_query }}">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
 
 
 
@@ -82,47 +141,68 @@
           <th>{% trans "Product Code" %}</th>
           <th>{% trans "Brand Name" %}</th>
           <th>{% trans "Generic Name & Dosage" %}</th>
+          <th>{% trans "Dosage Form" %}</th>
           <th>{% trans "Pack Size" %}</th>
           <th>{% trans "Unit Price" %}</th>
           <th>{% trans "Batch Number" %}</th>
+          <th>{% trans "Production Date" %}</th>
           <th>{% trans "Expiry Date" %}</th>
+          <th>{% trans "Added By" %}</th>
+          <th>{% trans "Date Added" %}</th>
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
-      <tbody class="table-border-bottom-0">
+      <tbody id="product-table-body" class="table-border-bottom-0">
         {% for product in products %}
         <tr>
-          <td><span>{{forloop.counter}}</span></td>
+          <td>{{ forloop.counter|add:offset }}</td>
           <td><span>{{product.product_code}}</span></td>
           <td>{{ product.brand_name.brand_name }}</td>
           <td>{{ product.generic_name_dosage.generic_name }}</td>
+          <td>{{ product.dosage_form }}</td>
           <td>{{product.pack_size}}</td>
           <td>{{product.unit_price|floatformat:0|intcomma}} CFA</td>
           <td>{{ product.batch.batch_number }}</td>
+          <td>{{ product.batch.prod_date }}</td>
           <td>{{ product.batch.expiry_date }}</td>
+          <td>{{ product.created_by }}</td>
+          <td>{{ product.date_added }}</td>
           <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-              <div class="dropdown-menu">
-                {% if user.worker_profile.privileges.all %}
-                    {% for privilege in user.worker_profile.privileges.all %}
-                        {% if privilege.name == 'Add Product Prices' %}
-                          <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}</a>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-                  <a class="dropdown-item" href="{% url 'edit-price' product.id %}"><i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}</a>
-                {% if user.is_superuser %}
+    <div class="dropdown">
+        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <div class="dropdown-menu">
+            {% if user.worker_profile.privileges.all %}
+                {% for privilege in user.worker_profile.privileges.all %}
+                    {% if privilege.name == 'Add Product Prices' %}
+                        <a class="dropdown-item" href="{% url 'edit-price' product.id %}">
+                            <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            <a class="dropdown-item" href="{% url 'edit-price' product.id %}">
+                <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Price" %}
+            </a>
 
+            <a class="dropdown-item" href="{% url 'product_transaction_history' product.id %}">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> {% trans "View History" %}
+            </a>
 
-                {% endif %}
+            {% if user.is_superuser %}
+            {% endif %}
 
-                <a class="dropdown-item" href="{% url 'edit-product' product.id %}"><i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit Product" %}</a>
-                <a class="dropdown-item" href="{% url 'delete-product' product.id %}"><i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}</a>
+            <a class="dropdown-item" href="{% url 'edit-product' product.id %}">
+                <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit Product" %}
+            </a>
+            <a class="dropdown-item" href="{% url 'delete-product' product.id %}">
+                <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+            </a>
+        </div>
+    </div>
+</td>
 
-              </div>
-            </div>
-          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -130,6 +210,47 @@
   </div>
 </div>
 <!--/ Hoverable Table rows -->
+
+
+<!-- Warning Modal (No PIN Found) -->
+<div class="modal fade" id="productWarningModal" tabindex="-1" aria-labelledby="productWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productWarningModalLabel">{% trans "Warning" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans "You must create a Security PIN first." %}</p>
+        <a href="{% url 'create_security_pin' %}" class="btn btn-primary">{% trans "Create PIN" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Security PIN Modal -->
+<div class="modal fade" id="productSecurityPinModal" tabindex="-1" aria-labelledby="productSecurityPinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productSecurityPinModalLabel">{% trans "Enter Security PIN" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="productSecurityPinForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="productSecurityPinInput" class="form-label">{% trans "Security PIN" %}</label>
+            <input type="password" id="productSecurityPinInput" class="form-control" maxlength="4" pattern="\d{4}" required>
+            <div class="form-text">{% trans "Enter your 4-digit security PIN" %}</div>
+          </div>
+          <button type="button" id="validateProductPinButton" class="btn btn-primary">{% trans "Confirm" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 <!-- Pagination -->
@@ -162,6 +283,90 @@
 </div>
 
 
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'product-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
 
 
+
+{% endblock %}
+
+
+{% block page_js %}
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const openProductPinModal = document.getElementById('openProductPinModal');
+    const productWarningModal = new bootstrap.Modal(document.getElementById('productWarningModal'));
+    const productSecurityPinModal = new bootstrap.Modal(document.getElementById('productSecurityPinModal'));
+
+    openProductPinModal.addEventListener('click', function () {
+        fetch("{% url 'check_security_pin' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_pin) {
+                    productSecurityPinModal.show();
+                } else {
+                    productWarningModal.show();
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    });
+
+    document.getElementById('validateProductPinButton').addEventListener('click', function () {
+        const securityPinInput = document.getElementById('productSecurityPinInput').value.trim();
+
+        if (securityPinInput.length !== 4 || !/^\d{4}$/.test(securityPinInput)) {
+            alert("Please enter a valid 4-digit PIN.");
+            return;
+        }
+
+        fetch("{% url 'validate_security_pin' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ pin: securityPinInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                window.location.href = "{% url 'add-product' %}";
+            } else {
+                alert("Invalid PIN. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    });
+});
+</script>
+
+
+  <script>
+    $(document).ready(function () {
+      // Handle the input in the search field
+      $("#product-search").on("keyup", function () {
+        const searchText = $(this).val().toLowerCase(); // Get the typed value, converted to lowercase
+
+        // Loop through table rows and filter based on the input
+        $("#product-table-body tr").each(function () {
+          const rowText = $(this).text().toLowerCase(); // Get the text content of the row
+          if (rowText.includes(searchText)) {
+            $(this).show(); // Show rows that match the search input
+          } else {
+            $(this).hide(); // Hide rows that don't match
+          }
+        });
+      });
+    });
+  </script>
 {% endblock %}

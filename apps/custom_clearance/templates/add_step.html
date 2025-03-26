@@ -1,0 +1,33 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}Add Step{% endblock %}
+
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+    <h2>Past Clearance Processes</h2>
+
+    <table class="table table-hover">
+        <tr>
+            <th>Process ID</th>
+            <th>Started On</th>
+            <th>Actions</th>
+        </tr>
+        {% for process in process_groups %}
+            <tr>
+                <td>#{{ process.id }}</td>
+                <td>{{ process.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <a href="{% url 'clearance_dashboard' %}?process_id={{ process.id }}" class="btn btn-sm btn-info">View</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'clearance_dashboard' %}" class="btn btn-primary">Back to Active Process</a>
+{% endblock %}

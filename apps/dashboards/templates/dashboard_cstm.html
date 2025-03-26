@@ -104,41 +104,109 @@
     </div>
   </div>
 
-  <!-- Total Revenue -->
-  <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
-    <div class="card">
-      <div class="row row-bordered g-0">
-        <div class="col-lg-8">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="card-title mb-0">
-              <h5 class="m-0 me-2"><i class="bx bx-info-circle text-warning"></i> {% trans "Notice Board" %}</h5>
-            </div>
-          </div>
-          <div class="m-2">
-            <marquee behavior="" direction="">
-              <h3 class="my-4">{% trans "GC PHARMA - ANNOUNCEMENTS" %}</h3>
-            </marquee>
-            <p class="fw-medium">{% trans "No Notice to show at the moment ⚠️" %}</p>
+<!-- Notice Board Section -->
+<div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
+  <div class="card">
+    <div class="row row-bordered g-0">
+      <div class="col-lg-8">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <div class="card-title mb-0">
+            <h5 class="m-0 me-2"><i class="fa-solid fa-bell text-warning"></i> {% trans "Notice Board" %}</h5>
           </div>
         </div>
-        <div class="col-lg-4 d-flex align-items-center">
-          <div class="card-body px-xl-9">
-            <div class="text-center mb-6">
-              <div>
-                <p class="text-info fw-medium fs-5">
-                  <script>document.write(new Date().toDateString());</script>
-                </p>
-                <p class="text-warning fw-bold fs-4">
-                  <script>document.write(new Date().toLocaleTimeString());</script>
-                </p>
+
+        <div class="m-2">
+          <marquee behavior="scroll" direction="left">
+            <h3 class="my-4">{% trans "GC PHARMA - ANNOUNCEMENTS" %}</h3>
+          </marquee>
+
+          <!-- Notices Carousel -->
+          {% if notices %}
+            <div id="noticeCarousel" class="carousel slide" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                {% for notice in notices %}
+                  {% if forloop.counter0|divisibleby:2 %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                      <div class="row">
+                  {% endif %}
+                        <div class="col-md-6 mb-3">
+                          <div class="card border-primary">
+                            <div class="card-body">
+                              <h5 class="card-title text-primary">{{ notice.title }}</h5>
+                              <p class="card-text text-muted">{{ notice.description|truncatewords:15 }}</p>
+                              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">
+                                {% trans "View Details" %}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                  {% if forloop.counter|divisibleby:2 or forloop.last %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
               </div>
             </div>
-            <div class="text-center fw-bold my-6">{% trans "GC PHARMA CENTRAL WAREHOUSE" %}</div>
+
+            <!-- Carousel Controls (Placed Below the Carousel) -->
+            <div class="d-flex justify-content-center mt-3">
+              <button class="btn btn-outline-dark mx-2" type="button" data-bs-target="#noticeCarousel" data-bs-slide="prev">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-outline-dark mx-2" type="button" data-bs-target="#noticeCarousel" data-bs-slide="next">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          {% else %}
+            <p class="fw-medium">{% trans "No Notice to show at the moment ⚠️" %}</p>
+          {% endif %}
+
+          <!-- Button to Navigate to Create Notice Page -->
+          <a href="{% url 'notice_board' %}" class="btn btn-outline-primary">
+            {% trans "Create Notice" %}
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Admin Dashboard Info -->
+      <div class="col-lg-4 d-flex align-items-center">
+        <div class="card-body px-xl-9">
+          <div class="text-center mb-6">
+            <p class="text-info fw-medium fs-5">
+              <script>document.write(new Date().toDateString());</script>
+            </p>
+            <p class="text-warning fw-bold fs-4">
+              <script>document.write(new Date().toLocaleTimeString());</script>
+            </p>
           </div>
+          <div id="growthChart"></div>
+          <div class="text-center fw-bold my-6">{% trans "ADMIN DASHBOARD" %}</div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Notice Modals -->
+{% for notice in notices %}
+  <div class="modal fade" id="noticeModal{{ notice.id }}" tabindex="-1" aria-labelledby="noticeModalLabel{{ notice.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="noticeModalLabel{{ notice.id }}">{{ notice.title }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ notice.description }}</p>
+          <small class="text-muted">{% trans "Posted on:" %} {{ notice.created_at|date:"F j, Y, g:i a" }}</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
 
   <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
     <div class="row">

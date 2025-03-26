@@ -1,0 +1,69 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% trans "Assign Privileges" %}
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'workers' %}" class="btn btn-outline-secondary mb-4">
+  ← Back
+</a>
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Privileges" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+        {% trans "Assign Privileges" %}
+    </li>
+  </ol>
+</nav>
+<!-- End Breadcrumbs -->
+
+<!-- Basic Layout -->
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Assign Privileges" %}</h5>
+        <hr>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <br>
+          <button type="submit" class="btn btn-primary">
+            {% trans "Save" %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+ $(document).ready(function () {
+  $("#id_role").select2({
+    placeholder: "Select a role",
+    allowClear: true,
+    width: "100%",
+  });
+
+  $("#id_role").change(function () {
+    let selectedRole = $(this).val();
+    if (selectedRole) {
+      window.location.href = "?role=" + selectedRole;  // Reload page with selected role
+    }
+  });
+});
+</script>
+{% endblock page_js %}

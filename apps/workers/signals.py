@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Worker, Privilege
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 
 @receiver(post_save, sender=Worker)
 def assign_default_privileges(sender, instance, created, **kwargs):
@@ -35,7 +36,8 @@ def assign_default_privileges(sender, instance, created, **kwargs):
                 "Your account has been created successfully. Below are your login credentials:\n\n"
                 f"Username: {instance.employee_id}\n"
                 "Password: Password2023#\n\n"
-                "Please log in to your account and update your details if necessary."
+                "Please log in to your account via the link below and update your details if necessary.\n\n"
+                "https://pharmamgtsystemgc.com/"
             )
 
             # Correct way to set the sender with a name
@@ -47,3 +49,31 @@ def assign_default_privileges(sender, instance, created, **kwargs):
 
         except Exception as e:
             print(f"Error sending email: {e}")
+
+
+@receiver(user_logged_in)
+def set_worker_online(sender, request, user, **kwargs):
+    """
+    Signal to set the worker as online when the user logs in.
+    """
+    try:
+        worker = Worker.objects.get(user=user)
+        worker.is_online = True
+        worker.save()
+    except Worker.DoesNotExist:
+        # If no Worker profile exists for the user, do nothing
+        pass
+
+
+@receiver(user_logged_out)
+def set_worker_offline(sender, request, user, **kwargs):
+    """
+    Signal to set the worker as offline when the user logs out.
+    """
+    try:
+        worker = Worker.objects.get(user=user)
+        worker.is_online = False
+        worker.save()
+    except Worker.DoesNotExist:
+        # If no Worker profile exists for the user, do nothing
+        pass

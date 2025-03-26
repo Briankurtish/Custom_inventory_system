@@ -25,11 +25,16 @@ class Recommendation(models.Model):
         default='Pending',
     )
     date_created = models.DateTimeField(
-        auto_now_add=True, 
+        auto_now_add=True,
     )
     recommendation_document = models.FileField(
     upload_to='recommendation_document/',
-)
+    )
+
+    created_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='recommend_created'
+    )
 
     def __str__(self):
         return f"Recommendation by {self.pharmacist.user.get_full_name()} for {self.product.name} ({self.status})"

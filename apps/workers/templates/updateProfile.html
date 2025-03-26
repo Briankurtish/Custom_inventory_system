@@ -34,7 +34,7 @@
         <hr>
       </div>
       <div class="card-body">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
           {% csrf_token %}
 
           {{ form|crispy }}

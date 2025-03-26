@@ -19,19 +19,23 @@
       <div class="container">
         <!-- invoice Information -->
         <div class="row">
-            <div class="col-md-3">
-                <small class="text m-3">{% trans "Invoice Total" %}</small>
-                <h6 class="mx-3">{{ invoice.grand_total|floatformat:0|intcomma }} CFA</h6>
+            <div class="col-md-2">
+                <small class="text m-3">{% trans "Invoice Total(THT)" %}</small>
+                <h6 class="mx-3">{{ invoice.grand_total|floatformat:2|intcomma }} CFA</h6>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <small class="text m-3">{% trans "Invoice Total(TTC)" %}</small>
+                <h6 class="mx-3">{{ invoice.total_with_taxes |floatformat:2|intcomma }} CFA</h6>
+            </div>
+            <div class="col-md-2">
                 <small class="text m-3">{% trans "Amount Paid" %}</small>
-                <h6 class="mx-3">{{ invoice.amount_paid|floatformat:0|intcomma }} CFA</h6>
+                <h6 class="mx-3">{{ invoice.amount_paid|floatformat:2|intcomma }} CFA</h6>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <small class="text m-3">{% trans "Amount Due" %}</small>
-                <h6 class="mx-3">{{ invoice.amount_due|floatformat:0|intcomma }} CFA</h6>
+                <h6 class="mx-3">{{ invoice.amount_due|floatformat:2|intcomma }} CFA</h6>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <small class="text m-3">{% trans "Payment Mode" %}</small>
                 <h6 class="mx-3">{{ invoice.payment_method }}</h6>
             </div>
@@ -46,7 +50,7 @@
 
           <br>
           <button type="submit" class="btn btn-primary">{% trans "Submit Payment" %}</button>
-          
+
         </form>
 
       </div>
@@ -90,6 +94,29 @@
     });
   });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#payment_mode").change(function () {
+            var selectedMode = $(this).val();
+
+            // Hide all fields first
+            $(".hidden-field").hide();
+
+            // Show the relevant field based on selection
+            if (selectedMode === "Mobile Money") {
+                $("#id_momo_account").show();
+            } else if (selectedMode === "Check") {
+                $("#id_check_account").show();
+            } else if (selectedMode === "Bank Deposit") {
+                $("#id_bank_deposit_account").show();
+            }
+        });
+    });
+</script>
+
+
 
 
 {% endblock %}
