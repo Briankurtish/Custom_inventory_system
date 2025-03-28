@@ -153,6 +153,7 @@ DATABASES = {
 CSRF_TRUSTED_ORIGINS = [
     'http://145.223.83.168',
     'https://pharmamgtsystemgc.site',
+    'https://pharmamgtsystemgc.com',
 ]
 
 
