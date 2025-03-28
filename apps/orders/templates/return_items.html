@@ -61,10 +61,10 @@
               </tr>
           </thead>
           <tbody>
-              {% for item in return_items %}
+              {% for item in temp_items  %}
               <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ item.stock_name }}</td>
+                  <td>{{ item.invoice_order_item.stock.stock_name }}</td>
                   <td>{{ item.quantity_returned|intcomma }}</td>
                   <td>{{ item.reason_for_return }}</td>
 
@@ -72,7 +72,7 @@
                     <form method="POST" action="{% url 'process_return' invoice.id %}">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="remove_item">
-                      <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">  <!-- Pass the item index -->
+                      <input type="hidden" name="temp_item_id" value="{{ item.id }}">
                       <button type="submit" class="btn btn-danger">{% trans "Remove" %}</button>
                     </form>
                   </td>

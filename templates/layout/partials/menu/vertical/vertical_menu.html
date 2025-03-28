@@ -116,7 +116,7 @@
             <li class="menu-item {% if request.resolver_match.url_name == 'branch-stock' or '/branch-stock/' in request.path %}active open{% endif %}">
                 <a href="{% url 'branch-stock' %}" class="menu-link">
                     <i class="menu-icon fa-solid fa-boxes-stacked"></i>
-                    <div class="text-truncate">{% trans "Track Stocks" %}</div>
+                    <div class="text-truncate">{% trans "Branch Stocks" %}</div>
                 </a>
             </li>
         {% endif %}
@@ -125,7 +125,7 @@
             <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
                 <a href="{% url 'stock' %}" class="menu-link">
                     <i class="menu-icon fa-solid fa-cubes"></i>
-                    <div class="text-truncate" data-i18n="Dashboards">{% trans "Track Stocks" %}</div>
+                    <div class="text-truncate" data-i18n="Dashboards">{% trans "Track All Stocks" %}</div>
                 </a>
             </li>
         {% endif %}
