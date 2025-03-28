@@ -41,7 +41,7 @@ DEBUG = True
 
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["pharmamgtsystemgc.com", '145.223.83.168' ]
+ALLOWED_HOSTS = ["pharmamgtsystemgc.com", '145.223.83.168', '46.202.168.185', 'pharmamgtsystemgc.site' ]
 
 # Current DJANGO_ENVIRONMENT
 ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", default="local")
@@ -153,6 +153,7 @@ DATABASES = {
 CSRF_TRUSTED_ORIGINS = [
     'http://145.223.83.168',
     'https://pharmamgtsystemgc.com',
+    'https://pharmamgtsystemgc.site',
 ]
 
 

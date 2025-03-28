@@ -8,6 +8,7 @@ from django.utils.text import slugify
 import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 
@@ -880,6 +881,17 @@ class ReturnInvoiceOrderItem(models.Model):
     def get_total_price(self):
         return self.temp_price * self.quantity
 
+
+class ReturnItemTemp(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    invoice_order_item = models.ForeignKey(InvoiceOrderItem, on_delete=models.CASCADE)
+    # Store quantity_returned as Decimal for arithmetic
+    quantity_returned = models.DecimalField(max_digits=12, decimal_places=2)
+    reason_for_return = models.CharField(max_length=200, blank=True, null=True)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.invoice_order_item.stock.product.product_code} - {self.quantity_returned}"
 
 
 
