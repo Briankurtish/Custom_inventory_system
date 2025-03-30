@@ -188,20 +188,6 @@
 {% endif %}
 
 
-
-        {% comment %} {% if privilege.name == 'Record Custom Clearing Cost' %}
-          <li class="menu-item {% if 'clearance_dashboard' == request.resolver_match.url_name or '/custom-clearance/' in request.path %}active open{% endif %}">
-            <a href="{% url 'clearance_dashboard' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-ship"></i>
-              <div class="text-truncate" data-i18n="Dashboards">{% trans "Custom Clearing" %}</div>
-            </a>
-          </li>
-        {% endif %} {% endcomment %}
-
-
-
-
-
 {% if user.is_superuser %}
 
     <li class="menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashbord-phar/' in request.path %}active open{% endif %}">
@@ -228,40 +214,7 @@
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Custom Clearing" %}</div>
           </a>
       </li>
-      {% comment %} <li class="menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashbord-phar/' in request.path %}active open{% endif %}">
-        <a href="{% url 'index-phar' %}" class="menu-link">
-            <i class="menu-icon fa-regular fa-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Users Online" %}</div>
-            <span class="badge bg-success rounded-pill ms-auto">{{ online_users_count }}</span>
-        </a>
-    </li> {% endcomment %}
-    {% comment %} <li class="menu-header small text-uppercase">
-      <span class="menu-header-text">Human Resource</span>
-    </li>
-    <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
-        <a href="{% url 'workers' %}" class="menu-link">
-            <i class="menu-icon fa-regular fa-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
-        </a>
-    </li>
-    <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
-        <a href="{% url 'privileges' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-user-lock"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
-        </a>
-    </li>
-    <li class="menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active open{% endif %}">
-        <a href="{% url 'assign_privileges' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-user-lock"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
-        </a>
-    </li>
-    <li class="menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active open{% endif %}">
-        <a href="{% url 'sales-rep' %}" class="menu-link">
-            <i class="menu-icon fa-regular fa-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
-        </a>
-    </li> {% endcomment %}
+
 
 
       <!-- Form -->
@@ -358,95 +311,6 @@
      </ul>
    </li>
 
-    {% comment %} <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
-        <a href="{% url 'products' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-boxes-stacked"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Products" %}</div>
-        </a>
-    </li>
-    <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
-        <a href="{% url 'stock' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-cubes"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Track Stocks" %}</div>
-        </a>
-    </li>
-
-      <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
-          <a href="{% url 'requests' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-circle-exclamation"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Request" %}</div>
-            {% if pending_request_count > 0 %}
-            <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
-            {% endif %}
-          </a>
-        </li>
-
-        <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
-          <a href="{% url 'stocks_in_transit' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-truck"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
-          </a>
-        </li>
-
-        <li class="menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active open{% endif %}">
-          <a href="{% url 'stock_received' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-truck-ramp-box"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
-          </a>
-        </li>
-
-
-        <li class="menu-item {% if 'stock_movement' == request.resolver_match.url_name or '/stock_movement/' in request.path %}active open{% endif %}">
-          <a href="{% url 'stock_movement' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-dolly"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Movement" %}</div>
-          </a>
-        </li> {% endcomment %}
-
-
-    {% comment %} <li class="menu-header small text-uppercase">
-      <span class="menu-header-text">Payment Details</span>
-    </li> {% endcomment %}
-
-
-
-    {% comment %} <li class="menu-header small text-uppercase">
-      <span class="menu-header-text">Orders and Invoices</span>
-    </li>
-
-    <li class="menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active open{% endif %}">
-        <a href="{% url 'customers' %}" class="menu-link">
-            <i class="menu-icon fa-regular fa-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Customers" %}</div>
-        </a>
-    </li>
-
-    <li class="menu-item {% if 'orders' == request.resolver_match.url_name or '/orders/' in request.path %}active open{% endif %}">
-      <a href="{% url 'orders' %}" class="menu-link">
-        <i class="menu-icon fa-solid fa-clipboard-list"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Orders" %}</div>
-        {% if pending_orders_count > 0 %}
-        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
-        {% endif %}
-      </a>
-    </li>
-    <li class="menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active open{% endif %}">
-      <a href="{% url 'invoices' %}" class="menu-link">
-        <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Invoices" %}</div>
-        {% if unpaid_invoices_count > 0 %}
-        <span class="badge bg-warning rounded-pill ms-auto">{{ unpaid_invoices_count }}</span>
-        {% endif %}
-      </a>
-    </li>
-
-
-    <li class="menu-item {% if 'old-invoice' == request.resolver_match.url_name or '/old-invoice/' in request.path %}active open{% endif %}">
-      <a href="{% url 'old-invoice' %}" class="menu-link">
-        <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Old Invoice" %}</div>
-      </a>
-    </li> {% endcomment %}
 
 
     <!-- Form -->

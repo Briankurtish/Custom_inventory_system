@@ -187,26 +187,14 @@
         </tr>
         {% endfor %}
 
-        {% comment %} <tr>
-            <td colspan="10"></td>  <!-- Empty cells for spacing -->
-            <td class="text-end"><strong>{% trans "Total (THT)" %}:</strong></td>
-            <td class="text-end text-info"><strong>{{ total_tht|floatformat:2|intcomma }} CFA</strong></td>
-        </tr>
         <tr>
-            <td colspan="10"></td>  <!-- Empty cells for spacing -->
-            <td class="text-end"><strong>{% trans "Total (TTC)" %}:</strong></td>
-            <td class="text-end text-info"><strong>{{ total_ttc|floatformat:2|intcomma }} CFA</strong></td>
+            <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
+            <td colspan="4"></td>  <!-- Empty cells for spacing -->
+            <td class="text-end"><strong>{{ total_tht|floatformat:2|intcomma }} CFA</strong></td>
+            <td class="text-end"><strong>{{ total_ttc|floatformat:2|intcomma }} CFA</strong></td>
+            <td class="text-end"><strong>{{ total_paid|floatformat:2|intcomma }} CFA</strong></td>
+            <td class="text-end"><strong>{{ total_due|floatformat:2|intcomma }} CFA</strong></td>
         </tr>
-        <tr>
-            <td colspan="10"></td>  <!-- Empty cells for spacing -->
-            <td class="text-end"><strong>{% trans "Total Paid" %}:</strong></td>
-            <td class="text-end text-info"><strong>{{ total_paid|floatformat:2|intcomma }} CFA</strong></td>
-        </tr>
-        <tr>
-            <td colspan="10"></td>  <!-- Empty cells for spacing -->
-            <td class="text-end"><strong>{% trans "Total Due" %}:</strong></td>
-            <td class="text-end text-info"><strong>{{ total_due|floatformat:2|intcomma }} CFA</strong></td>
-        </tr> {% endcomment %}
       </tbody>
     </table>
   </div>
@@ -255,7 +243,7 @@
 </div>
 
 
-<div class="container my-4">
+{% comment %} <div class="container my-4">
     <div class="card shadow-sm">
         <div class="card-body bg-white">
             <div class="row text-center">
@@ -278,7 +266,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 
 {% endblock %}
