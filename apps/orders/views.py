@@ -70,10 +70,13 @@ def order_list(request):
     status_filter = request.GET.get("status")
     branch_id = request.GET.get("branch")
     selected_month = request.GET.get("month")
-    sales_rep_id = request.GET.get("sales_rep")  # New filter for sales rep
+    sales_rep_id = request.GET.get("sales_rep")
+    created_by_id = request.GET.get("created_by")  # New filter for created_by
 
     branches = Branch.objects.all()
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
+    workers = Worker.objects.all().order_by("user__first_name", "user__last_name")  # Fetch workers for the dropdown
+
     user = request.user
     is_accountant_or_superuser = user.worker_profile.role == "Accountant" or user.is_superuser
 
@@ -106,6 +109,10 @@ def order_list(request):
     if sales_rep_id:
         purchase_orders = purchase_orders.filter(sales_rep__id=sales_rep_id)
         return_orders = return_orders.filter(sales_rep__id=sales_rep_id)
+
+    if created_by_id:
+        purchase_orders = purchase_orders.filter(created_by__id=created_by_id)
+        return_orders = return_orders.filter(created_by__id=created_by_id)
 
     if search_query:
         purchase_orders = purchase_orders.filter(
@@ -185,8 +192,10 @@ def order_list(request):
         "status_filter": status_filter,
         "branch_id": branch_id,
         "branches": branches,
-        "sales_reps": sales_reps,  # Add sales reps to the context
-        "sales_rep_id": sales_rep_id,  # Add the selected sales rep
+        "sales_reps": sales_reps,
+        "sales_rep_id": sales_rep_id,
+        "workers": workers,  # Include workers in context for filter dropdown
+        "created_by_id": created_by_id,  # Include created_by filter in context
         "offset": offset,
         "months": months,
         "selected_month": selected_month,
@@ -196,6 +205,7 @@ def order_list(request):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, "orderList.html", context)
+
 
 
 
@@ -623,10 +633,13 @@ def invoice_list(request):
     status_filter = request.GET.get("status")
     branch_id = request.GET.get("branch")
     selected_month = request.GET.get("month")
-    sales_rep_id = request.GET.get("sales_rep")  # New: Get sales rep filter from request
+    sales_rep_id = request.GET.get("sales_rep")
+    created_by_id = request.GET.get("created_by")  # New: Get created_by filter from request
 
     branches = Branch.objects.all()
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
+    creators = Worker.objects.filter(invoice_created_by_orders__isnull=False).distinct().order_by("user__first_name", "user__last_name")
+
     user = request.user
     is_accountant_or_superuser = user.worker_profile.role == "Accountant" or user.is_superuser
 
@@ -660,6 +673,10 @@ def invoice_list(request):
         invoices = invoices.filter(sales_rep__id=sales_rep_id)
         return_invoices = return_invoices.filter(sales_rep__id=sales_rep_id)
 
+    if created_by_id:
+        invoices = invoices.filter(created_by__id=created_by_id)
+        return_invoices = return_invoices.filter(created_by__id=created_by_id)
+
     if search_query:
         invoices = invoices.filter(
             Q(invoice_id__icontains=search_query) |
@@ -690,13 +707,12 @@ def invoice_list(request):
         key=lambda invoice: (invoice.status.lower() != "unpaid", -invoice.created_at.timestamp()),
     )
 
-        # Initialize total variables
-    total_tht = Decimal(0)  # Total before taxes
-    total_ttc = Decimal(0)  # Total including all taxes
-    total_paid = Decimal(0)  # Total amount paid
-    total_due = Decimal(0)  # Total due
+    # Initialize total variables
+    total_tht = Decimal(0)
+    total_ttc = Decimal(0)
+    total_paid = Decimal(0)
+    total_due = Decimal(0)
 
-    # Compute tax amounts based on related Purchase Orders or Return Purchase Orders
     for invoice in all_invoices:
         if hasattr(invoice, "purchase_order") and invoice.purchase_order:
             tax_rate = Decimal(invoice.purchase_order.tax_rate or 0)
@@ -713,23 +729,18 @@ def invoice_list(request):
         tva_amount = (invoice.grand_total * tva) / Decimal(100)
         precompte_amount = (invoice.grand_total * precompte) / Decimal(100)
 
-        # Adjust total based on invoice type
         if hasattr(invoice, "is_special_customer") and invoice.is_special_customer:
             invoice.new_total = invoice.grand_total + tva_amount + precompte_amount
         else:
             invoice.new_total = invoice.grand_total + tva_amount + tax_amount + precompte_amount
 
-        # Attach computed values for display
         invoice.tax_amount = tax_amount
         invoice.tva_amount = tva_amount
         invoice.precompte_amount = precompte_amount
 
-        # Compute totals
-        total_tht += invoice.grand_total  # Before tax
-        total_ttc += invoice.new_total  # Including all taxes
+        total_tht += invoice.grand_total
+        total_ttc += invoice.new_total
         total_paid += invoice.amount_paid if hasattr(invoice, "amount_paid") else Decimal(0)
-
-        # Correct total_due calculation: total_due = new_total - paid amount
         total_due += invoice.new_total - (invoice.amount_paid if hasattr(invoice, "amount_paid") else Decimal(0))
 
     paginator = Paginator(all_invoices, 100)
@@ -752,8 +763,10 @@ def invoice_list(request):
         "offset": offset,
         "months": months,
         "selected_month": selected_month,
-        "sales_rep_id": sales_rep_id,  # Pass selected sales rep to template
-        "sales_reps": sales_reps,  # Pass all sales reps for selection in the UI
+        "sales_rep_id": sales_rep_id,
+        "sales_reps": sales_reps,
+        "created_by_id": created_by_id,  # Pass selected creator to template
+        "creators": creators,  # Pass all creators for selection in the UI
         "total_tht": total_tht,
         "total_ttc": total_ttc,
         "total_paid": total_paid,
@@ -763,6 +776,7 @@ def invoice_list(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, "invoiceList.html", context)
+
 
 
 
