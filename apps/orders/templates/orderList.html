@@ -78,6 +78,19 @@
     </select>
   </div>
 
+
+  <div class="col-auto">
+    <label for="created_by" class="form-label">{% trans "Created By" %}</label>
+    <select id="created_by" name="created_by" class="form-select form-select-sm">
+      <option value="">All</option>
+        {% for worker in workers %}
+            <option value="{{ worker.id }}" {% if created_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
+                {{ worker.user.first_name }} {{ worker.user.last_name }}
+            </option>
+        {% endfor %}
+    </select>
+  </div>
+
   <div class="col-auto">
     <label for="status" class="form-label">{% trans "Status" %}</label>
     <select id="status" name="status" class="form-select form-select-sm">

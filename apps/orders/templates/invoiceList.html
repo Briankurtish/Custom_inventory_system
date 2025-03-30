@@ -68,6 +68,18 @@
   </div>
 
   <div class="col-auto">
+    <label for="created_by" class="form-label">{% trans "Created By" %}</label>
+    <select name="created_by" class="form-select form-select-sm">
+      <option value="">All</option>
+      {% for creator in creators %}
+          <option value="{{ creator.id }}" {% if created_by_id == creator.id|stringformat:"s" %}selected{% endif %}>
+              {{ creator.user.first_name }} {{ creator.user.last_name }}
+          </option>
+      {% endfor %}
+  </select>
+  </div>
+
+  <div class="col-auto">
     <label for="search_query" class="form-label">{% trans "Search" %}</label>
     <input type="text" id="search_query" name="search_query" class="form-control form-control-sm" placeholder="{% trans 'Search...' %}" value="{{ search_query }}">
   </div>
