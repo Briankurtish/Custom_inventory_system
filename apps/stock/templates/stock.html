@@ -243,78 +243,87 @@
     }
   }
 
-async function fetchStockForBranch(branchId, branchName = "Central Warehouse") {
-  try {
-    const response = await fetch(`/get-stock-data/?branch_id=${branchId}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const stockData = await response.json();
-
-    branchNameElement.textContent = `${branchName} Branch`;
-
-    if (stockData.stocks.length === 0) {
+  async function fetchStockForBranch(branchId, branchName = "Central Warehouse") {
+    try {
+      const response = await fetch(`/get-stock-data/?branch_id=${branchId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const stockData = await response.json();
+      branchNameElement.textContent = `${branchName} Branch`;
+  
+      if (stockData.stocks.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="14" class="text-center text-muted">No stock to display yet</td>
+          </tr>
+        `;
+      } else {
+        const currentPage = stockData.page || 1;
+        const itemsPerPage = stockData.per_page || 100;
+        const offset = (currentPage - 1) * itemsPerPage;
+  
+        tableBody.innerHTML = stockData.stocks
+          .map((stock, index) => {
+            let stockStatus;
+            let badgeClass;
+  
+            if (stock.total_stock === 0) {
+              stockStatus = "Out of Stock";
+              badgeClass = "bg-label-danger";
+            } else if (stock.total_stock >= 200) {
+              stockStatus = "In Stock";
+              badgeClass = "bg-label-success";
+            } else {
+              stockStatus = "Low Stock";
+              badgeClass = "bg-label-warning";
+            }
+  
+            return `
+              <tr>
+                <td>${offset + index + 1}</td>
+                <td>${stock.product_code}</td>
+                <td>${stock.batch_batch_number}</td>
+                <td>${stock.branch_name}</td>
+                <td>${stock.product_name}</td>
+                <td>${stock.brand_name}</td>
+                <td>${stock.fixed_beginning_inventory}</td>
+                <td>${stock.quantity}</td>
+                <td>${stock.total_inventory}</td>
+                <td>${stock.quantity_transferred}</td>
+                <td>${stock.total_sold}</td>
+                <td>${stock.total_stock}</td>
+                <td>
+                  <span class="badge ${badgeClass}">${stockStatus}</span>
+                </td>
+                <td>
+                  <div class="dropdown">
+                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                      <a href="/en/delete-stock/${stock.id}/" class="text-danger dropdown-item">
+                        <i class="fa-solid fa-trash me-1"></i> Delete
+                      </a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+    } catch (error) {
+      console.error("Error fetching stock data:", error);
       tableBody.innerHTML = `
         <tr>
-          <td colspan="8" class="text-center text-muted">No stock to display yet</td>
+          <td colspan="14" class="text-center text-danger">Failed to load stock data.</td>
         </tr>
       `;
-    } else {
-      const currentPage = stockData.page || 1;
-      const itemsPerPage = stockData.per_page || 100;
-      const offset = (currentPage - 1) * itemsPerPage;
-
-      tableBody.innerHTML = stockData.stocks
-        .map(
-          (stock, index) => `
-          <tr>
-            <td>${offset + index + 1}</td>
-            <td>${stock.product_code}</td>
-            <td>${stock.batch_batch_number}</td>
-            <td>${stock.branch_name}</td>
-            <td>${stock.product_name}</td>
-            <td>${stock.brand_name}</td>
-            <td>${stock.fixed_beginning_inventory}</td>
-            <td>${stock.quantity}</td>
-            <td>${stock.total_inventory}</td>
-            <td>${stock.quantity_transferred}</td>
-            <td>${stock.total_sold}</td>
-            <td>${stock.total_stock}</td>
-
-            <td>
-              <span class="badge ${stock.status === 'In Stock' ? 'bg-label-success' : 'bg-label-warning'}">
-                ${stock.status}
-              </span>
-
-            </td>
-            <td>
-              <div class="dropdown">
-                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                  <i class="fa-solid fa-ellipsis-vertical"></i>
-                </button>
-                <div class="dropdown-menu">
-
-                  <a href="/en/delete-stock/${stock.id}/" class="text-danger dropdown-item">
-                    <i class="fa-solid fa-trash me-1"></i> Delete
-                  </a>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `
-        )
-        .join("");
     }
-  } catch (error) {
-    console.error("Error fetching stock data:", error);
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="8" class="text-center text-danger">Failed to load stock data.</td>
-      </tr>
-    `;
   }
-}
+  
 
 
 function populateEditModal(stockId, beginningInventory) {

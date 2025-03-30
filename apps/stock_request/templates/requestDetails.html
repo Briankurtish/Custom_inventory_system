@@ -205,22 +205,55 @@
 
   {% comment %} {% if stock_request.picking_list %}
   <a href="{{ stock_request.picking_list.url }}" target="_blank">{% trans "Download Picking List" %}</a> {% endcomment %}
-  {% if stock_request.status == "Accepted"%}
-        {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}
-          <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Download Picking List" %}</a>
-        {% endif %}
-        <a href="{% url 'transfer_slip_doc' stock_request.id %}" target="_blank" class="btn btn-primary">{% trans "Transfer Slip/Bon de Transfer " %}</a>
+
+  {% if stock_request.status == "Accepted" %}
+    {% if role_privileges %}
+        {% for privilege in role_privileges %}
+            {% if privilege.name == 'Generate Picking List' %}
+                <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">
+                    {% trans "Download Picking List" %}
+                </a>
+            {% endif %}
+      {% endfor %}
   {% endif %}
+
+
+
+  {% if user.is_superuser %}
+      <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">
+          {% trans "Download Picking List" %}
+      </a>
+  {% endif %}
+
+  <a href="{% url 'transfer_slip_doc' stock_request.id %}" target="_blank" class="btn btn-primary">
+    {% trans "Transfer Slip/Bon de Transfer" %}
+  </a>
+{% endif %}
+
 
 
   <!-- Stock Received Form -->
 {% if stock_request.status == "Accepted" %}
-  {% if user.worker_profile.role == "Stock Manager" or user.is_superuser %}
+  {% if user.is_superuser %}
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
-      <span class="tf-icons bx bx-package bx-18px me-2"></span> {% trans "Confirm Stock Received" %}
+      {% trans "Confirm Stock Received" %}
     </button>
   {% endif %}
 {% endif %}
+
+{% if stock_request.status == "Accepted" %}
+  {% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Receive Stock' %}
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
+            {% trans "Confirm Stock Received" %}
+          </button>
+        {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+
 
   {% if stock_request.status == "Received"%}
     {% if user.worker_profile.role == "Central Stock Manager" or user.is_superuser %}

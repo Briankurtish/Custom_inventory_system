@@ -129,10 +129,12 @@
             <td>{{ stock.total_sold|intcomma }}</td>
             <td>{{ stock.total_stock|intcomma }}</td>
             <td>
-              {% if stock.quantity > 0 %}
+              {% if stock.total_stock == 0 %}
+                <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
+              {% elif stock.total_stock >= 200 %}
                 <span class="badge bg-label-success">{% trans "In Stock" %}</span>
               {% else %}
-                <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
+                <span class="badge bg-label-warning">{% trans "Low Stock" %}</span>
               {% endif %}
             </td>
             <td>{{ stock.date_added }}</td>
