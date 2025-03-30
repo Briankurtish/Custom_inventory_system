@@ -365,13 +365,13 @@
 
         <div class="totals-section">
           <strong>Totals:</strong>
-          <p>Total(THT): {{grand_total|floatformat:0|intcomma}} CFA</p>
+          <p>Total(THT): {{grand_total|floatformat:2|intcomma}} CFA</p>
           <br>
-          <p>IR Tax ({{tax_rate}}%) : {% if is_special_customer %} - {% else %} {% endif %} {{tax_amount|floatformat:0|intcomma}} CFA</p>
-          <p>Pre Compte ({{precompte}}%) : {{precompte_amount|floatformat:0|intcomma}} CFA</p>
-          <p>TVA ({{tva}}%) : {{tva_amount|floatformat:0|intcomma}} CFA</p>
+          <p>IR Tax ({{tax_rate}}%) : {% if is_special_customer %} - {% else %} {% endif %} {{tax_amount|floatformat:2|intcomma}} CFA</p>
+          <p>Pre Compte ({{precompte}}%) : {{precompte_amount|floatformat:2|intcomma}} CFA</p>
+          <p>TVA ({{tva}}%) : {{tva_amount|floatformat:2|intcomma}} CFA</p>
           <br>
-          <p>Total(TTC): <strong>{{new_total|floatformat:0|intcomma}} CFA</strong></p>
+          <p>Total(TTC): <strong>{{new_total|floatformat:2|intcomma}} CFA</strong></p>
         </div>
       </div>
 
