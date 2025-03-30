@@ -108,20 +108,6 @@
 </form>
 
 
-{% comment %} <div class="d-flex justify-content-between align-items-center mb-3">
-  <!-- Filter by Status -->
-  <form method="get" action="" class="d-flex align-items-center">
-    <label for="status" class="me-10">{% trans "Filter by Status" %}:</label>
-    <select name="status" id="status" class="form-select me-1" onchange="this.form.submit()">
-      <option value="" {% if not request.GET.status %}selected{% endif %}>{% trans "All" %}</option>
-      <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>{% trans "Pending" %}</option>
-      <option value="Approved" {% if request.GET.status == "Approved" %}selected{% endif %}>{% trans "Approved" %}</option>
-      <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
-      <option value="Canceled" {% if request.GET.status == "Canceled" %}selected{% endif %}>{% trans "Canceled" %}</option>
-    </select>
-  </form>
-</div> {% endcomment %}
-
 <hr class="my-8">
 
 <!-- Hoverable Table rows -->
@@ -201,16 +187,14 @@
     {% endfor %}
 
 
-    {% comment %} <tr>
-        <td colspan="9"></td>  <!-- Empty cells for spacing -->
-        <td class="text-end"><strong>{% trans "Total (THT)" %}:</strong></td>
-        <td class="text-end text-info"><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
-    </tr>
     <tr>
-        <td colspan="9"></td>  <!-- Empty cells for spacing -->
-        <td class="text-end"><strong>{% trans "Total (TTC)" %}:</strong></td>
-        <td class="text-end text-info"><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
-    </tr> {% endcomment %}
+        <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
+        <td colspan="4"></td>  <!-- Empty cells for spacing -->
+        <td class="text-start "><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
+        <td class="text-start "><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
+
+    </tr>
+
 </tbody>
 
     </table>
@@ -251,26 +235,7 @@
 </div>
 
 
-
-
-
-
-{% comment %} <table class="table table-bordered">
-    <tbody>
-        <tr class="text-center">
-            <td colspan="5" class="text-muted"></td> <!-- Spanning the first five columns -->
-            <td class="fw-bold">{{ total_grand_total|floatformat:2|intcomma }} CFA</td> <!-- Aligning under Total (THT) -->
-            <td class="fw-bold">{{ total_new_total|floatformat:2|intcomma }} CFA</td> <!-- Aligning under Total (TTC) -->
-            <td colspan="4" class="text-muted"></td> <!-- Spanning remaining columns -->
-        </tr>
-
-    </tbody>
-</table> {% endcomment %}
-
-
-
-
- <div class="container my-4">
+ {% comment %} <div class="container my-4">
     <div class="card shadow-sm">
         <div class="card-body bg-white">
             <div class="row text-center">
@@ -285,7 +250,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 
 {% if user.is_superuser %}
