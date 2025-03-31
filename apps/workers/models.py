@@ -33,8 +33,17 @@ class Privilege(models.Model):
     """
     Represents a specific privilege that can be assigned to workers.
     """
+    
+    CATEGORY_CHOICES = [
+        ('Inventory Management', 'Inventory Management'),
+        ('Human Resource', 'Human Resource'),
+        ('Order and Sales', 'Order and sales'),
+        ('Finance', 'Finance'),
+    ]
+    
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
+    category = models.TextField(choices=CATEGORY_CHOICES, blank=True, null=True)
 
     def __str__(self):
         return self.name
