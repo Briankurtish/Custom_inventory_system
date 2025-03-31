@@ -230,6 +230,12 @@
                   <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
               </a>
           </li>
+          <li class="menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active open{% endif %}">
+            <a href="{% url 'create_privilege' %}" class="menu-link">
+                <i class="menu-icon fa-solid fa-lock"></i>
+                <div class="text-truncate" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
+            </a>
+        </li>
           <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
               <a href="{% url 'privileges' %}" class="menu-link">
                   <i class="menu-icon fa-solid fa-user-lock"></i>

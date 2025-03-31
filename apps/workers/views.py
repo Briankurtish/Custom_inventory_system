@@ -18,6 +18,8 @@ from django.contrib.auth import authenticate
 import json
 from django.contrib.auth.hashers import check_password
 from django.db.models import Q
+from django.db.models import Prefetch
+from collections import defaultdict
 
 
 """
@@ -95,14 +97,22 @@ def ManageWorkerView(request):
     context = TemplateLayout.init(request, view_context)
     return render(request, "workers.html", context)
 
+
+
 @login_required
 def assign_privileges_to_role(request):
     roles = [role[0] for role in Worker.ROLE_CHOICES]
     role = request.GET.get('role')  # Get selected role from query parameters
-    role_privilege = None  # Initialize variable
+    role_privilege = None  
+
+    privileges_by_category = defaultdict(list)
+    all_privileges = Privilege.objects.all()
+
+    for privilege in all_privileges:
+        privileges_by_category[privilege.category].append(privilege)
 
     if request.method == 'POST':
-        role = request.POST.get('role')  # Get the role from the form
+        role = request.POST.get('role')
         try:
             role_privilege = RolePrivilege.objects.get(role=role)
             form = RolePrivilegeForm(request.POST, instance=role_privilege)
@@ -111,13 +121,13 @@ def assign_privileges_to_role(request):
 
         if form.is_valid():
             role_privilege = form.save(commit=False)
-            role_privilege.role = role  # Ensure the role is set
+            role_privilege.role = role  
             role_privilege.save()
-            form.save_m2m()  # Save many-to-many relationships
+            form.save_m2m()
             messages.success(request, _('Privileges updated successfully!'))
-            return redirect('workers')  # Redirect after successful update
+            return redirect('workers')  
 
-    else:  # Handle GET request
+    else:
         if role:
             try:
                 role_privilege = RolePrivilege.objects.get(role=role)
@@ -127,7 +137,11 @@ def assign_privileges_to_role(request):
         else:
             form = RolePrivilegeForm()
 
-    context = TemplateLayout.init(request, {'form': form, 'roles': roles})
+    context = TemplateLayout.init(request, {
+        'form': form,
+        'roles': roles,
+        'privileges_by_category': dict(privileges_by_category),
+    })
     return render(request, 'assign_privileges.html', context)
 
 
@@ -375,24 +389,56 @@ def manage_worker_privileges(request, worker_id):
 @login_required
 def create_privilege(request):
     """
-    View to allow the admin to create a new privilege.
+    View to allow the admin to create a new privilege and list existing privileges.
     """
-    if request.method == 'POST':
+    privileges = Privilege.objects.all().order_by("name")  # Fetch all privileges
+
+    if request.method == "POST":
         form = PrivilegeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, _('Privilege created successfully!'))
-            return redirect('create_privilege')
+            messages.success(request, _("Privilege created successfully!"))
+            return redirect("create_privilege")
         else:
-            messages.error(request, _('Error creating privilege. Please check the input.'))
+            messages.error(request, _("Error creating privilege. Please check the input."))
     else:
         form = PrivilegeForm()
 
     view_context = {
         "form": form,
+        "privileges": privileges,  # Pass privileges to the template
     }
     context = TemplateLayout.init(request, view_context)
-    return render(request, 'create_privilege.html', context)
+    return render(request, "create_privilege.html", context)
+
+
+@login_required
+def edit_privilege(request, privilege_id):
+    """
+    View to edit an existing privilege.
+    """
+    privilege = get_object_or_404(Privilege, id=privilege_id)
+    privileges = Privilege.objects.all().order_by("name")
+
+    if request.method == "POST":
+        form = PrivilegeForm(request.POST, instance=privilege)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Privilege updated successfully!"))
+            return redirect("create_privilege")  # Redirect back to the privilege list
+        else:
+            messages.error(request, _("Error updating privilege. Please check the input."))
+    else:
+        form = PrivilegeForm(instance=privilege)
+
+    view_context = {
+        "form": form,
+        "privilege": privilege,
+        "privileges": privileges,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "create_privilege.html", context)
+
 
 @login_required
 def get_roles_and_privileges(request):

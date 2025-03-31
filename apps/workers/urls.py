@@ -19,6 +19,7 @@ urlpatterns = [
     path('worker/edit/<int:pk>/', edit_worker_profile_view, name='edit_worker_profile'),
     path('workers/<int:worker_id>/manage-privileges/', manage_worker_privileges, name='manage_worker_privileges'),
     path('create-privilege/', create_privilege, name='create_privilege'),
+    path("edit-privilege/<int:privilege_id>/", edit_privilege, name="edit_privilege"),
     path('privileges/', get_roles_and_privileges, name='privileges'),
 
     path('change-password/', password_change_view, name='password_change'),

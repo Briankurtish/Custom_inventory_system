@@ -304,7 +304,7 @@ class WorkerPrivilegeForm(forms.ModelForm):
 class PrivilegeForm(forms.ModelForm):
     class Meta:
         model = Privilege
-        fields = ['name', 'description']
+        fields = ['name', 'category', 'description']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Privilege Name')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': _('Privilege Description'), 'rows': 3}),
