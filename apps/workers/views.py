@@ -147,6 +147,42 @@ def assign_privileges_to_role(request):
 
 
 @login_required
+def change_worker_role(request, worker_id):
+    worker = get_object_or_404(Worker, pk=worker_id)
+    
+    if request.method == 'POST':
+        new_role = request.POST.get('role')
+        
+        if new_role and new_role != worker.role:
+            try:
+                role_privilege = RolePrivilege.objects.get(role=new_role)
+                worker.role = new_role
+                worker.privileges.set(role_privilege.privileges.all())
+                worker.save()
+                messages.success(request, "Role updated successfully!")
+            except RolePrivilege.DoesNotExist:
+                worker.role = new_role
+                worker.privileges.clear()
+                worker.save()
+                messages.success(request, "Role updated (no privileges for this role)")
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            
+            return redirect('worker_detail', worker_id=worker.id)
+    
+    # Get all roles directly from the model
+    roles = Worker.ROLE_CHOICES
+    
+    return JsonResponse({
+        'success': False,
+        'roles': roles,
+        'current_role': worker.role
+    }, status=400)
+
+
+
+@login_required
 def OnlineWorkersView(request):
     """
     View to get all online workers.
