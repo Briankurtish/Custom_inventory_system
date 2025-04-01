@@ -174,6 +174,11 @@ th {
                     <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
                       <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
                     </a>
+                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeRoleModal"
+                      data-worker-id="{{ worker.id }}" 
+                      data-current-role="{{ worker.role }}">
+                      <i class="fa-solid fa-user-tag me-1"></i> Change Role
+                    </a>
                     <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
                       <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
                     </a>
@@ -201,6 +206,35 @@ th {
     </table>
   </div>
 </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="changeRoleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="changeRoleForm" method="post" action="{% url 'change_worker_role' 0 %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Change Role</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">New Role</label>
+            <select name="role" id="roleSelect" class="form-select">
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <!-- Warning Modal (No PIN Found) -->
 <div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
@@ -245,6 +279,85 @@ th {
 
 {% block page_js %}
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modal with worker data
+    const changeRoleModal = document.getElementById('changeRoleModal');
+    if (changeRoleModal) {
+      changeRoleModal.addEventListener('show.bs.modal', async function(event) {
+        const button = event.relatedTarget;
+        const workerId = button.getAttribute('data-worker-id');
+        const form = document.getElementById('changeRoleForm');
+        form.action = form.action.replace('/0/', '/' + workerId + '/');
+        
+        // Get the current worker's role
+        const currentRole = button.getAttribute('data-current-role');
+        
+        // Fetch available roles (or use hardcoded if preferred)
+        const roleSelect = document.getElementById('roleSelect');
+        roleSelect.innerHTML = ''; // Clear existing options
+        
+        // Add options - either from your model or hardcoded
+        const roles = [
+          ['Director General', 'Director General'],
+          ['Pharmacist', 'Pharmacist'],
+          ['Human Resource', 'Human Resource'],
+          ['Marketing Director', 'Marketing Director'],
+          ['Central Stock Manager', 'Central Stock Manager'],
+          ['Stock Manager', 'Stock Manager'],
+          ['Central Stock Keeper', 'Central Stock Keeper'],
+          ['Stock Keeper', 'Stock Keeper'],
+          ['Accountant', 'Accountant'],
+          ['Cashier', 'Cashier'],
+          ['Secretary', 'Secretary'],
+          ['Sales Rep', 'Sales Rep'],
+          ['Driver', 'Driver'],
+          ['Other', 'Other']
+        ];
+        
+        roles.forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          if (value === currentRole) {
+            option.selected = true;
+          }
+          roleSelect.appendChild(option);
+        });
+      });
+    }
+  
+    // Handle form submission
+    const form = document.getElementById('changeRoleForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Close modal and reload page to see changes
+            const modal = bootstrap.Modal.getInstance(changeRoleModal);
+            modal.hide();
+            location.reload();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      });
+    }
+  });
+
+  
+
 document.addEventListener('DOMContentLoaded', function () {
     const openPinModal = document.getElementById('openPinModal');
     const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
