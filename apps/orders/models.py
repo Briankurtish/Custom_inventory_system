@@ -126,22 +126,22 @@ class PurchaseOrder(models.Model):
     ]
 
     TAX_RATE_CHOICES = [
-        (2.0, "2.0%"),
-        (2.2, "2.2%"),
-        (5.0, "5.0%"),
-        (5.50, "5.50%"),
-        (0.0, "0.0%"),
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("2.20"), "2.20%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("5.50"), "5.50%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     PRECOMPTE_CHOICES = [
-        (2.0, "2.0%"),
-        (5.0, "5.0%"),
-        (0.0, "0.0%"),
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     TVA_CHOICES = [
-        (19.25, "19.25%"),
-        (0.0, "0.0%"),
+        (Decimal("19.25"), "19.25%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     DOCUMENT_TYPE_CHOICES = [
@@ -213,38 +213,39 @@ class PurchaseOrder(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.purchase_order_id:
-            # Use the date from the created_at field if it exists, otherwise use the current date
-            if self.created_at:
-                date_part = self.created_at.strftime("%Y%m%d")  # Format date as YYYYMMDD
-            else:
-                date_part = timezone.now().strftime("%Y%m%d")
-
-            # Extract the REG part from the branch ID
+            # Use the date from created_at or current date
+            order_date = self.created_at if self.created_at else timezone.now()
+            date_part = order_date.strftime("%Y%m%d")  # Keep date in ID for reference
+            
+            # Extract REG from branch ID (e.g., "REG" from "REG-001")
             branch_id_parts = self.branch.branch_id.split("-")
-            reg_part = branch_id_parts[0] if len(branch_id_parts) > 0 else "UNKNOWN"
-
-            # Assemble the prefix with the date included
-            prefix = f"PO-{reg_part}-{date_part}"
-
-            # Find the latest purchase order for this branch (ignoring the date)
-            latest_order = PurchaseOrder.objects.filter(purchase_order_id__icontains=f"PO-{reg_part}").order_by('-purchase_order_id').first()
-
-            if latest_order:
-                # Extract the numeric part of the sequence, ignoring any suffixes like '-R'
-                latest_id = latest_order.purchase_order_id
-                # Split the ID into parts and extract the numeric sequence
-                id_parts = latest_id.split("-")
-                # The numeric sequence is the last part before any suffix (e.g., 'R')
-                sequence_part = id_parts[-1] if id_parts[-1].isdigit() else id_parts[-2]
-                latest_sequence = int(sequence_part)
-                sequence = latest_sequence + 1
-            else:
-                # Start from 1 if no existing orders match the branch
-                sequence = 1
-
-            # Assign the new purchase order ID
-            self.purchase_order_id = f"{prefix}-{sequence:05d}"  # Zero-padded to 5 digits
-
+            reg_part = branch_id_parts[0] if branch_id_parts else "UNKNOWN"
+            
+            # Base prefix without sequence (PO-REG-YYYYMMDD-)
+            base_prefix = f"PO-{reg_part}-{date_part}-"
+            
+            # Find the highest existing sequence number ACROSS ALL DATES for this branch
+            existing_ids = PurchaseOrder.objects.filter(
+                purchase_order_id__startswith=f"PO-{reg_part}-"
+            ).values_list('purchase_order_id', flat=True)
+            
+            # Extract all sequence numbers
+            sequences = []
+            for po_id in existing_ids:
+                try:
+                    # Extract last part (sequence number)
+                    seq_part = po_id.split("-")[-1]  
+                    if seq_part.isdigit():
+                        sequences.append(int(seq_part))
+                except (IndexError, ValueError):
+                    continue
+            
+            # Determine next sequence number
+            sequence = max(sequences) + 1 if sequences else 1
+            
+            # Format final ID (PO-REG-YYYYMMDD-XXXXX)
+            self.purchase_order_id = f"{base_prefix}{sequence:05d}"
+        
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -314,22 +315,22 @@ class ReturnPurchaseOrder(models.Model):
     ]
 
     TAX_RATE_CHOICES = [
-        (2.0, "2.0%"),
-        (2.20, "2.20%"),
-        (5.0, "5.0%"),
-        (5.50, "5.50%"),
-        (0.0, "0.0%"),
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("2.20"), "2.20%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("5.50"), "5.50%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     PRECOMPTE_CHOICES = [
-        (2.0, "2.0%"),
-        (5.0, "5.0%"),
-        (0.0, "0.0%"),
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     TVA_CHOICES = [
-        (19.25, "19.25%"),
-        (0.0, "0.0%"),
+        (Decimal("19.25"), "19.25%"),
+        (Decimal("0.0"), "0.0%"),
     ]
 
     DOCUMENT_TYPE_CHOICES = [
@@ -837,7 +838,7 @@ class ReturnInvoice(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.return_invoice_id:
-            self.return_invoice_id = self.generate_return_invoice_id()
+           self.return_invoice_id = f"RET-{self.original_invoice.invoice_id}" 
 
         # Calculate total including taxes
         self.total_with_taxes = self.calculate_total_with_taxes()
@@ -885,8 +886,10 @@ class ReturnInvoiceOrderItem(models.Model):
 class ReturnItemTemp(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     invoice_order_item = models.ForeignKey(InvoiceOrderItem, on_delete=models.CASCADE)
-    # Store quantity_returned as Decimal for arithmetic
-    quantity_returned = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Change from DecimalField to PositiveIntegerField
+    quantity_returned = models.PositiveIntegerField(default=0)
+
     reason_for_return = models.CharField(max_length=200, blank=True, null=True)
     added_at = models.DateTimeField(auto_now_add=True)
 

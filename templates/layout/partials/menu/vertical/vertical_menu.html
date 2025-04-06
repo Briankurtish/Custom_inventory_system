@@ -130,7 +130,7 @@
             </li>
         {% endif %}
 
-        {% if privilege.name == 'Request Stock' %}
+        {% if privilege.name == 'View Stock Requests'  %}
             <li class="menu-item {% if request.resolver_match.url_name == 'requests' or '/requests/' in request.path %}active open{% endif %}">
                 <a href="{% url 'requests' %}" class="menu-link">
                      <i class="menu-icon fa-solid fa-circle-exclamation"></i>

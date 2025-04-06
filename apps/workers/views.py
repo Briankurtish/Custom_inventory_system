@@ -113,6 +113,9 @@ def assign_privileges_to_role(request):
 
     if request.method == 'POST':
         role = request.POST.get('role')
+        if not role:
+            return HttpResponseBadRequest("Role is required.")
+
         try:
             role_privilege = RolePrivilege.objects.get(role=role)
             form = RolePrivilegeForm(request.POST, instance=role_privilege)
@@ -126,7 +129,6 @@ def assign_privileges_to_role(request):
             form.save_m2m()
             messages.success(request, _('Privileges updated successfully!'))
             return redirect('workers')  
-
     else:
         if role:
             try:
@@ -137,11 +139,19 @@ def assign_privileges_to_role(request):
         else:
             form = RolePrivilegeForm()
 
+    selected_privileges = (
+        list(role_privilege.privileges.values_list('id', flat=True))
+        if role_privilege else []
+    )
+
     context = TemplateLayout.init(request, {
         'form': form,
         'roles': roles,
         'privileges_by_category': dict(privileges_by_category),
+        'selected_privileges': selected_privileges,
+        'selected_role': role,
     })
+
     return render(request, 'assign_privileges.html', context)
 
 
@@ -427,7 +437,8 @@ def create_privilege(request):
     """
     View to allow the admin to create a new privilege and list existing privileges.
     """
-    privileges = Privilege.objects.all().order_by("name")  # Fetch all privileges
+    # Order by category, then by name
+    privileges = Privilege.objects.all().order_by("category", "name")
 
     if request.method == "POST":
         form = PrivilegeForm(request.POST)
@@ -442,10 +453,11 @@ def create_privilege(request):
 
     view_context = {
         "form": form,
-        "privileges": privileges,  # Pass privileges to the template
+        "privileges": privileges,  # Ordered list
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, "create_privilege.html", context)
+
 
 
 @login_required

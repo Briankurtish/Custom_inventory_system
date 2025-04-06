@@ -66,11 +66,33 @@ def ManageBranchStockView(request):
     if not user_branch:
         raise Http404("You are not affiliated with any branch.")  # Handle unaffiliated workers gracefully
 
+    # Get the search query and status filter from the request
+    search_query = request.GET.get('search_query', '').strip()
+    status_filter = request.GET.get('status_filter', '').strip()
+
     # Filter stocks by the user's branch
     stocks = Stock.objects.filter(branch=user_branch)
 
+    # Apply search filter if search query is present
+    if search_query:
+        stocks = stocks.filter(
+            Q(product__product_code__icontains=search_query) |
+            Q(product__generic_name_dosage__generic_name__icontains=search_query) |
+            Q(product__brand_name__brand_name__icontains=search_query) |
+            Q(product__batch__batch_number__icontains=search_query)
+        )
+
+    # Apply status filter if selected
+    if status_filter:
+        if status_filter == 'in_stock':
+            stocks = stocks.filter(total_stock__gt=200)  # In Stock
+        elif status_filter == 'low_stock':
+            stocks = stocks.filter(total_stock__lte=199)  # Low Stock (example: quantity <= 5)
+        elif status_filter == 'out_of_stock':
+            stocks = stocks.filter(total_stock=0)  # Out of Stock
+
     # Paginate the filtered stocks
-    paginator = Paginator(stocks, 10)
+    paginator = Paginator(stocks, 100)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_stocks = paginator.get_page(page_number)
 
@@ -82,12 +104,15 @@ def ManageBranchStockView(request):
         "stocks": paginated_stocks,
         "offset": offset,
         "user_branch_name": user_branch.branch_name,  # Pass branch name to display in the template
+        "search_query": search_query,  # Include the search query in the context
+        "status_filter": status_filter,  # Include the status filter in the context
     }
 
     # Initialize the template layout and merge the view context
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'stock_branch.html', context)
+
 
 @login_required
 def ManageStockBranchView(request):
@@ -723,21 +748,32 @@ def update_stock_entry_view(request, stock_id):
 @login_required
 def get_stock_data(request):
     branch_id = request.GET.get("branch_id")
-    get_all = request.GET.get("all", "false").lower() == "true"  # Check for 'all=true'
+    get_all = request.GET.get("all", "false").lower() == "true"
+    search_query = request.GET.get("search_query", "").strip()
 
     try:
-        if get_all:  # Fetch all stock data
-            stocks = Stock.objects.select_related('product__batch', 'product__brand_name') \
-                                 .order_by("product__product_code", "product__batch__batch_number")
-
-        elif branch_id:  # Fetch stock data for a specific branch
+        if get_all:
+            stocks = Stock.objects.select_related(
+                'product__batch', 'product__brand_name', 'branch'
+            )
+        elif branch_id:
             branch = Branch.objects.get(id=branch_id)
-            stocks = Stock.objects.filter(branch=branch) \
-                                 .select_related('product__batch', 'product__brand_name') \
-                                 .order_by("product__product_code", "product__batch__batch_number")
-
-        else:  # No branch_id or 'all' parameter provided
+            stocks = Stock.objects.filter(branch=branch).select_related(
+                'product__batch', 'product__brand_name', 'branch'
+            )
+        else:
             return JsonResponse({"error": "Branch ID not provided"}, status=400)
+
+        # Apply search query if provided
+        if search_query:
+            stocks = stocks.filter(
+                Q(product__product_code__icontains=search_query) |
+                Q(product__generic_name_dosage__icontains=search_query) |
+                Q(product__brand_name__brand_name__icontains=search_query) |
+                Q(product__batch__batch_number__icontains=search_query)
+            )
+
+        stocks = stocks.order_by("product__product_code", "product__batch__batch_number")
 
         stock_data = [
             {
@@ -759,10 +795,14 @@ def get_stock_data(request):
             for stock in stocks
         ]
 
-        return JsonResponse({"branch_name": branch.branch_name if branch_id else "All Branches", "stocks": stock_data})
+        return JsonResponse({
+            "branch_name": branch.branch_name if branch_id else "All Branches",
+            "stocks": stock_data
+        })
 
     except Branch.DoesNotExist:
         return JsonResponse({"error": "Branch not found"}, status=404)
+
 
 
 

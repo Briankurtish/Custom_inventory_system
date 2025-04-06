@@ -172,9 +172,16 @@
                       </a>
                   {% endif %}
                   {% if order.status|lower == "unpaid" %}
-                    <a class="dropdown-item text-danger" href="{% url 'process_return' order.id %}">
+                  {% if order.return_invoice_id %}
+                     
+                  {% else %}
+                    <a class="dropdown-item text-danger" href="{% url 'return_items' order.id %}">
                       <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
                     </a>
+                  {% endif %}
+                    {% comment %} <a class="dropdown-item text-danger" href="{% url 'return_items' order.id %}">
+                      <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
+                    </a> {% endcomment %}
                   {% endif %}
                 </div>
               {% endif %}

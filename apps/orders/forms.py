@@ -81,7 +81,7 @@ class PurchaseOrderForm(forms.ModelForm):
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-check-input'})
             else:
-                field.widget.attrs.update({'class': 'form-control form-control-sm'})  # Make fields shorter
+                field.widget.attrs.update({'class': 'form-control form-control'})  # Make fields shorter
 
 
         # Ensure `is_special_customer` uses Bootstrap checkbox styling

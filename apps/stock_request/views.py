@@ -191,20 +191,27 @@ def ManageRequestsView(request):
 
     user_role = worker_profile.role
     stock_requests = StockRequest.objects.all()
+    in_transit_stocks = InTransit.objects.none()  # Default to empty
 
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
 
     # Filter stock requests based on the user's role and privileges
     if user_role == "Marketing Director":
-        # If the worker is a Marketing Director, show only requests created by them
         stock_requests = stock_requests.filter(requested_by=worker_profile)
+
+    elif user_role in ["Secretary", "Stock Manager"]:
+        stock_requests = stock_requests.filter(requested_by__branch=worker_profile.branch)
+
     elif can_request_stock:
-        # If the worker has the 'Request Stock' privilege, show only requests created by them
-        stock_requests = stock_requests
-    elif user_role == "Stock Manager":
-        # If the worker is a 'Stock Manager', show only accepted requests (status: "in transit")
-        stock_requests = stock_requests.filter(status__iexact="in transit")
+        stock_requests = stock_requests.filter(requested_by=worker_profile)
+
+    # Stock Managers should see "In Transit" stock for their branch
+    if user_role == "Stock Manager":
+        in_transit_stocks = InTransit.objects.filter(
+        destination=worker_profile.branch,
+        status="In Transit"  # Only show items that are still in transit
+    )
 
     # Get the selected status filter, defaulting to empty (no filter)
     status_filter = request.GET.get('status_filter', '')
@@ -224,20 +231,20 @@ def ManageRequestsView(request):
 
     # Apply pagination after filtering
     paginator = Paginator(stock_requests, 100)
-    page_number = request.GET.get('page')  # Get the current page number from the request
+    page_number = request.GET.get('page')
     paginated_request = paginator.get_page(page_number)
 
-    # Prepare the context dictionary with the stock requests and privilege information
+    # Prepare the context dictionary
     view_context = {
         "stock_requests": paginated_request,
-        "can_request_stock": can_request_stock,  # Include the privilege info
+        "in_transit_stocks": in_transit_stocks,  # Now available in context
+        "can_request_stock": can_request_stock,  
     }
 
-    # Initialize the template layout and merge the view context
+    # Initialize template layout and render the page
     context = TemplateLayout.init(request, view_context)
-
-    # Render the page with the provided context
     return render(request, 'requests.html', context)
+
 
 
 
@@ -658,24 +665,37 @@ def stock_received(request, request_id):
 
 @login_required
 def stocks_in_transit(request):
-    # Get the worker profile of the logged-in user
     worker = getattr(request.user, 'worker_profile', None)
 
-    # If the user is not a worker or doesn't belong to a branch, deny access
-    if not worker or not worker.branch:
-        return HttpResponseForbidden(_("You do not have access to view stocks in transit."))
+    # Superusers bypass all restrictions
+    if request.user.is_superuser:
+        stocks_in_transit = StockRequest.objects.filter(status="Accepted")
+        in_transit_items = InTransit.objects.filter(status="In Transit")
+    else:
+        # Non-superusers must be workers with a branch
+        if not worker or not worker.branch:
+            return HttpResponseForbidden(_("You do not have access to view stocks in transit."))
 
-    # Retrieve the branch and in-transit stocks for the worker's branch
-    branch = worker.branch
-    stocks_in_transit = StockRequest.objects.filter(status="Accepted")
+        branch = worker.branch
+
+        # Filter StockRequests from this branch OR InTransit items destined for this branch
+        stocks_in_transit = StockRequest.objects.filter(
+            status="Accepted",
+            requested_by__branch=branch  # Requests made by someone from this branch
+        )
+        in_transit_items = InTransit.objects.filter(
+            destination=branch,  # Items coming TO this branch
+            status="In Transit"
+        )
 
     view_context = {
         'stocks_in_transit': stocks_in_transit,
-        'branch_name': branch.branch_name,  # Pass the branch name to the template
+        'in_transit_items': in_transit_items,
+        'branch_name': getattr(worker.branch, 'branch_name', 'All Branches') if worker else 'All Branches',
+        'is_superuser': request.user.is_superuser,  # Pass superuser status to template
     }
 
     context = TemplateLayout.init(request, view_context)
-
     return render(request, 'transit-requests.html', context)
 
 

@@ -102,5 +102,7 @@ urlpatterns = [
     path('invoice-document/<int:document_id>/delete/', delete_invoice_document, name='delete_invoice_document'),
 
     path("return-payment-schedule/<int:return_invoice_id>/", create_return_payment_schedule, name="create_return_payment_schedule"),
+    
+    path('invoice/<int:invoice_id>/return/', return_order, name='return_order'),
 
 ]
