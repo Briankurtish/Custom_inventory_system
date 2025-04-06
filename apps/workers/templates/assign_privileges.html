@@ -11,10 +11,9 @@
 {% block content %}
 
 <a href="{% url 'workers' %}" class="btn btn-outline-secondary mb-4">
-  ← Back
+  ← {% trans "Back" %}
 </a>
 
-<!-- Breadcrumbs -->
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
@@ -24,15 +23,12 @@
     </li>
   </ol>
 </nav>
-<!-- End Breadcrumbs -->
 
-<!-- Basic Layout -->
 <div class="row">
   <div class="col-xl">
     <div class="card mb-6">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">{% trans "Assign Privileges" %}</h5>
-        <hr>
       </div>
       <div class="card-body">
         <form method="POST">
@@ -42,7 +38,7 @@
             <select name="role" id="id_role" class="form-control">
               <option value="">{% trans "Choose Role" %}</option>
               {% for role in roles %}
-                <option value="{{ role }}" {% if role == request.GET.role %}selected{% endif %}>
+                <option value="{{ role }}" {% if role == selected_role %}selected{% endif %}>
                   {{ role }}
                 </option>
               {% endfor %}
@@ -58,14 +54,24 @@
             <div class="row">
               {% for privilege in privileges %}
                 <div class="col-md-4">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="privileges" id="privilege_{{ privilege.id }}" value="{{ privilege.id }}">
+                  <div class="form-check d-flex align-items-start gap-2">
+                    <input class="form-check-input mt-1" type="checkbox" name="privileges"
+                          id="privilege_{{ privilege.id }}"
+                          value="{{ privilege.id }}"
+                          {% if privilege in form.instance.privileges.all %}checked{% endif %}>
                     <label class="form-check-label" for="privilege_{{ privilege.id }}">
                       {{ privilege.name }}
                     </label>
+
+                    {% if privilege in form.instance.privileges.all %}
+                      <span class="badge bg-light text-muted border ms-2 mt-1" style="font-size: 0.75rem;">
+                        Role Privilege
+                      </span>
+                    {% endif %}
                   </div>
                 </div>
               {% endfor %}
+
             </div>
             <hr>
           {% endfor %}
@@ -83,7 +89,7 @@
 
 {% block page_js %}
 <script>
- $(document).ready(function () {
+$(document).ready(function () {
   $("#id_role").select2({
     placeholder: "Select a role",
     allowClear: true,
@@ -93,9 +99,9 @@
   $("#id_role").change(function () {
     let selectedRole = $(this).val();
     if (selectedRole) {
-      window.location.href = "?role=" + selectedRole;  // Reload page with selected role
+      window.location.href = "?role=" + selectedRole;
     }
   });
 });
 </script>
-{% endblock page_js %}
+{% endblock %}

@@ -17,69 +17,7 @@
       <div class="card-body">
         <form method="post">
           {% csrf_token %}
-
-          <!-- Purchase Order Form Fields in a Grid -->
-
-            <div class="col-md-4">
-              {{ po_form.created_at|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.branch|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.customer|as_crispy_field }}
-            </div>
-
-
-
-            <div class="col-md-4">
-              {{ po_form.sales_rep|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.payment_method|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.payment_mode|as_crispy_field }}
-            </div>
-
-
-
-            <div class="col-md-4">
-              {{ po_form.momo_account_details|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.check_account_details|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.bank_deposit_account_details|as_crispy_field }}
-            </div>
-
-
-          <!-- Tax Fields -->
-
-            <div class="col-md-4">
-              {{ po_form.tax_rate|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.precompte|as_crispy_field }}
-            </div>
-            <div class="col-md-4">
-              {{ po_form.tva|as_crispy_field }}
-            </div>
-
-
-          <!-- Special Customer Checkbox -->
-
-            <div class="col-md-4">
-              <div class="form-check mt-2">
-                {{ po_form.is_special_customer }}
-                <label class="form-check-label" for="{{ po_form.is_special_customer.id_for_label }}">
-                  {% trans "Is a Special Customer" %}
-                </label>
-              </div>
-            </div>
-
-
+          {{po_form|crispy}}
           <br>
           <button type="submit" class="btn btn-primary">{% trans "Next" %}: {% trans "Add Items" %}</button>
         </form>

@@ -481,7 +481,7 @@
 
         {% if role_privileges %}
             {% for privilege in role_privileges %}
-                {% if privilege.name == 'Generate Picking List' %}
+                {% if privilege.name == 'Generate Order Picking List' %}
                     {% if order_type == "purchase_order" %}
                         <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
                             {% trans "Generate Picking List" %}

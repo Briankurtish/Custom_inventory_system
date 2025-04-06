@@ -5,7 +5,6 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 
-
 {% block title %}{% trans "Return Items" %}{% endblock %}
 
 {% block content %}
@@ -16,7 +15,7 @@
         <h5 class="mb-0">{% trans "Return Order Items" %}</h5>
       </div>
 
-       <div class="container">
+      <div class="container">
         <!-- invoice Information -->
         <div class="row">
             <div class="col-md-3">
@@ -36,8 +35,9 @@
                 <h6 class="mx-3">{{ invoice.created_at|date:"d-m-Y" }}</h6>
             </div>
         </div>
-    </div>
+      </div>
       <br>
+
       <div class="card-body">
         <form method="post">
           {% csrf_token %}
@@ -49,7 +49,7 @@
         </form>
 
         <br>
-        <h5>Return Items</h5>
+        <h5>{% trans "Return Items" %}</h5>
         <table class="table table-hover">
           <thead>
               <tr>
@@ -61,18 +61,18 @@
               </tr>
           </thead>
           <tbody>
-              {% for item in temp_items  %}
+              {% for item in return_items %}
               <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ item.invoice_order_item.stock.stock_name }}</td>
+                  <td>{{ item.stock_name }}</td>
                   <td>{{ item.quantity_returned|intcomma }}</td>
                   <td>{{ item.reason_for_return }}</td>
 
                   <td>
-                    <form method="POST" action="{% url 'process_return' invoice.id %}">
+                    <form method="POST" action="{% url 'return_items' invoice.id %}">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="remove_item">
-                      <input type="hidden" name="temp_item_id" value="{{ item.id }}">
+                      <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
                       <button type="submit" class="btn btn-danger">{% trans "Remove" %}</button>
                     </form>
                   </td>
@@ -93,64 +93,30 @@
 </div>
 {% endblock %}
 
-
 {% block page_js %}
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
     // Initialize Select2 on the product field
-    $("#id_customer").select2({
+    $("#id_customer, #id_sales_rep, #id_stock").select2({
       placeholder: "Search for a Customer",
       allowClear: true,
       width: "100%",
     });
-  });
-</script>
 
-<script>
-  $(document).ready(function () {
-    // Initialize Select2 on the product field
-    $("#id_sales_rep").select2({
-      placeholder: "Search for a Sales Rep",
-      allowClear: true,
-      width: "100%",
+    // Handle dynamic visibility for payment fields
+    $("#payment_mode").change(function () {
+      var selectedMode = $(this).val();
+      $(".hidden-field").hide();
+
+      if (selectedMode === "Mobile Money") {
+        $("#id_momo_account").show();
+      } else if (selectedMode === "Check") {
+        $("#id_check_account").show();
+      } else if (selectedMode === "Bank Deposit") {
+        $("#id_bank_deposit_account").show();
+      }
     });
   });
 </script>
-
-<script>
-  $(document).ready(function () {
-    // Initialize Select2 on the product field
-    $("#id_stock").select2({
-      placeholder: "Search for a Product",
-      allowClear: true,
-      width: "100%",
-    });
-  });
-</script>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $("#payment_mode").change(function () {
-            var selectedMode = $(this).val();
-
-            // Hide all fields first
-            $(".hidden-field").hide();
-
-            // Show the relevant field based on selection
-            if (selectedMode === "Mobile Money") {
-                $("#id_momo_account").show();
-            } else if (selectedMode === "Check") {
-                $("#id_check_account").show();
-            } else if (selectedMode === "Bank Deposit") {
-                $("#id_bank_deposit_account").show();
-            }
-        });
-    });
-</script>
-
-
-
-
 {% endblock %}

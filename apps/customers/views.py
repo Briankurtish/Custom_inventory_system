@@ -37,15 +37,12 @@ def ManageCustomerView(request):
 
     # Filter customers based on the user's privileges and search query
     if is_superuser:
-        # Superuser sees all customers
         customers = Customer.objects.all()
-    else:
-        # Regular users see customers only from their branch
-        worker_branch = worker.branch
         if branch_filter:
-            customers = Customer.objects.filter(branch_id=branch_filter, branch=worker_branch)
-        else:
-            customers = Customer.objects.filter(branch=worker_branch)
+            customers = customers.filter(branch_id=branch_filter)
+    else:
+        customers = Customer.objects.filter(branch=worker.branch)
+
 
     # Apply the search filter if a search query is provided
     if search_query:

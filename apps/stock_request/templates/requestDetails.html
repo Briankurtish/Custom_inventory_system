@@ -209,7 +209,7 @@
   {% if stock_request.status == "Accepted" %}
     {% if role_privileges %}
         {% for privilege in role_privileges %}
-            {% if privilege.name == 'Generate Picking List' %}
+            {% if privilege.name == 'Generate Request Picking List' %}
                 <a href="{% url 'stock_request_doc' stock_request.id %}" target="_blank" class="btn btn-primary">
                     {% trans "Download Picking List" %}
                 </a>

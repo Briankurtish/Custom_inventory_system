@@ -29,15 +29,39 @@
   <div id="branch-buttons-container" class="mb-4"></div>
   {% endif %}
 
-  <div class="mb-3">
-  <label for="stock-search" class="form-label"></label>
-  <input
-    type="text"
-    id="stock-search"
-    class="form-control"
-    placeholder="{% trans 'Type to search for stock...' %}"
-  />
-</div>
+<!-- Stock Management - Search and Status Filters -->
+<form method="get" action="{% url 'branch-stock' %}" class="mb-3 d-flex flex-wrap align-items-end">
+  <!-- Search Query Input -->
+  <div class="mb-2 d-flex flex-column me-3">
+    <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
+    <input
+      type="text"
+      name="search_query"
+      id="stock-search"
+      class="form-control"
+      placeholder="{% trans 'Search stocks by product code, name, or batch' %}"
+      value="{{ search_query }}"
+    />
+  </div>
+
+  <!-- Status Filter Dropdown -->
+  <div class="mb-2 d-flex flex-column me-3">
+    <label for="status_filter" class="form-label">{% trans "Filter by Status" %}:</label>
+    <select name="status_filter" id="status_filter" class="form-select form-select-sm" style="width: 180px;">
+      <option value="">{% trans "All Statuses" %}</option>
+      <option value="in_stock" {% if status_filter == 'in_stock' %}selected{% endif %}>{% trans 'In Stock' %}</option>
+      <option value="low_stock" {% if status_filter == 'low_stock' %}selected{% endif %}>{% trans 'Low Stock' %}</option>
+      <option value="out_of_stock" {% if status_filter == 'out_of_stock' %}selected{% endif %}>{% trans 'Out of Stock' %}</option>
+    </select>
+  </div>
+
+  <!-- Submit Button -->
+  <div class="mb-2 d-flex align-items-center">
+    <button type="submit" class="btn btn-primary">{% trans "Search & Filter" %}</button>
+  </div>
+</form>
+
+
 
   <div class="card">
     <h5 class="card-header">
@@ -58,10 +82,16 @@
             <th>{% trans "Product Code" %}</th>
             <th>{% trans "Batch Number" %}</th>
             <th>{% trans "Branch Name" %}</th>
-            <th>{% trans "Product Name" %}</th>
-            <th>{% trans "Quantity Available" %}</th>
+            <th>{% trans "Generic Name" %}</th>
+            <th>{% trans "Brand Name" %}</th>
+            <th>{% trans "Batch Number" %}</th>
+            <th>{% trans "Beginnig Inventory" %}</th>
+            <th>{% trans "Added Inventory" %}</th>
+            <th>{% trans "Total" %}</th>
+            <th>{% trans "Total Transfered" %}</th>
+            <th>{% trans "Total Sold" %}</th>
+            <th>{% trans "Available Inventory" %}</th>
             <th>{% trans "Status" %}</th>
-            <th>{% trans "Date Added" %}</th>
             {% comment %} <th>{% trans "Actions" %}</th> {% endcomment %}
           </tr>
         </thead>
@@ -70,16 +100,24 @@
           <tr data-product-code="{{ stock.product.product_code }}" data-generic-name="{{ stock.product.generic_name_dosage }}">
             <td>{{ forloop.counter|add:offset }}</td>
             <td>{{ stock.product.product_code }}</td>
-            <td>{{ stock.product.batch.batch_number }}</td>
+            <td>{{ stock.branch.branch_id }}</td>
             <td>{{ stock.branch.branch_name }}</td>
             <td>{{ stock.product.generic_name_dosage }}</td>
+            <td>{{ stock.product.brand_name.brand_name }}</td>
+            <td>{{ stock.product.batch.batch_number }}</td>
+            <td>{{ stock.fixed_beginning_inventory|intcomma }}</td>
             <td>{{ stock.quantity|intcomma }}</td>
-            <td>{{ stock.date_added }}</td>
+            <td>{{ stock.total_inventory|intcomma }}</td>
+            <td>{{ stock.quantity_transferred|intcomma }}</td>
+            <td>{{ stock.total_sold|intcomma }}</td>
+            <td>{{ stock.total_stock|intcomma }}</td>
             <td>
-              {% if stock.quantity > 0 %}
+              {% if stock.total_stock == 0 %}
+                <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
+              {% elif stock.total_stock >= 200 %}
                 <span class="badge bg-label-success">{% trans "In Stock" %}</span>
               {% else %}
-                <span class="badge bg-label-danger">{% trans "Out of Stock" %}</span>
+                <span class="badge bg-label-warning">{% trans "Low Stock" %}</span>
               {% endif %}
             </td>
           </tr>

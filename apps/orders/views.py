@@ -849,8 +849,8 @@ def return_items(request, invoice_id):
                     with transaction.atomic():
                         original_po = invoice.purchase_order
 
-                        # Create a new Purchase Order for the return
-                        revised_po = PurchaseOrder.objects.create(
+                        # Create a new Return Purchase Order for the return
+                        revised_po = ReturnPurchaseOrder.objects.create(
                             branch=original_po.branch,
                             customer=original_po.customer,
                             sales_rep=original_po.sales_rep,
@@ -864,87 +864,100 @@ def return_items(request, invoice_id):
                             momo_account=original_po.momo_account,
                             check_account=original_po.check_account,
                             bank_deposit_account=original_po.bank_deposit_account,
-                            old_purchase_order_id=original_po.purchase_order_id  # Store the original PO ID
+                            old_return_order_id=original_po.purchase_order_id,
+                            original_purchase_order=original_po,  # Set the original purchase order
+                            tax_rate=original_po.tax_rate,
+                            precompte=original_po.precompte,
+                            tva=original_po.tva,
+                            is_special_customer=original_po.is_special_customer,
                         )
 
-                        # Set the new Purchase Order ID to be "RET-" + the old PO ID
-                        revised_po.purchase_order_id = f"RET-{original_po.purchase_order_id}"
+                        # Set the new Return Purchase Order ID
+                        revised_po.return_order_id = f"RET-{original_po.purchase_order_id}"
                         revised_po.save()
 
                         revised_total = Decimal('0.00')
 
-                        for orig_item in original_po.items.all():
-                            return_item = next((ri for ri in return_items if ri["invoice_order_item_id"] == orig_item.id), None)
-                            if return_item:
-                                remaining_qty = orig_item.quantity - Decimal(str(return_item["quantity_returned"]))
-                                if remaining_qty > 0:
-                                    PurchaseOrderItem.objects.create(
-                                        purchase_order=revised_po,
-                                        stock=orig_item.stock,
-                                        quantity=remaining_qty,
-                                        temp_price=orig_item.temp_price,
-                                    )
-                                    revised_total += remaining_qty * orig_item.temp_price
-                            else:
-                                PurchaseOrderItem.objects.create(
-                                    purchase_order=revised_po,
-                                    stock=orig_item.stock,
-                                    quantity=orig_item.quantity,
-                                    temp_price=orig_item.temp_price,
+                        # Process the items and create return purchase order items
+                        # Process the items and create return purchase order items
+                        for orig_po_item in original_po.items.all():
+                            # Find the corresponding invoice item for this PO item
+                            
+                            invoice_item = InvoiceOrderItem.objects.get(
+                                invoice_order=invoice,
+                                stock=orig_po_item.stock
+                            )
+                            
+                            # Calculate remaining quantity based on the invoice item's return
+                            remaining_qty = invoice_item.quantity - sum(
+                                Decimal(str(ri["quantity_returned"])) 
+                                for ri in return_items 
+                                if ri["invoice_order_item_id"] == invoice_item.id
+                            )
+                            
+                            if remaining_qty > 0:
+                                ReturnPurchaseOrderItem.objects.create(
+                                    return_purchase_order=revised_po,
+                                    stock=orig_po_item.stock,
+                                    quantity=remaining_qty,
+                                    temp_price=orig_po_item.temp_price,
                                 )
-                                revised_total += orig_item.quantity * orig_item.temp_price
+                                revised_total += remaining_qty * orig_po_item.temp_price
 
                         revised_po.grand_total = revised_total
                         revised_po.save()
 
-                        # Create a new Invoice for the return
-                        revised_invoice = Invoice.objects.create(
+                       # Create a new Return Invoice for the return
+                        revised_invoice = ReturnInvoice.objects.create(
                             branch=invoice.branch,
                             customer=invoice.customer,
                             sales_rep=invoice.sales_rep,
                             payment_method=invoice.payment_method,
                             created_at=timezone.now(),
                             created_by=request.user.worker_profile,
-                            purchase_order=revised_po,
+                            original_invoice=invoice,
+                            return_purchase_order=revised_po,
                             grand_total=revised_total,
                             amount_paid=Decimal('0.00'),
                             amount_due=revised_total,
                             status='Unpaid',
-                            old_invoice_id=invoice.invoice_id  # Store the original Invoice ID
                         )
 
-                        # Set the new Invoice ID to be "RET-" + the old Invoice ID
-                        revised_invoice.invoice_id = f"RET-{invoice.invoice_id}"
+                        # Set the new Return Invoice ID (replace this with your own generation logic)
+                        revised_invoice.return_invoice_id = f"RET-{invoice.invoice_id}"  # Or any other ID generation logic
                         revised_invoice.save()
 
-                        for orig_item in invoice.items.all():
-                            return_item = next((ri for ri in return_items if ri["invoice_order_item_id"] == orig_item.id), None)
-                            if return_item:
-                                remaining_qty = orig_item.quantity - Decimal(str(return_item["quantity_returned"]))
-                                if remaining_qty > 0:
-                                    InvoiceOrderItem.objects.create(
-                                        invoice_order=revised_invoice,
-                                        stock=orig_item.stock,
-                                        quantity=remaining_qty,
-                                        price=orig_item.price,
-                                    )
-                            else:
-                                InvoiceOrderItem.objects.create(
-                                    invoice_order=revised_invoice,
-                                    stock=orig_item.stock,
-                                    quantity=orig_item.quantity,
-                                    price=orig_item.price,
+
+                        for invoice_item in invoice.items.all():
+                            remaining_qty = invoice_item.quantity - sum(
+                                Decimal(str(ri["quantity_returned"])) 
+                                for ri in return_items 
+                                if ri["invoice_order_item_id"] == invoice_item.id
+                            )
+                            
+                            if remaining_qty > 0:
+                                ReturnInvoiceOrderItem.objects.create(
+                                    return_invoice=revised_invoice,
+                                    stock=invoice_item.stock,
+                                    quantity=remaining_qty,
+                                    temp_price=invoice_item.price,
                                 )
 
-                        # Update the stock quantities and create return order items
+
+                        # Update stock quantities and create return order items
                         for return_item in return_items:
                             stock = get_object_or_404(Stock, id=return_item["stock_id"])
-                            stock.total_sold -= Decimal(str(return_item["quantity_returned"]))
+                            quantity_returned = Decimal(str(return_item["quantity_returned"]))
+                            
+                            # Update stock values
+                            stock.total_sold -= quantity_returned
+                            # stock.total_stock += quantity_returned  # Increment total stock
+                            
                             stock.save()
 
                             ReturnOrderItem.objects.create(
                                 invoice_order_item=get_object_or_404(InvoiceOrderItem, id=return_item["invoice_order_item_id"]),
-                                quantity_returned=Decimal(str(return_item["quantity_returned"])) ,
+                                quantity_returned=Decimal(str(return_item["quantity_returned"])),
                                 reason_for_return=return_item["reason_for_return"],
                                 created_by=request.user.worker_profile,
                             )
@@ -961,17 +974,195 @@ def return_items(request, invoice_id):
                         request.session["return_items"] = []
                         request.session.modified = True
                         messages.success(request, "Returns processed successfully and revised records created.")
-                        return redirect("invoices")
+                        return redirect("create_return_payment_schedule", return_invoice_id=revised_invoice.id)
 
                 except Exception as e:
                     messages.error(request, f"Error processing returns: {e}")
             else:
                 messages.error(request, "No items in the return list.")
 
-    view_context = {"item_form": item_form, "return_items": request.session["return_items"]}
+    view_context = {"item_form": item_form, "return_items": request.session["return_items"], "invoice": invoice}
     context = TemplateLayout.init(request, view_context)
 
     return render(request, "return_items.html", context)
+
+
+
+
+
+
+
+def return_order(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    
+    # Initialize form with invoice items
+    form = ReturnOrderItemForm(request.POST or None, invoice_id=invoice_id)
+    
+    if request.method == 'POST':
+        if 'add_item' in request.POST:
+            return handle_add_item(request, invoice_id)
+        elif 'remove_item' in request.POST:
+            return handle_remove_item(request, invoice_id)
+        elif 'submit_return' in request.POST:
+            return handle_submit_return(request, invoice_id)
+    
+    return_items = request.session.get('return_items', [])
+    
+    view_context = {
+        'invoice': invoice,
+        'items': invoice.items.all(),
+        'return_items': return_items,
+        'form': form,
+    }
+    
+    context = TemplateLayout.init(request, view_context)
+    
+    
+    return render(request, 'return_items.html', context)
+
+def handle_add_item(request, invoice_id):
+    form = ReturnOrderItemForm(request.POST, invoice_id=invoice_id)
+    
+    if form.is_valid():
+        item_id = form.cleaned_data['item_to_return'].id
+        quantity = form.cleaned_data['quantity_to_return']
+        reason = form.cleaned_data['reason_for_return']
+        
+        invoice_item = get_object_or_404(InvoiceOrderItem, id=item_id, invoice_order_id=invoice_id)
+        
+        if quantity > invoice_item.quantity:
+            messages.error(request, "Return quantity cannot exceed original quantity")
+            return redirect('return_order', invoice_id=invoice_id)
+        
+        return_items = request.session.get('return_items', [])
+        
+        # Check if item already exists in return list
+        existing_item = next((item for item in return_items if item['item_id'] == str(item_id)), None)
+        
+        if existing_item:
+            existing_item['quantity'] = quantity
+            existing_item['reason'] = reason
+        else:
+            return_items.append({
+                'item_id': str(item_id),
+                'product': invoice_item.stock.product.brand_name,
+                'quantity': quantity,
+                'reason': reason
+            })
+        
+        request.session['return_items'] = return_items
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(request, f"{field}: {error}")
+    
+    return redirect('return_order', invoice_id=invoice_id)
+
+def handle_remove_item(request, invoice_id):
+    item_id = request.POST.get('remove_item')
+    return_items = request.session.get('return_items', [])
+    return_items = [item for item in return_items if item['item_id'] != item_id]
+    request.session['return_items'] = return_items
+    return redirect('return_order', invoice_id=invoice_id)
+
+@transaction.atomic
+def handle_submit_return(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    return_items = request.session.get('return_items', [])
+    
+    if not return_items:
+        messages.error(request, "No items to return")
+        return redirect('return_order', invoice_id=invoice_id)
+    
+    try:
+        # Create Return Purchase Order
+        return_purchase_order = ReturnPurchaseOrder.objects.create(
+            branch=invoice.branch,
+            customer=invoice.customer,
+            sales_rep=invoice.sales_rep,
+            original_purchase_order=invoice.purchase_order,
+            payment_method=invoice.payment_method,
+            created_by=request.user.worker,
+            status='Completed',
+            return_order_id=f"RET{invoice.purchase_order.purchase_order_id}",
+            grand_total=0,  # Will be calculated
+            tax_rate=invoice.purchase_order.tax_rate,
+            precompte=invoice.purchase_order.precompte,
+            tva=invoice.purchase_order.tva,
+            is_special_customer=invoice.purchase_order.is_special_customer
+        )
+        
+        # Create Return Invoice
+        return_invoice = ReturnInvoice.objects.create(
+            branch=invoice.branch,
+            customer=invoice.customer,
+            sales_rep=invoice.sales_rep,
+            original_invoice=invoice,
+            return_purchase_order=return_purchase_order,
+            payment_method=invoice.payment_method,
+            created_by=request.user.worker,
+            return_invoice_id=f"RET{invoice.invoice_id}",
+            grand_total=0,  # Will be calculated
+            total_with_taxes=0,  # Will be calculated
+            status='Refunded' if all(item['quantity'] == get_object_or_404(InvoiceOrderItem, id=item['item_id']).quantity for item in return_items) else 'Partially Refunded'
+        )
+        
+        total_amount = 0
+        
+        for item_data in return_items:
+            invoice_item = get_object_or_404(InvoiceOrderItem, id=item_data['item_id'])
+            
+            # Create ReturnOrderItem
+            ReturnOrderItem.objects.create(
+                invoice_order_item=invoice_item,
+                quantity_returned=item_data['quantity'],
+                reason_for_return=item_data['reason'],
+                created_by=request.user.worker
+            )
+            
+            # Create ReturnPurchaseOrderItem
+            return_po_item = ReturnPurchaseOrderItem.objects.create(
+                return_purchase_order=return_purchase_order,
+                stock=invoice_item.stock,
+                quantity=item_data['quantity'],
+                temp_price=invoice_item.price,
+                return_reason=item_data['reason']
+            )
+            
+            # Create ReturnInvoiceOrderItem
+            return_invoice_item = ReturnInvoiceOrderItem.objects.create(
+                return_invoice=return_invoice,
+                stock=invoice_item.stock,
+                quantity=item_data['quantity'],
+                temp_price=invoice_item.price
+            )
+            
+            # Update original invoice item quantity
+            invoice_item.quantity -= item_data['quantity']
+            invoice_item.save()
+            
+            # Update totals
+            total_amount += invoice_item.price * item_data['quantity']
+        
+        # Update return order totals
+        return_purchase_order.grand_total = total_amount
+        return_purchase_order.save()
+        
+        return_invoice.grand_total = total_amount
+        return_invoice.total_with_taxes = total_amount * (1 + return_invoice.original_invoice.purchase_order.tax_rate / 100)
+        return_invoice.save()
+        
+        # Clear session
+        if 'return_items' in request.session:
+            del request.session['return_items']
+        
+        messages.success(request, "Return order created successfully")
+        return redirect('invoice_detail', pk=invoice_id)
+        
+    except Exception as e:
+        messages.error(request, f"Error creating return order: {str(e)}")
+        return redirect('return_order', invoice_id=invoice_id)
+
 
 
 
@@ -986,10 +1177,17 @@ from .forms import ReturnOrderItemForm
 from .models import ReturnItemTemp
 
 def to_decimal(value):
-    try:
-        return Decimal(str(value))
-    except (InvalidOperation, TypeError):
-        return Decimal("0.0")
+    if isinstance(value, (float, int)):  
+        value = Decimal(str(value))  # Convert to string before Decimal to avoid precision issues
+    elif isinstance(value, str):
+        try:
+            value = Decimal(value)
+        except InvalidOperation:
+            raise ValueError(f"Invalid decimal conversion for value: {value}")
+    elif not isinstance(value, Decimal):
+        raise ValueError(f"Unexpected type for decimal conversion: {type(value)}")
+    
+    return value
 
 @login_required
 @transaction.atomic
@@ -1009,27 +1207,19 @@ def process_return(request, invoice_id):
             item_form = ReturnOrderItemForm(request.POST, invoice_id=invoice_id)
             if item_form.is_valid():
                 invoice_order_item = item_form.cleaned_data["invoice_order_item"]
-                try:
-                    quantity_returned = to_decimal(item_form.cleaned_data["quantity_returned"])
-                except (InvalidOperation, TypeError):
-                    messages.error(request, "Invalid quantity entered.")
-                    return redirect("process_return", invoice_id=invoice_id)
+                quantity_returned = int(item_form.cleaned_data["quantity_returned"])  # Ensure integer
 
-                reason_for_return = item_form.cleaned_data["reason_for_return"]
-
-                # Compare using forced Decimal conversion
-                if quantity_returned > to_decimal(invoice_order_item.quantity):
+                if quantity_returned > invoice_order_item.quantity:
                     messages.error(
                         request,
                         f"Cannot return more than {invoice_order_item.quantity} of {invoice_order_item.stock.product.product_code}."
                     )
                 else:
-                    # Create a temporary record for this return item.
                     ReturnItemTemp.objects.create(
                         user=user,
                         invoice_order_item=invoice_order_item,
                         quantity_returned=quantity_returned,
-                        reason_for_return=reason_for_return,
+                        reason_for_return=item_form.cleaned_data["reason_for_return"],
                     )
                     messages.success(
                         request,
@@ -1039,22 +1229,15 @@ def process_return(request, invoice_id):
 
         elif action == "remove_item":
             temp_id_str = request.POST.get("temp_item_id")
-            if not temp_id_str:
-                messages.error(request, "No temporary item id provided for removal.")
-                return redirect("process_return", invoice_id=invoice_id)
-            
-            try:
-                temp_id = int(temp_id_str)
-                temp_item = ReturnItemTemp.objects.get(id=temp_id, user=user)
-                temp_item.delete()
-                messages.success(request, "Removed item from return list.")
-            except (ReturnItemTemp.DoesNotExist, ValueError):
-                messages.error(request, "Invalid item provided for removal.")
-
-
+            if temp_id_str:
+                try:
+                    temp_item = ReturnItemTemp.objects.get(id=int(temp_id_str), user=user)
+                    temp_item.delete()
+                    messages.success(request, "Removed item from return list.")
+                except (ReturnItemTemp.DoesNotExist, ValueError):
+                    messages.error(request, "Invalid item provided for removal.")
 
         elif action == "submit_return":
-            temp_items = ReturnItemTemp.objects.filter(user=user)
             if not temp_items.exists():
                 messages.error(request, "No items added for return.")
                 return redirect("process_return", invoice_id=invoice_id)
@@ -1062,29 +1245,41 @@ def process_return(request, invoice_id):
             try:
                 with transaction.atomic():
                     return_invoice_id = f"RET-{invoice.invoice_id}"
-                    new_grand_total = Decimal("0.0")
+                    new_grand_total = Decimal(0)
                     processed_items = []
 
-                    # Process each temporary item record.
                     for temp in temp_items:
                         invoice_order_item = temp.invoice_order_item
-                        # Force both operands to Decimal using our helper
-                        old_quantity = to_decimal(invoice_order_item.quantity)
-                        quantity_returned = to_decimal(temp.quantity_returned)
-                        remaining_quantity = Decimal(str(invoice_order_item.quantity)) - Decimal(str(temp.quantity_returned))  # Both are Decimal now
-                        price = to_decimal(invoice_order_item.price)
-                        new_grand_total += remaining_quantity * price
+
+                        # Ensure both quantities are treated as integers
+                        old_quantity = invoice_order_item.quantity  # This is already an integer
+                        quantity_returned = temp.quantity_returned  # This is already an integer
+
+                        # No need for remaining_quantity, we directly use quantity_returned.
+                        remaining_quantity = quantity_returned
+
+                        # Ensure price is treated as Decimal
+                        price = invoice_order_item.price  # This should already be a Decimal
+                        if not isinstance(price, Decimal):
+                            price = Decimal(str(price))  # Convert to Decimal safely
+
+
+
+                        # Make sure remaining_quantity is treated as Decimal for multiplication
+                        # remaining_quantity = Decimal(remaining_quantity)  # Convert to Decimal
+
+                        # Add to grand total
+                        new_grand_total = Decimal(str(price)) # Keep total as Decimal
 
                         processed_items.append({
                             "stock_id": invoice_order_item.stock.id,
                             "invoice_order_item_id": invoice_order_item.id,
-                            "remaining_quantity": remaining_quantity,  # Decimal
-                            "quantity_returned": quantity_returned,      # Decimal
-                            "price": price,                              # Decimal
+                            "remaining_quantity": remaining_quantity,
+                            "quantity_returned": quantity_returned,
+                            "price": price,
                             "reason_for_return": temp.reason_for_return,
                         })
 
-                    # Create the ReturnPurchaseOrder
                     return_purchase_order = ReturnPurchaseOrder.objects.create(
                         return_order_id=f"RET-{invoice.purchase_order.purchase_order_id}",
                         original_purchase_order=invoice.purchase_order,
@@ -1103,7 +1298,6 @@ def process_return(request, invoice_id):
                         notes=f"Return Order for Invoice {invoice.invoice_id}"
                     )
 
-                    # Create the ReturnInvoice and link it
                     return_invoice = ReturnInvoice.objects.create(
                         return_invoice_id=return_invoice_id,
                         original_invoice=invoice,
@@ -1117,7 +1311,6 @@ def process_return(request, invoice_id):
                         status='UnPaid',
                     )
 
-                    # Process each return item: create order items and update stock.
                     for item in processed_items:
                         stock = get_object_or_404(Stock, id=item["stock_id"])
                         invoice_order_item = get_object_or_404(InvoiceOrderItem, id=item["invoice_order_item_id"])
@@ -1125,26 +1318,25 @@ def process_return(request, invoice_id):
                         ReturnPurchaseOrderItem.objects.create(
                             return_purchase_order=return_purchase_order,
                             stock=stock,
-                            quantity=int(item["remaining_quantity"]),
+                            quantity=item["remaining_quantity"],
                             return_reason=item["reason_for_return"],
                         )
 
                         ReturnInvoiceOrderItem.objects.create(
                             return_invoice=return_invoice,
                             stock=stock,
-                            quantity=int(item["remaining_quantity"]),
+                            quantity=item["remaining_quantity"],
                             temp_price=item["price"],
                         )
 
                         # Increase warehouse stock by the returned quantity.
-                        stock.total_stock += int(item["quantity_returned"])
+                        stock.total_stock += item["quantity_returned"]
                         stock.save()
 
                         # Update the invoice order item with the new remaining quantity.
-                        invoice_order_item.quantity = int(item["remaining_quantity"])
+                        invoice_order_item.quantity = item["remaining_quantity"]
                         invoice_order_item.save()
 
-                    # Delete all temporary items once processed.
                     temp_items.delete()
 
                     messages.success(request, "Return processed successfully.")
@@ -1161,6 +1353,9 @@ def process_return(request, invoice_id):
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, "return_items.html", context)
+
+
+
 
 
 
@@ -1365,7 +1560,7 @@ def receipt_doc_view(request, receipt_id):
     """
     View to get the details of a specific receipt (normal or return) and its associated invoice, including items.
     """
-    # Try to get a normal receipt first
+    # Try to get both receipt types
     receipt = Receipt.objects.filter(receipt_id=receipt_id).first()
     return_receipt = ReturnReceipt.objects.filter(receipt_id=receipt_id).first()
 
@@ -1381,28 +1576,27 @@ def receipt_doc_view(request, receipt_id):
     # Use the total_with_taxes directly from the invoice
     total_with_taxes = invoice.total_with_taxes
 
-    # Get invoice items based on whether it's a normal or return invoice
+    # Get invoice items based on receipt type
     if is_return_receipt:
-        # Fetch items from return invoice order items
         invoice_items = return_receipt.return_invoice.items.all()
+        amount_paid = return_receipt.amount_paid  # Use return_receipt's amount
     else:
-        # Fetch items from regular invoice order items
         invoice_items = receipt.invoice.items.all()
+        amount_paid = receipt.amount_paid  # Use normal receipt's amount
 
-    amount_paid_words = num2words(receipt.amount_paid, lang='en').capitalize()
+    amount_paid_words = num2words(amount_paid, lang='en').capitalize()
 
     # Prepare the context for the template
     view_context = {
         "receipt": receipt_instance,
         "invoice": invoice,
         "amount_paid_words": amount_paid_words,
-        "total_with_taxes": total_with_taxes,  # Directly use the total with taxes
-        "invoice_items": invoice_items,  # Only display invoice items or return invoice items
-        "is_return_receipt": is_return_receipt,  # Helps in template rendering
+        "total_with_taxes": total_with_taxes,
+        "invoice_items": invoice_items,
+        "is_return_receipt": is_return_receipt,
     }
 
     context = TemplateLayout.init(request, view_context)
-
     return render(request, 'receipt.html', context)
 
 
@@ -1624,10 +1818,13 @@ def payment_history(request, invoice_id):
         InvoicePayment.objects.filter(invoice=invoice).order_by('-payment_date')
     )
 
-    # Calculate payment percentages
-    if invoice_instance.grand_total > 0:  # Avoid division by zero
-        percentage_paid = (invoice_instance.amount_paid / invoice_instance.grand_total) * 100
-        percentage_left = (invoice_instance.amount_due / invoice_instance.grand_total) * 100
+    # Use consistent values to avoid rounding and inconsistency issues
+    amount_paid = invoice_instance.amount_paid or 0
+    grand_total = invoice_instance.grand_total or 0
+
+    if grand_total > 0:
+        percentage_paid = (amount_paid / grand_total) * 100
+        percentage_left = 100 - percentage_paid  # ensures total = 100%
     else:
         percentage_paid = 0
         percentage_left = 0
@@ -2034,6 +2231,9 @@ def create_return_payment_schedule(request, return_invoice_id):
 
     # Calculate the amount left to refund (including taxes)
     amount_left = float(total_with_taxes - total_scheduled)  # Convert to float for template
+    
+    if amount_left < 0:
+        amount_left = 0  # Cap it to 0 if it's negative
 
     if request.method == "POST":
         action = request.POST.get("action", "")
@@ -2052,6 +2252,8 @@ def create_return_payment_schedule(request, return_invoice_id):
                 # Recalculate total scheduled and amount left
                 total_scheduled += Decimal(payment_data["amount"])
                 amount_left = float(total_with_taxes - total_scheduled)
+                if amount_left < 0:
+                    amount_left = 0  # Ensure it's never negative
 
                 messages.success(request, f"Added return payment schedule for {payment_data['payment_date']}")
             else:
@@ -2076,24 +2278,33 @@ def create_return_payment_schedule(request, return_invoice_id):
 
         elif action == "submit_schedules":
             if return_payment_schedules:
-                try:
-                    with transaction.atomic():
-                        for schedule in return_payment_schedules:
-                            ReturnPaymentSchedule.objects.create(
-                                return_purchase_order=return_purchase_order,
-                                when=schedule["when"],
-                                amount=Decimal(schedule["amount"]),  # Convert back to Decimal
-                                payment_date=schedule["payment_date"],
-                            )
+                if amount_left > 0:
+                    messages.error(request, f"Amount left to be scheduled: {amount_left:.2f} CFA. Please schedule the remaining amount before submitting.")
+                else:
+                    try:
+                        with transaction.atomic():
+                            for schedule in return_payment_schedules:
+                                ReturnPaymentSchedule.objects.create(
+                                    return_purchase_order=return_purchase_order,
+                                    when=schedule["when"],
+                                    amount=Decimal(schedule["amount"]),  # Convert back to Decimal
+                                    payment_date=schedule["payment_date"],
+                                )
 
-                        # Clear session after submission
-                        request.session["return_payment_schedules"] = []
-                        request.session.modified = True
+                            # Clear session after submission
+                            request.session["return_payment_schedules"] = []
+                            request.session.modified = True
+                            
+                            # Recalculate total scheduled and amount left
+                            total_scheduled = sum(Decimal(schedule["amount"]) for schedule in request.session["payment_schedules"])
+                            amount_left = total_with_taxes - total_scheduled
+                            if amount_left < 0:
+                                amount_left = 0  # Ensure it's never negative
 
-                        messages.success(request, "Return payment schedules submitted successfully.")
-                        return redirect("invoices")
-                except Exception as e:
-                    messages.error(request, f"Error submitting return payment schedules: {e}")
+                            messages.success(request, "Return payment schedules submitted successfully.")
+                            return redirect("invoices")
+                    except Exception as e:
+                        messages.error(request, f"Error submitting return payment schedules: {e}")
             else:
                 messages.error(request, "No return payment schedules to submit.")
 
