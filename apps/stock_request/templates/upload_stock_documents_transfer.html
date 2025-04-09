@@ -1,0 +1,157 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}
+{% if editing %}
+  {% trans "Edit Stock Transfer Document" %}
+{% else %}
+  {% trans "Upload Stock Transfer Document" %}
+{% endif %} - GC PHARMA
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl">
+    <div class="card mb-6">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          {% if editing %}
+            {% trans "Edit Stock Transfer Document" %}
+          {% else %}
+            {% trans "Upload Stock Transfer Document" %}
+          {% endif %}
+        </h5>
+      </div>
+
+      <div class="container">
+        <!-- Stock Transfer Information -->
+        <div class="row">
+          <div class="col-md-3">
+            <small class="text m-3">{% trans "Transfer ID" %}</small>
+            <h6 class="mx-3">{{ stock_transfer.transfer_id }}</h6>
+          </div>
+          <div class="col-md-3">
+            <small class="text m-3">{% trans "Source Branch" %}</small>
+            <h6 class="mx-3">
+              {% if stock_transfer.source_branch %}
+                {{ stock_transfer.source_branch.branch_name }}
+              {% else %}
+                -
+              {% endif %}
+            </h6>
+          </div>
+          <div class="col-md-3">
+            <small class="text m-3">{% trans "Destination Branch" %}</small>
+            <h6 class="mx-3">
+              {% if stock_transfer.destination_branch %}
+                {{ stock_transfer.destination_branch.branch_name }}
+              {% else %}
+                -
+              {% endif %}
+            </h6>
+          </div>
+          <div class="col-md-3">
+            <small class="text m-3">{% trans "Transferred By" %}</small>
+            <h6 class="mx-3">
+              {% if stock_transfer.transferred_by %}
+                {{ stock_transfer.transferred_by.user.get_full_name }}
+              {% else %}
+                -
+              {% endif %}
+            </h6>
+          </div>
+          <div class="col-md-3">
+            <small class="text m-3">{% trans "Date Transferred" %}</small>
+            <h6 class="mx-3">{{ stock_transfer.transferred_at|date:"d-m-Y" }}</h6>
+          </div>
+        </div>
+      </div>
+
+      <br>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <br>
+          <button type="submit" class="btn btn-primary">
+            {% if editing %}
+              {% trans "Update Document" %}
+            {% else %}
+              {% trans "Upload Document" %}
+            {% endif %}
+          </button>
+
+          {% if editing %}
+          <a href="{% url 'upload_stock_transfer_document' stock_transfer.id %}" class="btn btn-secondary">
+            {% trans "Cancel Edit" %}
+          </a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <!-- Hoverable Table rows -->
+    <div class="card">
+      <h5 class="card-header">{% trans "Stock Transfer Documents" %}</h5>
+      <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Document Type" %}</th>
+              <th>{% trans "Document" %}</th>
+              <th>{% trans "Date Uploaded" %}</th>
+              <th>{% trans "Uploaded By" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for document in documents %}
+            <tr>
+              <td>{{ document.get_document_type_display }}</td>
+              <td>
+                <a href="{{ document.document.url }}" target="_blank">📄 {% trans "View Document" %}</a>
+              </td>
+              <td>{{ document.uploaded_at|date:"d-m-Y" }}</td>
+              <td>
+                {% if document.uploaded_by %}
+                  {{ document.uploaded_by.user.get_full_name }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                <div class="dropdown">
+                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'upload_stock_transfer_document' stock_transfer.id %}?document_id={{ document.id }}">
+                      <i class="fa-solid fa-edit me-1"></i> {% trans "Edit" %}
+                    </a>
+                    <a class="dropdown-item text-danger" href="{% url 'delete_stock_transfer_document' document.id %}"
+                      onclick="return confirm('{% trans 'Are you sure you want to delete this document?' %}');">
+                      <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center">{% trans "No documents uploaded" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!--/ Hoverable Table rows -->
+
+  </div>
+</div>
+{% endblock %}

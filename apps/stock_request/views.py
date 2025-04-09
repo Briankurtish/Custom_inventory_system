@@ -4,10 +4,10 @@ from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.contrib import messages
 from django.db.models import Case, When, Value, IntegerField, Q
-from .forms import ActualQuantityForm, ActualTransferQuantityForm, StockRequestForm, StockRequestDocumentForm, StockTransferForm
+from .forms import ActualQuantityForm, ActualTransferQuantityForm, StockRequestForm, StockRequestDocumentForm, StockTransferDocumentForm, StockTransferForm
 from apps.products.models import Batch, Product
 from apps.branches.models import Branch
-from .models import StockRequest, StockRequestAuditLog, StockRequestProduct, InTransit, StockRequestDocument, StockTransfer, StockTransferAuditLog, StockTransferItem
+from .models import StockRequest, StockRequestAuditLog, StockRequestProduct, InTransit, StockRequestDocument, StockTransfer, StockTransferAuditLog, StockTransferDocument, StockTransferItem
 from apps.stock.models import Stock
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
@@ -1074,6 +1074,104 @@ def delete_stock_request_document(request, document_id):
     return redirect('upload_stock_request_document', request_id=request_id)
 
 
+
+@login_required
+def upload_stock_transfer_document(request, transfer_id):
+    """
+    View to upload or edit a document for a stock transfer.
+    """
+    # Get the current worker profile from the logged-in user
+    try:
+        worker = request.user.worker_profile  # If using OneToOneField in Worker model
+    except AttributeError:
+        messages.error(request, "You are not assigned as a worker in the system.")
+        return redirect('dashboard')  # Redirect to an appropriate page
+
+    stock_transfer = get_object_or_404(StockTransfer, id=transfer_id)
+    documents = StockTransferDocument.objects.filter(stock_transfer=stock_transfer)  # Fetch existing documents
+
+    document_id = request.GET.get('document_id')  # Check if editing a document
+    document = None
+
+    if document_id:
+        document = get_object_or_404(StockTransferDocument, id=document_id, stock_transfer=stock_transfer)
+        form = StockTransferDocumentForm(instance=document)
+    else:
+        form = StockTransferDocumentForm()
+
+    if request.method == "POST":
+        form = StockTransferDocumentForm(request.POST, request.FILES, instance=document)
+        if form.is_valid():
+            new_document_type = form.cleaned_data['document_type']  # Get the selected document type
+
+            # Check if a document of the same type already exists (but allow updates)
+            if not document and StockTransferDocument.objects.filter(stock_transfer=stock_transfer, document_type=new_document_type).exists():
+                messages.warning(request, f"A document of type '{new_document_type}' has already been uploaded.")
+            else:
+                document = form.save(commit=False)
+                document.stock_transfer = stock_transfer  # Ensure the document is linked to the stock transfer
+
+                # Assign the worker who uploaded the document
+                document.uploaded_by = worker
+                document.save()
+                messages.success(request, "Document saved successfully.")
+                return redirect('upload_stock_transfer_document', transfer_id=stock_transfer.id)  # Stay on the same page
+        else:
+            messages.error(request, "Error uploading document. Please check the form.")
+
+    view_context = {
+        'form': form,
+        'stock_transfer': stock_transfer,
+        'documents': documents,
+        'editing': bool(document),  # Flag to check if editing
+        'document': document,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "upload_stock_documents_transfer.html", context)
+
+@login_required
+def edit_stock_transfer_document(request, document_id):
+    """
+    View to edit an existing stock transfer document.
+    """
+    document = get_object_or_404(StockTransferDocument, id=document_id)
+    transfer_id = document.stock_transfer.id  # Get related stock transfer
+
+    if request.method == "POST":
+        form = StockTransferDocumentForm(request.POST, request.FILES, instance=document)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Document updated successfully.")
+            return redirect('upload_stock_transfer_document', transfer_id=transfer_id)  # Stay on the same page
+        else:
+            messages.error(request, "Error updating document.")
+
+    else:
+        form = StockTransferDocumentForm(instance=document)
+
+    view_context = {
+        'form': form,
+        'document': document,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "upload_stock_documents_transfer.html", context)
+
+@login_required
+def delete_stock_transfer_document(request, document_id):
+    """
+    View to delete a stock transfer document.
+    """
+    document = get_object_or_404(StockTransferDocument, id=document_id)
+    transfer_id = document.stock_transfer.id  # Get related stock transfer
+    document.delete()
+    messages.success(request, "Document deleted successfully.")
+    return redirect('upload_stock_transfer_document', transfer_id=transfer_id)
 
 
 

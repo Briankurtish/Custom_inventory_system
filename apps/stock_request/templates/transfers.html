@@ -87,14 +87,9 @@
                   <a class="dropdown-item" href="{% url 'stock_transfer_details' transfer.transfer_id %}">
                     <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                   </a>
-                  {% if transfer.status == "Pending" and can_transfer_stock %}
-                  <form action="{% url 'complete-transfer' transfer_id=stock_transfer.transfer_id %}" method="post">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-success">
-                          <span class="tf-icons bx bx-check bx-18px me-2"></span> {% trans "Complete Transfer" %}
-                      </button>
-                  </form>
-                  {% endif %}
+                  <a class="dropdown-item" href="{% url 'upload_stock_transfer_document' transfer.id %}">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+                  </a>
                 </div>
               </div>
             </td>

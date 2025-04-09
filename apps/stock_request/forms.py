@@ -1,7 +1,7 @@
 from django import forms
 from apps.products.models import Product
 from apps.branches.models import Branch
-from .models import StockRequestDocument
+from .models import StockRequestDocument, StockTransferDocument
 
 
 class StockRequestForm(forms.Form):
@@ -133,3 +133,19 @@ class StockRequestDocumentForm(forms.ModelForm):
     class Meta:
         model = StockRequestDocument
         fields = ['document_type', 'document']
+
+
+
+class StockTransferDocumentForm(forms.ModelForm):
+    class Meta:
+        model = StockTransferDocument
+        fields = ['document_type', 'document']
+        widgets = {
+            'document_type': forms.Select(attrs={'class': 'form-select'}),
+            'document': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['document_type'].required = True
+        self.fields['document'].required = not self.instance.pk  # Document file is required only for new uploads

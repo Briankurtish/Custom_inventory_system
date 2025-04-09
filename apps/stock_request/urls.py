@@ -46,4 +46,8 @@ urlpatterns = [
     path('receipt-note-document/<str:transfer_id>/', goods_receipt_doc_view_transfer, name='receipt_note_doc_transfer'),
     
     path('transfer-logs/', StockTransferAuditLogView, name='transfer-logs'),
+    
+    path('stock-transfer/<int:transfer_id>/upload-document/', upload_stock_transfer_document, name='upload_stock_transfer_document'),
+    path('stock-transfer/document/<int:document_id>/edit/', edit_stock_transfer_document, name='edit_stock_transfer_document'),
+    path('stock-transfer/document/<int:document_id>/delete/', delete_stock_transfer_document, name='delete_stock_transfer_document'),
 ]

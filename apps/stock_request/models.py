@@ -166,6 +166,47 @@ class StockRequestDocument(models.Model):
         return f"{self.document_type} - {self.document.name}"
 
 
+
+class StockTransferDocument(models.Model):
+    stock_transfer = models.ForeignKey(
+        'StockTransfer',  # Replace 'StockTransfer' with the actual model name if different
+        on_delete=models.CASCADE,
+        related_name="documents"
+    )
+    document_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('Picking List', 'Picking List'),
+            ('Transfer Slip', 'Transfer Slip'),
+            ('Goods Receipt Note', 'Goods Receipt Note'),
+        ]
+    )
+    document = models.FileField(
+        upload_to='stock_transfer_documents/',
+        null=True
+    )
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+        null=True
+    )
+    uploaded_by = models.ForeignKey(
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Worker who uploaded document",
+        related_name='stock_transfer_document'
+    )
+
+    def __str__(self):
+        return f"{self.document_type} - {self.document.name}"
+
+    class Meta:
+        verbose_name = "Stock Transfer Document"
+        verbose_name_plural = "Stock Transfer Documents"
+
+
+
 class StockRequestProduct(models.Model):
     stock_request = models.ForeignKey(StockRequest, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
