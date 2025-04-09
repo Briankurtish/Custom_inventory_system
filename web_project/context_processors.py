@@ -4,6 +4,8 @@ from apps.orders.models import Invoice
 from apps.orders.models import PurchaseOrder
 from apps.stock_request.models import StockRequest
 from apps.workers.models import Worker, RolePrivilege  # Import the Worker model
+from django.utils import timezone
+from datetime import timedelta
 
 def pending_counts(request):
     """
@@ -15,8 +17,11 @@ def pending_counts(request):
         pending_orders_count = PurchaseOrder.objects.filter(status='Pending').count()
         pending_request_count = StockRequest.objects.filter(status='Pending').count()
 
-        # Count the number of online users
-        online_users_count = Worker.objects.filter(is_online=True).count()
+        online_workers = Worker.objects.filter(
+            is_active=True,
+            last_active__gte=timezone.now() - timedelta(minutes=10)
+        ).order_by('employee_id')
+        online_users_count = online_workers.count()
 
         return {
             "unpaid_invoices_count": unpaid_invoices_count,
