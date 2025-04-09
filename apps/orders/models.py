@@ -410,6 +410,9 @@ class ReturnPurchaseOrder(models.Model):
 class ReturnPurchaseOrderDocument(models.Model):
     return_purchase_order = models.ForeignKey(ReturnPurchaseOrder, on_delete=models.CASCADE, related_name="documents")
     document_type = models.CharField(max_length=50, choices=[
+        ('Picking List', 'Picking List'),
+        ('Purchase Order', 'Purchase Order'),
+        ('Invoice', 'Invoice'),
         ('Return Purchase Order', 'Return Purchase Order'),
         ('Return Invoice', 'Return Invoice'),
         
