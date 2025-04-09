@@ -6,6 +6,7 @@
 
 {% block title %}{% trans "Invoice List" %}{% endblock %}
 
+
 {% block content %}
 
 <hr class="my-8">
@@ -63,7 +64,7 @@
         <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == sales_rep_id %}selected{% endif %}>
             {{ rep.user.first_name }} {{ rep.user.last_name }}
         </option>
-        {% endfor %}
+      {% endfor %}
     </select>
   </div>
 
@@ -76,7 +77,7 @@
               {{ creator.user.first_name }} {{ creator.user.last_name }}
           </option>
       {% endfor %}
-  </select>
+    </select>
   </div>
 
   <div class="col-auto">
@@ -115,26 +116,24 @@
       </thead>
       <tbody class="table-border-bottom-0">
         {% for order in invoices %}
-        <tr>
-          <td><span>{{ forloop.counter }}</span></td>
-
+        <tr {% if order.has_return_invoice %}class="greyed-out"{% endif %}>
+          <td><span>{{ forloop.counter|add:offset }}</span></td>
           <td>
             {% if order.return_invoice_id %}
-                <p class="text-danger">{{ order.return_invoice_id }}</p>
+              <p class="text-danger">{{ order.return_invoice_id }}</p>
             {% else %}
-                {{ order.invoice_id }}
+              {{ order.invoice_id }}
             {% endif %}
           </td>
           <td>{{ order.branch.branch_id }}</td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
           <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
-          <td>{{ order.total_with_taxes |floatformat:2|intcomma }}<small> CFA</small></td>
+          <td>{{ order.total_with_taxes|floatformat:2|intcomma }}<small> CFA</small></td>
           <td>{{ order.amount_paid|floatformat:2|intcomma }}<small> CFA</small></td>
           <td>{{ order.amount_due|floatformat:2|intcomma }}<small> CFA</small></td>
           <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
-
           <td>
             {% if order.status|lower == "unpaid" %}
               <span class="badge bg-label-warning me-1">{% trans "UnPaid" %}</span>
@@ -149,12 +148,12 @@
           <td>
             <div class="dropdown">
               {% if order.status != "Canceled" %}
-                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.has_return_invoice %}disabled{% endif %}>
                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'invoice-doc' order.id %}" target="_blank">
-                    <i class="fa-solid fa-download me-1"></i> Download Invoice
+                    <i class="fa-solid fa-download me-1"></i> {% trans "Download Invoice" %}
                   </a>
                   <a class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}"
                      href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
@@ -167,21 +166,14 @@
                     <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
                   </a>
                   {% if order.return_purchase_order and order.status|lower == "unpaid" and order.return_purchase_order.id not in return_payment_schedules %}
-                      <a class="dropdown-item" href="{% url 'create_return_payment_schedule' order.id %}" class="btn btn-primary">
-                          <i class="fa-solid fa-money-bill me-1"></i>{% trans "Add Payment Schedule" %}
-                      </a>
+                    <a class="dropdown-item" href="{% url 'create_return_payment_schedule' order.id %}" class="btn btn-primary">
+                      <i class="fa-solid fa-money-bill me-1"></i>{% trans "Add Payment Schedule" %}
+                    </a>
                   {% endif %}
-                  {% if order.status|lower == "unpaid" %}
-                  {% if order.return_invoice_id %}
-                     
-                  {% else %}
+                  {% if order.status|lower == "unpaid" and not order.has_return_invoice %}
                     <a class="dropdown-item text-danger" href="{% url 'return_items' order.id %}">
                       <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
                     </a>
-                  {% endif %}
-                    {% comment %} <a class="dropdown-item text-danger" href="{% url 'return_items' order.id %}">
-                      <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
-                    </a> {% endcomment %}
                   {% endif %}
                 </div>
               {% endif %}
@@ -190,23 +182,23 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="12" class="text-center">{% trans "No Invoices available" %}</td>
+          <td colspan="13" class="text-center">{% trans "No Invoices available" %}</td>
         </tr>
         {% endfor %}
 
         <tr>
-            <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
-            <td colspan="4"></td>  <!-- Empty cells for spacing -->
-            <td class="text-end"><strong>{{ total_tht|floatformat:2|intcomma }} CFA</strong></td>
-            <td class="text-end"><strong>{{ total_ttc|floatformat:2|intcomma }} CFA</strong></td>
-            <td class="text-end"><strong>{{ total_paid|floatformat:2|intcomma }} CFA</strong></td>
-            <td class="text-end"><strong>{{ total_due|floatformat:2|intcomma }} CFA</strong></td>
+          <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
+          <td colspan="4"></td>  <!-- Empty cells for spacing -->
+          <td class="text-end"><strong>{{ total_tht|floatformat:2|intcomma }} CFA</strong></td>
+          <td class="text-end"><strong>{{ total_ttc|floatformat:2|intcomma }} CFA</strong></td>
+          <td class="text-end"><strong>{{ total_paid|floatformat:2|intcomma }} CFA</strong></td>
+          <td class="text-end"><strong>{{ total_due|floatformat:2|intcomma }} CFA</strong></td>
+          <td colspan="4"></td>  <!-- Empty cells for spacing -->
         </tr>
       </tbody>
     </table>
   </div>
 </div>
-
 
 <!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">
@@ -215,12 +207,12 @@
       {% if invoices.has_previous %}
       <li class="page-item">
         <a class="page-link" href="?page=1" aria-label="First">
-          <span aria-hidden="true">&laquo;&laquo;</span>
+          <span aria-hidden="true">««</span>
         </a>
       </li>
       <li class="page-item">
         <a class="page-link" href="?page={{ invoices.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
+          <span aria-hidden="true">«</span>
         </a>
       </li>
       {% endif %}
@@ -236,44 +228,17 @@
       {% if invoices.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ invoices.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
+          <span aria-hidden="true">»</span>
         </a>
       </li>
       <li class="page-item">
         <a class="page-link" href="?page={{ invoices.paginator.num_pages }}" aria-label="Last">
-          <span aria-hidden="true">&raquo;&raquo;</span>
+          <span aria-hidden="true">»»</span>
         </a>
       </li>
       {% endif %}
     </ul>
   </nav>
 </div>
-
-
-{% comment %} <div class="container my-4">
-    <div class="card shadow-sm">
-        <div class="card-body bg-white">
-            <div class="row text-center">
-                <div class="col-md-3">
-                    <small class="text-muted">{% trans "Total (THT)" %}</small>
-                    <h6 class="fw-bold">{{ total_tht|floatformat:2|intcomma }} CFA</h6>
-                </div>
-                <div class="col-md-3">
-                    <small class="text-muted">{% trans "Total (TTC)" %}</small>
-                    <h6 class="fw-bold">{{ total_ttc|floatformat:2|intcomma }} CFA</h6>
-                </div>
-                <div class="col-md-3">
-                    <small class="text-muted">{% trans "Total Paid" %}</small>
-                    <h6 class="fw-bold text-success">{{ total_paid|floatformat:2|intcomma }} CFA</h6>
-                </div>
-                <div class="col-md-3">
-                    <small class="text-muted">{% trans "Total Due" %}</small>
-                    <h6 class="fw-bold text-danger">{{ total_due|floatformat:2|intcomma }} CFA</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> {% endcomment %}
-
 
 {% endblock %}

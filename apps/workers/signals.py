@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Worker, Privilege
+from django.utils import timezone
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 
 @receiver(post_save, sender=Worker)
@@ -52,28 +53,26 @@ def assign_default_privileges(sender, instance, created, **kwargs):
 
 
 @receiver(user_logged_in)
-def set_worker_online(sender, request, user, **kwargs):
+def set_worker_online(sender, user, request, **kwargs):
     """
-    Signal to set the worker as online when the user logs in.
+    Set the worker's is_online to True and update last_active on login.
     """
     try:
-        worker = Worker.objects.get(user=user)
+        worker = user.worker_profile
         worker.is_online = True
+        worker.last_active = timezone.now()
         worker.save()
     except Worker.DoesNotExist:
-        # If no Worker profile exists for the user, do nothing
         pass
 
-
 @receiver(user_logged_out)
-def set_worker_offline(sender, request, user, **kwargs):
+def set_worker_offline(sender, user, request, **kwargs):
     """
-    Signal to set the worker as offline when the user logs out.
+    Set the worker's is_online to False on logout.
     """
     try:
-        worker = Worker.objects.get(user=user)
+        worker = user.worker_profile
         worker.is_online = False
         worker.save()
     except Worker.DoesNotExist:
-        # If no Worker profile exists for the user, do nothing
         pass

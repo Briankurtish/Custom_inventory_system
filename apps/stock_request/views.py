@@ -1,11 +1,13 @@
+from datetime import datetime
+from django.utils import timezone
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
 from django.contrib import messages
-from django.db.models import Case, When, Value, IntegerField
-from .forms import ActualQuantityForm, StockRequestForm, StockRequestDocumentForm
-from apps.products.models import Product
+from django.db.models import Case, When, Value, IntegerField, Q
+from .forms import ActualQuantityForm, ActualTransferQuantityForm, StockRequestForm, StockRequestDocumentForm, StockTransferForm
+from apps.products.models import Batch, Product
 from apps.branches.models import Branch
-from .models import StockRequest, StockRequestAuditLog, StockRequestProduct, InTransit, StockRequestDocument
+from .models import StockRequest, StockRequestAuditLog, StockRequestProduct, InTransit, StockRequestDocument, StockTransfer, StockTransferAuditLog, StockTransferItem
 from apps.stock.models import Stock
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
@@ -42,27 +44,25 @@ def stock_request_view(request):
                 quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
                 requested_at = form.cleaned_data["requested_at"]
-                batch_number = product.batch.batch_number if product.batch else None  # Get batch number
+                batch = product.batch  # Use the batch from the selected product
+                batch_number = batch.batch_number if batch else None
 
-                # **Fetch the stock only from Central Warehouse**
+                # Fetch the stock only from Central Warehouse
                 central_warehouse = Branch.objects.filter(branch_name="Central Warehouse").first()
-
                 if not central_warehouse:
                     messages.error(request, _("Central Warehouse not found. Please check the configuration."))
                     return redirect("create-request")
 
                 central_stock = Stock.objects.filter(branch=central_warehouse, product=product).first()
-
-                # **Check if there is enough stock in the Central Warehouse**
                 if not central_stock or central_stock.total_stock < quantity:
                     messages.warning(
                         request,
                         _(f"Insufficient stock in Central Warehouse for {product.generic_name_dosage}. "
                           f"Requested: {quantity}, Available: {central_stock.total_stock if central_stock else 0}")
                     )
-                    return redirect("create-request")  # Prevent adding item
+                    return redirect("create-request")
 
-                # **Check if the same product with the same batch already exists in the list**
+                # Check if the same product with the same batch already exists in the list
                 existing_item = next(
                     (item for item in temp_stock_request_list
                      if item["product_code"] == product.product_code
@@ -83,7 +83,6 @@ def stock_request_view(request):
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
                         "requested_at": str(requested_at),
-
                     })
 
                 request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
@@ -126,7 +125,7 @@ def stock_request_view(request):
                 stock_request = StockRequest.objects.create(
                     branch=branch,
                     requested_by=worker,
-                    requested_at= requested_at,
+                    requested_at=requested_at,
                     request_type=StockRequest.NORMAL
                 )
 
@@ -135,10 +134,18 @@ def stock_request_view(request):
                     batch_number = item["batch_number"]
                     quantity_requested = item["quantity"]
 
+                    # Retrieve the batch object based on the batch_number
+                    batch = Batch.objects.filter(batch_number=batch_number).first()
+                    if not batch:
+                        messages.error(request, _(f"Batch {batch_number} not found for product {product.generic_name_dosage}."))
+                        stock_request.delete()  # Roll back if batch is invalid
+                        return redirect("create-request")
+
                     StockRequestProduct.objects.create(
                         stock_request=stock_request,
                         product=product,
-                        quantity=quantity_requested
+                        quantity=quantity_requested,
+                        batch=batch  # Save the batch
                     )
 
                 StockRequestAuditLog.objects.create(
@@ -161,6 +168,388 @@ def stock_request_view(request):
     return render(request, 'createRequests.html', context)
 
 
+
+
+@login_required
+def stock_transfer_view(request):
+    form = StockTransferForm(user=request.user)
+    temp_transfer_list = request.session.get("TEMP_TRANSFER_LIST", [])
+
+    if request.method == "POST":
+        if "add_to_transfer_list" in request.POST:
+            form = StockTransferForm(request.POST, user=request.user)
+            if form.is_valid():
+                product = form.cleaned_data["product"]
+                quantity = form.cleaned_data["quantity"]
+                source_branch = form.cleaned_data["source_branch"]
+                destination_branch = form.cleaned_data["destination_branch"]
+                date_transferred = form.cleaned_data["date_transferred"]  # date object from form
+                batch = product.batch
+                batch_number = batch.batch_number if batch else None
+
+                source_stock = Stock.objects.filter(branch=source_branch, product=product).first()
+                if not source_stock or source_stock.total_stock < quantity:
+                    messages.warning(
+                        request,
+                        _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage}. "
+                          f"Requested: {quantity}, Available: {source_stock.total_stock if source_stock else 0}")
+                    )
+                    return redirect("create-transfer")
+
+                existing_item = next(
+                    (item for item in temp_transfer_list
+                     if item["product_code"] == product.product_code
+                     and item["batch_number"] == batch_number
+                     and item["source_branch_id"] == source_branch.id
+                     and item["destination_branch_id"] == destination_branch.id),
+                    None
+                )
+
+                if existing_item:
+                    existing_item["quantity"] += quantity
+                    # # Optional: Log update to temp list
+                    # StockTransferAuditLog.objects.create(
+                    #     user=request.user,
+                    #     transfer=None,  # No transfer ID yet
+                    #     source_branch=source_branch.branch_name,
+                    #     destination_branch=destination_branch.branch_name,
+                    #     action="update",
+                    #     details=f"Added {quantity} more of {product.generic_name_dosage} (Batch: {batch_number}) to temporary transfer list"
+                    # )
+                else:
+                    temp_transfer_list.append({
+                        "product_code": product.product_code,
+                        "batch_number": batch_number,
+                        "product_name": str(product.generic_name_dosage),
+                        "brand_name": str(product.brand_name.brand_name),
+                        "quantity": quantity,
+                        "source_branch_id": source_branch.id,
+                        "source_branch_name": source_branch.branch_name,
+                        "destination_branch_id": destination_branch.id,
+                        "destination_branch_name": destination_branch.branch_name,
+                        "date_transferred": str(date_transferred),
+                    })
+                    # # Optional: Log update to temp list
+                    # StockTransferAuditLog.objects.create(
+                    #     user=request.user,
+                    #     transfer=None,  # No transfer ID yet
+                    #     source_branch=source_branch.branch_name,
+                    #     destination_branch=destination_branch.branch_name,
+                    #     action="update",
+                    #     details=f"Added {quantity} of {product.generic_name_dosage} (Batch: {batch_number}) to temporary transfer list"
+                    # )
+
+                request.session["TEMP_TRANSFER_LIST"] = temp_transfer_list
+                messages.success(request, _("Item added to temporary transfer list."))
+            else:
+                messages.error(request, _("Invalid form submission."))
+
+        elif "remove_item" in request.POST:
+            product_code = request.POST.get("product_code")
+            batch_number = request.POST.get("batch_number")
+            source_branch_id = request.POST.get("source_branch")
+            destination_branch_id = request.POST.get("destination_branch")
+
+            # Find the item to log before removal
+            item_to_remove = next(
+                (item for item in temp_transfer_list
+                 if item["product_code"] == product_code
+                 and item["batch_number"] == batch_number
+                 and item["source_branch_id"] == int(source_branch_id)
+                 and item["destination_branch_id"] == int(destination_branch_id)),
+                None
+            )
+
+            temp_transfer_list = [
+                item for item in temp_transfer_list
+                if not (
+                    item["product_code"] == product_code
+                    and item["batch_number"] == batch_number
+                    and item["source_branch_id"] == int(source_branch_id)
+                    and item["destination_branch_id"] == int(destination_branch_id)
+                )
+            ]
+            request.session["TEMP_TRANSFER_LIST"] = temp_transfer_list
+
+            if item_to_remove:
+                # # Optional: Log removal from temp list
+                # StockTransferAuditLog.objects.create(
+                #     user=request.user,
+                #     transfer=None,  # No transfer ID yet
+                #     source_branch=item_to_remove["source_branch_name"],
+                #     destination_branch=item_to_remove["destination_branch_name"],
+                #     action="update",
+                #     details=f"Removed {item_to_remove['quantity']} of {item_to_remove['product_name']} (Batch: {batch_number}) from temporary transfer list"
+                # )
+                messages.success(request, _("Item removed from the temporary transfer list."))
+            else:
+                messages.warning(request, _("Item not found in the temporary transfer list."))
+
+        elif "submit_transfer" in request.POST:
+            if temp_transfer_list:
+                source_branch_ids = {item["source_branch_id"] for item in temp_transfer_list}
+                destination_branch_ids = {item["destination_branch_id"] for item in temp_transfer_list}
+                if len(source_branch_ids) > 1 or len(destination_branch_ids) > 1:
+                    messages.error(request, _("All transfer items must have the same source and destination branches."))
+                    return redirect("create-transfer")
+
+                source_branch = Branch.objects.get(id=temp_transfer_list[0]["source_branch_id"])
+                destination_branch = Branch.objects.get(id=temp_transfer_list[0]["destination_branch_id"])
+                date_transferred = temp_transfer_list[0]["date_transferred"]  # String from session
+
+                try:
+                    worker = request.user.worker_profile
+                except AttributeError:
+                    messages.error(request, _("You do not have a worker profile. Please contact the administrator."))
+                    return redirect("create-transfer")
+
+                stock_transfer = StockTransfer.objects.create(
+                    source_branch=source_branch,
+                    destination_branch=destination_branch,
+                    transferred_by=worker,
+                    date_transferred=date_transferred,
+                    status="Pending"
+                )
+
+                for item in temp_transfer_list:
+                    product = Product.objects.filter(product_code=item["product_code"]).first()
+                    batch_number = item["batch_number"]
+                    quantity = item["quantity"]
+
+                    batch = Batch.objects.filter(batch_number=batch_number).first()
+                    if not batch:
+                        messages.error(request, _(f"Batch {batch_number} not found for product {product.generic_name_dosage}."))
+                        stock_transfer.delete()
+                        return redirect("create-transfer")
+
+                    source_stock = Stock.objects.filter(branch=source_branch, product=product).first()
+                    if not source_stock or source_stock.total_stock < quantity:
+                        messages.error(
+                            request,
+                            _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage}. "
+                              f"Requested: {quantity}, Available: {source_stock.total_stock if source_stock else 0}")
+                        )
+                        stock_transfer.delete()
+                        return redirect("create-transfer")
+
+                    StockTransferItem.objects.create(
+                        transfer=stock_transfer,
+                        product=product,
+                        quantity=quantity,
+                        batch=batch
+                    )
+
+                # Log transfer creation
+                StockTransferAuditLog.objects.create(
+                    user=worker,
+                    transfer=stock_transfer.transfer_id,
+                    source_branch=source_branch.branch_name,
+                    destination_branch=destination_branch.branch_name,
+                    action="create",
+                    details=f"Stock transfer created from {source_branch.branch_name} Branch to {destination_branch.branch_name} Branch"
+                )
+
+                del request.session["TEMP_TRANSFER_LIST"]
+                messages.success(request, _("Stock transfer submitted successfully."))
+                return redirect("transfers")
+
+    view_context = {
+        "form": form,
+        "temp_transfer_list": temp_transfer_list,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'create_transfer.html', context)
+
+
+# @login_required
+# @transaction.atomic
+# def complete_transfer_view(request, transfer_id):
+#     transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+#     if transfer.status != "Pending":
+#         messages.error(request, _("This transfer cannot be completed as it is not pending."))
+#         return redirect("transfers")
+
+#     if request.method == "POST":
+#         try:
+#             worker = request.user.worker_profile
+#         except AttributeError:
+#             messages.error(request, _("You do not have a worker profile. Please contact the administrator."))
+#             return redirect("transfers")
+
+#         insufficient_stock = []
+#         for item in transfer.items.all():
+#             product = item.product
+#             quantity = item.quantity
+#             source_branch = transfer.source_branch
+#             if Stock.objects.filter(branch=source_branch, product=product).first().total_stock < quantity:
+#                 insufficient_stock.append(f"{product.generic_name_dosage} (Requested: {quantity}, Available: {source_stock.total_stock})")
+
+#         if insufficient_stock:
+#             messages.warning(request, _("Some items have insufficient stock: " + ", ".join(insufficient_stock)))
+#             return redirect("transfers")
+
+#         for item in transfer.items.all():
+#             product = item.product
+#             quantity = item.quantity
+#             source_branch = transfer.source_branch
+#             destination_branch = transfer.destination_branch
+
+#             source_stock, created = Stock.objects.get_or_create(
+#                 branch=source_branch, product=product,
+#                 defaults={"total_stock": 0, "quantity": 0}
+#             )
+#             source_stock.total_stock -= quantity
+#             source_stock.quantity_transferred += quantity
+#             source_stock.save()
+
+#             dest_stock, created = Stock.objects.get_or_create(
+#                 branch=destination_branch, product=product,
+#                 defaults={"total_stock": 0, "quantity": 0}
+#             )
+#             dest_stock.total_stock += quantity
+#             dest_stock.quantity += quantity
+#             dest_stock.save()
+
+#         transfer.status = "Received"  # Changed from "Completed" to "Received"
+#         if not transfer.date_transferred:
+#             transfer.date_transferred = timezone.now()
+#         transfer.save()
+
+#         messages.success(request, _("Stock transfer completed successfully."))
+#         return redirect("transfers")
+
+#     messages.error(request, _("Invalid request."))
+#     return redirect("transfers")
+
+
+
+
+@login_required
+@transaction.atomic
+def complete_transfer_view(request, transfer_id):
+    stock_transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+
+    if stock_transfer.status != "Pending":
+        messages.error(request, _("This transfer cannot be completed as it is not pending."))
+        return redirect("transfers")
+
+    transfer_items = stock_transfer.items.all()
+
+    if request.method == "POST":
+        form = ActualTransferQuantityForm(request.POST, transfer_items=transfer_items)
+
+        if form.is_valid():
+            date_received = form.cleaned_data["date_received"]
+
+            for item in transfer_items:
+                product = item.product
+                source_branch = stock_transfer.source_branch
+                destination_branch = stock_transfer.destination_branch
+                actual_quantity = form.cleaned_data.get(f'actual_quantity_{item.id}', 0)
+
+                # Retrieve source branch stock (must exist)
+                try:
+                    source_stock = Stock.objects.get(product=product, branch=source_branch)
+                except Stock.DoesNotExist:
+                    messages.error(
+                        request,
+                        _(f"No stock record found for {product.generic_name_dosage} in {source_branch.branch_name}.")
+                    )
+                    return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+
+                if source_stock.total_stock < item.quantity:
+                    messages.error(
+                        request,
+                        _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage}. "
+                          f"Required: {item.quantity}, Available: {source_stock.total_stock}")
+                    )
+                    return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+
+                # Retrieve destination branch stock (must exist)
+                try:
+                    dest_stock = Stock.objects.get(product=product, branch=destination_branch)
+                except Stock.DoesNotExist:
+                    messages.error(
+                        request,
+                        _(f"No stock record found for {product.generic_name_dosage} in {destination_branch.branch_name}.")
+                    )
+                    return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+
+                # Set actual quantity received and date on the item
+                item.actual_quantity_received = actual_quantity
+                item.date_received = date_received
+
+                # Handle surplus, deficit, or normal case for the original transfer
+                if actual_quantity > item.quantity:
+                    surplus_quantity = actual_quantity - item.quantity
+                    item.surplus = surplus_quantity
+                    item.deficit = 0
+                    source_stock.quantity_transferred += actual_quantity
+                    dest_stock.quantity += actual_quantity
+                    StockTransferAuditLog.objects.create(
+                        user=request.user.worker_profile,
+                        transfer=stock_transfer.transfer_id,
+                        source_branch=source_branch.branch_name,
+                        destination_branch=destination_branch.branch_name,
+                        action="surplus",
+                        details=f"Surplus of {surplus_quantity} recorded for {product.generic_name_dosage}. Requested: {item.quantity}, Received: {actual_quantity}"
+                    )
+                elif actual_quantity < item.quantity:
+                    deficit_quantity = item.quantity - actual_quantity
+                    if source_stock.quantity_transferred < deficit_quantity:
+                        messages.error(
+                            request,
+                            _(f"Cannot reduce quantity_transferred below 0 for {product.generic_name_dosage} in {source_branch.branch_name}.")
+                        )
+                        return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+                    source_stock.quantity_transferred += actual_quantity
+                    dest_stock.quantity += actual_quantity
+                    item.deficit = deficit_quantity
+                    item.surplus = 0
+                    StockTransferAuditLog.objects.create(
+                        user=request.user.worker_profile,
+                        transfer=stock_transfer.transfer_id,
+                        source_branch=source_branch.branch_name,
+                        destination_branch=destination_branch.branch_name,
+                        action="deficit",
+                        details=f"Deficit of {deficit_quantity} recorded for {product.generic_name_dosage}. Requested: {item.quantity}, Received: {actual_quantity}"
+                    )
+                else:
+                    source_stock.quantity_transferred += item.quantity
+                    dest_stock.quantity += actual_quantity
+                    item.surplus = 0
+                    item.deficit = 0
+
+                source_stock.save()
+                dest_stock.save()
+                item.save()
+
+            # Log transfer completion
+            StockTransferAuditLog.objects.create(
+                user=request.user.worker_profile,
+                transfer=stock_transfer.transfer_id,
+                source_branch=stock_transfer.source_branch.branch_name,
+                destination_branch=stock_transfer.destination_branch.branch_name,
+                action="complete",
+                details=f"Stock transfer completed with {len(transfer_items)} items on {date_received}"
+            )
+
+            # Set the original transfer status to "Received"
+            stock_transfer.status = "Received"
+            stock_transfer.save()
+
+            messages.success(request, _("Stock transfer completed successfully."))
+            return redirect("transfers")
+
+        else:
+            messages.error(request, _("Invalid data. Please check the form."))
+            return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+
+    messages.error(request, _("Invalid request."))
+    return redirect("transfers")
+
+
+
 @login_required
 def RequestAuditLogView(request):
     logs = StockRequestAuditLog.objects.all().order_by('-timestamp')
@@ -179,6 +568,29 @@ def RequestAuditLogView(request):
 
     return render(request, "request_logs.html", context)
 
+
+
+@login_required
+def StockTransferAuditLogView(request):
+    """
+    View to display all stock transfer audit logs, ordered by timestamp (most recent first).
+    """
+    logs = StockTransferAuditLog.objects.all().order_by('-timestamp')
+    paginator = Paginator(logs, 100)  # Paginate logs with 100 logs per page
+    page_number = request.GET.get("page")  # Get the current page number from the request
+    paginated_logs = paginator.get_page(page_number)  # Get the page object
+    offset = (paginated_logs.number - 1) * paginator.per_page  # Calculate offset for display
+
+    # Create a context dictionary for the view
+    view_context = {
+        "logs": paginated_logs,
+        "offset": offset,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "transfer_logs.html", context)
 
 
 @login_required
@@ -247,6 +659,50 @@ def ManageRequestsView(request):
 
 
 
+@login_required
+def ManageTransfersView(request):
+    worker_profile = getattr(request.user, 'worker_profile', None)
+    if not worker_profile:
+        return HttpResponseForbidden(_("You do not have access to manage stock transfers."))
+
+    user_role = worker_profile.role
+    stock_transfers = StockTransfer.objects.all()
+    can_transfer_stock = worker_profile.privileges.filter(name="Transfer Stock").exists()
+
+    if user_role == "Marketing Director":
+        stock_transfers = stock_transfers.filter(transferred_by=worker_profile)
+    elif user_role in ["Secretary", "Stock Manager"]:
+        stock_transfers = stock_transfers.filter(
+            Q(source_branch=worker_profile.branch) | 
+            Q(destination_branch=worker_profile.branch)
+        )
+    elif can_transfer_stock:
+        stock_transfers = stock_transfers.filter(transferred_by=worker_profile)
+
+    status_filter = request.GET.get('status_filter', '')
+    if status_filter:
+        stock_transfers = stock_transfers.filter(status__iexact=status_filter)
+
+    stock_transfers = stock_transfers.annotate(
+        is_pending=Case(
+            When(status__iexact="Pending", then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+    ).order_by("-is_pending", "-date_transferred")
+
+    paginator = Paginator(stock_transfers, 100)
+    page_number = request.GET.get('page')
+    paginated_transfers = paginator.get_page(page_number)
+
+    view_context = {
+        "stock_transfers": paginated_transfers,
+        "can_transfer_stock": can_transfer_stock,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'transfers.html', context)
+
+
 
 
 @login_required
@@ -255,7 +711,7 @@ def stock_request_details(request, request_id):
     View to get the details of a specific stock request.
     """
     stock_request = get_object_or_404(StockRequest, id=request_id)
-    product_details = StockRequestProduct.objects.filter(stock_request=stock_request)
+    product_details = stock_request.stockrequestproduct_set.all()
     in_transit_items = InTransit.objects.filter(stock_request=stock_request)
     view_context = {
         "stock_request": stock_request,
@@ -266,6 +722,20 @@ def stock_request_details(request, request_id):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'requestDetails.html', context)
+
+
+
+@login_required
+def stock_transfer_details_view(request, transfer_id):
+    stock_transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+    transfer_items = stock_transfer.items.all()  # Related name from StockTransferItem
+
+    view_context = {
+        "stock_transfer": stock_transfer,
+        "transfer_items": transfer_items,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'stock_transfer_details.html', context)
 
 
 @login_required
@@ -303,7 +773,22 @@ def transfer_slip_doc_view(request, request_id):
 
     return render(request, 'transfer_slip.html', context)
 
+@login_required
+def transfer_slip_doc_view_transfer(request, transfer_id):
+    """
+    View to get the details of a specific stock transfer and generate a transfer slip.
+    """
+    stock_transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+    transfer_items = StockTransferItem.objects.filter(transfer=stock_transfer)
 
+    view_context = {
+        "stock_transfer": stock_transfer,
+        "transfer_items": transfer_items,
+    }
+
+    context = TemplateLayout.init(request, view_context)  # Assuming TemplateLayout is a custom utility
+
+    return render(request, 'transfer_slip_transfer.html', context)
 
 @login_required
 def goods_receipt_doc_view(request, request_id):
@@ -322,6 +807,41 @@ def goods_receipt_doc_view(request, request_id):
 
     return render(request, 'receipt_note.html', context)
 
+
+@login_required
+def goods_receipt_doc_view_transfer(request, transfer_id):
+    """
+    View to get the details of a specific stock transfer and generate a goods receipt note.
+    """
+    stock_transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+    transfer_items = StockTransferItem.objects.filter(transfer=stock_transfer)
+
+    view_context = {
+        "stock_transfer": stock_transfer,
+        "transfer_items": transfer_items,
+    }
+
+    context = TemplateLayout.init(request, view_context)  # Assuming TemplateLayout is a custom utility
+
+    return render(request, 'receipt_note_transfer.html', context)
+
+
+@login_required
+def picking_list_doc_view_transfer(request, transfer_id):
+    """
+    View to get the details of a specific stock transfer and generate a picking list.
+    """
+    stock_transfer = get_object_or_404(StockTransfer, transfer_id=transfer_id)
+    transfer_items = StockTransferItem.objects.filter(transfer=stock_transfer)
+
+    view_context = {
+        "stock_transfer": stock_transfer,
+        "transfer_items": transfer_items,
+    }
+
+    context = TemplateLayout.init(request, view_context)  # Assuming TemplateLayout is a custom utility
+
+    return render(request, 'picking_list_transfer.html', context)
 
 
 @login_required
@@ -455,6 +975,9 @@ def approve_or_decline_request(request, request_id):
 
     messages.error(request, _("Invalid request."))
     return redirect("requests")
+
+
+
 
 
 

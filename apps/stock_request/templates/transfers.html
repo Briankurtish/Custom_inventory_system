@@ -1,0 +1,145 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Transfers" %}{% endblock %}
+
+{% block content %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Transfer Stock' %}
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-transfer' %}'">
+            <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Transfer" %}
+          </button>
+          <hr>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-transfer' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Transfer" %}
+  </button>
+  <hr>
+{% endif %}
+
+<!-- Filter Section with Improved Design -->
+<form method="get" action="" class="mb-3">
+  <div class="d-flex align-items-center justify-content-between">
+    <label for="status_filter" class="me-2 mb-0">{% trans "Filter by Status" %}:</label>
+    <div class="d-flex">
+      <select name="status_filter" id="status_filter" class="form-select form-select-sm" style="width: 180px;">
+        <option value="">{% trans "All" %}</option>
+        <option value="Pending" {% if request.GET.status_filter == "Pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+        <option value="Received" {% if request.GET.status_filter == "Received" %}selected{% endif %}>{% trans "Received" %}</option>
+        <option value="Cancelled" {% if request.GET.status_filter == "Cancelled" %}selected{% endif %}>{% trans "Cancelled" %}</option>
+      </select>
+      <button type="submit" class="btn btn-outline-primary btn-sm ms-2">{% trans "Apply" %}</button>
+    </div>
+  </div>
+</form>
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "Stock Transfers" %}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>{% trans "No" %}</th>
+          <th>{% trans "Transfer ID" %}</th>
+          <th>{% trans "Source Branch" %}</th>
+          <th>{% trans "Destination Branch" %}</th>
+          <th>{% trans "Transferred By" %}</th>
+          <th>{% trans "Date Transferred" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for transfer in stock_transfers %}
+          <tr>
+            <td><span>{{ forloop.counter }}</span></td>
+            <td><span>{{ transfer.transfer_id }}</span></td>
+            <td><span>{{ transfer.source_branch.branch_id }}</span></td>
+            <td><span>{{ transfer.destination_branch.branch_name }}</span></td>
+            <td><span>{{ transfer.transferred_by }}</span></td>
+            <td><span>{{ transfer.date_transferred|date:"d-m-Y" }}</span></td>
+            <td>
+              {% if transfer.status|lower == "pending" %}
+                <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+              {% elif transfer.status|lower == "received" %}
+                <span class="badge bg-label-success me-1">{% trans "Received" %}</span>
+              {% elif transfer.status|lower == "cancelled" %}
+                <span class="badge bg-label-danger me-1">{% trans "Cancelled" %}</span>
+              {% else %}
+                <span class="badge bg-label-info me-1">{{ transfer.status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'stock_transfer_details' transfer.transfer_id %}">
+                    <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
+                  </a>
+                  {% if transfer.status == "Pending" and can_transfer_stock %}
+                  <form action="{% url 'complete-transfer' transfer_id=stock_transfer.transfer_id %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success">
+                          <span class="tf-icons bx bx-check bx-18px me-2"></span> {% trans "Complete Transfer" %}
+                      </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <td colspan="8" class="text-center">{% trans "No stock transfers found" %}</td>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if stock_transfers.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stock_transfers.previous_page_number }}{% if request.GET.status_filter %}&status_filter={{ request.GET.status_filter }}{% endif %}" aria-label="Previous">
+          <span aria-hidden="true">«</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in stock_transfers.paginator.page_range %}
+      <li class="page-item {% if stock_transfers.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}{% if request.GET.status_filter %}&status_filter={{ request.GET.status_filter }}{% endif %}">{{ num }}</a>
+      </li>
+      {% endfor %}
+
+      {% if stock_transfers.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stock_transfers.next_page_number }}{% if request.GET.status_filter %}&status_filter={{ request.GET.status_filter }}{% endif %}" aria-label="Next">
+          <span aria-hidden="true">»</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+{% if user.is_superuser %}
+  <hr>
+  <a href="{% url 'transfer-logs' %}" class="text-primary">{% trans "See Logs" %}</a>
+{% endif %}
+
+{% endblock %}

@@ -1,18 +1,19 @@
-# middleware.py
 from django.utils import timezone
-from .models import Worker
+from apps.workers.models import Worker
 
-class UpdateLastActivityMiddleware:
+class UpdateLastActiveMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
+        # Update last_active for authenticated workers on each request
         if request.user.is_authenticated:
             try:
-                worker = Worker.objects.get(user=request.user)
+                worker = request.user.worker_profile
                 worker.last_active = timezone.now()
                 worker.save()
             except Worker.DoesNotExist:
                 pass
+
+        response = self.get_response(request)
         return response

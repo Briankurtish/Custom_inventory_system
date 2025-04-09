@@ -20,6 +20,10 @@ from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from django.db.models import Prefetch
 from collections import defaultdict
+from django.utils import timezone
+from datetime import timedelta
+from django.http import HttpResponseBadRequest
+
 
 
 """
@@ -195,11 +199,20 @@ def change_worker_role(request, worker_id):
 @login_required
 def OnlineWorkersView(request):
     """
-    View to get all online workers.
+    View to get all online workers based on their last activity.
     """
-    online_workers = Worker.objects.filter(is_online=True).order_by('employee_id')
+    # Get all active workers
+    all_workers = Worker.objects.filter(is_active=True).order_by('employee_id')
 
-    # Paginate workers: Show 10 workers per page
+    # Filter workers who are currently online based on last_active (within 10 minutes)
+    online_workers = Worker.objects.filter(
+        is_active=True,
+        last_active__gte=timezone.now() - timedelta(minutes=10)
+    ).order_by('employee_id')
+    online_users_count = online_workers.count()
+    
+
+    # Paginate workers: Show 100 workers per page
     paginator = Paginator(online_workers, 100)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_workers = paginator.get_page(page_number)  # Get the page object
@@ -209,6 +222,7 @@ def OnlineWorkersView(request):
     # Create a new context dictionary for this view
     view_context = {
         "workers": paginated_workers,  # Pass the paginated workers to the template
+        "online_users_count": online_users_count,  # Pass the total count of online workers
         "offset": offset,  # Pass the offset to the template
     }
 

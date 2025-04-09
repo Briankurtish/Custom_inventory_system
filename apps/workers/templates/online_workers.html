@@ -3,38 +3,18 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Online Users List"%} - GC PHARMA{% endblock %}
+{% block title %}{% trans "Online Users List" %} - GC PHARMA{% endblock %}
 
 {% block content %}
 
-{% comment %} <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'add-workers' %}'">
-  <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee"%}
-</button>
-<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
-  <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
-</button> {% endcomment %}
-
-{% comment %} <hr class="my-8"> {% endcomment %}
-
-{% comment %} <div class="mb-3">
-  <label for="employee-search" class="form-label"></label>
-  <input
-    type="text"
-    id="employee-search"
-    class="form-control"
-    placeholder="{% trans 'Type to search for an employee...' %}"
-  />
-</div> {% endcomment %}
-
-
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Online Users "%} ({{ online_users_count }})</h5>
+  <h5 class="card-header">{% trans "Online Users" %} ({{ online_users_count }})</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>{% trans "No"%}</th>
+          <th>{% trans "No" %}</th>
           <th>{% trans "First Name" %}</th>
           <th>{% trans "Last Name" %}</th>
           <th>{% trans "Role" %}</th>
@@ -44,23 +24,33 @@
         </tr>
       </thead>
       <tbody id="employee-table-body" class="table-border-bottom-0">
-
         {% for worker in workers %}
         <tr>
           <td>{{ forloop.counter|add:offset }}</td>
           <td>{{ worker.user.first_name }}</td>
           <td>{{ worker.user.last_name }}</td>
           <td>{{ worker.role }}</td>
-          <td><span>{{ worker.branch.branch_name }}</span></td>
-          <td>{{ worker.company }}</td>
           <td>
-            {% if worker.is_online %}
-              <span class="badge bg-success">{% trans "Online" %}</span>
+            {% if worker.branch %}
+              <span>{{ worker.branch.branch_name }}</span>
             {% else %}
-              <span class="badge bg-danger">{% trans "Offline" %}</span>
+              <span>-</span>
             {% endif %}
           </td>
-
+          <td>
+            {% if worker.company %}
+              {{ worker.company }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge bg-success">{% trans "Online" %}</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">{% trans "No workers are currently online" %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -76,7 +66,7 @@
       {% if workers.has_previous %}
       <li class="page-item">
         <a class="page-link" href="?page={{ workers.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
+          <span aria-hidden="true">«</span>
         </a>
       </li>
       {% endif %}
@@ -90,7 +80,7 @@
       {% if workers.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ workers.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
+          <span aria-hidden="true">»</span>
         </a>
       </li>
       {% endif %}
@@ -99,7 +89,6 @@
 </div>
 
 {% endblock %}
-
 
 {% block page_js %}
   <script>

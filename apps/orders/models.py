@@ -286,7 +286,9 @@ class PurchaseOrder(models.Model):
 class PurchaseOrderDocument(models.Model):
     purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name="documents")
     document_type = models.CharField(max_length=50, choices=[
+        ('Picking List', 'Picking List'),
         ('Purchase Order', 'Purchase Order'),
+        ('Invoice', 'Invoice'),
     ])
     document = models.FileField(upload_to='purchase_order_documents/', null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -408,7 +410,9 @@ class ReturnPurchaseOrder(models.Model):
 class ReturnPurchaseOrderDocument(models.Model):
     return_purchase_order = models.ForeignKey(ReturnPurchaseOrder, on_delete=models.CASCADE, related_name="documents")
     document_type = models.CharField(max_length=50, choices=[
-        ('Purchase Order', 'Purchase Order'),
+        ('Return Purchase Order', 'Return Purchase Order'),
+        ('Return Invoice', 'Return Invoice'),
+        
     ])
     document = models.FileField(upload_to='return_purchase_order_documents/', null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -676,9 +680,9 @@ class Invoice(models.Model):
             precompte_amount = (self.grand_total * precompte) / Decimal(100)
 
             if hasattr(self, "is_special_customer") and self.is_special_customer:
-                return self.grand_total + tva_amount + precompte_amount
+                return (self.grand_total + tva_amount + precompte_amount) - tax_amount
             else:
-                return self.grand_total + tva_amount + tax_amount + precompte_amount
+                return (self.grand_total + tva_amount + precompte_amount) - tax_amount
         return self.grand_total  # No taxes if no purchase order
 
     def save(self, *args, **kwargs):
@@ -833,7 +837,7 @@ class ReturnInvoice(models.Model):
             tva_amount = (self.grand_total * tva) / Decimal(100)
             precompte_amount = (self.grand_total * precompte) / Decimal(100)
 
-            return self.grand_total + tva_amount + tax_amount + precompte_amount
+            return (self.grand_total + tva_amount + precompte_amount) - tax_amount
         return self.grand_total  # No taxes if no return purchase order
 
     def save(self, *args, **kwargs):

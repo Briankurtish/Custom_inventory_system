@@ -1,6 +1,6 @@
-from datetime import timezone
+from datetime import datetime, timezone
 from django.db import models
-from apps.products.models import Product
+from apps.products.models import Batch, Product
 from apps.branches.models import Branch
 from django.contrib.auth.models import User
 from django.utils.timezone import now
@@ -77,6 +77,77 @@ class StockRequest(models.Model):
 # # date_part = current_date.strftime("%Y%m%d")  # YYYYMMDD format
 
 
+class StockTransfer(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Received", "Received"),
+        ("Cancelled", "Cancelled"),
+    ]
+    transfer_type = models.CharField(max_length=20, choices=[("Regular", "Regular"), ("Surplus", "Surplus"), ("Deficit", "Deficit")], default="Regular")
+    transfer_id = models.CharField(max_length=50, unique=True, editable=False)
+    source_branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name="transfers_from"
+    )
+    destination_branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name="transfers_to"
+    )
+    transferred_by = models.ForeignKey(
+        Worker, on_delete=models.CASCADE, related_name="transfers_made"
+    )
+    date_transferred = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+
+    def __str__(self):
+        return f"Transfer #{self.transfer_id} from {self.source_branch} to {self.destination_branch}"
+
+    def save(self, *args, **kwargs):
+        if not self.transfer_id:
+            # Handle date_transferred as string or datetime
+            if self.date_transferred:
+                if isinstance(self.date_transferred, str):
+                    # Convert string (e.g., "2025-04-08") to datetime
+                    date_transferred = datetime.strptime(self.date_transferred, "%Y-%m-%d")
+                else:
+                    # Already a datetime object
+                    date_transferred = self.date_transferred
+            else:
+                # Use current time if None
+                date_transferred = timezone.now()
+
+            # Format the date as YYYYMMDD
+            date_part = date_transferred.strftime("%Y%m%d")
+
+            # Extract branch prefixes
+            source_prefix = self.source_branch.branch_id.split("-")[0] if "-" in self.source_branch.branch_id else "UNKNOWN"
+            dest_prefix = self.destination_branch.branch_id.split("-")[0] if "-" in self.destination_branch.branch_id else "UNKNOWN"
+
+            # Generate the prefix
+            prefix = f"TRF-{source_prefix}-{dest_prefix}-{date_part}"
+
+            # Get the latest sequence number
+            latest_transfer = StockTransfer.objects.order_by('-id').first()
+            latest_sequence = int(re.search(r"-(\d{5})$", latest_transfer.transfer_id).group(1)) if latest_transfer and latest_transfer.transfer_id and re.search(r"-(\d{5})$", latest_transfer.transfer_id) else 0
+            new_sequence = latest_sequence + 1
+
+            # Assign new transfer ID
+            self.transfer_id = f"{prefix}-{new_sequence:05d}"
+
+        super().save(*args, **kwargs)
+
+class StockTransferItem(models.Model):
+    transfer = models.ForeignKey(StockTransfer, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    batch = models.ForeignKey(Batch, on_delete=models.SET_NULL, null=True, blank=True)
+    actual_quantity_received = models.PositiveIntegerField(null=True, blank=True)
+    surplus = models.PositiveIntegerField(default=0)
+    deficit = models.PositiveIntegerField(default=0)
+    date_received = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.product} - {self.quantity} (Batch: {self.batch.batch_number if self.batch else 'No Batch'})"
+
+
 class StockRequestDocument(models.Model):
     stock_request = models.ForeignKey(StockRequest, on_delete=models.CASCADE, related_name="documents")
     document_type = models.CharField(max_length=50, choices=[
@@ -98,10 +169,11 @@ class StockRequestDocument(models.Model):
 class StockRequestProduct(models.Model):
     stock_request = models.ForeignKey(StockRequest, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
+    quantity = models.IntegerField()
+    batch = models.ForeignKey(Batch, on_delete=models.SET_NULL, null=True, blank=True)  # Store the batch
 
     def __str__(self):
-        return f"{self.quantity} of {self.product} for Request #{self.stock_request.id}"
+        return f"{self.product} - {self.quantity} (Batch: {self.batch.batch_number if self.batch else 'No Batch'})"
 
 
 class InTransit(models.Model):
@@ -171,3 +243,65 @@ class StockRequestAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.user} {self.get_action_display()} {self.request} on {self.timestamp}"
+
+
+
+
+class StockTransferAuditLog(models.Model):
+    ACTION_CHOICES = [
+        ("create", "Stock Transfer Created"),
+        ("complete", "Stock Transfer Completed"),
+        ("cancel", "Stock Transfer Cancelled"),
+        ("update", "Update"),
+        ("delete", "Delete"),
+        ("surplus", "Surplus Recorded"),
+        ("deficit", "Deficit Recorded"),
+    ]
+
+    user = models.ForeignKey(
+        'workers.Worker',  # Adjust to your Worker model path if different
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transfer_log_created',
+        verbose_name="User"
+    )
+    transfer = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name= "Transfer ID"
+    )
+    source_branch = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name= "Source Branch"
+    )
+    destination_branch = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name= "Destination Branch"
+    )
+    action = models.CharField(
+        max_length=255,
+        choices=ACTION_CHOICES,
+        verbose_name= "Action"
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name= "Timestamp"
+    )
+    details = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name= "Details"
+    )
+
+    def __str__(self):
+        return f"{self.user or 'Anonymous'} {self.get_action_display()} {self.transfer or 'N/A'} on {self.timestamp}"
+
+    class Meta:
+        verbose_name = "Stock Transfer Audit Log"
+        verbose_name_plural = "Stock Transfer Audit Logs"

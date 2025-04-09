@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     "apps.forms",
     "apps.form_layouts",
     "apps.tables",
-    "apps.workers",
+    # "apps.workers",
     "apps.customers",
     "apps.products",
     "apps.orders",
@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'rosetta',
     'parler',
     'apps.custom_clearance',
+    'apps.workers.apps.WorkersConfig',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +103,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "config.middleware.DebugMiddleware",
+    'apps.workers.middleware.UpdateLastActiveMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"

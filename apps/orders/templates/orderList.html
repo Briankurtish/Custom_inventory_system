@@ -74,20 +74,19 @@
         <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == sales_rep_id %}selected{% endif %}>
             {{ rep.user.first_name }} {{ rep.user.last_name }}
         </option>
-        {% endfor %}
+      {% endfor %}
     </select>
   </div>
-
 
   <div class="col-auto">
     <label for="created_by" class="form-label">{% trans "Created By" %}</label>
     <select id="created_by" name="created_by" class="form-select form-select-sm">
       <option value="">All</option>
-        {% for worker in workers %}
-            <option value="{{ worker.id }}" {% if created_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
-                {{ worker.user.first_name }} {{ worker.user.last_name }}
-            </option>
-        {% endfor %}
+      {% for worker in workers %}
+          <option value="{{ worker.id }}" {% if created_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
+              {{ worker.user.first_name }} {{ worker.user.last_name }}
+          </option>
+      {% endfor %}
     </select>
   </div>
 
@@ -106,7 +105,6 @@
     <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
   </div>
 </form>
-
 
 <hr class="my-8">
 
@@ -132,78 +130,77 @@
         </tr>
       </thead>
       <tbody class="table-border-bottom-0">
-    {% for order in orders %}
-    <tr class="{% if order.status|lower == 'canceled' %}text-muted bg-light{% endif %}">
-      <td><span>{{ forloop.counter }}</span></td>
-      <td>
-      {% if order.purchase_order_id %}
-        {{ order.purchase_order_id }}
-      {% else %}
-        {{ order.return_order_id }}
-      {% endif %}
-    </td>
-      <td>{{ order.branch.branch_id }}</td>
-      <td>{{ order.customer.customer_name }}</td>
-      <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-      <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
-      <td>{{ order.new_total|floatformat:2|intcomma }}<small> CFA</small></td>
-      <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
-      <td>{{ order.created_at|date:"d-m-Y" }}</td>
-      <td>{{ order.approved_by.user.get_full_name }}</td>
+        {% for order in orders %}
+        <tr class="{% if order.status|lower == 'canceled' %}text-muted bg-light{% elif order.has_return_order %}greyed-out{% endif %}">
+          <td><span>{{ forloop.counter|add:offset }}</span></td>
+          <td>
+            {% if order.return_order_id %}
+              <p class="text-danger">{{ order.return_order_id }}</p>
+            {% else %}
+              {{ order.purchase_order_id }}
+            {% endif %}
+          </td>
+          <td>{{ order.branch.branch_id }}</td>
+          <td>{{ order.customer.customer_name }}</td>
+          <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
+          <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
+          <td>{{ order.new_total|floatformat:2|intcomma }}<small> CFA</small></td>
+          <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
+          <td>{{ order.created_at|date:"d-m-Y" }}</td>
+          <td>
+            {% if order.approved_by %}
+              {{ order.approved_by.user.get_full_name }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if order.status|lower == "pending" %}
+              <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+            {% elif order.status|lower == "approved" %}
+              <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
+            {% elif order.status|lower == "rejected" %}
+              <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
+            {% elif order.status|lower == "canceled" %}
+              <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
+            {% else %}
+              <span class="badge bg-label-info me-1">{{ order.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.status|lower == "canceled" or order.has_return_order %}disabled{% endif %}>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
+                  <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}">
+                  <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+                </a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="12" class="text-center">{% trans "No Purchase Orders available" %}</td>
+        </tr>
+        {% endfor %}
 
-      <td>
-        {% if order.status|lower == "pending" %}
-          <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
-        {% elif order.status|lower == "approved" %}
-          <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
-        {% elif order.status|lower == "rejected" %}
-          <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
-        {% elif order.status|lower == "canceled" %}
-          <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
-        {% else %}
-          <span class="badge bg-label-info me-1">{{ order.status }}</span> <!-- Default fallback -->
-        {% endif %}
-      </td>
-      <td>
-        <div class="dropdown">
-          <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
-          </button>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="{% url 'order_details' order.id %}">
-              <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
-            </a>
-              <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}">
-                <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
-              </a>
-          </div>
-        </div>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="11" class="text-center">{% trans "No Purchase Orders available" %}</td>
-    </tr>
-    {% endfor %}
-
-
-    <tr>
-        <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
-        <td colspan="4"></td>  <!-- Empty cells for spacing -->
-        <td class="text-start "><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
-        <td class="text-start "><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
-
-    </tr>
-
-</tbody>
-
+        <tr>
+          <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
+          <td colspan="4"></td>  <!-- Empty cells for spacing -->
+          <td class="text-start"><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
+          <td class="text-start"><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
+          <td colspan="5"></td>  <!-- Empty cells for spacing -->
+        </tr>
+      </tbody>
     </table>
   </div>
-
 </div>
 <!--/ Hoverable Table rows -->
-
-
 
 <!-- Pagination -->
 <div class="d-flex justify-content-center mt-3">
@@ -212,7 +209,7 @@
       {% if orders.has_previous %}
       <li class="page-item">
         <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
+          <span aria-hidden="true">«</span>
         </a>
       </li>
       {% endif %}
@@ -226,7 +223,7 @@
       {% if orders.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
+          <span aria-hidden="true">»</span>
         </a>
       </li>
       {% endif %}
@@ -234,32 +231,9 @@
   </nav>
 </div>
 
-
- {% comment %} <div class="container my-4">
-    <div class="card shadow-sm">
-        <div class="card-body bg-white">
-            <div class="row text-center">
-                <div class="col-md-5">
-                    <small class="text-muted">{% trans "Total (THT)" %}</small>
-                    <h6 class="fw-bold">{{ total_grand_total|floatformat:2|intcomma }} CFA</h6>
-                </div>
-                <div class="col-md-5">
-                    <small class="text-muted">{% trans "Total (TTC)" %}</small>
-                    <h6 class="fw-bold">{{ total_new_total|floatformat:2|intcomma }} CFA</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> {% endcomment %}
-
-
 {% if user.is_superuser %}
-
 <hr>
-
 <a href="{% url 'order-logs' %}" class="text-primary">See Logs</a>
-
 {% endif %}
-
 
 {% endblock %}

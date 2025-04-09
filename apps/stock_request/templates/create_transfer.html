@@ -1,0 +1,111 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Create Stock Transfer" %}{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<!-- Stock Transfer Form -->
+<div class="card">
+  <div class="container mt-4 mb-6">
+    <h5 class="card-header">{% trans "Create Stock Transfer" %}</h5>
+    <!-- Stock Transfer Form -->
+    <form method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-info" name="add_to_transfer_list" value="true">{% trans "Add to Transfer List" %}</button>
+      </div>
+    </form>
+
+    <!-- Temporary Stock Transfer List -->
+    <div class="card mt-5">
+      <h5 class="card-header">{% trans "Stock Transfer List" %}</h5>
+      <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "No" %}</th>
+              <th>{% trans "Product Code" %}</th>
+              <th>{% trans "Batch Number" %}</th>
+              <th>{% trans "Generic Name" %}</th>
+              <th>{% trans "Brand Name" %}</th>
+              <th>{% trans "Quantity" %}</th>
+              <th>{% trans "Source Branch" %}</th>
+              <th>{% trans "Destination Branch" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if temp_transfer_list %}
+              {% for item in temp_transfer_list %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ item.product_code }}</td>
+                  <td>{{ item.batch_number|default:"No Batch" }}</td>
+                  <td>{{ item.product_name }}</td>
+                  <td>{{ item.brand_name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.source_branch_name }}</td>
+                  <td>{{ item.destination_branch_name }}</td>
+                  <td>
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="product_code" value="{{ item.product_code }}" />
+                      <input type="hidden" name="batch_number" value="{{ item.batch_number }}" />
+                      <input type="hidden" name="source_branch" value="{{ item.source_branch_id }}" />
+                      <input type="hidden" name="destination_branch" value="{{ item.destination_branch_id }}" />
+                      <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">{% trans "Remove" %}</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="9" class="text-center">{% trans "No items in the transfer list" %}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Submit Stock Transfer -->
+    <div class="d-flex justify-content-center mt-4">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg" name="submit_transfer" value="true">
+          {% trans "Submit Transfer" %}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_product").select2({
+      placeholder: "Search for a product",
+      allowClear: true,
+      width: "100%",
+    });
+    // Initialize Select2 on the source_branch and destination_branch fields
+    $("#id_source_branch").select2({
+      placeholder: "Select source branch",
+      allowClear: true,
+      width: "100%",
+    });
+    $("#id_destination_branch").select2({
+      placeholder: "Select destination branch",
+      allowClear: true,
+      width: "100%",
+    });
+  });
+</script>
+{% endblock %}

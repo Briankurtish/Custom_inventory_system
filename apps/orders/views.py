@@ -71,11 +71,11 @@ def order_list(request):
     branch_id = request.GET.get("branch")
     selected_month = request.GET.get("month")
     sales_rep_id = request.GET.get("sales_rep")
-    created_by_id = request.GET.get("created_by")  # New filter for created_by
+    created_by_id = request.GET.get("created_by")
 
     branches = Branch.objects.all()
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
-    workers = Worker.objects.all().order_by("user__first_name", "user__last_name")  # Fetch workers for the dropdown
+    workers = Worker.objects.all().order_by("user__first_name", "user__last_name")
 
     user = request.user
     is_accountant_or_superuser = user.worker_profile.role == "Accountant" or user.is_superuser
@@ -83,11 +83,11 @@ def order_list(request):
     # Fetch purchase orders based on the user's role
     if is_accountant_or_superuser:
         purchase_orders = PurchaseOrder.objects.all()
-        return_orders = ReturnPurchaseOrder.objects.all()
+        return_orders = ReturnPurchaseOrder.objects.select_related("original_purchase_order")
     else:
         user_branch = user.worker_profile.branch
         purchase_orders = PurchaseOrder.objects.filter(branch=user_branch)
-        return_orders = ReturnPurchaseOrder.objects.filter(branch=user_branch)
+        return_orders = ReturnPurchaseOrder.objects.filter(branch=user_branch).select_related("original_purchase_order")
 
     # Apply filters
     if start_date and end_date:
@@ -139,6 +139,15 @@ def order_list(request):
             Q(created_by__user__last_name__icontains=search_query)
         )
 
+    # Identify original purchase orders with return orders
+    return_order_original_ids = set(return_orders.values_list("original_purchase_order__purchase_order_id", flat=True))
+    for purchase_order in purchase_orders:
+        purchase_order.has_return_order = purchase_order.purchase_order_id in return_order_original_ids
+
+    # Set has_return_order to False for return orders (to avoid template errors)
+    for return_order in return_orders:
+        return_order.has_return_order = False
+
     # Merge and sort orders
     orders = sorted(
         chain(purchase_orders, return_orders),
@@ -158,10 +167,7 @@ def order_list(request):
         tva_amount = (order.grand_total * tva) / Decimal(100)
         precompte_amount = (order.grand_total * precompte) / Decimal(100)
 
-        if hasattr(order, "is_special_customer") and order.is_special_customer:
-            order.new_total = order.grand_total + tva_amount + precompte_amount
-        else:
-            order.new_total = order.grand_total + tva_amount + tax_amount + precompte_amount
+        order.new_total = (order.grand_total + tva_amount + precompte_amount) - tax_amount
 
         order.tax_amount = tax_amount
         order.tva_amount = tva_amount
@@ -194,8 +200,8 @@ def order_list(request):
         "branches": branches,
         "sales_reps": sales_reps,
         "sales_rep_id": sales_rep_id,
-        "workers": workers,  # Include workers in context for filter dropdown
-        "created_by_id": created_by_id,  # Include created_by filter in context
+        "workers": workers,
+        "created_by_id": created_by_id,
         "offset": offset,
         "months": months,
         "selected_month": selected_month,
@@ -625,6 +631,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Invoice, ReturnInvoice, Branch
 
+
 @login_required
 def invoice_list(request):
     search_query = request.GET.get("search_query", "").strip()
@@ -634,7 +641,7 @@ def invoice_list(request):
     branch_id = request.GET.get("branch")
     selected_month = request.GET.get("month")
     sales_rep_id = request.GET.get("sales_rep")
-    created_by_id = request.GET.get("created_by")  # New: Get created_by filter from request
+    created_by_id = request.GET.get("created_by")
 
     branches = Branch.objects.all()
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
@@ -647,36 +654,31 @@ def invoice_list(request):
 
     if is_accountant_or_superuser:
         invoices = Invoice.objects.select_related("purchase_order")
-        return_invoices = ReturnInvoice.objects.select_related("return_purchase_order")
+        return_invoices = ReturnInvoice.objects.select_related("return_purchase_order", "original_invoice")
     else:
         user_branch = user.worker_profile.branch
         invoices = Invoice.objects.filter(branch=user_branch).select_related("purchase_order")
-        return_invoices = ReturnInvoice.objects.filter(branch=user_branch).select_related("return_purchase_order")
+        return_invoices = ReturnInvoice.objects.filter(branch=user_branch).select_related("return_purchase_order", "original_invoice")
 
+    # Apply filters
     if start_date and end_date:
         invoices = invoices.filter(created_at__date__range=[start_date, end_date])
         return_invoices = return_invoices.filter(created_at__date__range=[start_date, end_date])
-
     if branch_id:
         invoices = invoices.filter(branch__id=branch_id)
         return_invoices = return_invoices.filter(branch__id=branch_id)
-
     if selected_month:
         invoices = invoices.filter(created_at__month=selected_month)
         return_invoices = return_invoices.filter(created_at__month=selected_month)
-
     if status_filter:
         invoices = invoices.filter(status__iexact=status_filter)
         return_invoices = return_invoices.filter(status__iexact=status_filter)
-
     if sales_rep_id:
         invoices = invoices.filter(sales_rep__id=sales_rep_id)
         return_invoices = return_invoices.filter(sales_rep__id=sales_rep_id)
-
     if created_by_id:
         invoices = invoices.filter(created_by__id=created_by_id)
         return_invoices = return_invoices.filter(created_by__id=created_by_id)
-
     if search_query:
         invoices = invoices.filter(
             Q(invoice_id__icontains=search_query) |
@@ -689,7 +691,6 @@ def invoice_list(request):
             Q(created_by__user__first_name__icontains=search_query) |
             Q(created_by__user__last_name__icontains=search_query)
         )
-
         return_invoices = return_invoices.filter(
             Q(return_invoice_id__icontains=search_query) |
             Q(branch__branch_id__icontains=search_query) |
@@ -702,12 +703,22 @@ def invoice_list(request):
             Q(created_by__user__last_name__icontains=search_query)
         )
 
+    # Identify original invoices with return invoices
+    return_invoice_original_ids = set(return_invoices.values_list("original_invoice__invoice_id", flat=True))
+    for invoice in invoices:
+        invoice.has_return_invoice = invoice.invoice_id in return_invoice_original_ids
+
+    # Set has_return_invoice to False for return invoices (to avoid template errors)
+    for return_invoice in return_invoices:
+        return_invoice.has_return_invoice = False
+
+    # Combine and sort invoices
     all_invoices = sorted(
         chain(invoices, return_invoices),
         key=lambda invoice: (invoice.status.lower() != "unpaid", -invoice.created_at.timestamp()),
     )
 
-    # Initialize total variables
+    # Calculate totals
     total_tht = Decimal(0)
     total_ttc = Decimal(0)
     total_paid = Decimal(0)
@@ -729,19 +740,15 @@ def invoice_list(request):
         tva_amount = (invoice.grand_total * tva) / Decimal(100)
         precompte_amount = (invoice.grand_total * precompte) / Decimal(100)
 
-        if hasattr(invoice, "is_special_customer") and invoice.is_special_customer:
-            invoice.new_total = invoice.grand_total + tva_amount + precompte_amount
-        else:
-            invoice.new_total = invoice.grand_total + tva_amount + tax_amount + precompte_amount
-
+        invoice.total_with_taxes = (invoice.grand_total + tva_amount + precompte_amount) - tax_amount
         invoice.tax_amount = tax_amount
         invoice.tva_amount = tva_amount
         invoice.precompte_amount = precompte_amount
 
         total_tht += invoice.grand_total
-        total_ttc += invoice.new_total
+        total_ttc += invoice.total_with_taxes
         total_paid += invoice.amount_paid if hasattr(invoice, "amount_paid") else Decimal(0)
-        total_due += invoice.new_total - (invoice.amount_paid if hasattr(invoice, "amount_paid") else Decimal(0))
+        total_due += invoice.total_with_taxes - (invoice.amount_paid if hasattr(invoice, "amount_paid") else Decimal(0))
 
     paginator = Paginator(all_invoices, 100)
     page_number = request.GET.get("page")
@@ -765,8 +772,8 @@ def invoice_list(request):
         "selected_month": selected_month,
         "sales_rep_id": sales_rep_id,
         "sales_reps": sales_reps,
-        "created_by_id": created_by_id,  # Pass selected creator to template
-        "creators": creators,  # Pass all creators for selection in the UI
+        "created_by_id": created_by_id,
+        "creators": creators,
         "total_tht": total_tht,
         "total_ttc": total_ttc,
         "total_paid": total_paid,
@@ -774,7 +781,6 @@ def invoice_list(request):
     }
 
     context = TemplateLayout.init(request, view_context)
-
     return render(request, "invoiceList.html", context)
 
 
@@ -1516,11 +1522,8 @@ def invoice_doc_view(request, invoice_id):
     tva_amount = (grand_total * tva) / Decimal(100)
     precompte_amount = (grand_total * precompte) / Decimal(100)
 
-    # Calculate the final total
-    if purchase_order and purchase_order.is_special_customer:
-        new_total = grand_total + tva_amount + precompte_amount  # Excluding tax_amount only for special customers
-    else:
-        new_total = grand_total + tva_amount + tax_amount + precompte_amount  # Including all taxes
+    
+    new_total = (grand_total + tva_amount + precompte_amount) - tax_amount
 
     new_total_words = num2words(new_total, lang='en').capitalize()# Convert new_total to words
 
@@ -1732,7 +1735,7 @@ def order_details(request, order_id):
     is_special_customer = order.is_special_customer  # Fetch from PurchaseOrder model
 
     # Convert tax fields to Decimal for precise calculations
-    tax_rate = Decimal(order.tax_rate or 0) / 100 if not is_special_customer else Decimal(0)  # Exempt if special
+    tax_rate = Decimal(order.tax_rate or 0) / 100
     precompte = Decimal(order.precompte or 0) / 100
     tva = Decimal(order.tva or 0) / 100
 
@@ -1745,7 +1748,7 @@ def order_details(request, order_id):
     tva_amount = total_price_decimal * tva
 
     # Final total including applicable taxes
-    total_with_taxes = total_price_decimal + tax_amount + precompte_amount + tva_amount
+    total_with_taxes = (total_price_decimal  + precompte_amount + tva_amount) - tax_amount
 
     # Fetch the worker's privileges
     worker_privileges = worker.privileges.values_list('name', flat=True)
@@ -2070,7 +2073,7 @@ def create_payment_schedule(request):
     is_special_customer = purchase_order.is_special_customer
 
     # Convert tax fields to Decimal for precise calculations
-    tax_rate = Decimal(purchase_order.tax_rate or 0) / 100 if not is_special_customer else Decimal(0)  # Exempt if special
+    tax_rate = Decimal(purchase_order.tax_rate or 0) / 100 
     precompte = Decimal(purchase_order.precompte or 0) / 100
     tva = Decimal(purchase_order.tva or 0) / 100
 
@@ -2080,7 +2083,7 @@ def create_payment_schedule(request):
     tva_amount = purchase_order.grand_total * tva
 
     # Final total including applicable taxes
-    total_with_taxes = purchase_order.grand_total + tax_amount + precompte_amount + tva_amount
+    total_with_taxes = (purchase_order.grand_total + precompte_amount + tva_amount) - tax_amount
 
     # Initialize payment_schedules in session if not present
     if "payment_schedules" not in request.session:
@@ -2208,7 +2211,7 @@ def create_return_payment_schedule(request, return_invoice_id):
 
     # Extract tax details from the ReturnPurchaseOrder
     is_special_customer = return_purchase_order.is_special_customer
-    tax_rate = Decimal(return_purchase_order.tax_rate or 0) / 100 if not is_special_customer else Decimal(0)  # Exempt if special
+    tax_rate = Decimal(return_purchase_order.tax_rate or 0) / 100 
     precompte = Decimal(return_purchase_order.precompte or 0) / 100
     tva = Decimal(return_purchase_order.tva or 0) / 100
 
@@ -2218,7 +2221,7 @@ def create_return_payment_schedule(request, return_invoice_id):
     tva_amount = return_purchase_order.grand_total * tva
 
     # Compute total amount to be refunded (including taxes)
-    total_with_taxes = return_purchase_order.grand_total + tax_amount + precompte_amount + tva_amount
+    total_with_taxes = (return_purchase_order.grand_total + precompte_amount + tva_amount) - tax_amount
 
     # Initialize session storage for return payment schedules
     if "return_payment_schedules" not in request.session:
@@ -2296,7 +2299,7 @@ def create_return_payment_schedule(request, return_invoice_id):
                             request.session.modified = True
                             
                             # Recalculate total scheduled and amount left
-                            total_scheduled = sum(Decimal(schedule["amount"]) for schedule in request.session["payment_schedules"])
+                            total_scheduled = sum(Decimal(schedule["amount"]) for schedule in request.session["return_payment_schedules"])
                             amount_left = total_with_taxes - total_scheduled
                             if amount_left < 0:
                                 amount_left = 0  # Ensure it's never negative
@@ -2533,10 +2536,8 @@ def view_purchase_order(request, purchase_order_id):
     precompte_amount = (grand_total * precompte) / Decimal(100)
 
     # Calculate the new total
-    if order.is_special_customer:
-        new_total = grand_total + tva_amount + precompte_amount
-    else:
-        new_total = grand_total + tva_amount + tax_amount + precompte_amount
+    
+    new_total = (grand_total + tva_amount + precompte_amount) - tax_amount
 
     view_context = {
         "order": order,

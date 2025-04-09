@@ -48,6 +48,25 @@
         margin-bottom: 1px; /* Adjust this value as needed */
         padding: 2px 2px; /* Adjust to control the internal spacing */
       }
+
+      .greyed-out {
+        background-color: #f5f5f5; /* Light grey background for the entire row */
+        color: #6c757d; /* Muted text color */
+      }
+      .greyed-out td,
+      .greyed-out span,
+      .greyed-out p,
+      .greyed-out small,
+      .greyed-out .badge {
+          color: #6c757d; /* Ensure all text and badges are greyed out */
+      }
+      .greyed-out .badge {
+          background-color: #e9ecef; /* Grey out badge background */
+          border: 1px solid #ced4da; /* Subtle border for badges */
+      }
+      .greyed-out:hover {
+          background-color: #f5f5f5; /* Maintain background on hover (override table-hover) */
+      }
     </style>
 
     <style>

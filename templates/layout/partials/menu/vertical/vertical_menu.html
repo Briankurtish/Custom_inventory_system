@@ -142,6 +142,18 @@
             </li>
         {% endif %}
 
+        {% if privilege.name == 'Transfer Stock'  %}
+            <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
+                <a href="{% url 'transfers' %}" class="menu-link">
+                     <i class="menu-icon fa-solid fa-circle-exclamation"></i>
+                    <div class="text-truncate">{% trans "Stock Transfer" %}</div>
+                    {% comment %} {% if pending_request_count > 0 %}
+                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+                    {% endif %} {% endcomment %}
+                </a>
+            </li>
+        {% endif %}
+
         {% if privilege.name == 'View Stock In Transit' %}
             <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
               <a href="{% url 'stocks_in_transit' %}" class="menu-link">
@@ -292,6 +304,16 @@
           {% endif %}
         </a>
       </li>
+
+      <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
+        <a href="{% url 'transfers' %}" class="menu-link">
+             <i class="menu-icon fa-solid fa-arrow-right-arrow-left"></i>
+            <div class="text-truncate">{% trans "Stock Transfer" %}</div>
+            {% comment %} {% if pending_request_count > 0 %}
+                <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+            {% endif %} {% endcomment %}
+        </a>
+    </li>
 
       <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
         <a href="{% url 'stocks_in_transit' %}" class="menu-link">
