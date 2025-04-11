@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
-from apps.products.models import Product
+from apps.products.models import Batch, Product
 from apps.branches.models import Branch
 from apps.workers.models import Worker
 
@@ -15,48 +15,47 @@ class Stock(models.Model):
         on_delete=models.CASCADE,
         related_name="stocks"
     )
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stocks"
+    )  # Added batch field
     quantity = models.PositiveIntegerField(
         default=0
     )
-
     total_inventory = models.PositiveIntegerField(
         default=0
     )
-
     begining_inventory = models.PositiveIntegerField(
         default=0, null=True
     )
-
-    # New field: Fixed beginning inventory (replica of beginning_inventory)
     fixed_beginning_inventory = models.PositiveIntegerField(
-        default=0, null=True, editable=False  # Make it non-editable after initial set
+        default=0, null=True, editable=False
     )
-
-    # New field: Quantity transferred
     quantity_transferred = models.PositiveIntegerField(
         default=0
     )
-
     total_sold = models.PositiveIntegerField(
         default=0
     )
-
-    total_stock = models.PositiveIntegerField(default=0)  # Existing field
+    total_stock = models.PositiveIntegerField(default=0)
 
     created_by = models.ForeignKey(
         Worker, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='stock_created'
     )
-
     date_added = models.DateField(
         auto_now_add=True, null=True
     )
 
     class Meta:
-        unique_together = ("product", "branch")  # Ensure one record per product per branch
+        unique_together = ("product", "branch", "batch")  # Updated to include batch
 
     def __str__(self):
-        return f"{self.product.product_code} at {self.branch.branch_name} - {self.quantity} units - Batch -: {self.product.batch.batch_number}"
+        batch_info = self.batch.batch_number if self.batch else "No Batch"
+        return f"{self.product.product_code} at {self.branch.branch_name} - {self.quantity} units - Batch: {batch_info}"
 
     # def save(self, *args, **kwargs):
     #     """ Automatically update total_stock and fixed_beginning_inventory before saving """

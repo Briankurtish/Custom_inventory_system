@@ -77,12 +77,15 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-success" style="font-size: 2em;"></i>
+                <i class="fa-solid fa-boxes-stacked text-success" style="font-size: 2em;"></i>
               </div>
             </div>
-            <p class="mb-1">{% trans "Goods Receipt Note (Bon de Recu)" %}</p>
+            <p class="mb-1">{% trans "Products"%}</p>
+            <h4 class="card-title mb-3">{{total_product_count}}<small> Products</small></h4>
+            <a href="{% url 'products' %}"><small class="text-info fw-medium"><i class='fa-solid fa-boxes-stacked'></i> {% trans "View Products"%}</small></a>
+            {% comment %} <p class="mb-1">{% trans "Goods Receipt Note (Bon de Recu)" %}</p>
             <h4 class="card-title mb-3">24 <small>{% trans "Documents" %}</small></h4>
-            <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i>{% trans "Confirm Goods Receipt Note" %}</small></a>
+            <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i>{% trans "Confirm Goods Receipt Note" %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>
@@ -92,12 +95,16 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-receipt text-info" style="font-size: 2em;"></i>
+                <img src="{% static 'img/icons/unicons/wallet-info.png' %}" alt="wallet info" class="rounded">
+                {% comment %} <i class="bx bx-receipt text-info" style="font-size: 2em;"></i> {% endcomment %}
               </div>
             </div>
-            <p class="mb-1">{% trans "Total Bon de Sortie" %}</p>
+            <p class="mb-1">{%trans "Sales"%}</p>
+            <h4 class="card-title mb-3">{{total_sales_count}}<small> Orders</small></h4>
+            {% comment %} <a href="{% url 'orders' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans "View Orders"%}</small></a> {% endcomment %}
+            {% comment %} <p class="mb-1">{% trans "Total Bon de Sortie" %}</p>
             <h4 class="card-title mb-3">30 <small>{% trans "Created" %}</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i>{% trans "View Documents" %}</small></a>
+            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i>{% trans "View Documents" %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>
@@ -215,12 +222,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-paper-plane text-danger" style="font-size: 2em;"></i>
+                <i class="fa-solid fa-circle-exclamation text-warning" style="font-size: 2em;"></i>
               </div>
             </div>
-            <p class="mb-1">{% trans "Declined Requests" %}</p>
+            <p class="mb-1">Stock Requests</p>
+            <h4 class="card-title mb-3">{{total_requests_count}} <small> Requests</small></h4>
+            {% comment %} <p class="mb-1">{% trans "Declined Requests" %}</p>
             <h4 class="card-title mb-3">20 <small>{% trans "Requests" %}</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-danger fw-medium"><i class='bx bx-open'></i>{% trans "View Declined" %}</small></a>
+            <a href="{% url 'requests' %}"><small class="text-danger fw-medium"><i class='bx bx-open'></i>{% trans "View Declined" %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>
@@ -230,12 +239,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="bx bx-box text-warning" style="font-size: 2em;"></i>
+                <i class="fa-regular fa-user text-primary" style="font-size: 2em;"></i>
               </div>
             </div>
-            <p class="mb-1">{% trans "Warehouse Stock" %}</p>
+            <p class="mb-1">{% trans "Customers"%}</p>
+            <h4 class="card-title mb-3">{{total_customers_count}}<small> Customers</small></h4>
+            {% comment %} <p class="mb-1">{% trans "Warehouse Stock" %}</p>
             <h4 class="card-title mb-3">3345 <small>{% trans "Products" %}</small></h4>
-            <a href="{% url 'stock' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i>{% trans "Update Stock" %}</small></a>
+            <a href="{% url 'stock' %}"><small class="text-warning fw-medium"><i class='bx bx-open'></i>{% trans "Update Stock" %}</small></a> {% endcomment %}
           </div>
         </div>
       </div>

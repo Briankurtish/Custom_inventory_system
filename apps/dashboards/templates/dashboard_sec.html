@@ -82,8 +82,10 @@
                 <i class="fa-solid fa-boxes-stacked text-success" style="font-size: 2em;"></i>
               </div>
             </div>
-            <p class="mb-1">{% trans "Confirmed Orders" %}</p>
-            <h4 class="card-title mb-3">104 <small>{% trans "Orders" %}</small></h4>
+            <p class="mb-1">{% trans "Products"%}</p>
+            <h4 class="card-title mb-3">{{total_product_count}}<small> Products</small></h4>
+            {% comment %} <p class="mb-1">{% trans "Confirmed Orders" %}</p>
+            <h4 class="card-title mb-3">104 <small>{% trans "Orders" %}</small></h4> {% endcomment %}
             {% comment %} <a href="{% url 'approved-requests' %}"><small class="text-success fw-medium"><i class='bx bx-open'></i> {% trans 'View Approved' %}</small></a> {% endcomment %}
           </div>
         </div>
@@ -94,11 +96,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="fa-solid fa-clipboard-list text-info" style="font-size: 2em;"></i>
+                <img src="{% static 'img/icons/unicons/wallet-info.png' %}" alt="wallet info" class="rounded">
+                {% comment %} <i class="fa-solid fa-clipboard-list text-info" style="font-size: 2em;"></i> {% endcomment %}
               </div>
             </div>
-            <p class="mb-1">{% trans "Bon de Commande" %}</p>
-            <h4 class="card-title mb-3">30 <small>{% trans "Created" %}</small></h4>
+            <p class="mb-1">{%trans "Sales"%}</p>
+            <h4 class="card-title mb-3">{{total_sales_count}}<small> Orders</small></h4>
+            {% comment %} <p class="mb-1">{% trans "Bon de Commande" %}</p>
+            <h4 class="card-title mb-3">30 <small>{% trans "Created" %}</small></h4> {% endcomment %}
             {% comment %} <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans 'View Documents' %}</small></a> {% endcomment %}
           </div>
         </div>

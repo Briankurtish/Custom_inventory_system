@@ -47,25 +47,33 @@ def stock_request_view(request):
                 batch = product.batch  # Use the batch from the selected product
                 batch_number = batch.batch_number if batch else None
 
+                if not batch:
+                    messages.error(request, _(f"No batch specified for {product.generic_name_dosage}."))
+                    return redirect("create-request")
+
                 # Fetch the stock only from Central Warehouse
                 central_warehouse = Branch.objects.filter(branch_name="Central Warehouse").first()
                 if not central_warehouse:
                     messages.error(request, _("Central Warehouse not found. Please check the configuration."))
                     return redirect("create-request")
 
-                central_stock = Stock.objects.filter(branch=central_warehouse, product=product).first()
+                # Check stock using the product and batch
+                central_stock = Stock.objects.filter(branch=central_warehouse, product=product, batch=batch).first()
+                if not central_stock:
+                    print(f"Stock not found for Product ID: {product.id}, Batch: {batch_number}, Branch: {central_warehouse.branch_name}")
+                    print(f"All stock for Product ID {product.id}: {Stock.objects.filter(product=product).values('branch__branch_name', 'batch__batch_number', 'total_stock')}")
                 if not central_stock or central_stock.total_stock < quantity:
                     messages.warning(
                         request,
-                        _(f"Insufficient stock in Central Warehouse for {product.generic_name_dosage}. "
+                        _(f"Insufficient stock in Central Warehouse for {product.generic_name_dosage} (Batch: {batch_number}). "
                           f"Requested: {quantity}, Available: {central_stock.total_stock if central_stock else 0}")
                     )
                     return redirect("create-request")
 
-                # Check if the same product with the same batch already exists in the list
+                # Check if the same product with the same batch already exists in the list using product_id
                 existing_item = next(
                     (item for item in temp_stock_request_list
-                     if item["product_code"] == product.product_code
+                     if item["product_id"] == product.id
                      and item["branch_id"] == branch.id
                      and item["batch_number"] == batch_number),
                     None
@@ -75,15 +83,17 @@ def stock_request_view(request):
                     existing_item["quantity"] += quantity
                 else:
                     temp_stock_request_list.append({
+                        "product_id": product.id,
                         "product_code": product.product_code,
                         "batch_number": batch_number,
                         "product_name": str(product.generic_name_dosage),
-                        "brand_name": str(product.brand_name.brand_name),
+                        "brand_name": str(product.brand_name.brand_name) if product.brand_name else "No Brand",
                         "quantity": quantity,
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
                         "requested_at": str(requested_at),
                     })
+                    print(f"Added item to temp_stock_request_list: {temp_stock_request_list[-1]}")  # Debug log
 
                 request.session["TEMP_STOCK_REQUEST_LIST"] = temp_stock_request_list
                 messages.success(request, _("Item added to temporary stock request list."))
@@ -91,15 +101,29 @@ def stock_request_view(request):
                 messages.error(request, _("Invalid form submission."))
 
         elif "remove_item" in request.POST:
-            product_code = request.POST.get("product_code")
+            product_id = request.POST.get("product_id")
             branch_id = request.POST.get("branch")
             batch_number = request.POST.get("batch_number")
+
+            # Validate inputs
+            if not product_id or not branch_id or not batch_number:
+                print(f"Missing fields in remove_item: product_id={product_id}, branch_id={branch_id}, batch_number={batch_number}")
+                messages.error(request, _("Missing required fields to remove item."))
+                return redirect("create-request")
+
+            try:
+                product_id = int(product_id)
+                branch_id = int(branch_id)
+            except (ValueError, TypeError) as e:
+                print(f"Error converting fields: product_id={product_id}, branch_id={branch_id}, error={str(e)}")
+                messages.error(request, _("Invalid data provided for removing item."))
+                return redirect("create-request")
 
             temp_stock_request_list = [
                 item for item in temp_stock_request_list
                 if not (
-                    item["product_code"] == product_code
-                    and item["branch_id"] == int(branch_id)
+                    item["product_id"] == product_id
+                    and item["branch_id"] == branch_id
                     and item["batch_number"] == batch_number
                 )
             ]
@@ -130,7 +154,7 @@ def stock_request_view(request):
                 )
 
                 for item in temp_stock_request_list:
-                    product = Product.objects.filter(product_code=item["product_code"]).first()
+                    product = Product.objects.filter(id=item["product_id"]).first()
                     batch_number = item["batch_number"]
                     quantity_requested = item["quantity"]
 
@@ -138,14 +162,14 @@ def stock_request_view(request):
                     batch = Batch.objects.filter(batch_number=batch_number).first()
                     if not batch:
                         messages.error(request, _(f"Batch {batch_number} not found for product {product.generic_name_dosage}."))
-                        stock_request.delete()  # Roll back if batch is invalid
+                        stock_request.delete()
                         return redirect("create-request")
 
                     StockRequestProduct.objects.create(
                         stock_request=stock_request,
                         product=product,
                         quantity=quantity_requested,
-                        batch=batch  # Save the batch
+                        batch=batch
                     )
 
                 StockRequestAuditLog.objects.create(
@@ -169,7 +193,6 @@ def stock_request_view(request):
 
 
 
-
 @login_required
 def stock_transfer_view(request):
     form = StockTransferForm(user=request.user)
@@ -183,22 +206,44 @@ def stock_transfer_view(request):
                 quantity = form.cleaned_data["quantity"]
                 source_branch = form.cleaned_data["source_branch"]
                 destination_branch = form.cleaned_data["destination_branch"]
-                date_transferred = form.cleaned_data["date_transferred"]  # date object from form
+                date_transferred = form.cleaned_data["date_transferred"]
                 batch = product.batch
-                batch_number = batch.batch_number if batch else None
 
-                source_stock = Stock.objects.filter(branch=source_branch, product=product).first()
+                if not batch:
+                    messages.error(request, _(f"No batch specified for {product.generic_name_dosage}."))
+                    return redirect("create-transfer")
+
+                batch_number = batch.batch_number
+
+                # Debug: Log the query details using product_id
+                print(f"Checking stock - Product ID: {product.id}, "
+                      f"Batch: {batch_number} (ID: {batch.id}), "
+                      f"Branch: {source_branch.branch_name} (ID: {source_branch.id})")
+                source_stock = Stock.objects.filter(
+                    branch=source_branch,
+                    product=product,
+                    batch=batch
+                ).first()
+                print(f"Source stock result: {source_stock}")
+
+                # Additional debug: Check all stock for this product and batch
+                if not source_stock:
+                    print(f"All stock for Product ID {product.id}: {Stock.objects.filter(product=product).values('branch__branch_name', 'batch__batch_number', 'total_stock')}")
+                    print(f"All stock for Batch ID {batch.id}: {Stock.objects.filter(batch=batch).values('branch__branch_name', 'product__product_code', 'total_stock')}")
+                    print(f"All stock in Branch ID {source_branch.id}: {Stock.objects.filter(branch=source_branch).values('product__product_code', 'batch__batch_number', 'total_stock')}")
+
                 if not source_stock or source_stock.total_stock < quantity:
                     messages.warning(
                         request,
-                        _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage}. "
+                        _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage} (Batch: {batch_number}). "
                           f"Requested: {quantity}, Available: {source_stock.total_stock if source_stock else 0}")
                     )
                     return redirect("create-transfer")
 
+                # Check if the same product with the same batch already exists in the list using product_id
                 existing_item = next(
                     (item for item in temp_transfer_list
-                     if item["product_code"] == product.product_code
+                     if item["product_id"] == product.id  # Use product_id instead of product_code
                      and item["batch_number"] == batch_number
                      and item["source_branch_id"] == source_branch.id
                      and item["destination_branch_id"] == destination_branch.id),
@@ -207,21 +252,13 @@ def stock_transfer_view(request):
 
                 if existing_item:
                     existing_item["quantity"] += quantity
-                    # # Optional: Log update to temp list
-                    # StockTransferAuditLog.objects.create(
-                    #     user=request.user,
-                    #     transfer=None,  # No transfer ID yet
-                    #     source_branch=source_branch.branch_name,
-                    #     destination_branch=destination_branch.branch_name,
-                    #     action="update",
-                    #     details=f"Added {quantity} more of {product.generic_name_dosage} (Batch: {batch_number}) to temporary transfer list"
-                    # )
                 else:
                     temp_transfer_list.append({
-                        "product_code": product.product_code,
+                        "product_id": product.id,  # Use product_id instead of product_code
+                        "product_code": product.product_code,  # Keep product_code for display
                         "batch_number": batch_number,
                         "product_name": str(product.generic_name_dosage),
-                        "brand_name": str(product.brand_name.brand_name),
+                        "brand_name": str(product.brand_name.brand_name) if product.brand_name else "No Brand",
                         "quantity": quantity,
                         "source_branch_id": source_branch.id,
                         "source_branch_name": source_branch.branch_name,
@@ -229,15 +266,7 @@ def stock_transfer_view(request):
                         "destination_branch_name": destination_branch.branch_name,
                         "date_transferred": str(date_transferred),
                     })
-                    # # Optional: Log update to temp list
-                    # StockTransferAuditLog.objects.create(
-                    #     user=request.user,
-                    #     transfer=None,  # No transfer ID yet
-                    #     source_branch=source_branch.branch_name,
-                    #     destination_branch=destination_branch.branch_name,
-                    #     action="update",
-                    #     details=f"Added {quantity} of {product.generic_name_dosage} (Batch: {batch_number}) to temporary transfer list"
-                    # )
+                    print(f"Added item to temp_transfer_list: {temp_transfer_list[-1]}")  # Debug log
 
                 request.session["TEMP_TRANSFER_LIST"] = temp_transfer_list
                 messages.success(request, _("Item added to temporary transfer list."))
@@ -245,42 +274,49 @@ def stock_transfer_view(request):
                 messages.error(request, _("Invalid form submission."))
 
         elif "remove_item" in request.POST:
-            product_code = request.POST.get("product_code")
+            product_id = request.POST.get("product_id")  # Use product_id instead of product_code
             batch_number = request.POST.get("batch_number")
             source_branch_id = request.POST.get("source_branch")
             destination_branch_id = request.POST.get("destination_branch")
 
-            # Find the item to log before removal
+            # Validate inputs
+            if not product_id or not batch_number or not source_branch_id or not destination_branch_id:
+                print(f"Missing fields in remove_item: product_id={product_id}, batch_number={batch_number}, "
+                      f"source_branch_id={source_branch_id}, destination_branch_id={destination_branch_id}")
+                messages.error(request, _("Missing required fields to remove item."))
+                return redirect("create-transfer")
+
+            try:
+                product_id = int(product_id)
+                source_branch_id = int(source_branch_id)
+                destination_branch_id = int(destination_branch_id)
+            except (ValueError, TypeError) as e:
+                print(f"Error converting fields: product_id={product_id}, source_branch_id={source_branch_id}, "
+                      f"destination_branch_id={destination_branch_id}, error={str(e)}")
+                messages.error(request, _("Invalid data provided for removing item."))
+                return redirect("create-transfer")
+
             item_to_remove = next(
                 (item for item in temp_transfer_list
-                 if item["product_code"] == product_code
+                 if item["product_id"] == product_id  # Use product_id
                  and item["batch_number"] == batch_number
-                 and item["source_branch_id"] == int(source_branch_id)
-                 and item["destination_branch_id"] == int(destination_branch_id)),
+                 and item["source_branch_id"] == source_branch_id
+                 and item["destination_branch_id"] == destination_branch_id),
                 None
             )
 
             temp_transfer_list = [
                 item for item in temp_transfer_list
                 if not (
-                    item["product_code"] == product_code
+                    item["product_id"] == product_id  # Use product_id
                     and item["batch_number"] == batch_number
-                    and item["source_branch_id"] == int(source_branch_id)
-                    and item["destination_branch_id"] == int(destination_branch_id)
+                    and item["source_branch_id"] == source_branch_id
+                    and item["destination_branch_id"] == destination_branch_id
                 )
             ]
             request.session["TEMP_TRANSFER_LIST"] = temp_transfer_list
 
             if item_to_remove:
-                # # Optional: Log removal from temp list
-                # StockTransferAuditLog.objects.create(
-                #     user=request.user,
-                #     transfer=None,  # No transfer ID yet
-                #     source_branch=item_to_remove["source_branch_name"],
-                #     destination_branch=item_to_remove["destination_branch_name"],
-                #     action="update",
-                #     details=f"Removed {item_to_remove['quantity']} of {item_to_remove['product_name']} (Batch: {batch_number}) from temporary transfer list"
-                # )
                 messages.success(request, _("Item removed from the temporary transfer list."))
             else:
                 messages.warning(request, _("Item not found in the temporary transfer list."))
@@ -295,7 +331,7 @@ def stock_transfer_view(request):
 
                 source_branch = Branch.objects.get(id=temp_transfer_list[0]["source_branch_id"])
                 destination_branch = Branch.objects.get(id=temp_transfer_list[0]["destination_branch_id"])
-                date_transferred = temp_transfer_list[0]["date_transferred"]  # String from session
+                date_transferred = temp_transfer_list[0]["date_transferred"]
 
                 try:
                     worker = request.user.worker_profile
@@ -312,7 +348,7 @@ def stock_transfer_view(request):
                 )
 
                 for item in temp_transfer_list:
-                    product = Product.objects.filter(product_code=item["product_code"]).first()
+                    product = Product.objects.filter(id=item["product_id"]).first()  # Use product_id instead of product_code
                     batch_number = item["batch_number"]
                     quantity = item["quantity"]
 
@@ -322,11 +358,27 @@ def stock_transfer_view(request):
                         stock_transfer.delete()
                         return redirect("create-transfer")
 
-                    source_stock = Stock.objects.filter(branch=source_branch, product=product).first()
+                    # Debug: Log the query details for submission
+                    print(f"Submitting transfer - Product ID: {product.id}, "
+                          f"Batch: {batch_number} (ID: {batch.id}), "
+                          f"Branch: {source_branch.branch_name} (ID: {source_branch.id})")
+                    source_stock = Stock.objects.filter(
+                        branch=source_branch,
+                        product=product,
+                        batch=batch
+                    ).first()
+                    print(f"Source stock result on submit: {source_stock}")
+
+                    # Additional debug if not found
+                    if not source_stock:
+                        print(f"All stock for Product ID {product.id}: {Stock.objects.filter(product=product).values('branch__branch_name', 'batch__batch_number', 'total_stock')}")
+                        print(f"All stock for Batch ID {batch.id}: {Stock.objects.filter(batch=batch).values('branch__branch_name', 'product__product_code', 'total_stock')}")
+                        print(f"All stock in Branch ID {source_branch.id}: {Stock.objects.filter(branch=source_branch).values('product__product_code', 'batch__batch_number', 'total_stock')}")
+
                     if not source_stock or source_stock.total_stock < quantity:
                         messages.error(
                             request,
-                            _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage}. "
+                            _(f"Insufficient stock in {source_branch.branch_name} for {product.generic_name_dosage} (Batch: {batch_number}). "
                               f"Requested: {quantity}, Available: {source_stock.total_stock if source_stock else 0}")
                         )
                         stock_transfer.delete()
@@ -335,11 +387,10 @@ def stock_transfer_view(request):
                     StockTransferItem.objects.create(
                         transfer=stock_transfer,
                         product=product,
-                        quantity=quantity,
-                        batch=batch
+                        batch=batch,
+                        quantity=quantity
                     )
 
-                # Log transfer creation
                 StockTransferAuditLog.objects.create(
                     user=worker,
                     transfer=stock_transfer.transfer_id,
@@ -443,13 +494,14 @@ def complete_transfer_view(request, transfer_id):
 
             for item in transfer_items:
                 product = item.product
+                batch = item.batch
                 source_branch = stock_transfer.source_branch
                 destination_branch = stock_transfer.destination_branch
                 actual_quantity = form.cleaned_data.get(f'actual_quantity_{item.id}', 0)
 
                 # Retrieve source branch stock (must exist)
                 try:
-                    source_stock = Stock.objects.get(product=product, branch=source_branch)
+                    source_stock = Stock.objects.get(product=product, batch=batch, branch=source_branch)
                 except Stock.DoesNotExist:
                     messages.error(
                         request,
@@ -467,7 +519,7 @@ def complete_transfer_view(request, transfer_id):
 
                 # Retrieve destination branch stock (must exist)
                 try:
-                    dest_stock = Stock.objects.get(product=product, branch=destination_branch)
+                    dest_stock = Stock.objects.get(product=product, batch=batch, branch=destination_branch)
                 except Stock.DoesNotExist:
                     messages.error(
                         request,
@@ -847,15 +899,11 @@ def picking_list_doc_view_transfer(request, transfer_id):
 @login_required
 @transaction.atomic
 def approve_or_decline_request(request, request_id):
-    """
-    Approve or decline a stock request. The central warehouse is treated as a special branch.
-    """
     stock_request = get_object_or_404(StockRequest, id=request_id)
 
     if request.method == "POST":
-        action = request.POST.get("action")  # 'approve' or 'decline'
+        action = request.POST.get("action")
 
-        # Get central warehouse branch
         try:
             central_warehouse = Branch.objects.get(branch_type="central")
         except Branch.DoesNotExist:
@@ -866,52 +914,64 @@ def approve_or_decline_request(request, request_id):
             product_details = StockRequestProduct.objects.filter(stock_request=stock_request)
             insufficient_stock = []
 
-            # **First Pass: Check stock availability**
             for detail in product_details:
                 product = detail.product
                 quantity = detail.quantity
+                batch = detail.batch
 
-                central_stock = central_warehouse.stocks.filter(product=product).first()
-
-                if not central_stock:
-                    messages.error(request, _(f"Stock record for {product.generic_name_dosage} not found in central warehouse."))
+                if not batch:
+                    messages.error(request, _(f"Batch not specified for {product.generic_name_dosage}."))
                     return redirect("requests")
 
-                # **Check stock availability for Normal & Deficit requests**
+                batch_number = batch.batch_number
+
+                # Debug: Log the query details
+                print(f"Checking stock - Product: {product.product_code} (ID: {product.id}), Batch: {batch_number} (ID: {batch.id}), Branch: {central_warehouse.branch_name} (ID: {central_warehouse.id})")
+                central_stock = central_warehouse.stocks.filter(product=product, batch=batch).first()
+                if not central_stock:
+                    # Fallback query
+                    central_stock = Stock.objects.filter(product=product, branch=central_warehouse, batch=batch).first()
+                    print(f"Fallback query result: {central_stock}")
+                else:
+                    print(f"Manager query result: {central_stock}")
+
+                if not central_stock:
+                    messages.error(request, _(f"Stock record for {product.generic_name_dosage} (Batch: {batch_number}) not found in central warehouse."))
+                    return redirect("requests")
+
                 if stock_request.request_type in ["Normal", "Deficit"] and central_stock.total_stock < quantity:
                     insufficient_stock.append(
-                        f"{product.generic_name_dosage} (Requested: {quantity}, Available: {central_stock.total_stock})"
+                        f"{product.generic_name_dosage} (Batch: {batch_number}, Requested: {quantity}, Available: {central_stock.total_stock})"
                     )
 
-            # **Stop processing if any item has insufficient stock**
             if insufficient_stock:
                 messages.warning(request, _("Some items have insufficient stock: " + ", ".join(insufficient_stock)))
                 return redirect("requests")
 
-            # **Second Pass: Update stock values properly**
             for detail in product_details:
                 product = detail.product
                 quantity = detail.quantity
-                central_stock = central_warehouse.stocks.filter(product=product).first()
+                batch = detail.batch
+                batch_number = batch.batch_number
+
+                central_stock = Stock.objects.filter(product=product, branch=central_warehouse, batch=batch).first()
 
                 if stock_request.request_type == "Surplus":
-                    # **For Surplus, increase quantity_transferred**
                     central_stock.quantity_transferred += quantity
-
+                    central_stock.total_stock += quantity
+                    central_stock.quantity += quantity
                 elif stock_request.request_type == "Deficit":
-                    # **For Deficit, reduce quantity_transferred**
                     central_stock.quantity_transferred -= quantity
-
                 else:
-                    # **For Normal requests, just transfer stock normally**
+                    central_stock.total_stock -= quantity
                     central_stock.quantity_transferred += quantity
 
                 central_stock.save()
 
-                # **Create InTransit Record (Only for Normal Requests)**
-                if stock_request.request_type == 'Normal':
+                if stock_request.request_type == "Normal":
                     InTransit.objects.create(
                         product=product,
+                        batch=batch,
                         quantity=quantity,
                         source=central_warehouse.branch_name,
                         destination=stock_request.branch,
@@ -919,7 +979,6 @@ def approve_or_decline_request(request, request_id):
                         created_at=stock_request.requested_at
                     )
 
-            # **Log Approval in StockRequestAuditLog**
             try:
                 worker = request.user.worker_profile
                 worker_branch = worker.branch.branch_name if worker else "Unknown"
@@ -932,17 +991,13 @@ def approve_or_decline_request(request, request_id):
                 action=f"{stock_request.request_type} Stock Request Approved",
                 request=stock_request.request_number,
                 branch=worker_branch,
-                details=f"{stock_request.request_type} Stock Request Approved by: {worker}",
+                details=f"{stock_request.request_type} Stock Request Approved by: {worker}. Batch: {batch_number}",
             )
 
-            # **Generate Picking List (Only for Normal requests)**
-            if stock_request.request_type == "Normal":
-                picking_list_buffer = generate_picking_list(stock_request)
-                stock_request.picking_list.save(f"picking_list_{stock_request.id}.pdf", picking_list_buffer)
+            
 
-            # **Fix: Update status based on request type**
             if stock_request.request_type in ["Surplus", "Deficit"]:
-                stock_request.status = "Received"  # ✅ Fix applied
+                stock_request.status = "Received"
             else:
                 stock_request.status = "Accepted"
 
@@ -952,11 +1007,9 @@ def approve_or_decline_request(request, request_id):
             return redirect("requests")
 
         elif action == "decline":
-            # **Update stock request status to "Rejected"**
             stock_request.status = "Rejected"
             stock_request.save()
 
-            # **Log the rejection action**
             try:
                 worker = request.user.worker_profile
             except AttributeError:
@@ -975,7 +1028,6 @@ def approve_or_decline_request(request, request_id):
 
     messages.error(request, _("Invalid request."))
     return redirect("requests")
-
 
 
 
@@ -1180,52 +1232,59 @@ def delete_stock_transfer_document(request, document_id):
 @transaction.atomic
 def stock_received(request, request_id):
     stock_request = get_object_or_404(StockRequest, id=request_id)
+    in_transit_items = InTransit.objects.filter(stock_request=stock_request)
 
     if request.method == "POST":
-        in_transit_items = InTransit.objects.filter(stock_request=stock_request)
         form = ActualQuantityForm(request.POST, in_transit_items=in_transit_items)
 
         if form.is_valid():
             surplus_items = []
             deficit_items = []
-            date_received = request.POST.get("date_received")  # FIX: Get date_received from form
+            # Use form field if available, fallback to POST data
+            date_received = form.cleaned_data.get("date_received", request.POST.get("date_received"))
 
             for transit_item in in_transit_items:
                 product = transit_item.product
+                batch = transit_item.batch  # Now available from InTransit
                 branch = transit_item.destination
                 actual_quantity = form.cleaned_data.get(f'actual_quantity_{transit_item.id}', 0)
 
-                # Update branch stock
+                # Update branch stock with batch specificity
                 branch_stock, created = Stock.objects.get_or_create(
-                    product=product, branch=branch, defaults={"quantity": actual_quantity}
+                    product=product,
+                    batch=batch,
+                    branch=branch,
+                    defaults={"quantity": actual_quantity, "total_stock": actual_quantity}
                 )
                 if not created:
                     branch_stock.quantity += actual_quantity
+                    # branch_stock.total_stock += actual_quantity  # Maintain total_stock consistency
                     branch_stock.save()
 
-                # Set actual quantity received
+                # Update InTransit record
                 transit_item.actual_quantity_received = actual_quantity
-                transit_item.date_received = date_received  # FIX: Set date_received
+                transit_item.date_received = date_received
+                transit_item.status = "Delivered"
 
-                # Check for surplus/deficit
-                if actual_quantity > transit_item.quantity:
-                    surplus_quantity = actual_quantity - transit_item.quantity
+                # Calculate surplus or deficit
+                requested_quantity = transit_item.quantity
+                if actual_quantity > requested_quantity:
+                    surplus_quantity = actual_quantity - requested_quantity
                     transit_item.surplus = surplus_quantity
                     transit_item.deficit = 0
-                    surplus_items.append((product, surplus_quantity))
-                elif actual_quantity < transit_item.quantity:
-                    deficit_quantity = transit_item.quantity - actual_quantity
+                    surplus_items.append((product, batch, surplus_quantity))  # Include batch
+                elif actual_quantity < requested_quantity:
+                    deficit_quantity = requested_quantity - actual_quantity
                     transit_item.deficit = deficit_quantity
                     transit_item.surplus = 0
-                    deficit_items.append((product, deficit_quantity))
+                    deficit_items.append((product, batch, deficit_quantity))  # Include batch
                 else:
                     transit_item.surplus = 0
                     transit_item.deficit = 0
 
-                transit_item.status = "Delivered"
                 transit_item.save()
 
-            # Log surplus/deficit requests
+            # Helper function to create surplus/deficit requests with batch
             def create_stock_request(request_type, items):
                 new_request = StockRequest.objects.create(
                     branch=stock_request.branch,
@@ -1233,14 +1292,13 @@ def stock_received(request, request_id):
                     status="Pending",
                     request_type=request_type
                 )
-
-                for product, quantity in items:
+                for product, batch, quantity in items:
                     StockRequestProduct.objects.create(
                         stock_request=new_request,
                         product=product,
+                        batch=batch,  # Include batch in new StockRequestProduct
                         quantity=quantity
                     )
-
                 new_request.save()
 
                 try:
@@ -1258,17 +1316,19 @@ def stock_received(request, request_id):
                     details=f"{request_type} stock request created by: {worker}",
                 )
 
+            # Create surplus/deficit requests if applicable
             if surplus_items:
                 create_stock_request("Surplus", surplus_items)
                 messages.warning(request, _("A new SURPLUS stock request has been created and marked as Pending."))
-
             if deficit_items:
                 create_stock_request("Deficit", deficit_items)
                 messages.warning(request, _("A new DEFICIT stock request has been created and marked as Pending."))
 
+            # Mark original request as received
             stock_request.status = "Received"
             stock_request.save()
 
+            messages.success(request, _("Stock received and updated successfully."))
             return redirect("stock")
 
         else:

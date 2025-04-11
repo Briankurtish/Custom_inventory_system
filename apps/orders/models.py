@@ -469,6 +469,12 @@ class PaymentSchedule(models.Model):
         ('4 Weeks', '4 Weeks'),
         ('5 Weeks', '5 Weeks'),
         ('6 Weeks', '6 Weeks'),
+        ('7 Weeks', '7 Weeks'),
+        ('8 Weeks', '8 Weeks'),
+        ('9 Weeks', '9 Weeks'),
+        ('10 Weeks', '10 Weeks'),
+        ('11 Weeks', '11 Weeks'),
+        ('12 Weeks', '12 Weeks'),
     ]
 
     purchase_order = models.ForeignKey(
@@ -492,6 +498,12 @@ class ReturnPaymentSchedule(models.Model):
         ('4 Weeks', '4 Weeks'),
         ('5 Weeks', '5 Weeks'),
         ('6 Weeks', '6 Weeks'),
+        ('7 Weeks', '7 Weeks'),
+        ('8 Weeks', '8 Weeks'),
+        ('9 Weeks', '9 Weeks'),
+        ('10 Weeks', '10 Weeks'),
+        ('11 Weeks', '11 Weeks'),
+        ('12 Weeks', '12 Weeks'),
     ]
 
     return_purchase_order = models.ForeignKey(

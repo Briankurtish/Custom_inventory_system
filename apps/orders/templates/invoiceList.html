@@ -136,13 +136,13 @@
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
             {% if order.status|lower == "unpaid" %}
-              <span class="badge bg-label-warning me-1">{% trans "UnPaid" %}</span>
+              <span class="{% if order.has_return_invoice %}greyed-out{% else %}badge bg-label-warning me-1{% endif %}">{% trans "UnPaid" %}</span>
             {% elif order.status|lower == "payment ongoing" %}
-              <span class="badge bg-label-info me-1">{% trans "Payment Ongoing" %}</span>
+              <span class="{% if order.has_return_invoice %}greyed-out{% else %}badge bg-label-info me-1{% endif %}">{% trans "Payment Ongoing" %}</span>
             {% elif order.status|lower == "payment completed" %}
-              <span class="badge bg-label-success me-1">{% trans "Payment Completed" %}</span>
+              <span class="{% if order.has_return_invoice %}greyed-out{% else %}badge bg-label-success me-1{% endif %}">{% trans "Payment Completed" %}</span>
             {% else %}
-              <span class="badge bg-label-secondary me-1">{{ order.status }}</span>
+              <span class="{% if order.has_return_invoice %}greyed-out{% else %}badge bg-label-secondary me-1{% endif %}">{{ order.status }}</span>
             {% endif %}
           </td>
           <td>

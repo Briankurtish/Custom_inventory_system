@@ -103,6 +103,15 @@
       width: "100%",
     });
   });
+
+  $(document).ready(function () {
+    // Initialize Select2 on the product field
+    $("#id_batch").select2({
+      placeholder: "Search for a Batch Number",
+      allowClear: true,
+      width: "100%",
+    });
+  });
 </script>
 
 

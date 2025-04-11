@@ -155,16 +155,22 @@
             {% endif %}
           </td>
           <td>
-            {% if order.status|lower == "pending" %}
-              <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
-            {% elif order.status|lower == "approved" %}
-              <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
-            {% elif order.status|lower == "rejected" %}
-              <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
-            {% elif order.status|lower == "canceled" %}
-              <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
+            {% if order.return_order_id %}
+              {% if order.status|lower == "approved" %}
+                <span class="badge bg-label-primary me-1">{% trans "Returned" %}</span>
+              {% endif %}
             {% else %}
-              <span class="badge bg-label-info me-1">{{ order.status }}</span>
+              {% if order.status|lower == "pending" %}
+                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-warning me-1{% endif %}">{% trans "Pending" %}</span>
+              {% elif order.status|lower == "approved" %}
+                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-success me-1{% endif %}">{% trans "Approved" %}</span>
+              {% elif order.status|lower == "rejected" %}
+                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-danger me-1{% endif %}">{% trans "Rejected" %}</span>
+              {% elif order.status|lower == "canceled" %}
+                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-secondary me-1{% endif %}">{% trans "Canceled" %}</span>
+              {% else %}
+                <span class="badge bg-label-info me-1">{{ order.status }}</span>
+              {% endif %}
             {% endif %}
           </td>
           <td>
@@ -173,12 +179,12 @@
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order_details' order.id %}">
+                <a class="dropdown-item" href="{% url 'order_details' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
                   <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
-                </a>
-                <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}">
+              </a>
+              <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
                   <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
-                </a>
+              </a>
               </div>
             </div>
           </td>

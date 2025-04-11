@@ -228,8 +228,9 @@ class InTransit(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     actual_quantity_received = models.PositiveIntegerField(null=True, blank=True)
-    surplus = models.PositiveIntegerField(default=0)  # New field
-    deficit = models.PositiveIntegerField(default=0)  # New field
+    surplus = models.PositiveIntegerField(default=0)
+    deficit = models.PositiveIntegerField(default=0)
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, null=True, blank=True)  # Added batch field
     source = models.CharField(max_length=255)  # Central Warehouse or Branch ID
     destination = models.ForeignKey(Branch, on_delete=models.CASCADE)
     created_at = models.DateTimeField(null=True)
@@ -256,7 +257,7 @@ class InTransit(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"In-Transit {self.quantity} of {self.product} to {self.destination.branch_name}"
+        return f"In-Transit {self.quantity} of {self.product} (Batch: {self.batch.batch_number if self.batch else 'N/A'}) to {self.destination.branch_name}"
 
 
 

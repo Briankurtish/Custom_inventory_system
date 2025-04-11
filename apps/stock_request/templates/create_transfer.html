@@ -54,7 +54,7 @@
                   <td>
                     <form method="post" class="d-inline">
                       {% csrf_token %}
-                      <input type="hidden" name="product_code" value="{{ item.product_code }}" />
+                      <input type="hidden" name="product_id" value="{{ item.product_id }}" />
                       <input type="hidden" name="batch_number" value="{{ item.batch_number }}" />
                       <input type="hidden" name="source_branch" value="{{ item.source_branch_id }}" />
                       <input type="hidden" name="destination_branch" value="{{ item.destination_branch_id }}" />

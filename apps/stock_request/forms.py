@@ -1,5 +1,6 @@
 from django import forms
 from apps.products.models import Product
+from django.db.models import F
 from apps.branches.models import Branch
 from .models import StockRequestDocument, StockTransferDocument
 
@@ -29,6 +30,7 @@ class StockRequestForm(forms.Form):
         user = kwargs.pop('user', None)  # Get the user from kwargs
         super().__init__(*args, **kwargs)
 
+        # Handle branch field based on user permissions
         if user:
             if user.is_superuser:
                 # Superusers see all branches
@@ -38,6 +40,27 @@ class StockRequestForm(forms.Form):
                 user_branch = user.worker_profile.branch
                 self.fields['branch'].initial = user_branch
                 self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+            else:
+                # If user has no worker profile, show no branches
+                self.fields['branch'].queryset = Branch.objects.none()
+        else:
+            self.fields['branch'].queryset = Branch.objects.none()
+
+        # Filter products with stock in the Central Warehouse
+        central_warehouse = Branch.objects.filter(branch_name="Central Warehouse").first()
+        if central_warehouse:
+            # Filter products that have stock in the Central Warehouse with their associated batch
+            products_with_stock = Product.objects.filter(
+                stocks__branch=central_warehouse,
+                stocks__batch=F('batch'),  # Ensure the stock's batch matches the product's batch
+                stocks__total_stock__gt=0
+            ).distinct()
+            self.fields['product'].queryset = products_with_stock
+            if not products_with_stock.exists():
+                print("No products with stock found in Central Warehouse.")
+        else:
+            print("Central Warehouse not found. No products will be available.")
+            self.fields['product'].queryset = Product.objects.none()
 
 
 class StockTransferForm(forms.Form):
@@ -65,20 +88,55 @@ class StockTransferForm(forms.Form):
         label="Quantity",
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
-
+    
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        # Optionally set the initial source_branch to the user's branch
+        if user and hasattr(user, 'worker_profile'):
+            self.fields["source_branch"].initial = user.worker_profile.branch
 
-        if user:
-            if user.is_superuser:
-                self.fields['source_branch'].queryset = Branch.objects.all()
-                self.fields['destination_branch'].queryset = Branch.objects.all()
-            elif hasattr(user, 'worker_profile') and user.worker_profile:
-                user_branch = user.worker_profile.branch
-                self.fields['source_branch'].queryset = Branch.objects.filter(id=user_branch.id)
-                self.fields['source_branch'].initial = user_branch
-                self.fields['destination_branch'].queryset = Branch.objects.exclude(id=user_branch.id)
+        # Filter products based on the selected source_branch (if provided in POST data)
+        if "source_branch" in self.data:
+            try:
+                source_branch_id = int(self.data.get("source_branch"))
+                branch = Branch.objects.get(id=source_branch_id)
+                products_with_stock = Product.objects.filter(
+                    stocks__branch=branch,
+                    stocks__total_stock__gt=0
+                ).distinct()
+                self.fields["product"].queryset = products_with_stock
+            except (ValueError, Branch.DoesNotExist):
+                pass  # If source_branch is invalid, leave product queryset as-is
+
+    # def __init__(self, *args, **kwargs):
+    #     user = kwargs.pop("user", None)
+    #     super().__init__(*args, **kwargs)
+    #     if user and hasattr(user, 'worker_profile'):
+    #         source_branch = Branch.objects.filter(id=user.worker_profile.branch.id)
+    #         self.fields["source_branch"].queryset = source_branch
+    #         # Filter products that have stock at the source branch
+    #         if source_branch.exists():
+    #             branch = source_branch.first()
+    #             products_with_stock = Product.objects.filter(
+    #                 stocks__branch=branch,  # Changed from stock__branch to stocks__branch
+    #                 stocks__total_stock__gt=0
+    #             ).distinct()
+    #             self.fields["product"].queryset = products_with_stock
+
+    # def __init__(self, *args, **kwargs):
+    #     user = kwargs.pop('user', None)
+    #     super().__init__(*args, **kwargs)
+
+    #     if user:
+    #         if user.is_superuser:
+    #             self.fields['source_branch'].queryset = Branch.objects.all()
+    #             self.fields['destination_branch'].queryset = Branch.objects.all()
+    #         elif hasattr(user, 'worker_profile') and user.worker_profile:
+    #             user_branch = user.worker_profile.branch
+    #             self.fields['source_branch'].queryset = Branch.objects.filter(id=user_branch.id)
+    #             self.fields['source_branch'].initial = user_branch
+    #             self.fields['destination_branch'].queryset = Branch.objects.exclude(id=user_branch.id)
 
     def clean(self):
         cleaned_data = super().clean()

@@ -124,62 +124,38 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         # Assign a product code only if it hasn't been set
         if not self.product_code:
-            if self.brand_name:
-                # If brand_name is provided, check for existing products with the same brand_name
-                existing_product = Product.objects.filter(brand_name=self.brand_name).first()
-                if existing_product:
-                    # Reuse the product code from the existing product
-                    self.product_code = existing_product.product_code
-                else:
-                    # Generate a new product code for the brand
-                    last_product = Product.objects.filter(product_code__startswith="PROD").order_by('id').last()
-                    if last_product:
-                        try:
-                            last_number = int(last_product.product_code.split("-")[1])  # Extract numeric part
-                            self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
-                        except (IndexError, ValueError):
-                            # Fallback to starting from PROD-0001 if the code is malformed
-                            self.product_code = "PROD-0001"
-                    else:
-                        # Start from PROD-0001 if no product exists
-                        self.product_code = "PROD-0001"
+            # Check if a product with the same brand_name and generic_name_dosage exists
+            existing_product = Product.objects.filter(
+                brand_name=self.brand_name,
+                generic_name_dosage=self.generic_name_dosage
+            ).exclude(id=self.id).first()
+
+            if existing_product:
+                # Reuse the product_code from the existing product
+                self.product_code = existing_product.product_code
             else:
-                # If brand_name is empty, use generic_name_dosage to generate the product code
-                if self.generic_name_dosage:
-                    # Check for existing products with the same generic_name_dosage and no brand_name
-                    existing_product = Product.objects.filter(
-                        generic_name_dosage=self.generic_name_dosage,
-                        brand_name__isnull=True
-                    ).first()
-                    if existing_product:
-                        # Reuse the product code from the existing product
-                        self.product_code = existing_product.product_code
-                    else:
-                        # Generate a new product code for the generic_name_dosage
-                        last_product = Product.objects.filter(product_code__startswith="PROD").order_by('id').last()
-                        if last_product:
-                            try:
-                                last_number = int(last_product.product_code.split("-")[1])  # Extract numeric part
-                                self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
-                            except (IndexError, ValueError):
-                                # Fallback to starting from PROD-0001 if the code is malformed
-                                self.product_code = "PROD-0001"
-                        else:
-                            # Start from PROD-0001 if no product exists
-                            self.product_code = "PROD-0001"
-                else:
-                    # If both brand_name and generic_name_dosage are empty, generate a unique product code
-                    last_product = Product.objects.filter(product_code__startswith="PROD").order_by('id').last()
-                    if last_product:
-                        try:
-                            last_number = int(last_product.product_code.split("-")[1])  # Extract numeric part
-                            self.product_code = f"PROD-{last_number + 1:04d}"  # Increment and format
-                        except (IndexError, ValueError):
-                            # Fallback to starting from PROD-0001 if the code is malformed
-                            self.product_code = "PROD-0001"
-                    else:
-                        # Start from PROD-0001 if no product exists
-                        self.product_code = "PROD-0001"
+                # Find the highest numeric part of all existing product_codes
+                highest_number = 0
+                all_products = Product.objects.filter(product_code__startswith="PROD")
+                for product in all_products:
+                    try:
+                        number = int(product.product_code.split("-")[1])
+                        highest_number = max(highest_number, number)
+                    except (IndexError, ValueError):
+                        continue
+
+                # Increment the highest number to generate a new product_code
+                new_number = highest_number + 1
+                new_code = f"PROD-{new_number:04d}"
+
+                # Ensure the new product_code doesn't conflict with existing codes for different brand_name/generic_name_dosage
+                while Product.objects.filter(product_code=new_code).exclude(
+                    brand_name=self.brand_name, generic_name_dosage=self.generic_name_dosage
+                ).exclude(id=self.id).exists():
+                    new_number += 1
+                    new_code = f"PROD-{new_number:04d}"
+
+                self.product_code = new_code
 
         # Save the product instance
         super().save(*args, **kwargs)

@@ -53,7 +53,7 @@
                   <td>
                     <form method="post" class="d-inline">
                       {% csrf_token %}
-                      <input type="hidden" name="product_code" value="{{ item.product_code }}" />
+                      <input type="hidden" name="product_id" value="{{ item.product_id }}" />
                       <input type="hidden" name="batch_number" value="{{ item.batch_number }}" />
                       <input type="hidden" name="branch" value="{{ item.branch_id }}" />
                       <button type="submit" class="btn btn-danger btn-sm" name="remove_item" value="true">{% trans "Remove" %}</button>

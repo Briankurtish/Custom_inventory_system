@@ -271,13 +271,23 @@
               </tr>
             </thead>
             <tbody>
+              {% if is_return_purchase_order %}
+                {% for item in return_payment_schedules %}
+                <tr>
+                  <td>{{item.when}}</td>
+                  <td>{{item.amount|floatformat:2|intcomma}}</td>
+                  <td>{{item.payment_date|date:"M d, Y"}}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
               {% for item in payment_schedules %}
                 <tr>
-                <td>{{item.when}}</td>
-                <td>{{item.amount|floatformat:2|intcomma}}</td>
-                <td>{{item.payment_date|date:"M d, Y"}}</td>
-              </tr>
-              {% endfor %}
+                  <td>{{item.when}}</td>
+                  <td>{{item.amount|floatformat:2|intcomma}}</td>
+                  <td>{{item.payment_date|date:"M d, Y"}}</td>
+                </tr>
+                {% endfor %}
+              {% endif %}
             </tbody>
           </table>
         </div>

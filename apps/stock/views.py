@@ -3,7 +3,7 @@ from web_project import TemplateLayout
 from .forms import BeginningInventoryForm, StockAddForm, StockUpdateForm, UpdateStockForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
-from apps.products.models import Product
+from apps.products.models import Batch, Product
 from apps.branches.models import Branch
 from .models import Stock, InventoryTransaction
 from django.utils.timezone import now  # To handle timestamps
@@ -163,7 +163,6 @@ def StockAuditLogView(request):
     return render(request, "stock_logs.html", context)
 
 
-
 @login_required
 def add_stock_view(request):
     form = StockAddForm()
@@ -178,31 +177,32 @@ def add_stock_view(request):
                 product = form.cleaned_data["product"]
                 quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
-                batch_number = product.batch.batch_number if product.batch else None  # Get batch number
+                batch = form.cleaned_data["batch"]  # Get batch from form
+                batch_number = batch.batch_number if batch else None
 
-                # Check if the same product (with same batch number and branch) already exists
+                # Check if the same product, branch, and batch already exists in the temp list
                 existing_item = next(
                     (item for item in temp_stock_list
-                    if item["product_code"] == product.product_code
-                    and item["branch_id"] == branch.id
-                    and item["batch_number"] == batch_number),  # Ensure batch number is checked
+                     if item["product_code"] == product.product_code
+                     and item["branch_id"] == branch.id
+                     and item["batch_number"] == batch_number),
                     None
                 )
 
                 if existing_item:
-                    # If the same product with the same batch and branch exists, update the quantity
+                    # If the same product, branch, and batch exists, update the quantity
                     existing_item["quantity"] += quantity
                     messages.success(request, _("Quantity updated for existing item in the temporary stock list."))
                 else:
-                    # If it's a new batch or branch, add as a new entry
+                    # Add a new entry with batch info
                     temp_stock_list.append({
                         "product_code": product.product_code,
                         "product_name": str(product.generic_name_dosage),
-                        "brand_name": str(product.brand_name.brand_name),
+                        "brand_name": str(product.brand_name.brand_name if product.brand_name else "No Brand"),
                         "quantity": quantity,
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
-                        "batch_number": batch_number,  # Add batch number to the temporary list
+                        "batch_number": batch_number,
                     })
                     messages.success(request, _("Item added to temporary stock list."))
 
@@ -216,7 +216,7 @@ def add_stock_view(request):
             branch_id = request.POST.get("branch")
             batch_number = request.POST.get("batch_number")
 
-            # Remove matching item from the temporary list
+            # Remove matching item from the temporary list by product, branch, and batch
             temp_stock_list = [
                 item for item in temp_stock_list
                 if not (
@@ -231,20 +231,22 @@ def add_stock_view(request):
 
         elif "update_stock" in request.POST:  # Handle updating stock in the database
             for item in temp_stock_list:
-                # Filter Product based on both product_code and batch_number
+                # Fetch Product and Batch
                 product = Product.objects.get(
-                    product_code=item["product_code"],
-                    batch__batch_number=item["batch_number"]  # Match batch number
-                )
+                        product_code=item["product_code"],
+                        batch__batch_number=item["batch_number"]
+                    )
+                batch = Batch.objects.get(batch_number=item["batch_number"]) if item["batch_number"] else None
                 branch = Branch.objects.get(id=item["branch_id"])
 
-                # Update or create stock entry
+                # Update or create stock entry with batch
                 stock, created = Stock.objects.update_or_create(
                     product=product,
                     branch=branch,
+                    batch=batch,  # Include batch in the lookup
                     defaults={
                         "quantity": item["quantity"],
-                        "created_by": request.user.worker_profile  # Set the created_by field
+                        "created_by": request.user.worker_profile
                     }
                 )
 
@@ -256,13 +258,13 @@ def add_stock_view(request):
                     quantity=item["quantity"],
                     transaction_type=transaction_type,
                     transaction_date=now(),
-                    worker=request.user.worker_profile  # Ensure worker tracking is included
+                    worker=request.user.worker_profile
                 )
 
                 if created:
-                    messages.info(request, f"Stock added for product {product.generic_name_dosage}.")
+                    messages.info(request, f"Stock added for product {product.generic_name_dosage} (Batch: {item['batch_number']}).")
                 else:
-                    messages.info(request, f"Stock updated for product {product.generic_name_dosage}.")
+                    messages.info(request, f"Stock updated for product {product.generic_name_dosage} (Batch: {item['batch_number']}).")
 
             # Clear the temporary list
             del request.session["TEMP_STOCK_LIST"]
@@ -277,6 +279,122 @@ def add_stock_view(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'AddStock.html', context)
+
+
+
+# @login_required
+# def add_stock_view(request):
+#     form = StockAddForm()
+
+#     # Retrieve temporary stock list from session or create an empty list
+#     temp_stock_list = request.session.get("TEMP_STOCK_LIST", [])
+
+#     if request.method == "POST":
+#         if "add_to_list" in request.POST:  # Handle adding to the temporary list
+#             form = StockAddForm(request.POST)
+#             if form.is_valid():
+#                 product = form.cleaned_data["product"]
+#                 quantity = form.cleaned_data["quantity"]
+#                 branch = form.cleaned_data["branch"]
+#                 batch_number = product.batch.batch_number if product.batch else None  # Get batch number
+
+#                 # Check if the same product (with same batch number and branch) already exists
+#                 existing_item = next(
+#                     (item for item in temp_stock_list
+#                     if item["product_code"] == product.product_code
+#                     and item["branch_id"] == branch.id
+#                     and item["batch_number"] == batch_number),  # Ensure batch number is checked
+#                     None
+#                 )
+
+#                 if existing_item:
+#                     # If the same product with the same batch and branch exists, update the quantity
+#                     existing_item["quantity"] += quantity
+#                     messages.success(request, _("Quantity updated for existing item in the temporary stock list."))
+#                 else:
+#                     # If it's a new batch or branch, add as a new entry
+#                     temp_stock_list.append({
+#                         "product_code": product.product_code,
+#                         "product_name": str(product.generic_name_dosage),
+#                         "brand_name": str(product.brand_name.brand_name),
+#                         "quantity": quantity,
+#                         "branch_id": branch.id,
+#                         "branch_name": branch.branch_name,
+#                         "batch_number": batch_number,  # Add batch number to the temporary list
+#                     })
+#                     messages.success(request, _("Item added to temporary stock list."))
+
+#                 # Store the updated temporary list in session
+#                 request.session["TEMP_STOCK_LIST"] = temp_stock_list
+#             else:
+#                 messages.error(request, _("Invalid data. Please check the form."))
+
+#         elif "remove_item" in request.POST:  # Handle removing from the temporary list
+#             product_code = request.POST.get("product_code")
+#             branch_id = request.POST.get("branch")
+#             batch_number = request.POST.get("batch_number")
+
+#             # Remove matching item from the temporary list
+#             temp_stock_list = [
+#                 item for item in temp_stock_list
+#                 if not (
+#                     item["product_code"] == product_code
+#                     and item["branch_id"] == int(branch_id)
+#                     and item["batch_number"] == batch_number
+#                 )
+#             ]
+#             # Store the updated list in session
+#             request.session["TEMP_STOCK_LIST"] = temp_stock_list
+#             messages.success(request, _("Item removed from the temporary stock list."))
+
+#         elif "update_stock" in request.POST:  # Handle updating stock in the database
+#             for item in temp_stock_list:
+#                 # Filter Product based on both product_code and batch_number
+#                 product = Product.objects.get(
+#                     product_code=item["product_code"],
+#                     batch__batch_number=item["batch_number"]  # Match batch number
+#                 )
+#                 branch = Branch.objects.get(id=item["branch_id"])
+
+#                 # Update or create stock entry
+#                 stock, created = Stock.objects.update_or_create(
+#                     product=product,
+#                     branch=branch,
+#                     defaults={
+#                         "quantity": item["quantity"],
+#                         "created_by": request.user.worker_profile  # Set the created_by field
+#                     }
+#                 )
+
+#                 # Create a transaction record
+#                 transaction_type = 'add' if created else 'update'
+#                 InventoryTransaction.objects.create(
+#                     product=product,
+#                     branch=branch,
+#                     quantity=item["quantity"],
+#                     transaction_type=transaction_type,
+#                     transaction_date=now(),
+#                     worker=request.user.worker_profile  # Ensure worker tracking is included
+#                 )
+
+#                 if created:
+#                     messages.info(request, f"Stock added for product {product.generic_name_dosage}.")
+#                 else:
+#                     messages.info(request, f"Stock updated for product {product.generic_name_dosage}.")
+
+#             # Clear the temporary list
+#             del request.session["TEMP_STOCK_LIST"]
+#             messages.success(request, _("Stock updated successfully."))
+#             return redirect("stock")  # Replace with the correct URL name
+
+#     # Prepare context for rendering
+#     view_context = {
+#         "form": form,
+#         "temp_stock": temp_stock_list,
+#     }
+#     context = TemplateLayout.init(request, view_context)
+
+#     return render(request, 'AddStock.html', context)
 
 
 @login_required
@@ -443,16 +561,21 @@ def update_stock_view(request):
                 product = form.cleaned_data["product"]
                 new_quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
+                batch = form.cleaned_data["batch"]  # Get batch from form
+                batch_number = batch.batch_number if batch else None
 
                 try:
-                    # Ensure a stock record exists for the given product at the branch.
-                    stock_entry = Stock.objects.get(product=product, branch=branch)
+                    # Ensure a stock record exists for the given product, branch, and batch
+                    stock_entry = Stock.objects.filter(product=product, branch=branch, batch=batch).first()
                 except Stock.DoesNotExist:
-                    messages.error(request, _("No stock record found for this product in the selected branch."))
+                    messages.error(request, _(f"No stock record found for {product.generic_name_dosage} (Batch: {batch_number}) in the selected branch."))
                 else:
-                    # Check if the product is already in the temporary update list.
+                    # Check if the product, branch, and batch are already in the temporary update list
                     existing_item = next(
-                        (item for item in temp_stock_list if item["product_code"] == product.product_code and item["branch_id"] == branch.id),
+                        (item for item in temp_stock_list
+                         if item["product_code"] == product.product_code
+                         and item["branch_id"] == branch.id
+                         and item["batch_number"] == batch_number),
                         None
                     )
                     if existing_item:
@@ -460,18 +583,18 @@ def update_stock_view(request):
                         existing_item["new_quantity"] += new_quantity
                         messages.success(request, _("Quantity updated in the update list."))
                     else:
-                        # Add the item to the temporary update list.
+                        # Add the item to the temporary update list
                         temp_stock_list.append({
                             "product_code": product.product_code,
                             "product_name": str(product.generic_name_dosage),
-                            "brand_name": str(product.brand_name.brand_name),
+                            "brand_name": str(product.brand_name.brand_name if product.brand_name else "No Brand"),
                             "current_quantity": stock_entry.quantity,
                             "new_quantity": new_quantity,
                             "branch_id": branch.id,
                             "branch_name": branch.branch_name,
-                            "batch_number": product.batch.batch_number
+                            "batch_number": batch_number,
                         })
-                        messages.success(request, _("Stock added to the update list."))
+                        messages.success(request, _(f"Stock added to the update list for {product.generic_name_dosage} (Batch: {batch_number})."))
 
                     request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
             else:
@@ -480,10 +603,16 @@ def update_stock_view(request):
         elif "remove_item" in request.POST:
             product_code = request.POST.get("product_code")
             branch_id = int(request.POST.get("branch"))
-            # Remove the matching item from the temporary list.
+            batch_number = request.POST.get("batch_number")
+
+            # Remove the matching item from the temporary list by product, branch, and batch
             temp_stock_list = [
                 item for item in temp_stock_list
-                if not (item["product_code"] == product_code and item["branch_id"] == branch_id)
+                if not (
+                    item["product_code"] == product_code
+                    and item["branch_id"] == branch_id
+                    and item["batch_number"] == batch_number
+                )
             ]
             request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
             messages.success(request, _("Item removed from the update list."))
@@ -493,34 +622,34 @@ def update_stock_view(request):
                 messages.error(request, _("No items in the update list."))
             else:
                 for item in temp_stock_list:
-                    # Retrieve the correct product using product_code and batch_number.
-                    product = Product.objects.get(
-                        product_code=item["product_code"],
-                        batch__batch_number=item["batch_number"]
-                    )
+                    # Retrieve the correct product and batch
+                    product = Product.objects.filter(product_code=item["product_code"]).first()
+                    batch = Batch.objects.get(batch_number=item["batch_number"]) if item["batch_number"] else None
                     branch = Branch.objects.get(id=item["branch_id"])
 
-                    # Fetch and update the existing stock record.
-                    stock = Stock.objects.get(product=product, branch=branch)
-                    previous_quantity = stock.quantity
+                    # Fetch and update the existing stock record by product, branch, and batch
+                    stock = Stock.objects.filter(product=product, branch=branch, batch=batch).first()
+                    if not stock:
+                        messages.error(request, _(f"No stock record found for {product.generic_name_dosage} (Batch: {item['batch_number']}) in branch {branch.branch_name}."))
+                        continue
 
-                    # Instead of overriding, we now **add** the quantity.
+                    previous_quantity = stock.quantity
                     stock.quantity += item["new_quantity"]
                     stock.total_stock = (stock.begining_inventory or 0) + stock.quantity
                     stock.save()
 
-                    # Log the update transaction.
                     InventoryTransaction.objects.create(
                         product=product,
                         branch=branch,
-                        quantity=item["new_quantity"],  # Logging only the added quantity
+                        quantity=item["new_quantity"],
                         transaction_type="update",
                         transaction_date=now(),
                         worker=request.user.worker_profile
                     )
-                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage}."))
 
-                # Clear the temporary update list.
+                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage} (Batch: {item['batch_number']})."))
+
+                # Clear the temporary update list
                 request.session.pop("TEMP_UPDATE_STOCK_LIST", None)
                 messages.success(request, _("Stock updated successfully."))
                 return redirect("stock")

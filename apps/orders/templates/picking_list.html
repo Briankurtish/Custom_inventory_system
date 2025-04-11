@@ -212,8 +212,14 @@
         </div>
         <div>
           <div class="column">
-            <h1 class="title-container">Picking List(Bon de Ramassage)</h1>
-            <p class="po-number">{{ order.purchase_order_id }}</p>
+            {% if is_return_purchase_order %}
+              <h1 class="title-container">Return Picking List(Bon de Ramassage)</h1>
+              <p class="po-number">{{ order.return_order_id }}</p>
+            {% else %}
+              <h1 class="title-container">Picking List(Bon de Ramassage)</h1>
+              <p class="po-number">{{ order.purchase_order_id }}</p>
+            {% endif %}
+            
           </div>
         </div>
         <div class="logo">

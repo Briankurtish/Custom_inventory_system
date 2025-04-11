@@ -79,11 +79,14 @@
           <div class="card-body">
             <div class="card-title d-flex align-items-start justify-content-between mb-4">
               <div class="avatar flex-shrink-0">
-                <i class="fa-solid fa-clipboard-list text-success" style="font-size: 2em;"></i>
+                <img src="{% static 'img/icons/unicons/wallet-info.png' %}" alt="wallet info" class="rounded">
+                {% comment %} <i class="fa-solid fa-boxes-stacked text-success" style="font-size: 2em;"></i> {% endcomment %}
               </div>
             </div>
-            <p class="mb-1">{% trans "Confirmed Orders" %}</p>
-            <h4 class="card-title mb-3">104 <small>{% trans "Orders" %}</small></h4>
+            <p class="mb-1">{%trans "Sales"%}</p>
+            <h4 class="card-title mb-3">{{total_sales_count}}<small> Orders</small></h4>
+            {% comment %} <p class="mb-1">{% trans "Confirmed Orders" %}</p>
+            <h4 class="card-title mb-3">104 <small>{% trans "Orders" %}</small></h4> {% endcomment %}
           </div>
         </div>
       </div>

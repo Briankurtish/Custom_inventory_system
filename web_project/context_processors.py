@@ -1,7 +1,9 @@
 # web_project/context_processors.py
 from django.db.models import Sum
+from apps.customers.models import Customer
 from apps.orders.models import Invoice
 from apps.orders.models import PurchaseOrder
+from apps.products.models import Product
 from apps.stock_request.models import StockRequest
 from apps.workers.models import Worker, RolePrivilege  # Import the Worker model
 from django.utils import timezone
@@ -16,6 +18,10 @@ def pending_counts(request):
         unpaid_invoices_count = Invoice.objects.filter(status='Unpaid').count()
         pending_orders_count = PurchaseOrder.objects.filter(status='Pending').count()
         pending_request_count = StockRequest.objects.filter(status='Pending').count()
+        total_product_count = Product.objects.all().count()
+        total_sales_count = PurchaseOrder.objects.all().count()
+        total_requests_count = StockRequest.objects.all().count()
+        total_customers_count = Customer.objects.all().count()
 
         online_workers = Worker.objects.filter(
             is_active=True,
@@ -27,6 +33,10 @@ def pending_counts(request):
             "unpaid_invoices_count": unpaid_invoices_count,
             'pending_orders_count': pending_orders_count,
             'pending_request_count': pending_request_count,
+            'total_product_count': total_product_count,
+            'total_sales_count': total_sales_count,
+            'total_requests_count': total_requests_count,
+            'total_customers_count': total_customers_count,
             'online_users_count': online_users_count,  # Add online users count
         }
     return {}
