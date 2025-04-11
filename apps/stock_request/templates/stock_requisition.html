@@ -238,10 +238,10 @@
           <tr>
             <th>No</th>
             <th>Product ID</th>
+            <th>Batch Number</th>
             <th>Generic Name</th>
             <th>Brand Name</th>
             <th>Dosage Form</th>
-            <th>Dosage Type</th>
             <th>Qty</th>
           </tr>
         </thead>
@@ -250,10 +250,10 @@
             <tr>
               <td>{{forloop.counter}}</td>
               <td>{{ item.product.product_code }}</td>
+              <td>{{ item.batch.batch_number }}</td>
               <td>{{ item.product.generic_name_dosage }}</td>
               <td>{{ item.product.brand_name.brand_name }}</td>
               <td>{{ item.product.dosage_form }}</td>
-              <td>{{ item.product.dosage_type.name }}</td>
               <td>{{ item.quantity|intcomma }}</td>
             </tr>
           {% endfor %}

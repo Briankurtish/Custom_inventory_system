@@ -255,7 +255,6 @@
             <th class="generic-name-column">Brand Name</th>
             <th>Batch Number</th>
             <th class="dosage-column">Dosage Form</th>
-            <th class="dosage-column">Dosage Type</th>
             <th>Mfg Date</th>
             <th>Exp Date</th>
             <th>Qty</th>
@@ -270,7 +269,6 @@
             <td>{{ item.product.brand_name.brand_name }}</td>
             <td>{{ item.product.batch.batch_number }}</td>
             <td>{{ item.product.dosage_form }}</td>
-            <td>{{ item.product.dosage_type.name }}</td>
             <td>{{ item.product.batch.prod_date }}</td>
             <td>{{ item.product.batch.expiry_date }}</td>
             <td>{{ item.quantity|intcomma }}</td>

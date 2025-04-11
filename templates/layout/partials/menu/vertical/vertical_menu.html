@@ -145,7 +145,7 @@
         {% if privilege.name == 'Transfer Stock'  %}
             <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
                 <a href="{% url 'transfers' %}" class="menu-link">
-                     <i class="menu-icon fa-solid fa-circle-exclamation"></i>
+                     <i class="menu-icon fa-solid fa-arrow-right-arrow-left"></i>
                     <div class="text-truncate">{% trans "Stock Transfer" %}</div>
                     {% comment %} {% if pending_request_count > 0 %}
                         <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>

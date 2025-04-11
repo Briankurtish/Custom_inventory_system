@@ -173,22 +173,33 @@
   {% if stock_transfer.status == "Pending" %}
     {% if role_privileges %}
         {% for privilege in role_privileges %}
-            {% if privilege.name == 'Generate Request Picking List' %}
+            {% if privilege.name == 'Generate Order Picking List' %}
                 <a href="{% url 'picking_list_doc_transfer' stock_transfer.transfer_id %}" target="_blank" class="btn btn-primary">
                     {% trans "Download Picking List" %}
                 </a>
             {% endif %}
-            <a href="{% url 'transfer_slip_doc_transfer' stock_transfer.transfer_id %}" target="_blank" class="btn btn-primary">
-                {% trans "Transfer Slip/Bon de Transfer" %}
-            </a>
+        {% endfor %}
+    {% endif %}
+    <a href="{% url 'transfer_slip_doc_transfer' stock_transfer.transfer_id %}" target="_blank" class="btn btn-primary">
+      {% trans "Transfer Slip/Bon de Transfer" %}
+  </a>
+    {% if role_privileges %}
+        {% for privilege in role_privileges %}
             {% if privilege.name == 'Transfer Stock' %}
-              <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
-                <span class="fa-solid fa-circle-check"></span> &nbsp; {% trans "Complete Transfer" %}
-              </button>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
+              <span class="fa-solid fa-circle-check"></span> &nbsp; {% trans "Complete Transfer" %}
+            </button>
             {% endif %}
         {% endfor %}
     {% endif %}
 
+{% comment %} 
+    {% if privilege.name == 'Transfer Stock' %}
+              <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmStockReceivedModal">
+                <span class="fa-solid fa-circle-check"></span> &nbsp; {% trans "Complete Transfer" %}
+              </button>
+            {% endif %} {% endcomment %}
+            
     
 
     {% if user.is_superuser %}
