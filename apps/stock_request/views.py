@@ -517,15 +517,24 @@ def complete_transfer_view(request, transfer_id):
                     )
                     return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
 
-                # Retrieve destination branch stock (must exist)
-                try:
-                    dest_stock = Stock.objects.get(product=product, batch=batch, branch=destination_branch)
-                except Stock.DoesNotExist:
-                    messages.error(
-                        request,
-                        _(f"No stock record found for {product.generic_name_dosage} in {destination_branch.branch_name}.")
-                    )
-                    return redirect("stock_transfer_details", transfer_id=stock_transfer.transfer_id)
+                # Retrieve or create destination branch stock
+                dest_stock, created = Stock.objects.get_or_create(
+                    product=product,
+                    batch=batch,
+                    branch=destination_branch,
+                    defaults={
+                        'quantity': 0,  # Initial quantity; will be updated below
+                        'total_inventory': 0,
+                        'begining_inventory': 0,
+                        'fixed_beginning_inventory': 0,
+                        'quantity_transferred': 0,
+                        'total_sold': 0,
+                        'total_stock': 0,
+                        'created_by': request.user.worker_profile,
+                        'date_added': date_received,
+                    }
+                )
+                print(f"Destination stock for Product ID {product.id}, Batch {batch.batch_number if batch else 'No Batch'} at {destination_branch.branch_name}: {dest_stock}, Created: {created}")
 
                 # Set actual quantity received and date on the item
                 item.actual_quantity_received = actual_quantity
@@ -958,8 +967,8 @@ def approve_or_decline_request(request, request_id):
 
                 if stock_request.request_type == "Surplus":
                     central_stock.quantity_transferred += quantity
-                    central_stock.total_stock += quantity
-                    central_stock.quantity += quantity
+                    # central_stock.total_stock += quantity
+                    # central_stock.quantity += quantity
                 elif stock_request.request_type == "Deficit":
                     central_stock.quantity_transferred -= quantity
                 else:
