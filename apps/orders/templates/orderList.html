@@ -175,17 +175,25 @@
           </td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.status|lower == "canceled" or order.has_return_order %}disabled{% endif %}>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.status|lower == "canceled" or order.has_return_order %}{% endif %}>
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
+              {% if order.has_return_order %}
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{% url 'order_details' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
                   <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
-              </a>
-              <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
-                  <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
-              </a>
+                </a>
               </div>
+              {% else %}
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'order_details' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
+                    <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
+                  </a>
+                  <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}">
+                      <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+                  </a>
+                </div>
+              {% endif %}
             </div>
           </td>
         </tr>
