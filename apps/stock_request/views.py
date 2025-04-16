@@ -1298,6 +1298,7 @@ def stock_received(request, request_id):
                 new_request = StockRequest.objects.create(
                     branch=stock_request.branch,
                     requested_by=stock_request.requested_by,
+                    requested_at=timezone.now(),
                     status="Pending",
                     request_type=request_type
                 )
