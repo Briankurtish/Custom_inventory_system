@@ -420,7 +420,7 @@ def add_beginning_inventory_view(request):
                     temp_beginning_inventory_list.append({
                         "product_code": product.product_code,
                         "product_name": str(product.generic_name_dosage),
-                        "brand_name": str(product.brand_name.brand_name),
+                        "brand_name": str(product.brand_name.brand_name) if product.brand_name else "",
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
                         "fixed_beginning_inventory": fixed_beginning_inventory,
