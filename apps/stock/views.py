@@ -21,6 +21,10 @@ from django.http import HttpResponseRedirect
 from django.http import Http404
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import csv
+from datetime import datetime, timedelta
+from django.http import HttpResponse
 
 
 
@@ -996,3 +1000,67 @@ def track_stocks(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, "stock_all.html", context)
+
+
+
+@login_required
+def inventory_register(request):
+    # Fetch all stock records
+    stocks = Stock.objects.all().select_related(
+        'product', 'batch', 'product__brand_name', 'product__generic_name_dosage',
+        'product__dosage_form', 'product__pack_size'
+    ).order_by('product__product_code', 'batch__batch_number')
+
+    # Handle pagination
+    paginator = Paginator(stocks, 300)  # Show 50 records per page
+    page = request.GET.get('page')
+    try:
+        stocks_paginated = paginator.page(page)
+    except PageNotAnInteger:
+        stocks_paginated = paginator.page(1)
+    except EmptyPage:
+        stocks_paginated = paginator.page(paginator.num_pages)
+
+    # Handle CSV export
+    if 'export' in request.GET and request.GET['export'] == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="inventory_register.csv"'
+
+        writer = csv.writer(response)
+        # Write headers
+        writer.writerow([
+            'N°', 'Product Code', 'Brand Name', 'Generic Name & Dosage', 'Dosage Form',
+            'Pack Size', 'Batch #', 'Expiry Date', 'Beginning Stock of Month', 'Received',
+            'Return', 'Total Intake', 'Transferred', 'Sold', 'Total / Ending Stock de fin'
+        ])
+
+        # Write data
+        for idx, stock in enumerate(stocks, 1):
+            writer.writerow([
+                idx,
+                stock.product.product_code or 'N/A',
+                stock.product.brand_name or 'N/A',
+                stock.product.generic_name_dosage or 'N/A',
+                stock.product.dosage_form or 'N/A',
+                stock.product.pack_size or 'N/A',
+                stock.batch.batch_number if stock.batch else 'N/A',
+                stock.batch.expiry_date.strftime('%d %b %y') if stock.batch and stock.batch.expiry_date else 'N/A',
+                stock.begining_inventory or 0,
+                stock.quantity or 0,
+                stock.return_quantity or 0,
+                stock.total_inventory or 0,
+                stock.quantity_transferred or 0,
+                stock.total_sold or 0,
+                stock.total_stock or 0
+            ])
+
+        return response
+
+    # Prepare context
+    view_context = {
+        'stocks': stocks_paginated,
+        'total_products': stocks.count(),
+    }
+
+    context = TemplateLayout.init(request, view_context)  # Assuming TemplateLayout is defined
+    return render(request, 'inventory_register.html', context)

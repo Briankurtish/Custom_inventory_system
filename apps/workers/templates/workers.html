@@ -32,6 +32,10 @@ th {
   <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee" %}
 </button>
 
+<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'employee_report' %}'">
+  <span class="fa-solid fa-download me-2"></span>{% trans "Download Report" %}
+</button>
+
 {% comment %} <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
   <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
 </button> {% endcomment %}
@@ -175,7 +179,7 @@ th {
                       <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
                     </a>
                     <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeRoleModal"
-                      data-worker-id="{{ worker.id }}" 
+                      data-worker-id="{{ worker.id }}"
                       data-current-role="{{ worker.role }}">
                       <i class="fa-solid fa-user-tag me-1"></i> Change Role
                     </a>
@@ -288,14 +292,14 @@ th {
         const workerId = button.getAttribute('data-worker-id');
         const form = document.getElementById('changeRoleForm');
         form.action = form.action.replace('/0/', '/' + workerId + '/');
-        
+
         // Get the current worker's role
         const currentRole = button.getAttribute('data-current-role');
-        
+
         // Fetch available roles (or use hardcoded if preferred)
         const roleSelect = document.getElementById('roleSelect');
         roleSelect.innerHTML = ''; // Clear existing options
-        
+
         // Add options - either from your model or hardcoded
         const roles = [
           ['Director General', 'Director General'],
@@ -313,7 +317,7 @@ th {
           ['Driver', 'Driver'],
           ['Other', 'Other']
         ];
-        
+
         roles.forEach(([value, label]) => {
           const option = document.createElement('option');
           option.value = value;
@@ -325,14 +329,14 @@ th {
         });
       });
     }
-  
+
     // Handle form submission
     const form = document.getElementById('changeRoleForm');
     if (form) {
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        
+
         fetch(this.action, {
           method: 'POST',
           body: formData,
@@ -356,7 +360,7 @@ th {
     }
   });
 
-  
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const openPinModal = document.getElementById('openPinModal');

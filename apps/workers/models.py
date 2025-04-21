@@ -34,7 +34,7 @@ class Privilege(models.Model):
         ('Order and Sales', 'Order and sales'),
         ('Finance', 'Finance'),
     ]
-    
+
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     category = models.TextField(choices=CATEGORY_CHOICES, blank=True, null=True)

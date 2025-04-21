@@ -75,7 +75,10 @@ def order_list(request):
 
     branches = Branch.objects.all()
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
-    workers = Worker.objects.all().order_by("user__first_name", "user__last_name")
+    # Filter workers who have created at least one PurchaseOrder or ReturnPurchaseOrder
+    workers = Worker.objects.filter(
+        Q(created_by_orders__isnull=False) | Q(return_created_by_orders__isnull=False)
+    ).distinct().order_by("user__first_name", "user__last_name")
 
     user = request.user
     is_accountant_or_superuser = user.worker_profile.role == "Accountant" or user.is_superuser

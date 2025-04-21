@@ -38,7 +38,9 @@ urlpatterns = [
     path('assign-privileges/', assign_privileges_to_role, name='assign_privileges'),
 
     path("check_security_pin/", check_security_pin, name="check_security_pin"),
-    
+
     path('workers/<int:worker_id>/change_role/', change_worker_role, name='change_worker_role'),
+
+    path('employee-report/', employee_report, name='employee_report'),
 
 ]

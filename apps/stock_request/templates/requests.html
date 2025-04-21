@@ -26,7 +26,7 @@
   <hr>
 {% endif %}
 
-<!-- Filter Section with Improved Design -->
+{% comment %} <!-- Filter Section with Improved Design -->
 <form method="get" action="" class="mb-3">
   <div class="d-flex align-items-center justify-content-between">
     <label for="status_filter" class="me-2 mb-0">{% trans "Filter by Status" %}:</label>
@@ -39,6 +39,56 @@
       </select>
       <button type="submit" class="btn btn-outline-primary btn-sm ms-2">{% trans "Apply" %}</button>
     </div>
+  </div>
+</form> {% endcomment %}
+
+<form method="GET" class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">{% trans "Branch" %}</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">{% trans "All Branches" %}</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="requested_by" class="form-label">{% trans "Requested By" %}</label>
+    <select id="requested_by" name="requested_by" class="form-select form-select-sm">
+      <option value="">{% trans "All Requesters" %}</option>
+      {% for worker in workers %}
+        <option value="{{ worker.id }}" {% if requested_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
+          {{ worker.user.first_name }} {{ worker.user.last_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="status_filter" class="form-label">{% trans "Status" %}</label>
+    <select id="status_filter" name="status_filter" class="form-select form-select-sm">
+      <option value="">{% trans "All Statuses" %}</option>
+      <option value="pending" {% if status_filter == "pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+      <option value="approved" {% if status_filter == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+      <option value="rejected" {% if status_filter == "rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
   </div>
 </form>
 

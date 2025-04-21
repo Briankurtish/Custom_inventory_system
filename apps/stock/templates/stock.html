@@ -41,6 +41,10 @@
       <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'update_stock' %}'">
         <span class="fa-solid fa-pen-to-square me-2"></span>{% trans "Update Stock" %}
       </button>
+
+      <button type="button" class="btn btn-primary mb-5" onclick="window.location.href='{% url 'inventory_register' %}'">
+        <span class="fa-solid fa-download me-2"></span>{% trans "Download Report" %}
+      </button>
     </div>
   {% endif %}
   </h4>
@@ -249,10 +253,10 @@
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const stockData = await response.json();
       branchNameElement.textContent = `${branchName} Branch`;
-  
+
       if (stockData.stocks.length === 0) {
         tableBody.innerHTML = `
           <tr>
@@ -263,12 +267,12 @@
         const currentPage = stockData.page || 1;
         const itemsPerPage = stockData.per_page || 100;
         const offset = (currentPage - 1) * itemsPerPage;
-  
+
         tableBody.innerHTML = stockData.stocks
           .map((stock, index) => {
             let stockStatus;
             let badgeClass;
-  
+
             if (stock.total_stock === 0) {
               stockStatus = "Out of Stock";
               badgeClass = "bg-label-danger";
@@ -279,7 +283,7 @@
               stockStatus = "Low Stock";
               badgeClass = "bg-label-warning";
             }
-  
+
             return `
               <tr>
                 <td>${offset + index + 1}</td>
@@ -323,7 +327,7 @@
       `;
     }
   }
-  
+
 
 
 function populateEditModal(stockId, beginningInventory) {

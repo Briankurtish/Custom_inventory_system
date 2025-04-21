@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.utils import timezone
 from django.views.generic import TemplateView
+from apps.workers.models import Worker
 from web_project import TemplateLayout
 from django.contrib import messages
 from django.db.models import Case, When, Value, IntegerField, Q
@@ -669,6 +670,10 @@ def ManageRequestsView(request):
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
 
+    # Fetch branches and workers who have made stock requests
+    branches = Branch.objects.all()
+    workers = Worker.objects.filter(requested_stock_requests__isnull=False).distinct().order_by("user__first_name", "user__last_name")
+
     # Filter stock requests based on the user's role and privileges
     if user_role == "Marketing Director":
         stock_requests = stock_requests.filter(requested_by=worker_profile)
@@ -682,16 +687,29 @@ def ManageRequestsView(request):
     # Stock Managers should see "In Transit" stock for their branch
     if user_role == "Stock Manager":
         in_transit_stocks = InTransit.objects.filter(
-        destination=worker_profile.branch,
-        status="In Transit"  # Only show items that are still in transit
-    )
+            destination=worker_profile.branch,
+            status="In Transit"  # Only show items that are still in transit
+        )
 
-    # Get the selected status filter, defaulting to empty (no filter)
+    # Get filter parameters from the request
     status_filter = request.GET.get('status_filter', '')
+    branch_id = request.GET.get('branch', '')
+    requested_by_id = request.GET.get('requested_by', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
 
-    # Apply the status filter if it's provided
+    # Apply the filters
     if status_filter:
         stock_requests = stock_requests.filter(status__iexact=status_filter)
+
+    if branch_id:
+        stock_requests = stock_requests.filter(requested_by__branch__id=branch_id)
+
+    if requested_by_id:
+        stock_requests = stock_requests.filter(requested_by__id=requested_by_id)
+
+    if start_date and end_date:
+        stock_requests = stock_requests.filter(requested_at__date__range=[start_date, end_date])
 
     # Order by the most recent pending requests first, then by requested_at
     stock_requests = stock_requests.annotate(
@@ -710,8 +728,15 @@ def ManageRequestsView(request):
     # Prepare the context dictionary
     view_context = {
         "stock_requests": paginated_request,
-        "in_transit_stocks": in_transit_stocks,  # Now available in context
-        "can_request_stock": can_request_stock,  
+        "in_transit_stocks": in_transit_stocks,
+        "can_request_stock": can_request_stock,
+        "branches": branches,
+        "workers": workers,
+        "status_filter": status_filter,
+        "branch_id": branch_id,
+        "requested_by_id": requested_by_id,
+        "start_date": start_date,
+        "end_date": end_date,
     }
 
     # Initialize template layout and render the page

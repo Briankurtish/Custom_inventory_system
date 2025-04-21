@@ -1,0 +1,366 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Report</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        time {
+            font-size: 10px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        .header .date {
+            font-size: 14px;
+        }
+        .header h1 {
+            font-size: 12px;
+            margin: 0;
+        }
+        .header .title-container {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .header .logo img {
+            max-width: 70px;
+            height: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 0;
+            table-layout: fixed;
+        }
+        table th,
+        table td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            font-size: 9px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        .totals {
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+        .totals div {
+            width: 48%;
+        }
+        .totals table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .totals table th,
+        .totals table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+        .totals table th {
+            background-color: #f8f8f8;
+        }
+        .signatures {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .signatures .section {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .signatures .section strong {
+            display: block;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .signatures .section .row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .signatures .section .line {
+            width: 230px;
+            border-top: 1px solid #000;
+            text-align: center;
+            margin: 10px auto 5px;
+        }
+        .po-number {
+            text-align: center;
+            font-size: 9px;
+        }
+        .footer {
+            display: flex;
+            justify-content: end;
+            margin-top: 30px;
+            font-size: 9px;
+        }
+        .totals-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            width: 50%;
+        }
+        .totals-section p {
+            margin: 2px 0;
+            line-height: 1.2;
+        }
+        .release-note-container {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 2px;
+        }
+        .header-cont {
+            text-align: center;
+            margin: 2px 0;
+        }
+        .header-cont h1 {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .header-cont p {
+            margin: 5px 0;
+        }
+        .container-down {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1px solid #ccc;
+            margin: 0px auto;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .container-header {
+            border: 1px solid #ccc;
+            margin: 0px auto;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .branch {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .branch h2 {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+        }
+        .branch p {
+            margin: 5px 0;
+        }
+        .note {
+            font-size: 9px;
+            display: flex;
+            justify-content: start;
+            margin-top: 30px;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            color: #007bff;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .pagination a:hover {
+            background-color: #f8f8f8;
+        }
+        .pagination .active {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        .pagination .disabled {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        /* Column widths for screen */
+        th:nth-child(1), td:nth-child(1) { width: 70px; } /* Employee ID */
+        th:nth-child(2), td:nth-child(2) { width: 90px; } /* Full Name */
+        th:nth-child(3), td:nth-child(3) { width: 70px; } /* Role */
+        th:nth-child(4), td:nth-child(4) { width: 80px; } /* Department */
+        th:nth-child(5), td:nth-child(5) { width: 60px; } /* Branch */
+        th:nth-child(6), td:nth-child(6) { width: 100px; } /* Contract Type */
+        th:nth-child(7), td:nth-child(7) { width: 60px; } /* Company */
+        th:nth-child(8), td:nth-child(8) { width: 80px; } /* Manager */
+        th:nth-child(9), td:nth-child(9) { width: 60px; } /* Marital Status */
+        th:nth-child(10), td:nth-child(10) { width: 70px; } /* Telephone */
+        th:nth-child(11), td:nth-child(11) { width: 90px; } /* Address */
+        th:nth-child(12), td:nth-child(12) { width: 70px; } /* Emergency Name */
+        th:nth-child(13), td:nth-child(13) { width: 70px; } /* Emergency Phone */
+        th:nth-child(14), td:nth-child(14) { width: 60px; } /* Date Joined */
+        th:nth-child(15), td:nth-child(15) { width: 60px; } /* Recruitment Date */
+        th:nth-child(16), td:nth-child(16) { width: 50px; } /* Is Active */
+        /* Print optimizations for landscape */
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            .container { max-width: 100%; margin: 0; padding: 10px; }
+            table { width: 100%; }
+            table th, table td { font-size: 8px; padding: 3px; }
+            .pagination, .btn { display: none; }
+            .header, .footer, .totals { font-size: 9px; }
+            /* Slightly wider columns for landscape */
+            th:nth-child(1), td:nth-child(1) { width: 6%; }
+            th:nth-child(2), td:nth-child(2) { width: 9%; }
+            th:nth-child(3), td:nth-child(3) { width: 7%; }
+            th:nth-child(4), td:nth-child(4) { width: 8%; }
+            th:nth-child(5), td:nth-child(5) { width: 6%; }
+            th:nth-child(6), td:nth-child(6) { width: 8%; }
+            th:nth-child(7), td:nth-child(7) { width: 6%; }
+            th:nth-child(8), td:nth-child(8) { width: 8%; }
+            th:nth-child(9), td:nth-child(9) { width: 6%; }
+            th:nth-child(10), td:nth-child(10) { width: 7%; }
+            th:nth-child(11), td:nth-child(11) { width: 9%; }
+            th:nth-child(12), td:nth-child(12) { width: 7%; }
+            th:nth-child(13), td:nth-child(13) { width: 7%; }
+            th:nth-child(14), td:nth-child(14) { width: 6%; }
+            th:nth-child(15), td:nth-child(15) { width: 6%; }
+            th:nth-child(16), td:nth-child(16) { width: 5%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="date">
+                <time>{{ "now"|date:"M d, Y H:i" }}</time>
+            </div>
+            <div>
+                <div class="column">
+                    <h1 class="title-container">Employee Report</h1>
+                </div>
+            </div>
+            <div class="logo">
+                <a href="https://imgbb.com/">
+                    <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
+                </a>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Branch</th>
+                    <th>Contract Type</th>
+                    <th>Company</th>
+                    <th>Manager</th>
+                    <th>Marital Status</th>
+                    <th>Telephone</th>
+                    <th>Address</th>
+                    <th>Emergency Name</th>
+                    <th>Emergency Phone</th>
+                    <th>Date Joined</th>
+                    <th>Recruitment Date</th>
+                    <th>Is Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td>{{ worker.employee_id }}</td>
+                    <td>{{ worker.user.first_name }} {{ worker.user.last_name }}</td>
+                    <td>{{ worker.role }}</td>
+                    <td>{{ worker.department|default:"N/A" }}</td>
+                    <td>{{ worker.branch.branch_name|default:"N/A" }}</td>
+                    <td>{{ worker.contract_type|default:"N/A" }}</td>
+                    <td>{{ worker.company|default:"N/A" }}</td>
+                    <td>{{ worker.manager|default:"N/A" }}</td>
+                    <td>{{ worker.marital_status|default:"N/A" }}</td>
+                    <td>{{ worker.telephone|default:"N/A" }}</td>
+                    <td>{{ worker.address|default:"N/A" }}</td>
+                    <td>{{ worker.emergency_name|default:"N/A" }}</td>
+                    <td>{{ worker.emergency_phone|default:"N/A" }}</td>
+                    <td>{{ worker.date_joined }}</td>
+                    <td>{{ worker.recruitment_date|default:"N/A" }}</td>
+                    <td>{{ worker.is_active }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="16">No employees found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        {% if workers.has_other_pages %}
+        <div class="pagination">
+            {% if workers.has_previous %}
+                <a href="?page={{ workers.previous_page_number }}">Previous</a>
+            {% else %}
+                <a class="disabled">Previous</a>
+            {% endif %}
+
+            {% for num in workers.paginator.page_range %}
+                {% if workers.number == num %}
+                    <a class="active">{{ num }}</a>
+                {% else %}
+                    <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if workers.has_next %}
+                <a href="?page={{ workers.next_page_number }}">Next</a>
+            {% else %}
+                <a class="disabled">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% comment %} <div class="totals">
+            <div class="totals-section">
+                <p>Total Employees: {{ total_employees }}</p>
+            </div>
+        </div> {% endcomment %}
+
+        {% comment %} <div class="footer">
+            <p>NIU: M022014416253M</p>
+            <p>-</p>
+            <p>Reg No: RC/YAO/2020/B/239</p>
+        </div> {% endcomment %}
+
+        <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+            <i class="fa fa-print"></i> Print
+        </a>
+        <a href="?export=csv" class="btn btn-sm btn-success float-right mr-1 d-print-none">Export to CSV</a>
+        <br>
+        <br>
+        <br>
+    </div>
+</body>
+</html>

@@ -67,6 +67,20 @@
       .greyed-out:hover {
           background-color: #f5f5f5; /* Maintain background on hover (override table-hover) */
       }
+
+      .custom-spinner {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 3px solid #007bff; /* Matches btn-outline-primary color */
+        border-top: 3px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
 
     <style>

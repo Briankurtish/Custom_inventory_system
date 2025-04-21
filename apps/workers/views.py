@@ -1,3 +1,4 @@
+import csv
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.generic import TemplateView
@@ -22,7 +23,10 @@ from django.db.models import Prefetch
 from collections import defaultdict
 from django.utils import timezone
 from datetime import timedelta
+from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
+from io import StringIO
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 
@@ -107,7 +111,7 @@ def ManageWorkerView(request):
 def assign_privileges_to_role(request):
     roles = [role[0] for role in Worker.ROLE_CHOICES]
     role = request.GET.get('role')  # Get selected role from query parameters
-    role_privilege = None  
+    role_privilege = None
 
     privileges_by_category = defaultdict(list)
     all_privileges = Privilege.objects.all()
@@ -128,11 +132,11 @@ def assign_privileges_to_role(request):
 
         if form.is_valid():
             role_privilege = form.save(commit=False)
-            role_privilege.role = role  
+            role_privilege.role = role
             role_privilege.save()
             form.save_m2m()
             messages.success(request, _('Privileges updated successfully!'))
-            return redirect('workers')  
+            return redirect('workers')
     else:
         if role:
             try:
@@ -163,10 +167,10 @@ def assign_privileges_to_role(request):
 @login_required
 def change_worker_role(request, worker_id):
     worker = get_object_or_404(Worker, pk=worker_id)
-    
+
     if request.method == 'POST':
         new_role = request.POST.get('role')
-        
+
         if new_role and new_role != worker.role:
             try:
                 role_privilege = RolePrivilege.objects.get(role=new_role)
@@ -179,15 +183,15 @@ def change_worker_role(request, worker_id):
                 worker.privileges.clear()
                 worker.save()
                 messages.success(request, "Role updated (no privileges for this role)")
-            
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
-            
+
             return redirect('worker_detail', worker_id=worker.id)
-    
+
     # Get all roles directly from the model
     roles = Worker.ROLE_CHOICES
-    
+
     return JsonResponse({
         'success': False,
         'roles': roles,
@@ -210,7 +214,7 @@ def OnlineWorkersView(request):
         last_active__gte=timezone.now() - timedelta(minutes=10)
     ).order_by('employee_id')
     online_users_count = online_workers.count()
-    
+
 
     # Paginate workers: Show 100 workers per page
     paginator = Paginator(online_workers, 100)
@@ -641,3 +645,70 @@ def check_security_pin(request):
     has_pin = bool(user_profile.security_pin)  # Check if PIN exists
 
     return JsonResponse({"has_pin": has_pin})
+
+
+
+
+@login_required
+def employee_report(request):
+    # Fetch all active workers, ordered by employee_id
+    workers = Worker.objects.filter(is_active=True).select_related('user', 'branch', 'created_by').prefetch_related('privileges').order_by('employee_id')
+
+    # Handle pagination
+    paginator = Paginator(workers, 50)  # Show 50 workers per page
+    page = request.GET.get('page')
+    try:
+        workers_paginated = paginator.page(page)
+    except PageNotAnInteger:
+        workers_paginated = paginator.page(1)
+    except EmptyPage:
+        workers_paginated = paginator.page(paginator.num_pages)
+
+    # Handle CSV export
+    if 'export' in request.GET and request.GET['export'] == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="employee_report.csv"'
+
+        writer = csv.writer(response)
+        # Write headers
+        writer.writerow([
+            'Employee ID', 'Full Name', 'Role', 'Department', 'Branch', 'Contract Type',
+            'Company', 'Manager', 'Marital Status', 'Telephone', 'Address', 'Emergency Name',
+            'Emergency Phone', 'Date Joined', 'Recruitment Date','Is Active',
+        ])
+
+        # Write data (all workers, not paginated)
+        for worker in workers:
+            full_name = f"{worker.user.first_name} {worker.user.last_name}" if worker.user.first_name else worker.user.username
+            branch_name = worker.branch.branch_name if worker.branch else 'N/A'
+            privileges = ", ".join([p.name for p in worker.privileges.all()]) if worker.privileges.exists() else 'N/A'
+            created_by = f"{worker.created_by.user.first_name} {worker.created_by.user.last_name}" if worker.created_by and worker.created_by.user.first_name else worker.created_by.user.username if worker.created_by else 'N/A'
+            writer.writerow([
+                worker.employee_id,
+                full_name,
+                worker.role,
+                worker.department or 'N/A',
+                branch_name,
+                worker.contract_type or 'N/A',
+                worker.company or 'N/A',
+                worker.manager or 'N/A',
+                worker.marital_status or 'N/A',
+                worker.telephone or 'N/A',
+                worker.address or 'N/A',
+                worker.emergency_name or 'N/A',
+                worker.emergency_phone or 'N/A',
+                worker.date_joined,
+                worker.recruitment_date or 'N/A',
+                worker.is_active,
+            ])
+
+        return response
+
+    # Prepare context for template
+    view_context = {
+        'workers': workers_paginated,
+        'total_employees': workers.count(),
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'employee_list_report.html', context)

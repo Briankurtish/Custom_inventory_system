@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 10px;
+        }
+        h1 {
+            color: #333;
+        }
+        .export-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Employee Report</h1>
+    <a href="?export=csv" class="export-btn">Export to CSV</a>
+    <div class="total">Total Employees: {{ total_employees }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Branch</th>
+                <th>Contract Type</th>
+                <th>Company</th>
+                <th>Date Joined</th>
+                <th>Marital Status</th>
+                <th>Telephone</th>
+                <th>Manager</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+            <tr>
+                <td>{{ worker.employee_id }}</td>
+                <td>{{ worker.user.first_name }} {{ worker.user.last_name }}</td>
+                <td>{{ worker.role }}</td>
+                <td>{{ worker.department|default:"N/A" }}</td>
+                <td>{{ worker.branch.branch_name|default:"N/A" }}</td>
+                <td>{{ worker.contract_type|default:"N/A" }}</td>
+                <td>{{ worker.company|default:"N/A" }}</td>
+                <td>{{ worker.date_joined }}</td>
+                <td>{{ worker.marital_status|default:"N/A" }}</td>
+                <td>{{ worker.telephone|default:"N/A" }}</td>
+                <td>{{ worker.manager|default:"N/A" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11">No employees found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -46,4 +46,6 @@ urlpatterns = [
     path("delete-stock/<int:stock_id>/", delete_stock_page, name="delete-stock"),
 
     path('beginning-inventory/', add_beginning_inventory_view, name="add-beginning-inventory"),
+
+    path('reports/inventory-register/', inventory_register, name='inventory_register'),
 ]
