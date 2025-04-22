@@ -29,7 +29,7 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
                     'Marketing Director': 'dashboard_md.html',
                     'Central Stock Manager': 'dashboard_cstm.html',
                     'Stock Manager': 'dashboard_stkm.html',
-                    'Stock Keeper': 'dashboard_stock_keeper.html',
+                    'Stock Keeper': 'dashboard_stk-keeper.html',
                     'Accountant': 'dashboard_acc.html',
                     'Cashier': 'dashboard_cash.html',
                     'Secretary': 'dashboard_sec.html',
