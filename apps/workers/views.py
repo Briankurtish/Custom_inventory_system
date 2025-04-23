@@ -649,13 +649,89 @@ def check_security_pin(request):
 
 
 
+# @login_required
+# def employee_report(request):
+#     # Fetch all active workers, ordered by employee_id
+#     workers = Worker.objects.filter(is_active=True).select_related('user', 'branch', 'created_by').prefetch_related('privileges').order_by('employee_id')
+
+#     # Handle pagination
+#     paginator = Paginator(workers, 50)  # Show 50 workers per page
+#     page = request.GET.get('page')
+#     try:
+#         workers_paginated = paginator.page(page)
+#     except PageNotAnInteger:
+#         workers_paginated = paginator.page(1)
+#     except EmptyPage:
+#         workers_paginated = paginator.page(paginator.num_pages)
+
+#     # Handle CSV export
+#     if 'export' in request.GET and request.GET['export'] == 'csv':
+#         response = HttpResponse(content_type='text/csv')
+#         response['Content-Disposition'] = 'attachment; filename="employee_report.csv"'
+
+#         writer = csv.writer(response)
+#         # Write headers
+#         writer.writerow([
+#             'Employee ID', 'Full Name', 'Role', 'Department', 'Branch', 'Contract Type',
+#             'Company', 'Manager', 'Marital Status', 'Telephone', 'Address', 'Emergency Name',
+#             'Emergency Phone', 'Date Joined', 'Recruitment Date','Is Active',
+#         ])
+
+#         # Write data (all workers, not paginated)
+#         for worker in workers:
+#             full_name = f"{worker.user.first_name} {worker.user.last_name}" if worker.user.first_name else worker.user.username
+#             branch_name = worker.branch.branch_name if worker.branch else 'N/A'
+#             privileges = ", ".join([p.name for p in worker.privileges.all()]) if worker.privileges.exists() else 'N/A'
+#             created_by = f"{worker.created_by.user.first_name} {worker.created_by.user.last_name}" if worker.created_by and worker.created_by.user.first_name else worker.created_by.user.username if worker.created_by else 'N/A'
+#             writer.writerow([
+#                 worker.employee_id,
+#                 full_name,
+#                 worker.role,
+#                 worker.department or 'N/A',
+#                 branch_name,
+#                 worker.contract_type or 'N/A',
+#                 worker.company or 'N/A',
+#                 worker.manager or 'N/A',
+#                 worker.marital_status or 'N/A',
+#                 worker.telephone or 'N/A',
+#                 worker.address or 'N/A',
+#                 worker.emergency_name or 'N/A',
+#                 worker.emergency_phone or 'N/A',
+#                 worker.date_joined,
+#                 worker.recruitment_date or 'N/A',
+#                 worker.is_active,
+#             ])
+
+#         return response
+
+#     # Prepare context for template
+#     view_context = {
+#         'workers': workers_paginated,
+#         'total_employees': workers.count(),
+#     }
+
+#     context = TemplateLayout.init(request, view_context)
+#     return render(request, 'employee_list_report.html', context)
+
+
 @login_required
 def employee_report(request):
-    # Fetch all active workers, ordered by employee_id
+    # Get branch_id from query parameters
+    branch_id = request.GET.get('branch_id')
+
+    # Fetch employee records, filtered by branch if branch_id is provided
     workers = Worker.objects.filter(is_active=True).select_related('user', 'branch', 'created_by').prefetch_related('privileges').order_by('employee_id')
+    if branch_id:
+        try:
+            branch_id = int(branch_id)  # Ensure branch_id is an integer
+            workers = workers.filter(branch__id=branch_id)
+        except ValueError:
+            workers = workers.none()  # Return empty queryset for invalid branch_id
+
+    workers = workers.order_by('employee_id')
 
     # Handle pagination
-    paginator = Paginator(workers, 50)  # Show 50 workers per page
+    paginator = Paginator(workers, 300)
     page = request.GET.get('page')
     try:
         workers_paginated = paginator.page(page)
@@ -664,31 +740,37 @@ def employee_report(request):
     except EmptyPage:
         workers_paginated = paginator.page(paginator.num_pages)
 
+    # Get branch object for header (if branch_id is valid)
+    branch = None
+    if branch_id:
+        try:
+            branch = Branch.objects.get(id=branch_id)
+        except Branch.DoesNotExist:
+            branch = None
+
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':
+        print(f"CSV Export: branch_id={branch_id}, workers_count={workers.count()}")  # Debug
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="employee_report.csv"'
+        response['Content-Disposition'] = f'attachment; filename="employee_report_branch_{branch_id or "all"}.csv"'
 
         writer = csv.writer(response)
         # Write headers
         writer.writerow([
-            'Employee ID', 'Full Name', 'Role', 'Department', 'Branch', 'Contract Type',
-            'Company', 'Manager', 'Marital Status', 'Telephone', 'Address', 'Emergency Name',
-            'Emergency Phone', 'Date Joined', 'Recruitment Date','Is Active',
+            'Employee ID', 'Full Name', 'Role', 'Department', 'Branch',
+            'Contract Type', 'Company', 'Manager', 'Marital Status', 'Telephone',
+            'Address', 'Emergency Name', 'Emergency Phone', 'Date Joined',
+            'Recruitment Date', 'Is Active'
         ])
 
-        # Write data (all workers, not paginated)
+        # Write data (using filtered workers)
         for worker in workers:
-            full_name = f"{worker.user.first_name} {worker.user.last_name}" if worker.user.first_name else worker.user.username
-            branch_name = worker.branch.branch_name if worker.branch else 'N/A'
-            privileges = ", ".join([p.name for p in worker.privileges.all()]) if worker.privileges.exists() else 'N/A'
-            created_by = f"{worker.created_by.user.first_name} {worker.created_by.user.last_name}" if worker.created_by and worker.created_by.user.first_name else worker.created_by.user.username if worker.created_by else 'N/A'
             writer.writerow([
-                worker.employee_id,
-                full_name,
-                worker.role,
+                worker.employee_id or 'N/A',
+                f"{worker.user.first_name} {worker.user.last_name}" or 'N/A',
+                worker.role or 'N/A',
                 worker.department or 'N/A',
-                branch_name,
+                worker.branch.branch_name if worker.branch else 'N/A',
                 worker.contract_type or 'N/A',
                 worker.company or 'N/A',
                 worker.manager or 'N/A',
@@ -697,17 +779,21 @@ def employee_report(request):
                 worker.address or 'N/A',
                 worker.emergency_name or 'N/A',
                 worker.emergency_phone or 'N/A',
-                worker.date_joined,
-                worker.recruitment_date or 'N/A',
-                worker.is_active,
+                worker.date_joined.strftime('%d %b %y') if worker.date_joined else 'N/A',
+                worker.recruitment_date.strftime('%d %b %y') if worker.recruitment_date else 'N/A',
+                'Yes' if worker.is_active else 'No'
             ])
 
         return response
 
-    # Prepare context for template
+    # Prepare context
     view_context = {
         'workers': workers_paginated,
         'total_employees': workers.count(),
+        'current_date_time': timezone.now(),
+        'branch_id': branch_id,
+        'branches': Branch.objects.all(),
+        'branch': branch,
     }
 
     context = TemplateLayout.init(request, view_context)

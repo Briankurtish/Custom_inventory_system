@@ -759,7 +759,7 @@ def ManageTransfersView(request):
         stock_transfers = stock_transfers.filter(transferred_by=worker_profile)
     elif user_role in ["Secretary", "Stock Manager"]:
         stock_transfers = stock_transfers.filter(
-            Q(source_branch=worker_profile.branch) | 
+            Q(source_branch=worker_profile.branch) |
             Q(destination_branch=worker_profile.branch)
         )
     elif can_transfer_stock:
@@ -1028,7 +1028,7 @@ def approve_or_decline_request(request, request_id):
                 details=f"{stock_request.request_type} Stock Request Approved by: {worker}. Batch: {batch_number}",
             )
 
-            
+
 
             if stock_request.request_type in ["Surplus", "Deficit"]:
                 stock_request.status = "Received"
@@ -1274,26 +1274,43 @@ def stock_received(request, request_id):
         if form.is_valid():
             surplus_items = []
             deficit_items = []
-            # Use form field if available, fallback to POST data
             date_received = form.cleaned_data.get("date_received", request.POST.get("date_received"))
 
             for transit_item in in_transit_items:
                 product = transit_item.product
-                batch = transit_item.batch  # Now available from InTransit
+                batch = transit_item.batch
                 branch = transit_item.destination
                 actual_quantity = form.cleaned_data.get(f'actual_quantity_{transit_item.id}', 0)
 
-                # Update branch stock with batch specificity
-                branch_stock, created = Stock.objects.get_or_create(
-                    product=product,
-                    batch=batch,
-                    branch=branch,
-                    defaults={"quantity": actual_quantity, "total_stock": actual_quantity}
-                )
-                if not created:
+                # Validate actual_quantity
+                if actual_quantity < 0:
+                    messages.error(request, _("Actual quantity cannot be negative."))
+                    return redirect("stock")
+
+                # Check for existing stock record
+                try:
+                    branch_stock = Stock.objects.get(
+                        product=product,
+                        batch=batch,
+                        branch=branch
+                    )
+                    # Update existing stock
                     branch_stock.quantity += actual_quantity
-                    # branch_stock.total_stock += actual_quantity  # Maintain total_stock consistency
+                    branch_stock.total_stock += actual_quantity  # Ensure total_stock consistency
                     branch_stock.save()
+                except Stock.DoesNotExist:
+                    # Create new stock record
+                    branch_stock = Stock.objects.create(
+                        product=product,
+                        batch=batch,
+                        branch=branch,
+                        quantity=actual_quantity,
+                        total_stock=actual_quantity
+                    )
+                except Stock.MultipleObjectsReturned:
+                    # Handle rare case of duplicate stock records
+                    messages.error(request, _("Multiple stock records found for the same product, batch, and branch. Please contact support."))
+                    return redirect("stock")
 
                 # Update InTransit record
                 transit_item.actual_quantity_received = actual_quantity
@@ -1306,19 +1323,19 @@ def stock_received(request, request_id):
                     surplus_quantity = actual_quantity - requested_quantity
                     transit_item.surplus = surplus_quantity
                     transit_item.deficit = 0
-                    surplus_items.append((product, batch, surplus_quantity))  # Include batch
+                    surplus_items.append((product, batch, surplus_quantity))
                 elif actual_quantity < requested_quantity:
                     deficit_quantity = requested_quantity - actual_quantity
                     transit_item.deficit = deficit_quantity
                     transit_item.surplus = 0
-                    deficit_items.append((product, batch, deficit_quantity))  # Include batch
+                    deficit_items.append((product, batch, deficit_quantity))
                 else:
                     transit_item.surplus = 0
                     transit_item.deficit = 0
 
                 transit_item.save()
 
-            # Helper function to create surplus/deficit requests with batch
+            # Helper function to create surplus/deficit requests (unchanged)
             def create_stock_request(request_type, items):
                 new_request = StockRequest.objects.create(
                     branch=stock_request.branch,
@@ -1331,7 +1348,7 @@ def stock_received(request, request_id):
                     StockRequestProduct.objects.create(
                         stock_request=new_request,
                         product=product,
-                        batch=batch,  # Include batch in new StockRequestProduct
+                        batch=batch,
                         quantity=quantity
                     )
                 new_request.save()

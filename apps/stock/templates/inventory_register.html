@@ -51,6 +51,11 @@
             min-width: 120px;
             color: #333;
         }
+        .title-container {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 4px;
+          }
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -110,9 +115,9 @@
             max-width: 120px;
         }
         th:nth-child(6), td:nth-child(6) {
-            width: 8%;
-            min-width: 80px;
-            max-width: 120px;
+            width: 5%;
+            min-width: 50px;
+            max-width: 100px;
         }
         th:nth-child(7), td:nth-child(7) {
             width: 8%;
@@ -173,6 +178,10 @@
             margin: 2px 0;
             font-size: 9px;
         }
+        .po-number {
+            text-align: center;
+            font-size: 9px;
+          }
         .footer {
             display: flex;
             justify-content: flex-end;
@@ -308,7 +317,12 @@
             <div class="date-time">
                 {{ current_date_time|date:"d M Y H:i" }}
             </div>
-            <h1>Inventory Register</h1>
+            <div class="column">
+                <h1 class="title-container">Inventory Register</h1>
+                <p class="po-number">
+                    {{branch.branch_name}}
+                </p>
+            </div>
             <div class="logo">
                 <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
             </div>

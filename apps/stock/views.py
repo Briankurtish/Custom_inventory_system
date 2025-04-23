@@ -1010,6 +1010,8 @@ def inventory_register(request):
     # Get branch_id from query parameters
     branch_id = request.GET.get('branch_id')
 
+    branch = Branch.objects.filter(id=branch_id).first() if branch_id else None
+
     # Fetch stock records, filtered by branch if branch_id is provided
     stocks = Stock.objects.all().select_related(
         'product', 'batch', 'product__brand_name', 'product__generic_name_dosage',
@@ -1076,6 +1078,7 @@ def inventory_register(request):
         'total_products': stocks.count(),
         'current_date_time': timezone.now(),
         'branch_id': branch_id,
+        'branch': branch,
         'branches': Branch.objects.all(),
     }
 
