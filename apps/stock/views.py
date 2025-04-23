@@ -25,6 +25,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import csv
 from datetime import datetime, timedelta
 from django.http import HttpResponse
+from django.utils import timezone
 
 
 
@@ -54,6 +55,7 @@ def ManageStockView(request):
     view_context = {
         "stocks": paginated_stocks,
         "offset": offset,
+        'branches': Branch.objects.all(),
     }
 
     # Initialize the template layout and merge the view context
@@ -1005,14 +1007,25 @@ def track_stocks(request):
 
 @login_required
 def inventory_register(request):
-    # Fetch all stock records
+    # Get branch_id from query parameters
+    branch_id = request.GET.get('branch_id')
+
+    # Fetch stock records, filtered by branch if branch_id is provided
     stocks = Stock.objects.all().select_related(
         'product', 'batch', 'product__brand_name', 'product__generic_name_dosage',
-        'product__dosage_form', 'product__pack_size'
-    ).order_by('product__product_code', 'batch__batch_number')
+        'product__dosage_form', 'product__pack_size', 'branch'
+    )
+    if branch_id:
+        try:
+            branch_id = int(branch_id)  # Ensure branch_id is an integer
+            stocks = stocks.filter(branch__id=branch_id)
+        except ValueError:
+            stocks = stocks.none()  # Return empty queryset for invalid branch_id
+
+    stocks = stocks.order_by('product__product_code', 'batch__batch_number')
 
     # Handle pagination
-    paginator = Paginator(stocks, 300)  # Show 50 records per page
+    paginator = Paginator(stocks, 300)
     page = request.GET.get('page')
     try:
         stocks_paginated = paginator.page(page)
@@ -1023,8 +1036,9 @@ def inventory_register(request):
 
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':
+        print(f"CSV Export: branch_id={branch_id}, stocks_count={stocks.count()}")  # Debug
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="inventory_register.csv"'
+        response['Content-Disposition'] = f'attachment; filename="inventory_register_branch_{branch_id or "all"}.csv"'
 
         writer = csv.writer(response)
         # Write headers
@@ -1034,7 +1048,7 @@ def inventory_register(request):
             'Return', 'Total Intake', 'Transferred', 'Sold', 'Total / Ending Stock de fin'
         ])
 
-        # Write data
+        # Write data (using filtered stocks)
         for idx, stock in enumerate(stocks, 1):
             writer.writerow([
                 idx,
@@ -1060,7 +1074,10 @@ def inventory_register(request):
     view_context = {
         'stocks': stocks_paginated,
         'total_products': stocks.count(),
+        'current_date_time': timezone.now(),
+        'branch_id': branch_id,
+        'branches': Branch.objects.all(),
     }
 
-    context = TemplateLayout.init(request, view_context)  # Assuming TemplateLayout is defined
+    context = TemplateLayout.init(request, view_context)
     return render(request, 'inventory_register.html', context)

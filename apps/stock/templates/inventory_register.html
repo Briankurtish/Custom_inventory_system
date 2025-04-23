@@ -16,13 +16,18 @@
             line-height: 1.4;
             margin: 0;
             padding: 0;
+            background-color: #f8f8f8;
         }
         .container {
-            width: 100%;
-            max-width: 1000px;
+            width: 1200px;
+            min-height: auto;
+            max-width: 95%;
             margin: 20px auto;
             padding: 20px;
             border: 1px solid #ccc;
+            background-color: #fff;
+            box-sizing: border-box;
+            aspect-ratio: 4/3;
         }
         .header {
             display: flex;
@@ -40,12 +45,20 @@
             max-width: 100px;
             height: auto;
         }
+        .header .date-time {
+            font-size: 10px;
+            text-align: left;
+            min-width: 120px;
+            color: #333;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
         table {
             width: 100%;
-            max-width: 960px;
             border-collapse: collapse;
             margin: 10px 0 0;
-            table-layout: fixed;
             border: 1px solid #ccc;
         }
         table th,
@@ -53,26 +66,98 @@
             border: 1px solid #ccc;
             text-align: left;
             vertical-align: top;
+            padding: 6px;
         }
         table th {
             background-color: #f8f8f8;
             font-weight: bold;
         }
-        /* Stock Details cells */
         th.stock-details, td.stock-details {
             font-size: 10px;
-            padding: 6px;
             white-space: normal;
         }
-        /* Quantity cells */
         th.quantity, td.quantity {
             font-size: 9px;
-            padding: 4px;
             text-align: center;
         }
         .stock-out th {
             background-color: #007bff;
             color: white;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 3%;
+            min-width: 35px;
+            max-width: 60px;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 8%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 15%;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        th:nth-child(4), td:nth-child(4) {
+            width: 15%;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        th:nth-child(5), td:nth-child(5) {
+            width: 8%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(6), td:nth-child(6) {
+            width: 8%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(7), td:nth-child(7) {
+            width: 8%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(8), td:nth-child(8) {
+            width: 8%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(9), td:nth-child(9) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(10), td:nth-child(10) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(11), td:nth-child(11) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(12), td:nth-child(12) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(13), td:nth-child(13) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(14), td:nth-child(14) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
+        }
+        th:nth-child(15), td:nth-child(15) {
+            width: 3%;
+            min-width: 45px;
+            max-width: 70px;
         }
         .totals {
             margin-top: 5px;
@@ -122,71 +207,167 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+        @media screen and (max-width: 1200px) {
+            .container {
+                width: 95%;
+                min-height: auto;
+                aspect-ratio: auto;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 9px;
+                padding: 4px;
+            }
+            th.quantity, td.quantity {
+                font-size: 8px;
+                padding: 3px;
+            }
+            th:nth-child(4), td:nth-child(4) {
+                min-width: 200px;
+                max-width: 300px;
+            }
+            .header .date-time {
+                font-size: 9px;
+                min-width: 100px;
+            }
+        }
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 8px;
+                padding: 3px;
+            }
+            th.quantity, td.quantity {
+                font-size: 7px;
+                padding: 2px;
+            }
+            th:nth-child(4), td:nth-child(4) {
+                min-width: 150px;
+            }
+            .header .date-time {
+                font-size: 8px;
+                min-width: 80px;
+            }
+        }
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        @media print {
+            .container {
+                width: 100%;
+                max-width: none;
+                min-height: auto;
+                margin: 0;
+                padding: 10px;
+                border: none;
+                aspect-ratio: auto;
+            }
+            .table-container {
+                overflow-x: visible;
+            }
+            table {
+                width: 100%;
+                font-size: 9px;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 8px;
+                padding: 4px;
+            }
+            th.quantity, td.quantity {
+                font-size: 7px;
+                padding: 3px;
+            }
+            .pagination, .btn {
+                display: none;
+            }
+            .header h1 {
+                font-size: 12px;
+            }
+            .header .date-time {
+                font-size: 8px;
+                min-width: 100px;
+            }
+            .footer {
+                font-size: 8px;
+            }
+            .totals-section p {
+                font-size: 8px;
+            }
+            th:nth-child(4), td:nth-child(4) {
+                max-width: 350px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div></div>
+            <div class="date-time">
+                {{ current_date_time|date:"d M Y H:i" }}
+            </div>
             <h1>Inventory Register</h1>
             <div class="logo">
                 <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
             </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th colspan="8">Stock Details</th>
-                    <th colspan="4">Stock In</th>
-                    <th colspan="3" class="stock-out">Stock Out (Consommations)</th>
-                </tr>
-                <tr>
-                    <th width="10px" class="stock-details">N°</th>
-                    <th width="80px" class="stock-details">Product Code</th>
-                    <th width="150px" class="stock-details">Brand Name</th>
-                    <th width="250px" class="stock-details">Generic Name & Dosage</th>
-                    <th width="80px" class="stock-details">Dosage Form</th>
-                    <th width="110px" class="stock-details">Pack Size</th>
-                    <th width="80px" class="stock-details">Batch #</th>
-                    <th width="80px" class="stock-details">Expiry Date</th>
-                    <th width="25px" class="quantity">Beginning Stock of Month</th>
-                    <th width="25px" class="quantity">Received</th>
-                    <th width="10px" class="quantity">Return</th>
-                    <th width="10px" class="quantity">Total Intake</th>
-                    <th width="10px" class="quantity">Transferred</th>
-                    <th width="10px" class="quantity">Sold</th>
-                    <th width="19px" class="quantity">Total / Ending Stock de fin</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stock in stocks %}
-                <tr>
-                    <td class="stock-details">{{ forloop.counter }}</td>
-                    <td class="stock-details">{{ stock.product.product_code|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.product.brand_name|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.product.generic_name_dosage|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.product.dosage_form|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.product.pack_size|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.batch.batch_number|default:"N/A" }}</td>
-                    <td class="stock-details">{{ stock.batch.expiry_date|date:"d M y"|default:"N/A" }}</td>
-                    <td class="quantity">{{ stock.begining_inventory|default:0 }}</td>
-                    <td class="quantity">{{ stock.quantity|default:0 }}</td>
-                    <td class="quantity">{{ stock.return_quantity|default:0 }}</td>
-                    <td class="quantity">{{ stock.total_inventory|default:0 }}</td>
-                    <td class="quantity">{{ stock.quantity_transferred|default:0 }}</td>
-                    <td class="quantity">{{ stock.total_sold|default:0 }}</td>
-                    <td class="quantity">{{ stock.total_stock|default:0 }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="17">No inventory records found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="8">Stock Details</th>
+                        <th colspan="4">Stock In</th>
+                        <th colspan="3" class="stock-out">Stock Out (Consommations)</th>
+                    </tr>
+                    <tr>
+                        <th class="stock-details">N°</th>
+                        <th class="stock-details">Product Code</th>
+                        <th class="stock-details">Brand Name</th>
+                        <th class="stock-details">Generic Name & Dosage</th>
+                        <th class="stock-details">Dosage Form</th>
+                        <th class="stock-details">Pack Size</th>
+                        <th class="stock-details">Batch #</th>
+                        <th class="stock-details">Expiry Date</th>
+                        <th class="quantity">Beginning Stock of Month</th>
+                        <th class="quantity">Received</th>
+                        <th class="quantity">Return</th>
+                        <th class="quantity">Total Intake</th>
+                        <th class="quantity">Transferred</th>
+                        <th class="quantity">Sold</th>
+                        <th class="quantity">Total / Ending Stock de fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stocks %}
+                    <tr>
+                        <td class="stock-details">{{ forloop.counter }}</td>
+                        <td class="stock-details">{{ stock.product.product_code|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.product.brand_name|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.product.generic_name_dosage|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.product.dosage_form|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.product.pack_size|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.batch.batch_number|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.batch.expiry_date|date:"d M y"|default:"N/A" }}</td>
+                        <td class="quantity">{{ stock.begining_inventory|default:0 }}</td>
+                        <td class="quantity">{{ stock.quantity|default:0 }}</td>
+                        <td class="quantity">{{ stock.return_quantity|default:0 }}</td>
+                        <td class="quantity">{{ stock.total_inventory|default:0 }}</td>
+                        <td class="quantity">{{ stock.quantity_transferred|default:0 }}</td>
+                        <td class="quantity">{{ stock.total_sold|default:0 }}</td>
+                        <td class="quantity">{{ stock.total_stock|default:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="15">No inventory records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Pagination Controls -->
         {% if stocks.has_other_pages %}
         <div class="pagination">
             {% if stocks.has_previous %}
@@ -223,12 +404,14 @@
             <p>Reg No: RC/YAO/2020/B/239</p>
         </div>
 
+        <br><br>
         <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
             <i class="fas fa-print"></i> Print
         </a>
-        <a href="?export=csv" class="btn btn-sm btn-success float-right mr-1 d-print-none">
-            <i class="fas fa-download"></i> Export to CSV
-        </a>
+        <a href="{% url 'inventory_register' %}?export=csv{% if branch_id %}&branch_id={{ branch_id }}{% endif %}" class="btn btn-sm btn-success float-right mr-1 d-print-none">
+          <i class="fas fa-download"></i> Export to CSV
+      </a>
+        <br>
         <br>
     </div>
 </body>

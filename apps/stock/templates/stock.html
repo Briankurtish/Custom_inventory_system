@@ -42,12 +42,43 @@
         <span class="fa-solid fa-pen-to-square me-2"></span>{% trans "Update Stock" %}
       </button>
 
-      <button type="button" class="btn btn-primary mb-5" onclick="window.location.href='{% url 'inventory_register' %}'">
+      <button type="button" class="btn btn-primary mb-5" data-toggle="modal" data-target="#branchSelectModal">
         <span class="fa-solid fa-download me-2"></span>{% trans "Download Report" %}
       </button>
+
+<!-- Branch Selection Modal -->
+<div class="modal fade" id="branchSelectModal" tabindex="-1" role="dialog" aria-labelledby="branchSelectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="branchSelectModalLabel">{% trans "Select Branch" %}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="branchSelectForm">
+          <div class="form-group">
+            <label for="branchSelect">{% trans "Branch" %}</label>
+            <select class="form-control" id="branchSelect" name="branch_id" required>
+              <option value="" disabled selected>{% trans "Select a branch" %}</option>
+              {% for branch in branches %}
+                <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">{% trans "Open Report" %}</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Cancel" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   {% endif %}
   </h4>
+
+
 
 
 
@@ -185,6 +216,22 @@
 {% endblock %}
 
 {% block page_js %}
+<!-- JavaScript for Branch Select Modal -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#branchSelectForm').on('submit', function(event) {
+      event.preventDefault();
+      const branchId = $('#branchSelect').val();
+      if (branchId) {
+        const url = "{% url 'inventory_register' %}?branch_id=" + encodeURIComponent(branchId);
+        window.open(url, '_blank');
+        $('#branchSelectModal').modal('hide');
+      }
+    });
+  });
+</script>
 
   <script>
     $(document).ready(function () {
