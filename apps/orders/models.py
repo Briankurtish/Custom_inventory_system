@@ -289,6 +289,7 @@ class PurchaseOrderDocument(models.Model):
         ('Picking List', 'Picking List'),
         ('Purchase Order', 'Purchase Order'),
         ('Invoice', 'Invoice'),
+        ('Receipt', 'Receipt'),
     ])
     document = models.FileField(upload_to='purchase_order_documents/', null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)

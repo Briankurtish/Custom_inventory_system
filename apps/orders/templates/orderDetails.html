@@ -219,7 +219,7 @@
                                                           </tr>
                                                       </thead>
                                                       <tbody>
-                                                          {% for item in order_items %}
+                                                          {% for item in items %}
                                                           <tr>
                                                               <td>{{ item.stock.product.product_code }}</td>
                                                               <td>{{ item.stock.product.generic_name_dosage }}</td>
@@ -278,7 +278,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for item in order_items %}
+                                            {% for item in items %}
                                             <tr>
                                                 <td>{{ item.stock.product.product_code }}</td>
                                                 <td>{{ item.stock.product.generic_name_dosage }}</td>
@@ -391,7 +391,7 @@
             {% for privilege in role_privileges %}
                 {% if privilege.name == 'Approve or decline Orders' %}
                     {% if is_return_purchase_order %}
-                        
+
                     {% else %}
 
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
@@ -408,7 +408,7 @@
 
         {% if user.is_superuser %}
             {% if is_return_purchase_order %}
-                
+
             {% else %}
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
                     {% trans "Approve" %}
