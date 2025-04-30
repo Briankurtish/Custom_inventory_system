@@ -157,7 +157,7 @@ class PurchaseOrder(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         related_name='sales_rep_orders',
-        limit_choices_to={'role': 'Sales Rep'}
+
     )
     payment_method = models.CharField(
         max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')]
@@ -216,36 +216,36 @@ class PurchaseOrder(models.Model):
             # Use the date from created_at or current date
             order_date = self.created_at if self.created_at else timezone.now()
             date_part = order_date.strftime("%Y%m%d")  # Keep date in ID for reference
-            
+
             # Extract REG from branch ID (e.g., "REG" from "REG-001")
             branch_id_parts = self.branch.branch_id.split("-")
             reg_part = branch_id_parts[0] if branch_id_parts else "UNKNOWN"
-            
+
             # Base prefix without sequence (PO-REG-YYYYMMDD-)
             base_prefix = f"PO-{reg_part}-{date_part}-"
-            
+
             # Find the highest existing sequence number ACROSS ALL DATES for this branch
             existing_ids = PurchaseOrder.objects.filter(
                 purchase_order_id__startswith=f"PO-{reg_part}-"
             ).values_list('purchase_order_id', flat=True)
-            
+
             # Extract all sequence numbers
             sequences = []
             for po_id in existing_ids:
                 try:
                     # Extract last part (sequence number)
-                    seq_part = po_id.split("-")[-1]  
+                    seq_part = po_id.split("-")[-1]
                     if seq_part.isdigit():
                         sequences.append(int(seq_part))
                 except (IndexError, ValueError):
                     continue
-            
+
             # Determine next sequence number
             sequence = max(sequences) + 1 if sequences else 1
-            
+
             # Format final ID (PO-REG-YYYYMMDD-XXXXX)
             self.purchase_order_id = f"{base_prefix}{sequence:05d}"
-        
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -415,7 +415,7 @@ class ReturnPurchaseOrderDocument(models.Model):
         ('Invoice', 'Invoice'),
         ('Return Purchase Order', 'Return Purchase Order'),
         ('Return Invoice', 'Return Invoice'),
-        
+
     ])
     document = models.FileField(upload_to='return_purchase_order_documents/', null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -857,7 +857,7 @@ class ReturnInvoice(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.return_invoice_id:
-           self.return_invoice_id = f"RET-{self.original_invoice.invoice_id}" 
+           self.return_invoice_id = f"RET-{self.original_invoice.invoice_id}"
 
         # Calculate total including taxes
         self.total_with_taxes = self.calculate_total_with_taxes()
@@ -905,7 +905,7 @@ class ReturnInvoiceOrderItem(models.Model):
 class ReturnItemTemp(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     invoice_order_item = models.ForeignKey(InvoiceOrderItem, on_delete=models.CASCADE)
-    
+
     # Change from DecimalField to PositiveIntegerField
     quantity_returned = models.PositiveIntegerField(default=0)
 
