@@ -67,7 +67,7 @@ class PurchaseOrderForm(forms.ModelForm):
         if user_is_superuser:
             # Superuser: Access to all branches, sales reps, and customers
             self.fields['branch'].queryset = Branch.objects.all()
-            self.fields['sales_rep'].queryset = Worker.objects.filter(role="Sales Rep").order_by("user__first_name")
+            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
             self.fields['customer'].queryset = Customer.objects.all()
         elif user_branch:
             # Regular user: Restrict to their branch
@@ -130,7 +130,7 @@ class PurchaseOrderItemForm(forms.ModelForm):
 
         self.fields['stock'].widget.attrs.update({'class': 'form-control'})
         self.fields['stock'].label_from_instance = (
-            lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
+            lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.brand_name.brand_name if obj.product.brand_name else ''} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
         )
 
 
