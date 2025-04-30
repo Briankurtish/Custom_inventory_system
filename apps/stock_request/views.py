@@ -677,9 +677,6 @@ def ManageRequestsView(request):
     # Filter stock requests based on the user's role and privileges
     if user_role == "Marketing Director":
         stock_requests = stock_requests.filter(requested_by=worker_profile)
-    
-    if user_role == "Central Stock Manager":
-        stock_requests = stock_requests
 
     elif user_role in ["Secretary", "Stock Manager"]:
         stock_requests = stock_requests.filter(requested_by__branch=worker_profile.branch)
