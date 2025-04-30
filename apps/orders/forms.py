@@ -73,7 +73,7 @@ class PurchaseOrderForm(forms.ModelForm):
             # Regular user: Restrict to their branch
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
             self.fields['branch'].disabled = False  # Make the field immutable
-            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch).order_by("user__first_name")
+            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
             self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
 
         # Apply consistent styling to all fields
