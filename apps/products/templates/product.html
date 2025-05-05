@@ -110,6 +110,18 @@
       <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
     </button>
 
+    <a href="{% url 'product_list_report' %}" target="_blank" class="btn btn-outline-primary">
+      <span class="fa-solid fa-download me-2"></span>{% trans "Product List Report" %}
+  </a>
+
+  <a href="{% url 'price_list_report' %}" target="_blank" class="btn btn-outline-primary">
+    <span class="fa-solid fa-download me-2"></span>{% trans "Product Price List Report" %}
+</a>
+
+    {% comment %} <button type="button" class="btn btn-primary mb-5" onclick="window.location.href='{% url 'product_list_report' %}'">
+      <span class="fa-solid fa-download me-2"></span>{% trans "Product List Report" %}
+    </button> {% endcomment %}
+
   </div>
 
   <hr class="my-8">

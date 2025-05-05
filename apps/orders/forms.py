@@ -344,7 +344,10 @@ class ReturnOrderItemForm(forms.Form):
         ('Incorrect item', 'Incorrect item'),
         ('other', 'Other')
     ]
-
+    return_date = forms.DateTimeField(
+        label="Return Date",
+        widget=forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
+    )
     invoice_order_item = forms.ModelChoiceField(
         queryset=InvoiceOrderItem.objects.none(),
         label="Item to Return",

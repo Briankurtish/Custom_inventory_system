@@ -1,0 +1,370 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .container {
+            width: 1200px;
+            min-height: auto;
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-sizing: border-box;
+            aspect-ratio: 4/3;
+        }
+        .po-number {
+            text-align: center;
+            font-size: 9px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .header h1 {
+            font-size: 14px;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .header .logo img {
+            max-width: 100px;
+            height: auto;
+        }
+        .header .date-time {
+            font-size: 10px;
+            text-align: left;
+            min-width: 120px;
+            color: #333;
+        }
+        .title-container {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .filter-form-container {
+            margin-bottom: 20px;
+        }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 150px;
+            height: 28px;
+            padding: 5px;
+            font-size: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+        .btn {
+            height: 28px;
+            padding: 0 10px;
+            font-size: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 0;
+            border: 1px solid #ccc;
+        }
+        table th,
+        table td {
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+            padding: 6px;
+        }
+        table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        th.stock-details, td.stock-details {
+            font-size: 10px;
+            white-space: normal;
+        }
+        th.quantity, td.quantity {
+            font-size: 9px;
+            text-align: center;
+        }
+        tr.totals-row td {
+            font-weight: bold;
+        }
+        th:nth-child(1), td:nth-child(1) { width: 10%; min-width: 120px; max-width: 180px; }
+        th:nth-child(2), td:nth-child(2) { width: 15%; min-width: 150px; max-width: 200px; }
+        th:nth-child(3), td:nth-child(3) { width: 15%; min-width: 150px; max-width: 200px; }
+        th:nth-child(4), td:nth-child(4) { width: 8%; min-width: 80px; max-width: 120px; }
+        th:nth-child(5), td:nth-child(5) { width: 8%; min-width: 80px; max-width: 100px; }
+        th:nth-child(6), td:nth-child(6) { width: 20%; min-width: 200px; max-width: 250px; }
+        th:nth-child(7), td:nth-child(7) { width: 8%; min-width: 80px; max-width: 120px; }
+        th:nth-child(8), td:nth-child(8) { width: 15%; min-width: 150px; max-width: 200px; }
+        th:nth-child(9), td:nth-child(9) { width: 6%; min-width: 60px; max-width: 100px; }
+        th:nth-child(10), td:nth-child(10) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(11), td:nth-child(11) { width: 6%; min-width: 60px; max-width: 100px; }
+        th:nth-child(12), td:nth-child(12) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(13), td:nth-child(13) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(14), td:nth-child(14) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(15), td:nth-child(15) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(16), td:nth-child(16) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(17), td:nth-child(17) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(18), td:nth-child(18) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(19), td:nth-child(19) { width: 6%; min-width: 60px; max-width: 100px; }
+        .footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            font-size: 9px;
+        }
+        .footer p {
+            margin: 0 10px;
+        }
+        @media screen and (max-width: 1200px) {
+            .container { width: 95%; min-height: auto; aspect-ratio: auto; }
+            th.stock-details, td.stock-details { font-size: 9px; padding: 4px; }
+            th.quantity, td.quantity { font-size: 8px; padding: 3px; }
+            .header .date-time { font-size: 9px; min-width: 100px; }
+            .form-group select, .form-group input, .btn { height: 26px; font-size: 9px; }
+        }
+        @media screen and (max-width: 768px) {
+            .container { width: 98%; padding: 10px; }
+            th.stock-details, td.stock-details { font-size: 8px; padding: 3px; }
+            th.quantity, td.quantity { font-size: 7px; padding: 2px; }
+            .header .date-time { font-size: 8px; min-width: 80px; }
+            .form-group select, .form-group input, .btn { height: 24px; font-size: 8px; width: 120px; }
+            .form-actions { flex-direction: column; gap: 5px; }
+        }
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        @media print {
+            .container { width: 100%; max-width: none; min-height: auto; margin: 0; padding: 10px; border: none; aspect-ratio: auto; }
+            .table-container { overflow-x: visible; }
+            table { width: 100%; font-size: 9px; }
+            th.stock-details, td.stock-details { font-size: 8px; padding: 4px; }
+            th.quantity, td.quantity { font-size: 7px; padding: 3px; }
+            .btn { display: none; }
+            .header h1 { font-size: 12px; }
+            .header .date-time { font-size: 8px; min-width: 100px; }
+            .footer { font-size: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="date-time">
+                {{ current_date_time|date:"d M Y H:i" }}
+            </div>
+            <div class="column">
+                <h1 class="title-container">Sales Report</h1>
+                <p class="po-number">
+                    {{ branch.branch_name|default:"All Branches" }}
+                </p>
+            </div>
+            <div class="logo">
+                <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
+            </div>
+        </div>
+
+        <div class="filter-form-container d-print-none">
+            <form method="GET" action="{% url 'sales_report' %}" class="filter-form">
+                <div class="form-group">
+                    <label for="branch_id">Branch:</label>
+                    <select name="branch_id" id="branch_id">
+                        <option value="">All Branches</option>
+                        {% for branch in branches %}
+                            <option value="{{ branch.id }}" {% if branch_id == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sales_rep_id">Sales Rep:</label>
+                    <select name="sales_rep_id" id="sales_rep_id">
+                        <option value="">All Sales Reps</option>
+                        {% for sales_rep in sales_reps %}
+                            <option value="{{ sales_rep.id }}" {% if sales_rep_id == sales_rep.id|stringformat:"s" %}selected{% endif %}>
+                                {% if sales_rep.user %}
+                                    {{ sales_rep.user.first_name }} {{ sales_rep.user.last_name }}
+                                {% else %}
+                                    Unknown (ID: {{ sales_rep.id }})
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+                </div>
+                <div class="form-group">
+                    <label for="generic_name">Generic Name:</label>
+                    <input type="text" name="generic_name" id="generic_name" value="{{ generic_name }}">
+                </div>
+                <div class="form-group">
+                    <label for="brand_name">Brand Name:</label>
+                    <input type="text" name="brand_name" id="brand_name" value="{{ brand_name }}">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'sales_report' %}?export=csv{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="stock-details">Date of Sale</th>
+                        <th class="stock-details">Order Number</th>
+                        <th class="stock-details">Invoice Number</th>
+                        <th class="stock-details">Sales Rep</th>
+                        <th class="stock-details">Branch</th>
+                        <th class="stock-details">Customer</th>
+                        <th class="stock-details">Brand Name</th>
+                        <th class="stock-details">Generic Name</th>
+                        <th class="stock-details">Dosage Form</th>
+                        <th class="stock-details">Pack Size</th>
+                        <th class="quantity">Quantity</th>
+                        <th class="stock-details">Unit Price</th>
+                        <th class="stock-details">IR Tax (%)</th>
+                        <th class="stock-details">TVA (%)</th>
+                        <th class="stock-details">Precompte (%)</th>
+                        <th class="stock-details">IR Tax</th>
+                        <th class="stock-details">TVA</th>
+                        <th class="stock-details">Precompte</th>
+                        <th class="stock-details">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_items %}
+                    <tr>
+                        <td class="stock-details">{{ item.date|date:"d M Y H:i"|default:"N/A" }}</td>
+                        <td class="stock-details">{{ item.order_number|default:"N/A" }}</td>
+                        <td class="stock-details">{{ item.invoice_number }}</td>
+                        <td class="stock-details">{{ item.sales_rep }}</td>
+                        <td class="stock-details">{{ item.branch }}</td>
+                        <td class="stock-details">{{ item.customer }}</td>
+                        <td class="stock-details">{{ item.brand_name }}</td>
+                        <td class="stock-details">{{ item.generic_name }}</td>
+                        <td class="stock-details">{{ item.dosage_form }}</td>
+                        <td class="stock-details">{{ item.pack_size }}</td>
+                        <td class="quantity">{{ item.quantity|intcomma }}</td>
+                        <td class="stock-details">{{ item.unit_price|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.tax_rate|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.tva|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.precompte|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.tax_amount_rate|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.tax_amount_tva|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.tax_amount_precompte|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.total|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="19">No sales or return orders found.</td>
+                    </tr>
+                    {% endfor %}
+                    {% if report_items %}
+                    <tr class="totals-row">
+                        <td class="stock-details">Total</td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="quantity">{{ totals.quantity|intcomma }}</td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details"></td>
+                        <td class="stock-details">{{ totals.tax_amount_rate|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ totals.tax_amount_tva|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ totals.tax_amount_precompte|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ totals.total|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>NIU: M022014416253M</p>
+            <p>-</p>
+            <p>Reg No: RC/YAO/2020/B/239</p>
+        </div>
+
+        <br><br>
+        <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+            <i class="fas fa-print"></i> Print
+        </a>
+        <br><br>
+    </div>
+</body>
+</html>

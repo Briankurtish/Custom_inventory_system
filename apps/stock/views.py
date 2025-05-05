@@ -1005,25 +1005,45 @@ def track_stocks(request):
 
 
 
+
 @login_required
 def inventory_register(request):
-    # Get branch_id from query parameters
+    # Get query parameters
     branch_id = request.GET.get('branch_id')
+    brand_name = request.GET.get('brand_name', '').strip()
+    generic_name_dosage = request.GET.get('generic_name_dosage', '').strip()
+    dosage_form = request.GET.get('dosage_form', '').strip()
 
+    # Get branch
     branch = Branch.objects.filter(id=branch_id).first() if branch_id else None
 
-    # Fetch stock records, filtered by branch if branch_id is provided
+    # Fetch stock records, filtered by branch and other parameters if provided
     stocks = Stock.objects.all().select_related(
         'product', 'batch', 'product__brand_name', 'product__generic_name_dosage',
         'product__dosage_form', 'product__pack_size', 'branch'
     )
+
+    # Apply filters
     if branch_id:
         try:
-            branch_id = int(branch_id)  # Ensure branch_id is an integer
+            branch_id = int(branch_id)
             stocks = stocks.filter(branch__id=branch_id)
         except ValueError:
-            stocks = stocks.none()  # Return empty queryset for invalid branch_id
+            stocks = stocks.none()
 
+    # Filter by brand name (traverse to GenericName.brand_name)
+    if brand_name:
+        stocks = stocks.filter(product__brand_name__brand_name__icontains=brand_name)
+
+    # Filter by generic name and dosage (traverse to GenericName.generic_name)
+    if generic_name_dosage:
+        stocks = stocks.filter(product__generic_name_dosage__generic_name__icontains=generic_name_dosage)
+
+    # Filter by dosage form (traverse to DosageForm.name, assuming DosageForm has a 'name' field)
+    if dosage_form:
+        stocks = stocks.filter(product__dosage_form__name__icontains=dosage_form)
+
+    # Order the results
     stocks = stocks.order_by('product__product_code', 'batch__batch_number')
 
     # Handle pagination
@@ -1038,26 +1058,34 @@ def inventory_register(request):
 
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':
-        print(f"CSV Export: branch_id={branch_id}, stocks_count={stocks.count()}")  # Debug
+        print(f"CSV Export: branch_id={branch_id}, brand_name={brand_name}, generic_name_dosage={generic_name_dosage}, dosage_form={dosage_form}, stocks_count={stocks.count()}")
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="inventory_register_branch_{branch_id or "all"}.csv"'
+        # Use branch name instead of branch_id in the filename
+        branch_part = branch.branch_name.replace(' ', '_') if branch else 'all'
+        filename = f"inventory_register_branch_{branch_part}"
+        if brand_name:
+            filename += f"_brand_{brand_name.replace(' ', '_')}"
+        if generic_name_dosage:
+            filename += f"_generic_{generic_name_dosage.replace(' ', '_')}"
+        if dosage_form:
+            filename += f"_dosage_{dosage_form.replace(' ', '_')}"
+        filename += ".csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
-        # Write headers
         writer.writerow([
             'N°', 'Product Code', 'Brand Name', 'Generic Name & Dosage', 'Dosage Form',
             'Pack Size', 'Batch #', 'Expiry Date', 'Beginning Stock of Month', 'Received',
             'Return', 'Total Intake', 'Transferred', 'Sold', 'Total / Ending Stock de fin'
         ])
 
-        # Write data (using filtered stocks)
         for idx, stock in enumerate(stocks, 1):
             writer.writerow([
                 idx,
                 stock.product.product_code or 'N/A',
-                stock.product.brand_name or 'N/A',
-                stock.product.generic_name_dosage or 'N/A',
-                stock.product.dosage_form or 'N/A',
+                stock.product.brand_name.brand_name if stock.product.brand_name else 'N/A',
+                stock.product.generic_name_dosage.generic_name if stock.product.generic_name_dosage else 'N/A',
+                stock.product.dosage_form.name if stock.product.dosage_form else 'N/A',
                 stock.product.pack_size or 'N/A',
                 stock.batch.batch_number if stock.batch else 'N/A',
                 stock.batch.expiry_date.strftime('%d %b %y') if stock.batch and stock.batch.expiry_date else 'N/A',
@@ -1080,6 +1108,9 @@ def inventory_register(request):
         'branch_id': branch_id,
         'branch': branch,
         'branches': Branch.objects.all(),
+        'brand_name': brand_name,
+        'generic_name_dosage': generic_name_dosage,
+        'dosage_form': dosage_form,
     }
 
     context = TemplateLayout.init(request, view_context)

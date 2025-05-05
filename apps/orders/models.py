@@ -360,7 +360,7 @@ class ReturnPurchaseOrder(models.Model):
         max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')], null=True, blank=True
     )
     payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODES, null=True)
-    created_at = models.DateTimeField(auto_now_add=True,null=True)
+    created_at = models.DateTimeField(null=True)
     created_by = models.ForeignKey(
         Worker, on_delete=models.SET_NULL, null=True, blank=True,
         help_text="Worker who created this return order", related_name='return_created_by_orders'
@@ -793,7 +793,7 @@ class ReturnInvoice(models.Model):
     payment_method = models.CharField(
         max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')], null=True
     )
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    created_at = models.DateTimeField(null=True)
     created_by = models.ForeignKey(
         Worker, on_delete=models.SET_NULL, null=True, blank=True,
         help_text="Worker who created this return invoice",

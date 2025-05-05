@@ -52,4 +52,7 @@ urlpatterns = [
     path('get-brand-and-batches/<int:generic_name_id>/', get_brand_and_batches, name='get_brand_and_batches'),
 
     path("product/<int:product_id>/history/", product_transaction_history, name="product_transaction_history"),
+
+    path('reports/product-list-report/', product_list_report, name='product_list_report'),
+    path('reports/price-list-report/', product_price_list_report, name='price_list_report'),
 ]

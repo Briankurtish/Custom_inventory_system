@@ -55,7 +55,7 @@
             background-color: #f0f0f0;
             padding: 10px 20px;
             border-radius: 4px;
-          }
+        }
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -181,7 +181,7 @@
         .po-number {
             text-align: center;
             font-size: 9px;
-          }
+        }
         .footer {
             display: flex;
             justify-content: flex-end;
@@ -216,6 +216,48 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+        /* Filter Form Styles */
+        .filter-form-container {
+            max-width: 95%;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .filter-form .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 0;
+        }
+        .filter-form .form-group label {
+            font-size: 11px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .filter-form .form-group select,
+        .filter-form .form-group input {
+            width: 100%;
+            padding: 5px;
+            font-size: 11px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .filter-form .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .filter-form .form-actions button,
+        .filter-form .form-actions a {
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
         @media screen and (max-width: 1200px) {
             .container {
                 width: 95%;
@@ -238,6 +280,9 @@
                 font-size: 9px;
                 min-width: 100px;
             }
+            .filter-form .form-group {
+                min-width: 180px;
+            }
         }
         @media screen and (max-width: 768px) {
             .container {
@@ -258,6 +303,13 @@
             .header .date-time {
                 font-size: 8px;
                 min-width: 80px;
+            }
+            .filter-form .form-group {
+                min-width: 100%;
+            }
+            .filter-form .form-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
         @page {
@@ -312,6 +364,39 @@
     </style>
 </head>
 <body>
+    <!-- Filter Form (Moved Outside Container) -->
+    <div class="filter-form-container d-print-none">
+        <form method="GET" action="{% url 'inventory_register' %}" class="filter-form">
+            <div class="form-group">
+                <label for="branch_id">Branch:</label>
+                <select name="branch_id" id="branch_id">
+                    <option value="">All Branches</option>
+                    {% for b in branches %}
+                        <option value="{{ b.id }}" {% if branch_id == b.id|stringformat:"s" %}selected{% endif %}>{{ b.branch_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="brand_name">Brand Name:</label>
+                <input type="text" name="brand_name" id="brand_name" value="{{ brand_name|default_if_none:'' }}" placeholder="e.g., Paracetamol">
+            </div>
+            <div class="form-group">
+                <label for="generic_name_dosage">Generic Name & Dosage:</label>
+                <input type="text" name="generic_name_dosage" id="generic_name_dosage" value="{{ generic_name_dosage|default_if_none:'' }}" placeholder="e.g., 500mg">
+            </div>
+            <div class="form-group">
+                <label for="dosage_form">Dosage Form:</label>
+                <input type="text" name="dosage_form" id="dosage_form" value="{{ dosage_form|default_if_none:'' }}" placeholder="e.g., Tablet">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="?branch_id={{ branch_id }}&brand_name={{ brand_name }}&generic_name_dosage={{ generic_name_dosage }}&dosage_form={{ dosage_form }}&export=csv" class="btn btn-success">
+                    <i class="fas fa-download"></i> Export to CSV
+                </a>
+            </div>
+        </form>
+    </div>
+
     <div class="container">
         <div class="header">
             <div class="date-time">
@@ -320,7 +405,7 @@
             <div class="column">
                 <h1 class="title-container">Inventory Register</h1>
                 <p class="po-number">
-                    {{branch.branch_name}}
+                    {{ branch.branch_name|default:"All Branches" }}
                 </p>
             </div>
             <div class="logo">
@@ -359,7 +444,7 @@
                     <tr>
                         <td class="stock-details">{{ forloop.counter }}</td>
                         <td class="stock-details">{{ stock.product.product_code|default:"N/A" }}</td>
-                        <td class="stock-details">{{ stock.product.brand_name|default:"N/A" }}</td>
+                        <td class="stock-details">{{ stock.product.brand_name.brand_name|default:"N/A" }}</td>
                         <td class="stock-details">{{ stock.product.generic_name_dosage|default:"N/A" }}</td>
                         <td class="stock-details">{{ stock.product.dosage_form|default:"N/A" }}</td>
                         <td class="stock-details">{{ stock.product.pack_size|default:"N/A" }}</td>
@@ -385,7 +470,7 @@
         {% if stocks.has_other_pages %}
         <div class="pagination">
             {% if stocks.has_previous %}
-                <a href="?page={{ stocks.previous_page_number }}">Previous</a>
+                <a href="?page={{ stocks.previous_page_number }}&branch_id={{ branch_id }}&brand_name={{ brand_name }}&generic_name_dosage={{ generic_name_dosage }}&dosage_form={{ dosage_form }}">Previous</a>
             {% else %}
                 <a class="disabled">Previous</a>
             {% endif %}
@@ -394,12 +479,12 @@
                 {% if stocks.number == num %}
                     <a class="active">{{ num }}</a>
                 {% else %}
-                    <a href="?page={{ num }}">{{ num }}</a>
+                    <a href="?page={{ num }}&branch_id={{ branch_id }}&brand_name={{ brand_name }}&generic_name_dosage={{ generic_name_dosage }}&dosage_form={{ dosage_form }}">{{ num }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if stocks.has_next %}
-                <a href="?page={{ stocks.next_page_number }}">Next</a>
+                <a href="?page={{ stocks.next_page_number }}&branch_id={{ branch_id }}&brand_name={{ brand_name }}&generic_name_dosage={{ generic_name_dosage }}&dosage_form={{ dosage_form }}">Next</a>
             {% else %}
                 <a class="disabled">Next</a>
             {% endif %}
@@ -422,9 +507,6 @@
         <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
             <i class="fas fa-print"></i> Print
         </a>
-        <a href="{% url 'inventory_register' %}?export=csv{% if branch_id %}&branch_id={{ branch_id }}{% endif %}" class="btn btn-sm btn-success float-right mr-1 d-print-none">
-          <i class="fas fa-download"></i> Export to CSV
-      </a>
         <br>
         <br>
     </div>

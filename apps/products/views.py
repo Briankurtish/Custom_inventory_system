@@ -12,6 +12,9 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
+from django.http import HttpResponse
+from django.utils import timezone
+import csv
 
 
 
@@ -672,3 +675,92 @@ def get_dosage_types(request):
     dosage_types = DosageType.objects.filter(dosage_form_id=dosage_form_id)
     data = [{"id": dt.id, "name": dt.name} for dt in dosage_types]
     return JsonResponse(data, safe=False)
+
+
+
+@login_required
+def product_list_report(request):
+    # Fetch all products with related fields
+    products = Product.objects.all().select_related(
+        'brand_name', 'generic_name_dosage', 'dosage_form', 'pack_size', 'batch'
+    )
+
+    # Handle CSV export
+    if 'export' in request.GET and request.GET['export'] == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        filename = f"product_list_report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        # Write headers
+        writer.writerow([
+            'Product Code', 'Brand Name', 'Generic Name', 'Dosage Form',
+            'Pack Size', 'Batch Number', 'Expiry Date'
+        ])
+
+        # Write data
+        for product in products:
+            writer.writerow([
+                product.product_code or 'N/A',
+                product.brand_name.brand_name if product.brand_name else 'N/A',
+                product.generic_name_dosage.generic_name if product.generic_name_dosage else 'N/A',
+                product.dosage_form.name if product.dosage_form else 'N/A',
+                product.pack_size if product.pack_size else 'N/A',  # Assuming PackSize has a 'size' field
+                product.batch.batch_number if product.batch else 'N/A',
+                product.batch.expiry_date.strftime('%d %b %Y') if product.batch and product.batch.expiry_date else 'N/A'
+            ])
+
+        return response
+
+    # Prepare context for HTML rendering
+    context = {
+        'products': products,
+        'current_date_time': timezone.now(),
+    }
+
+    return render(request, 'product_list_report.html', context)
+
+
+
+@login_required
+def product_price_list_report(request):
+    # Fetch all products with related fields
+    products = Product.objects.all().select_related(
+        'brand_name', 'generic_name_dosage', 'dosage_form', 'pack_size', 'batch'
+    )
+
+    # Handle CSV export
+    if 'export' in request.GET and request.GET['export'] == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        filename = f"product_price_list_report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        # Write headers
+        writer.writerow([
+            'Product Code', 'Brand Name', 'Generic Name', 'Dosage Form',
+            'Pack Size', 'Batch Number', 'Expiry Date', 'Unit Price'
+        ])
+
+        # Write data
+        for product in products:
+            writer.writerow([
+                product.product_code or 'N/A',
+                product.brand_name.brand_name if product.brand_name else 'N/A',
+                product.generic_name_dosage.generic_name if product.generic_name_dosage else 'N/A',
+                product.dosage_form.name if product.dosage_form else 'N/A',
+                product.pack_size if product.pack_size else 'N/A',  # Assuming PackSize has a 'size' field
+                product.batch.batch_number if product.batch else 'N/A',
+                product.batch.expiry_date.strftime('%d %b %Y') if product.batch and product.batch.expiry_date else 'N/A',
+                product.unit_price if product.unit_price else 'N/A'
+            ])
+
+        return response
+
+    # Prepare context for HTML rendering
+    context = {
+        'products': products,
+        'current_date_time': timezone.now(),
+    }
+
+    return render(request, 'product_price_list_report.html', context)

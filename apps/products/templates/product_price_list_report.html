@@ -1,0 +1,269 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List Report</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .container {
+            width: 1200px;
+            min-height: auto;
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-sizing: border-box;
+            aspect-ratio: 4/3;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .header h1 {
+            font-size: 14px;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .header .logo img {
+            max-width: 100px;
+            height: auto;
+        }
+        .header .date-time {
+            font-size: 10px;
+            text-align: left;
+            min-width: 120px;
+            color: #333;
+        }
+        .title-container {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 0;
+            border: 1px solid #ccc;
+        }
+        table th,
+        table td {
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+            padding: 6px;
+        }
+        table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        th.stock-details, td.stock-details {
+            font-size: 10px;
+            white-space: normal;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 8%;
+            min-width: 50px;
+            max-width: 90px;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 10%;
+            min-width: 60px;
+            max-width: 100px;
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 20%;
+            min-width: 140px;
+            max-width: 220px;
+        }
+        th:nth-child(4), td:nth-child(4) {
+            width: 8%;
+            min-width: 60px;
+            max-width: 80px;
+        }
+        th:nth-child(5), td:nth-child(5) {
+            width: 5%;
+            min-width: 40px;
+            max-width: 80px;
+        }
+        th:nth-child(6), td:nth-child(6) {
+            width: 10%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(7), td:nth-child(7) {
+            width: 10%;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        th:nth-child(8), td:nth-child(8) {
+          width: 10%;
+          min-width: 80px;
+          max-width: 120px;
+      }
+        .footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            font-size: 9px;
+        }
+        .footer p {
+            margin: 0 10px;
+        }
+        @media screen and (max-width: 1200px) {
+            .container {
+                width: 95%;
+                min-height: auto;
+                aspect-ratio: auto;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 9px;
+                padding: 4px;
+            }
+            .header .date-time {
+                font-size: 9px;
+                min-width: 100px;
+            }
+        }
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 8px;
+                padding: 3px;
+            }
+            .header .date-time {
+                font-size: 8px;
+                min-width: 80px;
+            }
+        }
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        @media print {
+            .container {
+                width: 100%;
+                max-width: none;
+                min-height: auto;
+                margin: 0;
+                padding: 10px;
+                border: none;
+                aspect-ratio: auto;
+            }
+            .table-container {
+                overflow-x: visible;
+            }
+            table {
+                width: 100%;
+                font-size: 9px;
+            }
+            th.stock-details, td.stock-details {
+                font-size: 8px;
+                padding: 4px;
+            }
+            .btn {
+                display: none;
+            }
+            .header h1 {
+                font-size: 12px;
+            }
+            .header .date-time {
+                font-size: 8px;
+                min-width: 100px;
+            }
+            .footer {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="date-time">
+                {{ current_date_time|date:"d M Y H:i" }}
+            </div>
+            <div class="column">
+                <h1 class="title-container">Product Price List Report</h1>
+            </div>
+            <div class="logo">
+                <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="stock-details">Product Code</th>
+                        <th class="stock-details">Brand Name</th>
+                        <th class="stock-details">Generic Name</th>
+                        <th class="stock-details">Dosage Form</th>
+                        <th class="stock-details">Pack Size</th>
+                        <th class="stock-details">Batch Number</th>
+                        <th class="stock-details">Expiry Date</th>
+                        <th class="stock-details">Unit Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td class="stock-details">{{ product.product_code|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.brand_name.brand_name|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.generic_name_dosage.generic_name|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.dosage_form.name|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.pack_size|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.batch.batch_number|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.batch.expiry_date|date:"d M Y"|default:"N/A" }}</td>
+                        <td class="stock-details">{{ product.unit_price|default:"N/A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No products found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>NIU: M022014416253M</p>
+            <p>-</p>
+            <p>Reg No: RC/YAO/2020/B/239</p>
+        </div>
+
+        <br><br>
+        <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+            <i class="fas fa-print"></i> Print
+        </a>
+        <a href="{% url 'price_list_report' %}?export=csv" class="btn btn-sm btn-success float-right mr-1 d-print-none">
+            <i class="fas fa-download"></i> Export to CSV
+        </a>
+        <br>
+        <br>
+    </div>
+</body>
+</html>
