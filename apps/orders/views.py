@@ -3607,16 +3607,19 @@ def sales_report(request):
     sales_rep_id = request.GET.get('sales_rep_id', '').strip()
     start_date = request.GET.get('start_date', '').strip()
     end_date = request.GET.get('end_date', '').strip()
+    customer_id = request.GET.get('customer_id', '').strip()  # New customer filter
 
     # Log request parameters
     logger.debug(f"Request GET parameters: {request.GET}")
     logger.debug(f"branch_id: {branch_id}, sales_rep_id: {sales_rep_id}, start_date: {start_date}, "
-                 f"end_date: {end_date}, generic_name: {generic_name}, brand_name: {brand_name}")
+                 f"end_date: {end_date}, generic_name: {generic_name}, brand_name: {brand_name}, "
+                 f"customer_id: {customer_id}")
 
-    # Fetch branches, sales reps, and generic names for the filter form
+    # Fetch branches, sales reps, generic names, and customers for the filter form
     branches = Branch.objects.all()
-    sales_reps = Worker.objects.filter(role='Sales Rep')
+    sales_reps = Worker.objects.all().order_by('user__first_name')
     generic_names = GenericName.objects.all()
+    customers = Customer.objects.all()  # Add customers for filter options
 
     # Get branch for filename and context
     branch = Branch.objects.filter(id=branch_id).first() if branch_id else None
@@ -3686,6 +3689,16 @@ def sales_report(request):
     if brand_name:
         sales_items = sales_items.filter(stock__product__brand_name__brand_name__icontains=brand_name)
         return_items = return_items.filter(stock__product__brand_name__brand_name__icontains=brand_name)
+
+    if customer_id:
+        try:
+            customer_id = int(customer_id)
+            sales_items = sales_items.filter(purchase_order__customer__id=customer_id)
+            return_items = return_items.filter(return_purchase_order__customer__id=customer_id)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+
 
     # Log queryset counts
     logger.debug(f"sales_items_count: {sales_items.count()}, return_items_count: {return_items.count()}")
@@ -3812,6 +3825,8 @@ def sales_report(request):
             filename += f"_to_{end_date.replace('-', '')}"
         if sales_rep_id:
             filename += f"_salesrep_{sales_rep_id}"
+        if customer_id:
+            filename += f"_customer_{customer_id}"
         filename += ".csv"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -3870,13 +3885,16 @@ def sales_report(request):
         'branches': branches,
         'sales_reps': sales_reps,
         'generic_names': generic_names,
+        'customers': customers,  # Add customers to context for filter form
         'branch_id': branch_id,
         'generic_name': generic_name,
         'brand_name': brand_name,
         'sales_rep_id': sales_rep_id,
         'start_date': start_date,
         'end_date': end_date,
+        'customer_id': customer_id,  # Add customer_name to context
         'branch': branch,
+        'customers': customers,
     }
 
     return render(request, 'sales_report.html', context)
