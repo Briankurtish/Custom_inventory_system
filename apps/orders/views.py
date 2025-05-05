@@ -2640,7 +2640,7 @@ def view_purchase_order(request, purchase_order_id):
 @login_required
 def reject_order(request, order_id):
     # Fetch the order
-    order = get_object_or_404(PurchaseOrder, id=order_id, branch=request.user.worker_profile.branch)
+    order = get_object_or_404(PurchaseOrder, id=order_id)
 
     # Check if the order is already approved or rejected
     if order.status != 'Pending':
