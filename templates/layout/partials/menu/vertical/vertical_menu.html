@@ -103,13 +103,46 @@
             </li>
         {% endif %}
 
-        {% if privilege.name == 'Add Employee' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'workers' or '/workers/' in request.path %}active open{% endif %}">
-                <a href="{% url 'workers' %}" class="menu-link">
-                    <i class="menu-icon fa-regular fa-user"></i>
-                    <div class="text-truncate">{% trans "Employees" %}</div>
-                </a>
-            </li>
+        {% if privilege.name == 'Manage Employees' %}
+            <!-- Form -->
+      <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
+        <a href="javascript:void(0)" class="menu-link menu-toggle">
+            <i class="menu-icon fa-regular fa-user"></i>
+              <div class="text-truncate" data-i18n="Form Elements">Human Resource</div>
+          </a>
+        <ul class="menu-sub">
+          <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
+              <a href="{% url 'workers' %}" class="menu-link">
+                  <i class="menu-icon fa-regular fa-user"></i>
+                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
+              </a>
+          </li>
+          <li class="menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active open{% endif %}">
+            <a href="{% url 'create_privilege' %}" class="menu-link">
+                <i class="menu-icon fa-solid fa-lock"></i>
+                <div class="text-truncate" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
+            </a>
+        </li>
+          <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
+              <a href="{% url 'privileges' %}" class="menu-link">
+                  <i class="menu-icon fa-solid fa-user-lock"></i>
+                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
+              </a>
+          </li>
+          <li class="menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active open{% endif %}">
+              <a href="{% url 'assign_privileges' %}" class="menu-link">
+                  <i class="menu-icon fa-solid fa-user-lock"></i>
+                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
+              </a>
+          </li>
+          <li class="menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active open{% endif %}">
+              <a href="{% url 'sales-rep' %}" class="menu-link">
+                  <i class="menu-icon fa-regular fa-user"></i>
+                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
+              </a>
+          </li>
+        </ul>
+      </li>
         {% endif %}
 
         {% if privilege.name == 'View Stocks' %}

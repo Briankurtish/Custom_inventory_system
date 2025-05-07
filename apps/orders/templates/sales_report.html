@@ -154,20 +154,18 @@
         th:nth-child(3), td:nth-child(3) { width: 15%; min-width: 150px; max-width: 200px; }
         th:nth-child(4), td:nth-child(4) { width: 8%; min-width: 80px; max-width: 120px; }
         th:nth-child(5), td:nth-child(5) { width: 8%; min-width: 80px; max-width: 100px; }
-        th:nth-child(6), td:nth-child(6) { width: 20%; min-width: 200px; max-width: 250px; }
+        th:nth-child(6), td:nth-child(6) { width: 30%; min-width: 230px; max-width: 280px; }
         th:nth-child(7), td:nth-child(7) { width: 8%; min-width: 80px; max-width: 120px; }
-        th:nth-child(8), td:nth-child(8) { width: 15%; min-width: 150px; max-width: 200px; }
+        th:nth-child(8), td:nth-child(8) { width: 20%; min-width: 170px; max-width: 220px; }
         th:nth-child(9), td:nth-child(9) { width: 6%; min-width: 60px; max-width: 100px; }
         th:nth-child(10), td:nth-child(10) { width: 5%; min-width: 50px; max-width: 80px; }
         th:nth-child(11), td:nth-child(11) { width: 6%; min-width: 60px; max-width: 100px; }
         th:nth-child(12), td:nth-child(12) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(13), td:nth-child(13) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(14), td:nth-child(14) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(15), td:nth-child(15) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(16), td:nth-child(16) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(17), td:nth-child(17) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(18), td:nth-child(18) { width: 5%; min-width: 50px; max-width: 80px; }
-        th:nth-child(19), td:nth-child(19) { width: 6%; min-width: 60px; max-width: 100px; }
+
+        th:nth-child(13), td:nth-child(16) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(14), td:nth-child(17) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(15), td:nth-child(18) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(16), td:nth-child(19) { width: 6%; min-width: 60px; max-width: 100px; }
         .footer {
             display: flex;
             justify-content: flex-end;
@@ -310,9 +308,9 @@
                         <th class="stock-details">Pack Size</th>
                         <th class="quantity">Quantity</th>
                         <th class="stock-details">Unit Price</th>
-                        <th class="stock-details">IR Tax (%)</th>
+                        {% comment %} <th class="stock-details">IR Tax (%)</th>
                         <th class="stock-details">TVA (%)</th>
-                        <th class="stock-details">Precompte (%)</th>
+                        <th class="stock-details">Precompte (%)</th> {% endcomment %}
                         <th class="stock-details">IR Tax</th>
                         <th class="stock-details">TVA</th>
                         <th class="stock-details">Precompte</th>
@@ -334,9 +332,9 @@
                         <td class="stock-details">{{ item.pack_size }}</td>
                         <td class="quantity">{{ item.quantity|intcomma }}</td>
                         <td class="stock-details">{{ item.unit_price|floatformat:2|intcomma }}</td>
-                        <td class="stock-details">{{ item.tax_rate|floatformat:2|intcomma }}</td>
+                        {% comment %} <td class="stock-details">{{ item.tax_rate|floatformat:2|intcomma }}</td>
                         <td class="stock-details">{{ item.tva|floatformat:2|intcomma }}</td>
-                        <td class="stock-details">{{ item.precompte|floatformat:2|intcomma }}</td>
+                        <td class="stock-details">{{ item.precompte|floatformat:2|intcomma }}</td> {% endcomment %}
                         <td class="stock-details">{{ item.tax_amount_rate|floatformat:2|intcomma }}</td>
                         <td class="stock-details">{{ item.tax_amount_tva|floatformat:2|intcomma }}</td>
                         <td class="stock-details">{{ item.tax_amount_precompte|floatformat:2|intcomma }}</td>
@@ -361,9 +359,9 @@
                         <td class="stock-details"></td>
                         <td class="quantity">{{ totals.quantity|intcomma }}</td>
                         <td class="stock-details"></td>
+                        {% comment %} <td class="stock-details"></td>
                         <td class="stock-details"></td>
-                        <td class="stock-details"></td>
-                        <td class="stock-details"></td>
+                        <td class="stock-details"></td> {% endcomment %}
                         <td class="stock-details">{{ totals.tax_amount_rate|floatformat:2|intcomma }}</td>
                         <td class="stock-details">{{ totals.tax_amount_tva|floatformat:2|intcomma }}</td>
                         <td class="stock-details">{{ totals.tax_amount_precompte|floatformat:2|intcomma }}</td>
@@ -410,3 +408,9 @@
       });
     });
   </script>
+
+
+
+{% comment %} th:nth-child(13), td:nth-child(13) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(14), td:nth-child(14) { width: 5%; min-width: 50px; max-width: 80px; }
+        th:nth-child(15), td:nth-child(15) { width: 5%; min-width: 50px; max-width: 80px; } {% endcomment %}

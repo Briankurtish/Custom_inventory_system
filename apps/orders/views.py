@@ -121,7 +121,8 @@ def order_list(request):
         return_orders = return_orders.filter(created_by__id=created_by_id)
 
     if search_query:
-        purchase_orders = purchase_orders.filter(
+        # Base search on PurchaseOrder fields
+        purchase_order_query = (
             Q(purchase_order_id__icontains=search_query) |
             Q(branch__branch_id__icontains=search_query) |
             Q(customer__customer_name__icontains=search_query) |
@@ -133,7 +134,8 @@ def order_list(request):
             Q(created_by__user__last_name__icontains=search_query)
         )
 
-        return_orders = return_orders.filter(
+        # Base search on ReturnPurchaseOrder fields
+        return_order_query = (
             Q(return_order_id__icontains=search_query) |
             Q(branch__branch_id__icontains=search_query) |
             Q(customer__customer_name__icontains=search_query) |
@@ -143,6 +145,28 @@ def order_list(request):
             Q(grand_total__icontains=search_query) |
             Q(created_by__user__first_name__icontains=search_query) |
             Q(created_by__user__last_name__icontains=search_query)
+        )
+
+        # Add search for generic_name and brand_name in related OrderItems
+        purchase_orders_with_items = PurchaseOrder.objects.filter(
+            items__stock__product__generic_name_dosage__generic_name__icontains=search_query
+        ).distinct() | PurchaseOrder.objects.filter(
+            items__stock__product__brand_name__brand_name__icontains=search_query
+        ).distinct()
+
+        return_orders_with_items = ReturnPurchaseOrder.objects.filter(
+            items__stock__product__generic_name_dosage__generic_name__icontains=search_query
+        ).distinct() | ReturnPurchaseOrder.objects.filter(
+            items__stock__product__brand_name__brand_name__icontains=search_query
+        ).distinct()
+
+        # Combine the searches
+        purchase_orders = purchase_orders.filter(
+            purchase_order_query | Q(id__in=purchase_orders_with_items.values('id'))
+        )
+
+        return_orders = return_orders.filter(
+            return_order_query | Q(id__in=return_orders_with_items.values('id'))
         )
 
     # Identify original purchase orders with return orders

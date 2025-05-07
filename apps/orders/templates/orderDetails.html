@@ -318,7 +318,8 @@
             <tr>
                 <th>{% trans "No" %}</th>
                 <th>{% trans "Product Code" %}</th>
-                <th>{% trans "Product Name" %}</th>
+                <th>{% trans "Geneirc Name" %}</th>
+                <th>{% trans "Brand Name" %}</th>
                 <th>{% trans "Batch Number" %}</th>
                 <th>{% trans "Unit Price" %}</th>
                 <th>{% trans "Note" %}</th>
@@ -332,6 +333,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ item.stock.product.product_code }}</td>
                 <td>{{ item.stock.product.generic_name_dosage }}</td>
+                <td>{{ item.stock.product.brand_name.brand_name }}</td>
                 <td>{{ item.stock.product.batch.batch_number }}</td>
                 <td>{{ item.get_effective_price|floatformat:2|intcomma }} CFA</td>
                 <td class="text-danger">{{ item.reason }}</td>
