@@ -3026,6 +3026,7 @@ def add_invoice_payment(request, invoice_id):
 
         if form.is_valid():
             payment_amount = form.cleaned_data['amount_paid']
+            payment_date = form.cleaned_data['payment_date']
             payment_mode = form.cleaned_data['payment_mode']
             notes = form.cleaned_data.get('notes', '')
 
@@ -3061,6 +3062,7 @@ def add_invoice_payment(request, invoice_id):
                     payment.momo_account = momo_account
                     payment.check_account = check_account
                     payment.bank_deposit_account = bank_deposit_account
+                    payment.payment_date = payment_date
                     payment.save()
 
                     # ✅ Generate the correct type of receipt
@@ -3070,6 +3072,7 @@ def add_invoice_payment(request, invoice_id):
                             return_invoice_payment=payment,
                             amount_paid=payment_amount,
                             payment_method=payment_mode,
+                            payment_date=payment_date,
                             notes=notes,
                         )
                     else:
@@ -3078,6 +3081,7 @@ def add_invoice_payment(request, invoice_id):
                             invoice_payment=payment,
                             amount_paid=payment_amount,
                             payment_method=payment_mode,
+                            payment_date=payment_date,
                             notes=notes,
                         )
 
