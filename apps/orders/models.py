@@ -1006,9 +1006,7 @@ class Receipt(models.Model):
         max_length=50, unique=True, editable=False,
         help_text="Unique identifier for the receipt"
     )
-    payment_date = models.DateTimeField(
-        auto_now_add=True, help_text="Date and time when the payment was made"
-    )
+    payment_date = models.DateTimeField(null=True, help_text="Date and time when the payment was made")
     amount_paid = models.DecimalField(
         max_digits=12, decimal_places=2,
         help_text="Amount paid for this receipt"

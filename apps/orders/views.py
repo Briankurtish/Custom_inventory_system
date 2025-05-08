@@ -1622,9 +1622,12 @@ def receipt_doc_view(request, receipt_id):
     if is_return_receipt:
         invoice_items = return_receipt.return_invoice.items.all()
         amount_paid = return_receipt.amount_paid  # Use return_receipt's amount
+        payment_date = return_receipt.payment_date
+
     else:
         invoice_items = receipt.invoice.items.all()
         amount_paid = receipt.amount_paid  # Use normal receipt's amount
+        payment_date = receipt.payment_date
 
     amount_paid_words = num2words(amount_paid, lang='en').capitalize()
 
@@ -1636,6 +1639,7 @@ def receipt_doc_view(request, receipt_id):
         "total_with_taxes": total_with_taxes,
         "invoice_items": invoice_items,
         "is_return_receipt": is_return_receipt,
+        "payment_date": payment_date,
     }
 
     context = TemplateLayout.init(request, view_context)
