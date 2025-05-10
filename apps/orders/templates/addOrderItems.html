@@ -21,7 +21,12 @@
           {% csrf_token %}
           {{ item_form|crispy }}
           <hr>
-          <button type="submit" name="action" value="add_item" class="btn btn-info">{% trans "Add Item" %}</button>
+          <div class="d-flex gap-2">
+            <button type="submit" name="action" value="add_item" class="btn btn-info">{% trans "Add Item" %}</button>
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#sampleModal">
+              {% trans "Add Sample" %}
+            </button>
+          </div>
         </form>
 
         <br>
@@ -52,7 +57,7 @@
                     <form method="POST" action="{% url 'add_order_items' %}">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="remove_item">
-                      <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">  <!-- Pass the item index -->
+                      <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
                       <button type="submit" class="btn btn-danger">{% trans "Remove" %}</button>
                     </form>
                   </td>
@@ -72,6 +77,45 @@
           <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Next:" %}{% trans "Payment Schedule" %}</button>
         </form>
 
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sample Modal -->
+<div class="modal fade" id="sampleModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sampleModalLabel">{% trans "Add Sample Item" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" id="sampleForm">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_sample">
+          <div class="mb-3">
+            <label for="sample_stock" class="form-label">{% trans "Product" %}</label>
+            <select class="form-select" id="sample_stock" name="stock" required>
+              <option value="">{% trans "Select a product" %}</option>
+              {% for stock in stocks %}
+                <option value="{{ stock.id }}">{{ stock.product.generic_name_dosage }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="sample_quantity" class="form-label">{% trans "Quantity" %}</label>
+            <input type="number" class="form-control" id="sample_quantity" name="quantity" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label for="sample_reason" class="form-label">{% trans "Reason" %}</label>
+            <input type="text" class="form-control" id="sample_reason" name="reason" value="Sample" readonly>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+        <button type="submit" form="sampleForm" class="btn btn-primary">{% trans "Add Sample" %}</button>
       </div>
     </div>
   </div>
@@ -108,6 +152,34 @@
       placeholder: "Search for a Product",
       allowClear: true,
       width: "100%",
+    });
+
+    // Initialize Select2 on the sample modal product field
+    $("#sample_stock").select2({
+      placeholder: "Search for a Product",
+      allowClear: true,
+      width: "100%",
+      dropdownParent: $("#sampleModal"),
+      minimumInputLength: 0,
+      matcher: function(params, data) {
+        // If there are no search terms, return all of the data
+        if ($.trim(params.term) === '') {
+          return data;
+        }
+
+        // Do not display the item if there is no 'text' property
+        if (typeof data.text === 'undefined') {
+          return null;
+        }
+
+        // Search in the text
+        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+          return data;
+        }
+
+        // Return `null` if the term should not be displayed
+        return null;
+      }
     });
   });
 </script>

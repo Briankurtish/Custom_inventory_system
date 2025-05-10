@@ -26,21 +26,21 @@
 {% if user.worker_profile.role == 'Central Stock Manager' %}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link">
-        <i class="menu-icon  fa-solid fa-house"></i>
+        <i class="menu-icon fa-solid fa-house"></i>
         <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
   {% elif user.worker_profile.role == 'Stock Manager' %}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link">
-        <i class="menu-icon  fa-solid fa-house"></i>
+        <i class="menu-icon fa-solid fa-house"></i>
         <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
 {% elif user.worker_profile.role == 'Pharmacist'%}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link ">
-        <i class="menu-icon  fa-solid fa-house"></i>
+        <i class="menu-icon fa-solid fa-house"></i>
         <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
@@ -48,7 +48,7 @@
 {% elif user.worker_profile.role == 'Marketing Director'%}
     <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
       <a href="{% url 'index' %}" class="menu-link ">
-        <i class="menu-icon  fa-solid fa-house"></i>
+        <i class="menu-icon fa-solid fa-house"></i>
         <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
         {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
       </a>
@@ -56,7 +56,7 @@
 {% elif user.worker_profile.role == 'Secretary'%}
   <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
     <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon  fa-solid fa-house"></i>
+      <i class="menu-icon fa-solid fa-house"></i>
       <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
       {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
     </a>
@@ -65,7 +65,7 @@
 {% elif user.worker_profile.role == 'Accountant'%}
   <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
     <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon  fa-solid fa-house"></i>
+      <i class="menu-icon fa-solid fa-house"></i>
       <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
       {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
     </a>
@@ -74,7 +74,7 @@
   {% elif user.worker_profile.role == 'Cashier'%}
   <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
     <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon  fa-solid fa-house"></i>
+      <i class="menu-icon fa-solid fa-house"></i>
       <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
       {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
     </a>
@@ -109,6 +109,7 @@
         <a href="javascript:void(0)" class="menu-link menu-toggle">
             <i class="menu-icon fa-regular fa-user"></i>
               <div class="text-truncate" data-i18n="Form Elements">Human Resource</div>
+            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
           </a>
         <ul class="menu-sub">
           <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
@@ -216,6 +217,15 @@
                     {% endif %}
                 </a>
             </li>
+            <li class="menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active open{% endif %}">
+              <a href="{% url 'sample_orders' %}" class="menu-link">
+                <i class="menu-icon fa-solid fa-clipboard-list"></i>
+                <div class="text-truncate" data-i18n="Dashboards">{% trans "Samples" %}</div>
+                {% comment %} {% if pending_orders_count > 0 %}
+                <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+                {% endif %} {% endcomment %}
+              </a>
+            </li>
         {% endif %}
 
         {% if privilege.name == 'Process Payments' %}
@@ -243,7 +253,7 @@
     </li>
     <li class="menu-item {% if 'branches' == request.resolver_match.url_name or '/branches/' in request.path %}active open{% endif %}">
         <a href="{% url 'branches' %}" class="menu-link">
-            <i class="menu-icon fas fa-house-user"></i>
+            <i class="menu-icon fa-solid fa-house-user"></i>
             <div class="text-truncate" data-i18n="Dashboards">{% trans "Branches" %}</div>
         </a>
     </li>
@@ -267,6 +277,7 @@
         <a href="javascript:void(0)" class="menu-link menu-toggle">
             <i class="menu-icon fa-regular fa-user"></i>
               <div class="text-truncate" data-i18n="Form Elements">Human Resource</div>
+            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
           </a>
         <ul class="menu-sub">
           <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
@@ -307,12 +318,13 @@
     {% comment %} <li class="menu-header small text-uppercase">
       <span class="menu-header-text">Inventory Management</span>
     </li> {% endcomment %}
-    
+
     <!-- Form -->
     <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0)" class="menu-link menu-toggle">
           <i class="menu-icon fa-solid fa-cubes"></i>
            <div class="text-truncate" data-i18n="Form Elements">Inventory Management</div>
+           <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
        </a>
      <ul class="menu-sub">
       <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
@@ -369,6 +381,13 @@
           <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Movement" %}</div>
         </a>
       </li>
+
+      <li class="menu-item {% if 'damaged-products' == request.resolver_match.url_name or '/damaged-products/' in request.path %}active open{% endif %}">
+        <a href="{% url 'damaged-products' %}" class="menu-link">
+          <i class="menu-icon fa-solid fa-triangle-exclamation"></i>
+          <div class="text-truncate" data-i18n="Dashboards">{% trans "Damaged Products" %}</div>
+        </a>
+      </li>
      </ul>
    </li>
 
@@ -379,6 +398,7 @@
       <a href="javascript:void(0)" class="menu-link menu-toggle">
         <i class="menu-icon fa-solid fa-clipboard-list"></i>
             <div class="text-truncate" data-i18n="Form Elements">Sales</div>
+            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
         </a>
       <ul class="menu-sub">
         <li class="menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active open{% endif %}">
@@ -387,7 +407,7 @@
               <div class="text-truncate" data-i18n="Dashboards">{% trans "Customers" %}</div>
           </a>
       </li>
-  
+
       <li class="menu-item {% if 'orders' == request.resolver_match.url_name or '/orders/' in request.path %}active open{% endif %}">
         <a href="{% url 'orders' %}" class="menu-link">
           <i class="menu-icon fa-solid fa-clipboard-list"></i>
@@ -395,6 +415,15 @@
           {% if pending_orders_count > 0 %}
           <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
           {% endif %}
+        </a>
+      </li>
+      <li class="menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active open{% endif %}">
+        <a href="{% url 'sample_orders' %}" class="menu-link">
+          <i class="menu-icon fa-solid fa-clipboard-list"></i>
+          <div class="text-truncate" data-i18n="Dashboards">{% trans "Samples" %}</div>
+          {% comment %} {% if pending_orders_count > 0 %}
+          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+          {% endif %} {% endcomment %}
         </a>
       </li>
       </ul>
@@ -406,6 +435,7 @@
       <a href="javascript:void(0)" class="menu-link menu-toggle">
         <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
             <div class="text-truncate" data-i18n="Form Elements">Finance</div>
+            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
         </a>
       <ul class="menu-sub">
         <li class="menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active open{% endif %}">
@@ -417,8 +447,8 @@
             {% endif %}
           </a>
         </li>
-    
-    
+
+
         <li class="menu-item {% if 'old-invoice' == request.resolver_match.url_name or '/old-invoice/' in request.path %}active open{% endif %}">
           <a href="{% url 'old-invoice' %}" class="menu-link">
             <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
@@ -434,6 +464,7 @@
       <a href="javascript:void(0)" class="menu-link menu-toggle">
             <i class="menu-icon fa-solid fa-money-check-dollar"></i>
             <div class="text-truncate" data-i18n="Form Elements">Payment Info</div>
+            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
         </a>
       <ul class="menu-sub">
         <li class="menu-item {% if 'add-bank' in request.path %}active{% endif %}">
@@ -781,7 +812,7 @@
     <!-- Extended UI -->
     <li class="menu-item {% if '/extended_ui/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0)" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-copy"></i>
+        <i class="menu-icon fa-solid fa-copy"></i>
         <div class="text-truncate" data-i18n="Extended UI">Extended UI</div>
       </a>
       <ul class="menu-sub">
@@ -812,7 +843,7 @@
     <!-- Form -->
     <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0)" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-detail"></i>
+        <i class="menu-icon fa-solid fa-file-lines"></i>
         <div class="text-truncate" data-i18n="Form Elements">Form Elements</div>
       </a>
       <ul class="menu-sub">
@@ -832,7 +863,7 @@
     <!-- Form Layouts -->
     <li class="menu-item {% if '/form/' in request.path %}active open{% endif %}">
       <a href="javascript:void(0)" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-detail"></i>
+        <i class="menu-icon fa-solid fa-file-lines"></i>
         <div class="text-truncate" data-i18n="Form Elements">Form Layouts</div>
       </a>
       <ul class="menu-sub">
@@ -851,7 +882,7 @@
 
     <li class="menu-item">
       <a href="{% get_theme_variables 'live_preview' %}form/validation/" class="menu-link" target="_blank">
-        <i class="menu-icon tf-icons bx bx-list-check"></i>
+        <i class="menu-icon fa-solid fa-list-check"></i>
         <div class="text-truncate" data-i18n="Form Validation">Form Validation</div>
         <span class="badge bg-label-primary fs-tiny rounded-pill ms-auto">PRO</span>
       </a>
@@ -859,13 +890,13 @@
 
     <li class="menu-item {% if '/tables/basic/' in request.path %}active{% endif %}">
       <a href="{% url 'tables-basic' %}" class="menu-link">
-        <i class="menu-icon tf-icons bx bx-table"></i>
+        <i class="menu-icon fa-solid fa-table"></i>
         <div class="text-truncate" data-i18n="Tables">Tables</div>
       </a>
     </li>
     <li class="menu-item">
       <a href="{% get_theme_variables 'live_preview' %}tables/datatables_basic/" class="menu-link" target="_blank">
-        <i class="menu-icon tf-icons bx bx-grid"></i>
+        <i class="menu-icon fa-solid fa-grip"></i>
         <div class="text-truncate" data-i18n="Datatables">Datatables</div>
         <span class="badge bg-label-primary fs-tiny rounded-pill ms-auto">PRO</span>
       </a>
@@ -877,13 +908,13 @@
 
     <li class="menu-item">
       <a href="https://themeselection.com/support/" class="menu-link" target="_blank">
-        <i class="menu-icon tf-icons bx bx-support"></i>
+        <i class="menu-icon fa-solid fa-headset"></i>
         <div class="text-truncate" data-i18n="Support">Support</div>
       </a>
     </li>
     <li class="menu-item">
       <a href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/documentation/django-introduction.html" class="menu-link" target="_blank">
-        <i class="menu-icon tf-icons bx bx-file"></i>
+        <i class="menu-icon fa-solid fa-file"></i>
         <div class="text-truncate" data-i18n="Documentation">Documentation</div>
       </a>
     </li> {% endcomment %}

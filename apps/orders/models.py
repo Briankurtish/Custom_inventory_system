@@ -283,6 +283,111 @@ class PurchaseOrder(models.Model):
     #     return f"{self.purchase_order_id} - {self.branch.branch_name}"
 
 
+class SampleOrder(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
+    ]
+
+    DOCUMENT_TYPE_CHOICES = [
+        ('Purchase Order', 'Purchase Order'),
+        ('Invoice', 'Invoice'),
+        ('Receipt', 'Receipt'),
+    ]
+
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    sales_rep = models.ForeignKey(
+        Worker,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sales_rep_sample_orders',
+
+    )
+    created_at = models.DateTimeField(null=True)
+    created_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Worker who created this Sample Order", related_name='created_by_sample_orders'
+    )
+    status = models.CharField(
+        max_length=50, choices=STATUS_CHOICES, default='Pending',
+        help_text="Current status of the Sample order"
+    )
+    approved_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Worker who approved the Sample order", related_name='approved_sample_orders'
+    )
+    notes = models.TextField(
+        null=True, blank=True,
+        help_text="Optional notes for rejection or other updates"
+    )
+    sample_order_id = models.CharField(
+        max_length=50, unique=True, editable=False, null=True, blank=True,
+        help_text="Unique identifier for the Samplw order"
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.sample_order_id:
+            # Use the date from created_at or current date
+            order_date = self.created_at if self.created_at else timezone.now()
+            date_part = order_date.strftime("%Y%m%d")  # Keep date in ID for reference
+
+            # Extract REG from branch ID (e.g., "REG" from "REG-001")
+            branch_id_parts = self.branch.branch_id.split("-")
+            reg_part = branch_id_parts[0] if branch_id_parts else "UNKNOWN"
+
+            # Base prefix without sequence (PO-REG-YYYYMMDD-)
+            base_prefix = f"SAMPLE-{reg_part}-{date_part}-"
+
+            # Find the highest existing sequence number ACROSS ALL DATES for this branch
+            existing_ids = SampleOrder.objects.filter(
+                sample_order_id__startswith=f"PO-{reg_part}-"
+            ).values_list('sample_order_id', flat=True)
+
+            # Extract all sequence numbers
+            sequences = []
+            for smple_id in existing_ids:
+                try:
+                    # Extract last part (sequence number)
+                    seq_part = smple_id.split("-")[-1]
+                    if seq_part.isdigit():
+                        sequences.append(int(seq_part))
+                except (IndexError, ValueError):
+                    continue
+
+            # Determine next sequence number
+            sequence = max(sequences) + 1 if sequences else 1
+
+            # Format final ID (PO-REG-YYYYMMDD-XXXXX)
+            self.sample_order_id = f"{base_prefix}{sequence:05d}"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.sample_order_id} - {self.branch.branch_name}"
+
+
+
+class SampleOrderItem(models.Model):
+    sample_order = models.ForeignKey(
+        SampleOrder, related_name="sample_items", on_delete=models.CASCADE
+    )
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    reason = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        default="No Note",
+        help_text="Reason for Sample"
+    )
+
+    def __str__(self):
+        return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"
+
+
+
 class PurchaseOrderDocument(models.Model):
     purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name="documents")
     document_type = models.CharField(max_length=50, choices=[
@@ -541,6 +646,29 @@ class PurchaseOrderAuditLog(models.Model):
         return f"{self.user} {self.get_action_display()} {self.generic_name} on {self.timestamp}"
 
 
+class SampleOrderAuditLog(models.Model):
+    ACTION_CHOICES = [
+        ("create", "Create"),
+        ("approve", "Approve"),
+        ("reject", "Reject"),
+        ("Cancel", "Cancel"),
+        ("delete", "Delete"),
+    ]
+
+    user = models.ForeignKey(
+        'workers.Worker', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='sample_order_log_created'
+    )
+    order = models.CharField(max_length=255, null=True, blank=True)  # Add this line
+    branch = models.CharField(max_length=255, null=True, blank=True)  # Add this line
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.TextField(null=True, blank=True)  # To store extra details (e.g., changes)
+
+    def __str__(self):
+        return f"{self.user} {self.get_action_display()} {self.generic_name} on {self.timestamp}"
+
+
 class InvoiceAuditLog(models.Model):
     ACTION_CHOICES = [
         ("create", "Created"),
@@ -763,6 +891,12 @@ class InvoiceOrderItem(models.Model):
     price = models.DecimalField(
         max_digits=10, decimal_places=2,
         help_text="Price per unit of the product at the time of invoice"
+    )
+    reason = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        default="No Note",
+        help_text="Reason for price change"
     )
 
     def __str__(self):

@@ -119,10 +119,10 @@ module.exports = (conf, srcGlob) => {
   // -------------------------------------------------------------------------------
 
   const FONT_TASKS = [
-    {
-      name: 'boxicons',
-      path: 'node_modules/boxicons/fonts/*'
-    }
+    // {
+    //   name: 'boxicons',
+    //   path: 'node_modules/boxicons/fonts/*'
+    // }
   ].reduce(function (tasks, font) {
     const functionName = `buildFonts${font.name.replace(/^./, m => m.toUpperCase())}Task`;
     const taskFunction = function () {
@@ -141,7 +141,13 @@ module.exports = (conf, srcGlob) => {
     return tasks.concat([taskFunction]);
   }, []);
 
-  const buildFontsTask = parallel(FONT_TASKS);
+  const buildFontsTask =
+    FONT_TASKS.length > 0
+      ? parallel(FONT_TASKS)
+      : function emptyFontsTask(cb) {
+          cb();
+        };
+
   // Copy
   // -------------------------------------------------------------------------------
 

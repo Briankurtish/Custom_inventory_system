@@ -1,0 +1,304 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Sample Order Details" %}{% endblock %}
+
+{% block content %}
+{% load tz %}
+
+
+<h4 class="text">{% trans "Sample Order Details" %}</h4>
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+      <li class="breadcrumb-item active"><a href="{% url 'sample_orders' %}">{% trans "Sample Orders" %}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Sample Order Details" %}</li>
+    </ol>
+</nav>
+<hr class="my-8">
+<a href="{% url 'sample_orders' %}" class="btn btn-outline-secondary mb-4">
+    ← Back
+</a>
+
+<br>
+
+<div class="card">
+    <div class="row">
+          <h5 class="text col-md-4 m-3">{{ order.sample_order_id }}</h5>
+    </div>
+    <hr>
+
+    <div class="container">
+        <!-- Order Information -->
+        <div class="row">
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Branch ID" %}</small>
+                <h6 class="mx-3">{{ order.branch.branch_id }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Branch Name" %}</small>
+                <h6 class="mx-3">{{ order.branch.branch_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Created By" %}</small>
+                <h6 class="mx-3">{{ order.created_by.user.get_full_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Date Created" %}</small>
+                <h6 class="mx-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
+            </div>
+        </div>
+    </div>
+    <hr>
+
+    <div class="container">
+        <!-- More Order Information -->
+        <div class="row">
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Customer Name" %}</small>
+                <h6 class="mx-3">{{ order.customer.customer_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Sales Representative" %}</small>
+                <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
+            </div>
+            <div class="col-md-3">
+                <small class="text mx-3">{% trans "Status" %}</small>
+                <h6 class="text-warning mx-3">
+                    {% if order.status|lower == "pending" %}
+                    <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+                    {% elif order.status|lower == "approved" %}
+                    <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
+                    {% elif order.status|lower == "rejected" %}
+                    <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
+                    {% else %}
+                    <span class="badge bg-label-secondary me-1">{{ order.status }}</span>
+                    {% endif %}
+                </h6>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+    {% if order.status == "Rejected" %}
+    <div class="container">
+        <!-- Order Information -->
+        <div class="row">
+
+            <div class="col-md-3">
+                <small class="text m-3">{% trans "Rejection Reason" %}</small>
+                <h6 class="m-3">{{ order.notes }}</h6>
+            </div>
+
+
+        </div>
+    </div>
+    {% endif %}
+
+
+    <hr>
+
+
+
+
+<!-- Order Items -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Sample Order Items" %}</h5>
+
+    </div>
+    <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>{% trans "No" %}</th>
+                <th>{% trans "Product Code" %}</th>
+                <th>{% trans "Geneirc Name" %}</th>
+                <th>{% trans "Brand Name" %}</th>
+                <th>{% trans "Batch Number" %}</th>
+                <th>{% trans "Note" %}</th>
+                <th>{% trans "Quantity" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.stock.product.product_code }}</td>
+                <td>{{ item.stock.product.generic_name_dosage }}</td>
+                <td>{{ item.stock.product.brand_name.brand_name }}</td>
+                <td>{{ item.stock.product.batch.batch_number }}</td>
+                <td class="text-danger">{{ item.reason }}</td>
+                <td>{{ item.quantity|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">{% trans "No items found for this order" %}</td>
+            </tr>
+            {% endfor %}
+
+
+        </tbody>
+    </table>
+</div>
+
+
+</div>
+</div>
+
+{% comment %} <!-- Action Buttons -->
+{% if order.status != "Canceled" %}
+  <div class="mt-3 d-flex gap-2">
+      {% if order.status == "Pending"%}
+
+        {% if role_privileges %}
+            {% for privilege in role_privileges %}
+                {% if privilege.name == 'Approve or decline Orders' %}
+                    {% if is_return_purchase_order %}
+
+                    {% else %}
+
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                            {% trans "Approve" %}
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            {% trans "Reject" %}
+                        </button>
+
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_superuser %}
+            {% if is_return_purchase_order %}
+
+            {% else %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    {% trans "Approve" %}
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    {% trans "Reject" %}
+                </button>
+
+            {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {% endif %}
+  </div> {% endcomment %}
+
+{% comment %}
+<div class="mt-3 d-flex gap-2">
+    {% if order.status == "Approved" %}
+        <!-- Buttons based on worker privileges -->
+        {% if worker_privileges %}
+            {% for privilege in worker_privileges %}
+                {% if privilege == 'Generate Purchase Order' %}
+                    {% if is_return_purchase_order %}
+                        <a href="{% url 'purchase-order' purchase_order_id=order.return_order_id %}" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Return Purchase Order" %}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'purchase-order' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Purchase Order" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if worker_privileges %}
+            {% for privilege in worker_privileges %}
+                {% if privilege == 'Generate Order Picking List' %}
+                    {% if is_return_purchase_order %}
+                        <a href="{% url 'picking-list' purchase_order_id=order.return_order_id %}?type=return" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Return Picking List" %}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}?type=purchase" target="_blank" class="btn btn-primary">
+                            {% trans "Generate Picking List" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- Buttons for superuser -->
+        {% if user.is_superuser %}
+            {% if is_return_purchase_order %}
+                <a href="{% url 'purchase-order' purchase_order_id=order.return_order_id %}" target="_blank" class="btn btn-primary">
+                    {% trans "Generate Return Purchase Order" %}
+                </a>
+                <a href="{% url 'picking-list' purchase_order_id=order.return_order_id %}?type=return" target="_blank" class="btn btn-primary">
+                    {% trans "Generate Return Picking List" %}
+                </a>
+            {% else %}
+                <a href="{% url 'purchase-order' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-primary">
+                    {% trans "Generate Purchase Order" %}
+                </a>
+                <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}?type=purchase" target="_blank" class="btn btn-primary">
+                    {% trans "Generate Picking List" %}
+                </a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div> {% endcomment %}
+
+
+{% comment %} <!-- Approval Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">{% trans "Approve Order" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'approve_order' order.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{% trans "Approval Notes" %}</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-success">{% trans "Approve" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> {% endcomment %}
+
+
+
+{% comment %} <!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">{% trans "Reject Order" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'reject_order' order.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{% trans "Rejection Notes" %}</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Reject" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> {% endcomment %}
+
+{% endblock %}

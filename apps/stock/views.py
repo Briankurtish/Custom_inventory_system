@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from apps.products.models import Batch, Product
 from apps.branches.models import Branch
-from .models import Stock, InventoryTransaction
+from .models import Stock, InventoryTransaction, DamagedProduct
 from django.utils.timezone import now  # To handle timestamps
 from django.http import JsonResponse
 from apps.workers.models import Worker
@@ -925,7 +925,9 @@ def get_stock_data(request):
                 "fixed_beginning_inventory": stock.fixed_beginning_inventory,
                 "total_stock": stock.total_stock,
                 "total_sold": stock.total_sold,
+                "samples_quantity": stock.samples_quantity,
                 "quantity_transferred": stock.quantity_transferred,
+                "damaged_quantity": stock.damaged_quantity,
             }
             for stock in stocks
         ]
@@ -1115,3 +1117,246 @@ def inventory_register(request):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, 'inventory_register.html', context)
+
+@login_required
+def damaged_products_view(request):
+    # Get filter parameters from request
+    search_query = request.GET.get('search_query', '').strip()
+    branch_id = request.GET.get('branch', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    # Fetch damaged products with related models for efficiency
+    damaged_products = DamagedProduct.objects.select_related(
+        'product__generic_name_dosage',
+        'product__brand_name',
+        'product__batch',
+        'created_by',
+        'branch'
+    ).order_by('-date_recorded')
+
+    # Apply search filter if provided
+    if search_query:
+        damaged_products = damaged_products.filter(
+            Q(product__generic_name_dosage__generic_name__icontains=search_query) |
+            Q(product__brand_name__brand_name__icontains=search_query) |
+            Q(product__batch__batch_number__icontains=search_query) |
+            Q(notes__icontains=search_query)
+        )
+
+    # Apply branch filter if provided
+    if branch_id:
+        damaged_products = damaged_products.filter(branch_id=branch_id)
+
+    # Apply date range filter if provided
+    if start_date:
+        damaged_products = damaged_products.filter(date_recorded__gte=start_date)
+    if end_date:
+        # Add one day to end_date to include the entire day
+        end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
+        damaged_products = damaged_products.filter(date_recorded__lt=end_date)
+
+    # Get all products and branches for the form
+    products = Product.objects.select_related('generic_name_dosage', 'brand_name', 'batch').all()
+
+    # Fetch all branches and order them by name
+    branches = Branch.objects.all().order_by('branch_name')
+
+    # Debug print to check if branches are being fetched
+    print(f"Number of branches fetched: {branches.count()}")
+    for branch in branches:
+        print(f"Branch: {branch.branch_name} (ID: {branch.id})")
+
+    # Paginate results
+    paginator = Paginator(damaged_products, 50)  # Show 50 items per page
+    page_number = request.GET.get('page')
+    paginated_products = paginator.get_page(page_number)
+    offset = (paginated_products.number - 1) * paginator.per_page
+
+    # Prepare context
+    view_context = {
+        "damaged_products": paginated_products,
+        "search_query": search_query,
+        "branch_id": branch_id,
+        "start_date": start_date,
+        "end_date": end_date,
+        "offset": offset,
+        "total_count": damaged_products.count(),
+        "products": products,
+        "branches": branches,  # Make sure branches are passed to template
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "damaged_product.html", context)
+
+@login_required
+def add_damaged_product(request):
+    if request.method == "POST":
+        try:
+            product_id = request.POST.get('product')
+            branch_id = request.POST.get('branch')
+            quantity = request.POST.get('quantity')
+            notes = request.POST.get('notes')
+
+            # Validate required fields
+            if not all([product_id, branch_id, quantity]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Please fill in all required fields.'
+                })
+
+            # Get the related objects
+            product = get_object_or_404(Product, id=product_id)
+            branch = get_object_or_404(Branch, id=branch_id)
+
+            # Create the damaged product record
+            damaged_product = DamagedProduct.objects.create(
+                product=product,
+                branch=branch,
+                quantity=quantity,
+                notes=notes,
+                created_by=request.user.worker_profile
+            )
+
+            # Update the stock's damaged quantity
+            stock = Stock.objects.filter(
+                product=product,
+                branch=branch
+            ).first()
+
+            if stock:
+                stock.damaged_quantity = (stock.damaged_quantity or 0) + int(quantity)
+                stock.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Damaged product recorded successfully.'
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })
+
+@login_required
+def search_products(request):
+    search_query = request.GET.get('search', '')
+    if len(search_query) < 2:
+        return JsonResponse({'results': []})
+
+    products = Product.objects.filter(
+        Q(generic_name_dosage__generic_name__icontains=search_query) |
+        Q(brand_name__brand_name__icontains=search_query) |
+        Q(product_code__icontains=search_query)
+    )[:10]  # Limit to 10 results
+
+    results = [{
+        'id': product.id,
+        'text': f"{product.generic_name_dosage} - {product.brand_name.brand_name if product.brand_name else 'No Brand'} ({product.product_code})"
+    } for product in products]
+
+    return JsonResponse({'results': results})
+
+@login_required
+def search_batches(request):
+    search_query = request.GET.get('search', '')
+    if len(search_query) < 2:
+        return JsonResponse({'results': []})
+
+    batches = Batch.objects.filter(
+        batch_number__icontains=search_query
+    )[:10]  # Limit to 10 results
+
+    results = [{
+        'id': batch.id,
+        'text': f"{batch.batch_number} - {batch.product.generic_name_dosage if batch.product else 'No Product'}"
+    } for batch in batches]
+
+    return JsonResponse({'results': results})
+
+@login_required
+def edit_damaged_product(request, product_id):
+    if request.method == "POST":
+        try:
+            damaged_product = get_object_or_404(DamagedProduct, id=product_id)
+            quantity = request.POST.get('quantity')
+            notes = request.POST.get('notes')
+
+            # Get the old quantity for stock adjustment
+            old_quantity = damaged_product.quantity
+
+            # Update the damaged product
+            damaged_product.quantity = quantity
+            damaged_product.notes = notes
+            damaged_product.save()
+
+            # Update the stock's damaged quantity
+            stock = Stock.objects.filter(
+                product=damaged_product.product,
+                branch=damaged_product.branch
+            ).first()
+
+            if stock:
+                # Subtract the old quantity and add the new quantity
+                stock.damaged_quantity = (stock.damaged_quantity or 0) - old_quantity + int(quantity)
+                stock.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Damaged product updated successfully.'
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })
+
+@login_required
+def delete_damaged_product(request, product_id):
+    if request.method == "POST":
+        try:
+            damaged_product = get_object_or_404(DamagedProduct, id=product_id)
+
+            # Get the quantity for stock adjustment
+            quantity = damaged_product.quantity
+
+            # Update the stock's damaged quantity
+            stock = Stock.objects.filter(
+                product=damaged_product.product,
+                branch=damaged_product.branch
+            ).first()
+
+            if stock:
+                stock.damaged_quantity = (stock.damaged_quantity or 0) - quantity
+                stock.save()
+
+            # Delete the damaged product record
+            damaged_product.delete()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Damaged product deleted successfully.'
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })

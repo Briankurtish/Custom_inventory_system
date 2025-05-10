@@ -1,0 +1,47 @@
+{% extends "layout/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Damaged Product" %}{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{% trans "Edit Damaged Product" %}</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">{% trans "Product" %}</label>
+                <input type="text" class="form-control" value="{{ damaged_product.product.brand_name.brand_name }} - {{ damaged_product.product.generic_name_dosage }} - {{ damaged_product.product.batch.batch_number }}" readonly>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">{% trans "Branch" %}</label>
+                <input type="text" class="form-control" value="{{ damaged_product.branch.branch_name }}" readonly>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="quantity" class="form-label">{% trans "Quantity" %}</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" value="{{ damaged_product.quantity }}" required min="1">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="notes" class="form-label">{% trans "Notes" %}</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3">{{ damaged_product.notes }}</textarea>
+              </div>
+            </div>
+            <div class="mt-4">
+              <button type="submit" class="btn btn-primary me-2">{% trans "Save Changes" %}</button>
+              <a href="{% url 'damaged-products' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

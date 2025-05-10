@@ -128,6 +128,12 @@
       transition: opacity $menu-animation-duration ease-in-out;
     }
   }
+
+  .menu-dropdown-icon {
+    margin-left: auto !important;
+    display: flex;
+    align-items: center;
+  }
 }
 
 // Sub menu
@@ -151,10 +157,9 @@
   position: absolute;
   top: 50%;
   display: block;
-  font-family: 'boxicons';
   font-size: $menu-icon-expanded-font-size;
   transform: translateY(-50%);
-  content: '\ea50';
+  content: none;
 
   .menu:not(.menu-no-animation) & {
     transition-duration: $menu-animation-duration;

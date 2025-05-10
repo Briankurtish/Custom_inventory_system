@@ -1,5 +1,5 @@
 from django import forms
-from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem
+from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem, SampleOrderItem
 from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
@@ -90,6 +90,57 @@ class PurchaseOrderForm(forms.ModelForm):
 
 
 
+
+class SampleOrderForm(forms.ModelForm):
+
+    class Meta:
+        model = PurchaseOrder
+        fields = [
+            'created_at', 'branch', 'customer', 'sales_rep',
+        ]
+        widgets = {
+            'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
+            'branch': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'sales_rep': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+        }
+        labels = {
+            'created_at': _('Order Date'),
+            'branch': _('Branch'),
+            'customer': _('Customer'),
+            'sales_rep': _('Sales Representative'),
+
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_is_superuser = kwargs.pop('user_is_superuser', False)
+        user_branch = kwargs.pop('user_branch', None)
+        super().__init__(*args, **kwargs)
+
+        if user_is_superuser:
+            # Superuser: Access to all branches, sales reps, and customers
+            self.fields['branch'].queryset = Branch.objects.all()
+            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
+            self.fields['customer'].queryset = Customer.objects.all()
+        elif user_branch:
+            # Regular user: Restrict to their branch
+            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+            self.fields['branch'].disabled = False  # Make the field immutable
+            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
+            self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+
+        # Apply consistent styling to all fields
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            else:
+                field.widget.attrs.update({'class': 'form-control form-control'})  # Make fields shorter
+
+
+
+
+
+
 class PaymentScheduleForm(forms.ModelForm):
     class Meta:
         model = PaymentSchedule
@@ -156,6 +207,50 @@ class PurchaseOrderItemForm(forms.ModelForm):
                 )
         return temp_price
 
+
+
+
+
+class SampleOrderItemForm(forms.ModelForm):
+    class Meta:
+        model = SampleOrderItem
+        fields = ['stock', 'quantity', 'reason']
+        widgets = {
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        }
+        labels = {
+            'stock': _('Product'),
+            'quantity': _('Quantity'),
+            'reason': _("Note")
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Get the user instance
+        user_branch = kwargs.pop('user_branch', None)  # User's assigned branch
+        selected_branch = kwargs.get('instance').branch if kwargs.get('instance') else None  # Branch from Purchase Order
+        super().__init__(*args, **kwargs)
+
+        # Determine which branch to use for filtering stock
+        branch_to_filter = selected_branch if user and user.is_superuser else user_branch
+
+        if branch_to_filter:
+            self.fields['stock'].queryset = Stock.objects.filter(branch=branch_to_filter)
+
+        self.fields['stock'].widget.attrs.update({'class': 'form-control'})
+        self.fields['stock'].label_from_instance = (
+            lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.brand_name.brand_name if obj.product.brand_name else ''} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
+        )
+
+
+    def clean_quantity(self):
+        quantity = self.cleaned_data.get('quantity')
+        stock = self.cleaned_data.get('stock')
+
+        if stock and quantity > stock.total_stock:
+            raise forms.ValidationError(
+                _(f"Insufficient stock: only {stock.total_stock} units available for {stock.product.generic_name_dosage}.")
+            )
+        return quantity
 
 
 

@@ -4,27 +4,24 @@
 {% load i18n %}
 {% load humanize %}
 
-{% block title %}{% trans "Order List" %}{% endblock %}
+{% block title %}{% trans "Sample Order List" %}{% endblock %}
 
 {% block content %}
 
 {% if role_privileges %}
     {% for privilege in role_privileges %}
-        {% if privilege.name == 'Create Orders' %}
-          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-            <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
+        {% if privilege.name == 'Create Sample Orders' %}
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-sample-order' %}'">
+            <span class="fa-solid fa-plus me-2"></span>{% trans "Create Sample Order" %}
           </button>
         {% endif %}
     {% endfor %}
 {% endif %}
 
 {% if user.is_superuser %}
-  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
-    <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-sample-order' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "Create Sample Order" %}
   </button>
-  <a href="{% url 'sales_report' %}" target="_blank" class="btn btn-outline-primary">
-    <span class="fa-solid fa-download me-2"></span>{% trans "Sales Report" %}
-</a>
 {% endif %}
 
 <hr class="my-8">
@@ -68,6 +65,7 @@
       {% endfor %}
     </select>
   </div>
+
 
   <div class="col-auto">
     <label for="sales_rep" class="form-label">{% trans "Sales Rep" %}</label>
@@ -113,18 +111,16 @@
 
 <!-- Hoverable Table rows -->
 <div class="card">
-  <h5 class="card-header">{% trans "Order List" %}</h5>
+  <h5 class="card-header">{% trans "Sample Order List" %}</h5>
   <div class="table-responsive text-nowrap">
     <table class="table table-hover">
       <thead>
         <tr>
           <th>{% trans "No" %}</th>
-          <th>{% trans "Order ID" %}</th>
+          <th>{% trans "Sample Order ID" %}</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Client" %}</th>
           <th>{% trans "Sales Rep" %}</th>
-          <th>{% trans "Total(THT)" %}</th>
-          <th>{% trans "Total(TTC)" %}</th>
           <th>{% trans "Created By" %}</th>
           <th>{% trans "Created At" %}</th>
           <th>{% trans "Approved By" %}</th>
@@ -137,17 +133,11 @@
         <tr class="{% if order.status|lower == 'canceled' %}text-muted bg-light{% elif order.has_return_order %}greyed-out{% endif %}">
           <td><span>{{ forloop.counter|add:offset }}</span></td>
           <td>
-            {% if order.return_order_id %}
-              <p class="text-danger">{{ order.return_order_id }}</p>
-            {% else %}
-              {{ order.purchase_order_id }}
-            {% endif %}
+            <p>{{ order.sample_order_id }}</p>
           </td>
           <td>{{ order.branch.branch_id }}</td>
           <td>{{ order.customer.customer_name }}</td>
           <td><span>{{ order.sales_rep.user.first_name }} {{ order.sales_rep.user.last_name }}</span></td>
-          <td>{{ order.grand_total|floatformat:2|intcomma }}<small> CFA</small></td>
-          <td>{{ order.new_total|floatformat:2|intcomma }}<small> CFA</small></td>
           <td><span>{{ order.created_by.user.first_name }} {{ order.created_by.user.last_name }}</span></td>
           <td>{{ order.created_at|date:"d-m-Y" }}</td>
           <td>
@@ -158,61 +148,41 @@
             {% endif %}
           </td>
           <td>
-            {% if order.return_order_id %}
-              {% if order.status|lower == "approved" %}
-                <span class="badge bg-label-primary me-1">{% trans "Returned" %}</span>
-              {% endif %}
-            {% else %}
               {% if order.status|lower == "pending" %}
-                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-warning me-1{% endif %}">{% trans "Pending" %}</span>
+                <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
               {% elif order.status|lower == "approved" %}
-                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-success me-1{% endif %}">{% trans "Approved" %}</span>
+                <span class="badge bg-label-success me-1">{% trans "Approved" %}</span>
               {% elif order.status|lower == "rejected" %}
-                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-danger me-1{% endif %}">{% trans "Rejected" %}</span>
+                <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
               {% elif order.status|lower == "canceled" %}
-                <span class="{% if order.has_return_order %}greyed-out{% else %}badge bg-label-secondary me-1{% endif %}">{% trans "Canceled" %}</span>
+                <span class="badge bg-label-secondary me-1">{% trans "Canceled" %}</span>
               {% else %}
                 <span class="badge bg-label-info me-1">{{ order.status }}</span>
               {% endif %}
-            {% endif %}
           </td>
           <td>
             <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.status|lower == "canceled" or order.has_return_order %}{% endif %}>
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" {% if order.status|lower == "canceled" %}{% endif %}>
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
-              {% if order.has_return_order %}
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'order_details' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}" target="_blank">
-                  <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
-                </a>
-              </div>
-              {% else %}
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{% url 'order_details' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}" target="_blank">
+                   <a class="dropdown-item" href="{% url 'sample_order_details' order.id %}" target="_blank">
                     <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
                   </a>
-                  <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}" target="_blank">
+                  {% comment %} <a class="dropdown-item" href="{% url 'upload_purchase_order_document' order.id %}?type={% if order.return_order_id %}return{% else %}purchase{% endif %}" target="_blank">
                       <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
-                  </a>
+                  </a> {% endcomment %}
                 </div>
-              {% endif %}
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="12" class="text-center">{% trans "No Purchase Orders available" %}</td>
+          <td colspan="12" class="text-center">{% trans "No Sample Orders available" %}</td>
         </tr>
         {% endfor %}
 
-        <tr>
-          <td class="text-end"><strong>{% trans "Totals" %}:</strong></td>
-          <td colspan="4"></td>  <!-- Empty cells for spacing -->
-          <td class="text-start"><strong>{{ total_grand_total|floatformat:2|intcomma }} CFA</strong></td>
-          <td class="text-start"><strong>{{ total_new_total|floatformat:2|intcomma }} CFA</strong></td>
-          <td colspan="5"></td>  <!-- Empty cells for spacing -->
-        </tr>
+
       </tbody>
     </table>
   </div>
@@ -250,7 +220,7 @@
 
 {% if user.is_superuser %}
 <hr>
-<a href="{% url 'order-logs' %}" class="text-primary">See Logs</a>
+<a href="{% url 'sample-order-logs' %}" class="text-primary">See Logs</a>
 {% endif %}
 
 {% endblock %}

@@ -7,7 +7,15 @@ urlpatterns = [
         name="orders",  # URL name for this path
     ),
     path(
+        "sample-orders-list/",  # Path for listing orders
+        sample_order_list,  # View function for listing orders
+        name="sample_orders",  # URL name for this path
+    ),
+    path(
         "order-logs/", PurchaseOrderAuditLogView, name="order-logs",
+    ),
+    path(
+        "sample-order-logs/", SampleOrderAuditLogView, name="sample-order-logs",
     ),
     path(
         "purchase-order/<str:purchase_order_id>", view_purchase_order, name="purchase-order",
@@ -29,6 +37,11 @@ urlpatterns = [
         name="create-order",  # URL name for this path
     ),
     path(
+        "create-sample-order/",  # Path for creating a new order
+        create_sample_order,  # View function for creating orders
+        name="create-sample-order",  # URL name for this path
+    ),
+    path(
         "create-payment-schedule/",  # Path for creating a new order
         create_payment_schedule,  # View function for creating orders
         name="create_payment_schedule",  # URL name for this path
@@ -39,7 +52,14 @@ urlpatterns = [
         name="add_order_items",  # URL name for this path
     ),
 
+    path(
+        "add-sample-items/",  # Path for adding items to an order
+        add_sample_items,  # View function for adding items
+        name="add_sample_items",  # URL name for this path
+    ),
+
     path('order/<int:order_id>/', order_details, name='order_details'),
+    path('sample-order/<int:order_id>/', sample_order_details, name='sample_order_details'),
 
     path('customer-report/<int:customer_id>/', get_customer_report, name='customer_credit_report'),
 
@@ -87,7 +107,7 @@ urlpatterns = [
     path('payment/<int:payment_id>/receipt/', payment_receipt_view, name='payment_receipt'),  # ✅ Find receipt
 
     path('invoice/<int:invoice_id>/return/', return_items, name='return_items'),
-    path("returns/<int:invoice_id>/", process_return, name="process_return"),
+    # path("returns/<int:invoice_id>/", process_return, name="process_return"),
 
     path("order/<int:order_id>/add-tax/", add_tax_to_order, name="add_tax_to_order"),
 
@@ -103,7 +123,7 @@ urlpatterns = [
 
     path("return-payment-schedule/<int:return_invoice_id>/", create_return_payment_schedule, name="create_return_payment_schedule"),
 
-    path('invoice/<int:invoice_id>/return/', return_order, name='return_order'),
+    # path('invoice/<int:invoice_id>/return/', return_order, name='return_order'),
 
     path('reports/sales-report/', sales_report, name='sales_report'),
 

@@ -19,4 +19,4 @@ def update_total_stock(sender, instance, **kwargs):
     instance.total_inventory = (instance.fixed_beginning_inventory or 0) + instance.quantity
 
     # Compute available stock after transfers
-    instance.total_stock = instance.total_inventory - (instance.quantity_transferred + instance.total_sold)
+    instance.total_stock = instance.total_inventory - (instance.quantity_transferred + instance.total_sold + instance.samples_quantity + instance.damaged_quantity)

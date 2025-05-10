@@ -41,6 +41,9 @@
       <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'update_stock' %}'">
         <span class="fa-solid fa-pen-to-square me-2"></span>{% trans "Update Stock" %}
       </button>
+      <button type="button" class="btn btn-outline-info mb-5" onclick="window.location.href='{% url 'damaged-products' %}'">
+        <span class="fa-solid fa-triangle-exclamation  me-2"></span>{% trans "Damaged Products" %}
+      </button>
 
       <button type="button" class="btn btn-primary mb-5" data-toggle="modal" data-target="#branchSelectModal">
         <span class="fa-solid fa-download me-2"></span>{% trans "Download Report" %}
@@ -133,6 +136,8 @@
             <th>{% trans "Total" %}</th>
             <th>{% trans "Total Transfered" %}</th>
             <th>{% trans "Total Sold" %}</th>
+            <th>{% trans "Total Samples" %}</th>
+            <th>{% trans "Total Damaged" %}</th>
             <th>{% trans "Available Inventory" %}</th>
             <th>{% trans "Status" %}</th>
             <th>{% trans "Actions" %}</th>
@@ -345,6 +350,8 @@
                 <td>${stock.total_inventory}</td>
                 <td>${stock.quantity_transferred}</td>
                 <td>${stock.total_sold}</td>
+                <td>${stock.samples_quantity}</td>
+                <td>${stock.damaged_quantity}</td>
                 <td>${stock.total_stock}</td>
                 <td>
                   <span class="badge ${badgeClass}">${stockStatus}</span>

@@ -194,3 +194,56 @@ class StockMovement(models.Model):
         elif self.movement_type == "TRANSFER" and self.stock_transfer:
             return f"Stock Transfer #{self.stock_transfer.id} - {self.product} ({self.quantity}) on {self.transaction_date.strftime('%Y-%m-%d %H:%M:%S')}"
         return f"{self.get_movement_type_display()} (Invalid) - {self.product} ({self.quantity}) on {self.transaction_date.strftime('%Y-%m-%d %H:%M:%S')}"
+
+class DamagedProduct(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="damaged_products"
+    )
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="damaged_products"
+    )
+    quantity = models.PositiveIntegerField(
+        help_text="Quantity of damaged products"
+    )
+    date_recorded = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Date when the damage was recorded"
+    )
+    created_by = models.ForeignKey(
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='damaged_products_created'
+    )
+    notes = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Additional notes about the damage"
+    )
+
+    class Meta:
+        verbose_name = "Damaged Product"
+        verbose_name_plural = "Damaged Products"
+        ordering = ["-date_recorded"]
+
+    def __str__(self):
+        return f"{self.product.generic_name} - {self.quantity} damaged at {self.branch.branch_name} on {self.date_recorded.strftime('%Y-%m-%d')}"
+
+    @property
+    def generic_name(self):
+        return self.product.generic_name
+
+    @property
+    def brand_name(self):
+        return self.product.brand_name
+
+    @property
+    def dosage_form(self):
+        return self.product.dosage_form

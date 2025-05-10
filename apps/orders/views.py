@@ -5,10 +5,10 @@ from apps.genericName.models import GenericName
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
+from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, SampleOrder, SampleOrderAuditLog, SampleOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
 from apps.stock.models import Stock
 from django.contrib import messages
-from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm
+from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
@@ -241,6 +241,126 @@ def order_list(request):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, "orderList.html", context)
+
+
+
+
+
+@login_required
+def sample_order_list(request):
+    search_query = request.GET.get("search_query", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    status_filter = request.GET.get("status")
+    branch_id = request.GET.get("branch")
+    selected_month = request.GET.get("month")
+    sales_rep_id = request.GET.get("sales_rep")
+    created_by_id = request.GET.get("created_by")
+
+    branches = Branch.objects.all()
+    sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
+    # Filter workers who have created at least one PurchaseOrder or ReturnPurchaseOrder
+    workers = Worker.objects.filter(
+        Q(created_by_sample_orders__isnull=False)
+    ).distinct().order_by("user__first_name", "user__last_name")
+
+    user = request.user
+    is_accountant_or_superuser = user.worker_profile.role == "Accountant" or user.is_superuser
+
+    # Fetch purchase orders based on the user's role
+    if is_accountant_or_superuser:
+        sample_orders = SampleOrder.objects.exclude(sample_order_id__isnull=True).exclude(sample_order_id='')
+    else:
+        user_branch = user.worker_profile.branch
+        sample_orders = SampleOrder.objects.filter(branch=user_branch).exclude(sample_order_id__isnull=True).exclude(sample_order_id='')
+
+    # Apply filters
+    if start_date and end_date:
+        sample_orders = sample_orders.filter(created_at__date__range=[start_date, end_date])
+
+    if branch_id:
+        sample_orders = sample_orders.filter(branch__id=branch_id)
+
+    if selected_month:
+        sample_orders = sample_orders.filter(created_at__month=selected_month)
+
+    if status_filter:
+        sample_orders = sample_orders.filter(status__iexact=status_filter)
+
+    if sales_rep_id:
+        sample_orders = sample_orders.filter(sales_rep__id=sales_rep_id)
+
+    if created_by_id:
+        sample_orders = sample_orders.filter(created_by__id=created_by_id)
+
+    if search_query:
+        # Base search on PurchaseOrder fields
+        sample_order_query = (
+            Q(sample_order_id__icontains=search_query) |
+            Q(branch__branch_id__icontains=search_query) |
+            Q(customer__customer_name__icontains=search_query) |
+            Q(sales_rep__user__first_name__icontains=search_query) |
+            Q(sales_rep__user__last_name__icontains=search_query) |
+            Q(created_by__user__first_name__icontains=search_query) |
+            Q(created_by__user__last_name__icontains=search_query)
+        )
+
+        # Add search for generic_name and brand_name in related OrderItems
+        sample_orders_with_items = SampleOrder.objects.filter(
+            items__stock__product__generic_name_dosage__generic_name__icontains=search_query
+        ).distinct() | SampleOrder.objects.filter(
+            items__stock__product__brand_name__brand_name__icontains=search_query
+        ).distinct()
+
+
+
+        # Combine the searches
+        sample_orders = sample_orders.filter(
+            sample_order_query | Q(id__in=sample_orders_with_items.values('id'))
+        )
+
+
+
+
+    # Merge and sort orders
+    orders = sorted(
+        chain(sample_orders),
+        key=lambda order: (order.status.lower() != "pending", -order.created_at.timestamp() if order.created_at else 0),
+    )
+
+    # Paginate results
+    paginator = Paginator(orders, 100)
+    page_number = request.GET.get("page")
+    paginated_orders = paginator.get_page(page_number)
+
+    offset = (paginated_orders.number - 1) * paginator.per_page
+
+    months = [
+        {"id": "1", "name": "January"}, {"id": "2", "name": "February"}, {"id": "3", "name": "March"},
+        {"id": "4", "name": "April"}, {"id": "5", "name": "May"}, {"id": "6", "name": "June"},
+        {"id": "7", "name": "July"}, {"id": "8", "name": "August"}, {"id": "9", "name": "September"},
+        {"id": "10", "name": "October"}, {"id": "11", "name": "November"}, {"id": "12", "name": "December"},
+    ]
+
+    view_context = {
+        "orders": paginated_orders,
+        "search_query": search_query,
+        "start_date": start_date,
+        "end_date": end_date,
+        "status_filter": status_filter,
+        "branch_id": branch_id,
+        "branches": branches,
+        "sales_reps": sales_reps,
+        "sales_rep_id": sales_rep_id,
+        "workers": workers,
+        "created_by_id": created_by_id,
+        "offset": offset,
+        "months": months,
+        "selected_month": selected_month,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "SampleOrderList.html", context)
 
 
 
@@ -639,6 +759,25 @@ def PurchaseOrderAuditLogView(request):
 
     return render(request, "order_logs.html", context)
 
+
+@login_required
+def SampleOrderAuditLogView(request):
+    logs = SampleOrderAuditLog.objects.all().order_by('-timestamp')
+    paginator = Paginator(logs, 100)  # Paginate logs with 10 logs per page
+    page_number = request.GET.get("page")  # Get the current page number from the request
+    paginated_logs = paginator.get_page(page_number)  # Get the page object
+    offset = (paginated_logs.number - 1) * paginator.per_page
+    # Create a context dictionary for the view
+    view_context = {
+        "logs": paginated_logs,
+        "offset": offset,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "sample_order_logs.html", context)
+
 @login_required
 def InvoiceAuditLogView(request):
     logs = InvoiceAuditLog.objects.all().order_by('-timestamp')
@@ -840,7 +979,11 @@ def return_items(request, invoice_id):
     if "return_items" not in request.session:
         request.session["return_items"] = []
 
+    # Create form with non-sample items (price > 0)
     item_form = ReturnOrderItemForm(invoice_id=invoice_id)
+    item_form.fields['invoice_order_item'].queryset = InvoiceOrderItem.objects.filter(
+        invoice_order=invoice
+    ).exclude(price=0)  # Exclude items with price 0 (samples)
 
     if request.method == "POST":
         action = request.POST.get("action", "")
@@ -924,30 +1067,32 @@ def return_items(request, invoice_id):
                         revised_total = Decimal('0.00')
 
                         # Process the items and create return purchase order items
-                        # Process the items and create return purchase order items
                         for orig_po_item in original_po.items.all():
                             # Find the corresponding invoice item for this PO item
-
-                            invoice_item = InvoiceOrderItem.objects.get(
-                                invoice_order=invoice,
-                                stock=orig_po_item.stock
-                            )
-
-                            # Calculate remaining quantity based on the invoice item's return
-                            remaining_qty = invoice_item.quantity - sum(
-                                Decimal(str(ri["quantity_returned"]))
-                                for ri in return_items
-                                if ri["invoice_order_item_id"] == invoice_item.id
-                            )
-
-                            if remaining_qty > 0:
-                                ReturnPurchaseOrderItem.objects.create(
-                                    return_purchase_order=revised_po,
-                                    stock=orig_po_item.stock,
-                                    quantity=remaining_qty,
-                                    temp_price=orig_po_item.temp_price,
+                            try:
+                                invoice_item = InvoiceOrderItem.objects.get(
+                                    id__in=[ri["invoice_order_item_id"] for ri in return_items],
+                                    stock=orig_po_item.stock
                                 )
-                                revised_total += remaining_qty * orig_po_item.temp_price
+
+                                # Calculate remaining quantity based on the invoice item's return
+                                remaining_qty = invoice_item.quantity - sum(
+                                    Decimal(str(ri["quantity_returned"]))
+                                    for ri in return_items
+                                    if ri["invoice_order_item_id"] == invoice_item.id
+                                )
+
+                                if remaining_qty > 0:
+                                    ReturnPurchaseOrderItem.objects.create(
+                                        return_purchase_order=revised_po,
+                                        stock=orig_po_item.stock,
+                                        quantity=remaining_qty,
+                                        temp_price=orig_po_item.temp_price,
+                                    )
+                                    revised_total += remaining_qty * orig_po_item.temp_price
+                            except InvoiceOrderItem.DoesNotExist:
+                                # If this stock wasn't in the return items, skip it
+                                continue
 
                         revised_po.grand_total = revised_total
                         revised_po.save()
@@ -996,8 +1141,9 @@ def return_items(request, invoice_id):
 
                             # Update stock values
                             stock.total_sold -= quantity_returned
-                            # stock.total_stock += quantity_returned  # Increment total stock
-
+                            # If the reason is "Damaged product", increment damaged_quantity
+                            if return_item["reason_for_return"] == "Damaged product":
+                                stock.damaged_quantity += quantity_returned
                             stock.save()
 
                             ReturnOrderItem.objects.create(
@@ -1031,373 +1177,6 @@ def return_items(request, invoice_id):
 
     return render(request, "return_items.html", context)
 
-
-
-
-
-
-
-def return_order(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
-
-    # Initialize form with invoice items
-    form = ReturnOrderItemForm(request.POST or None, invoice_id=invoice_id)
-
-    if request.method == 'POST':
-        if 'add_item' in request.POST:
-            return handle_add_item(request, invoice_id)
-        elif 'remove_item' in request.POST:
-            return handle_remove_item(request, invoice_id)
-        elif 'submit_return' in request.POST:
-            return handle_submit_return(request, invoice_id)
-
-    return_items = request.session.get('return_items', [])
-
-    view_context = {
-        'invoice': invoice,
-        'items': invoice.items.all(),
-        'return_items': return_items,
-        'form': form,
-    }
-
-    context = TemplateLayout.init(request, view_context)
-
-
-    return render(request, 'return_items.html', context)
-
-def handle_add_item(request, invoice_id):
-    form = ReturnOrderItemForm(request.POST, invoice_id=invoice_id)
-
-    if form.is_valid():
-        item_id = form.cleaned_data['item_to_return'].id
-        quantity = form.cleaned_data['quantity_to_return']
-        reason = form.cleaned_data['reason_for_return']
-
-        invoice_item = get_object_or_404(InvoiceOrderItem, id=item_id, invoice_order_id=invoice_id)
-
-        if quantity > invoice_item.quantity:
-            messages.error(request, "Return quantity cannot exceed original quantity")
-            return redirect('return_order', invoice_id=invoice_id)
-
-        return_items = request.session.get('return_items', [])
-
-        # Check if item already exists in return list
-        existing_item = next((item for item in return_items if item['item_id'] == str(item_id)), None)
-
-        if existing_item:
-            existing_item['quantity'] = quantity
-            existing_item['reason'] = reason
-        else:
-            return_items.append({
-                'item_id': str(item_id),
-                'product': invoice_item.stock.product.brand_name,
-                'quantity': quantity,
-                'reason': reason
-            })
-
-        request.session['return_items'] = return_items
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(request, f"{field}: {error}")
-
-    return redirect('return_order', invoice_id=invoice_id)
-
-def handle_remove_item(request, invoice_id):
-    item_id = request.POST.get('remove_item')
-    return_items = request.session.get('return_items', [])
-    return_items = [item for item in return_items if item['item_id'] != item_id]
-    request.session['return_items'] = return_items
-    return redirect('return_order', invoice_id=invoice_id)
-
-@transaction.atomic
-def handle_submit_return(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
-    return_items = request.session.get('return_items', [])
-
-    if not return_items:
-        messages.error(request, "No items to return")
-        return redirect('return_order', invoice_id=invoice_id)
-
-    try:
-        # Create Return Purchase Order
-        return_purchase_order = ReturnPurchaseOrder.objects.create(
-            branch=invoice.branch,
-            customer=invoice.customer,
-            sales_rep=invoice.sales_rep,
-            original_purchase_order=invoice.purchase_order,
-            payment_method=invoice.payment_method,
-            created_by=request.user.worker,
-            status='Completed',
-            return_order_id=f"RET{invoice.purchase_order.purchase_order_id}",
-            grand_total=0,  # Will be calculated
-            tax_rate=invoice.purchase_order.tax_rate,
-            precompte=invoice.purchase_order.precompte,
-            tva=invoice.purchase_order.tva,
-            is_special_customer=invoice.purchase_order.is_special_customer
-        )
-
-        # Create Return Invoice
-        return_invoice = ReturnInvoice.objects.create(
-            branch=invoice.branch,
-            customer=invoice.customer,
-            sales_rep=invoice.sales_rep,
-            original_invoice=invoice,
-            return_purchase_order=return_purchase_order,
-            payment_method=invoice.payment_method,
-            created_by=request.user.worker,
-            return_invoice_id=f"RET{invoice.invoice_id}",
-            grand_total=0,  # Will be calculated
-            total_with_taxes=0,  # Will be calculated
-            status='Refunded' if all(item['quantity'] == get_object_or_404(InvoiceOrderItem, id=item['item_id']).quantity for item in return_items) else 'Partially Refunded'
-        )
-
-        total_amount = 0
-
-        for item_data in return_items:
-            invoice_item = get_object_or_404(InvoiceOrderItem, id=item_data['item_id'])
-
-            # Create ReturnOrderItem
-            ReturnOrderItem.objects.create(
-                invoice_order_item=invoice_item,
-                quantity_returned=item_data['quantity'],
-                reason_for_return=item_data['reason'],
-                created_by=request.user.worker
-            )
-
-            # Create ReturnPurchaseOrderItem
-            return_po_item = ReturnPurchaseOrderItem.objects.create(
-                return_purchase_order=return_purchase_order,
-                stock=invoice_item.stock,
-                quantity=item_data['quantity'],
-                temp_price=invoice_item.price,
-                return_reason=item_data['reason']
-            )
-
-            # Create ReturnInvoiceOrderItem
-            return_invoice_item = ReturnInvoiceOrderItem.objects.create(
-                return_invoice=return_invoice,
-                stock=invoice_item.stock,
-                quantity=item_data['quantity'],
-                temp_price=invoice_item.price
-            )
-
-            # Update original invoice item quantity
-            invoice_item.quantity -= item_data['quantity']
-            invoice_item.save()
-
-            # Update totals
-            total_amount += invoice_item.price * item_data['quantity']
-
-        # Update return order totals
-        return_purchase_order.grand_total = total_amount
-        return_purchase_order.save()
-
-        return_invoice.grand_total = total_amount
-        return_invoice.total_with_taxes = total_amount * (1 + return_invoice.original_invoice.purchase_order.tax_rate / 100)
-        return_invoice.save()
-
-        # Clear session
-        if 'return_items' in request.session:
-            del request.session['return_items']
-
-        messages.success(request, "Return order created successfully")
-        return redirect('invoice_detail', pk=invoice_id)
-
-    except Exception as e:
-        messages.error(request, f"Error creating return order: {str(e)}")
-        return redirect('return_order', invoice_id=invoice_id)
-
-
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import (
-    Invoice, InvoiceOrderItem, ReturnInvoice, ReturnInvoiceOrderItem,
-    PurchaseOrderItem, ReturnPurchaseOrder, ReturnPurchaseOrderItem, Stock
-)
-from .forms import ReturnOrderItemForm
-
-from .models import ReturnItemTemp
-
-def to_decimal(value):
-    if isinstance(value, (float, int)):
-        value = Decimal(str(value))  # Convert to string before Decimal to avoid precision issues
-    elif isinstance(value, str):
-        try:
-            value = Decimal(value)
-        except InvalidOperation:
-            raise ValueError(f"Invalid decimal conversion for value: {value}")
-    elif not isinstance(value, Decimal):
-        raise ValueError(f"Unexpected type for decimal conversion: {type(value)}")
-
-    return value
-
-@login_required
-@transaction.atomic
-def process_return(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
-    user = request.user
-
-    # Get temporary return items for the current user
-    temp_items = ReturnItemTemp.objects.filter(user=user)
-
-    item_form = ReturnOrderItemForm(invoice_id=invoice_id)
-
-    if request.method == "POST":
-        action = request.POST.get("action", "")
-
-        if action == "add_item":
-            item_form = ReturnOrderItemForm(request.POST, invoice_id=invoice_id)
-            if item_form.is_valid():
-                invoice_order_item = item_form.cleaned_data["invoice_order_item"]
-                quantity_returned = int(item_form.cleaned_data["quantity_returned"])  # Ensure integer
-
-                if quantity_returned > invoice_order_item.quantity:
-                    messages.error(
-                        request,
-                        f"Cannot return more than {invoice_order_item.quantity} of {invoice_order_item.stock.product.product_code}."
-                    )
-                else:
-                    ReturnItemTemp.objects.create(
-                        user=user,
-                        invoice_order_item=invoice_order_item,
-                        quantity_returned=quantity_returned,
-                        reason_for_return=item_form.cleaned_data["reason_for_return"],
-                    )
-                    messages.success(
-                        request,
-                        f"Added {quantity_returned} of {invoice_order_item.stock.product.product_code} to return list."
-                    )
-                    return redirect("process_return", invoice_id=invoice_id)
-
-        elif action == "remove_item":
-            temp_id_str = request.POST.get("temp_item_id")
-            if temp_id_str:
-                try:
-                    temp_item = ReturnItemTemp.objects.get(id=int(temp_id_str), user=user)
-                    temp_item.delete()
-                    messages.success(request, "Removed item from return list.")
-                except (ReturnItemTemp.DoesNotExist, ValueError):
-                    messages.error(request, "Invalid item provided for removal.")
-
-        elif action == "submit_return":
-            if not temp_items.exists():
-                messages.error(request, "No items added for return.")
-                return redirect("process_return", invoice_id=invoice_id)
-
-            try:
-                with transaction.atomic():
-                    return_invoice_id = f"RET-{invoice.invoice_id}"
-                    new_grand_total = Decimal(0)
-                    processed_items = []
-
-                    for temp in temp_items:
-                        invoice_order_item = temp.invoice_order_item
-
-                        # Ensure both quantities are treated as integers
-                        old_quantity = invoice_order_item.quantity  # This is already an integer
-                        quantity_returned = temp.quantity_returned  # This is already an integer
-
-                        # No need for remaining_quantity, we directly use quantity_returned.
-                        remaining_quantity = quantity_returned
-
-                        # Ensure price is treated as Decimal
-                        price = invoice_order_item.price  # This should already be a Decimal
-                        if not isinstance(price, Decimal):
-                            price = Decimal(str(price))  # Convert to Decimal safely
-
-
-
-                        # Make sure remaining_quantity is treated as Decimal for multiplication
-                        # remaining_quantity = Decimal(remaining_quantity)  # Convert to Decimal
-
-                        # Add to grand total
-                        new_grand_total = Decimal(str(price)) # Keep total as Decimal
-
-                        processed_items.append({
-                            "stock_id": invoice_order_item.stock.id,
-                            "invoice_order_item_id": invoice_order_item.id,
-                            "remaining_quantity": remaining_quantity,
-                            "quantity_returned": quantity_returned,
-                            "price": price,
-                            "reason_for_return": temp.reason_for_return,
-                        })
-
-                    return_purchase_order = ReturnPurchaseOrder.objects.create(
-                        return_order_id=f"RET-{invoice.purchase_order.purchase_order_id}",
-                        original_purchase_order=invoice.purchase_order,
-                        branch=invoice.branch,
-                        customer=invoice.purchase_order.customer,
-                        sales_rep=invoice.purchase_order.sales_rep,
-                        created_by=request.user.worker_profile,
-                        grand_total=new_grand_total,
-                        status='Approved',
-                        payment_method=invoice.purchase_order.payment_method,
-                        payment_mode=invoice.purchase_order.payment_mode,
-                        tax_rate=invoice.purchase_order.tax_rate,
-                        precompte=invoice.purchase_order.precompte,
-                        tva=invoice.purchase_order.tva,
-                        is_special_customer=invoice.purchase_order.is_special_customer,
-                        notes=f"Return Order for Invoice {invoice.invoice_id}"
-                    )
-
-                    return_invoice = ReturnInvoice.objects.create(
-                        return_invoice_id=return_invoice_id,
-                        original_invoice=invoice,
-                        branch=invoice.branch,
-                        created_by=request.user.worker_profile,
-                        customer=invoice.customer,
-                        sales_rep=invoice.sales_rep,
-                        return_purchase_order=return_purchase_order,
-                        grand_total=new_grand_total,
-                        amount_due=new_grand_total,
-                        status='UnPaid',
-                    )
-
-                    for item in processed_items:
-                        stock = get_object_or_404(Stock, id=item["stock_id"])
-                        invoice_order_item = get_object_or_404(InvoiceOrderItem, id=item["invoice_order_item_id"])
-
-                        ReturnPurchaseOrderItem.objects.create(
-                            return_purchase_order=return_purchase_order,
-                            stock=stock,
-                            quantity=item["remaining_quantity"],
-                            return_reason=item["reason_for_return"],
-                        )
-
-                        ReturnInvoiceOrderItem.objects.create(
-                            return_invoice=return_invoice,
-                            stock=stock,
-                            quantity=item["remaining_quantity"],
-                            temp_price=item["price"],
-                        )
-
-                        # Increase warehouse stock by the returned quantity.
-                        stock.total_stock += item["quantity_returned"]
-                        stock.save()
-
-                        # Update the invoice order item with the new remaining quantity.
-                        invoice_order_item.quantity = item["remaining_quantity"]
-                        invoice_order_item.save()
-
-                    temp_items.delete()
-
-                    messages.success(request, "Return processed successfully.")
-                    return redirect("invoices")
-
-            except Exception as e:
-                messages.error(request, f"An error occurred while processing the return: {str(e)}")
-                return redirect("process_return", invoice_id=invoice_id)
-
-    view_context = {
-        "invoice": invoice,
-        "item_form": item_form,
-        "temp_items": temp_items,
-    }
-    context = TemplateLayout.init(request, view_context)
-    return render(request, "return_items.html", context)
 
 
 
@@ -1880,6 +1659,52 @@ def order_details(request, order_id):
 
 
 
+@login_required
+def sample_order_details(request, order_id):
+    user = request.user
+    worker = user.worker_profile
+
+    # Check if the user is a superuser or has "Accountant" privileges
+    is_accountant_or_superuser = user.is_superuser or worker.role == "Accountant"
+
+    # Get the order type from the query parameter
+    order_type = request.GET.get('type', 'Sample')  # Default to 'Sample' if not specified
+
+    # Fetch the SampleOrder
+    try:
+        order = get_object_or_404(SampleOrder, id=order_id)
+    except Http404:
+        messages.error(request, _("Sample Order not found."))
+        return redirect("sample_orders")
+
+    # Apply branch filter only if not accountant or superuser
+    if not is_accountant_or_superuser:
+        if order.branch != worker.branch:
+            messages.error(request, _("You do not have access to this order."))
+            return redirect("sample_orders")
+
+    # Fetch related SampleOrderItems
+    items = order.sample_items.all()  # Use the related_name to get items
+
+    # Calculate total quantity
+    total_quantity = items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+
+    # Fetch the worker's privileges
+    worker_privileges = worker.privileges.values_list('name', flat=True)
+
+    # Context for the template
+    view_context = {
+        "order": order,
+        "items": items,
+        "total_quantity": total_quantity,
+        "worker_privileges": worker_privileges,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "SampleOrderDetails.html", context)
+
+
+
 
 
 @login_required
@@ -2001,6 +1826,49 @@ def create_purchase_order(request):
 
 
 
+
+@login_required
+def create_sample_order(request):
+    """
+    Create a Sample order. Superusers can access all branches, while regular users are restricted to their branch.
+    """
+    # Determine if the user is a superuser or has a specific branch
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None  # Superuser can access all branches
+    else:
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+
+    if request.method == "POST":
+        # Pass 'user_is_superuser' and 'user_branch' to the form
+        smple_form = SampleOrderForm(data=request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+
+        if smple_form.is_valid():
+            created_at = smple_form.cleaned_data["created_at"]
+            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Save form data to the session instead of creating the purchase order immediately
+            request.session["sample_order_details"] = {
+                "created_at": created_at_str,
+                "branch": smple_form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": smple_form.cleaned_data["customer"].id,
+                "sales_rep": smple_form.cleaned_data["sales_rep"].id,  # Boolean field
+            }
+
+            # Redirect to the page for adding order items
+            return redirect("add_sample_items")
+        else:
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
+    else:
+        smple_form = SampleOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+
+    view_context = {"smple_form": smple_form}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "createSampleOrder.html", context)
+
+
+
 @login_required
 def add_order_items(request):
     user_branch = request.user.worker_profile.branch
@@ -2018,6 +1886,9 @@ def add_order_items(request):
 
     # Pass the selected branch to the form
     item_form = PurchaseOrderItemForm(user_branch=selected_branch)
+
+    # Get all available stocks for the sample modal
+    stocks = Stock.objects.select_related('product').filter(branch=selected_branch)
 
     if request.method == "POST":
         action = request.POST.get("action", "")
@@ -2144,6 +2015,42 @@ def add_order_items(request):
             else:
                 messages.error(request, _("No items added to the order."))
 
+        elif action == 'add_sample':
+            stock_id = request.POST.get('stock')
+            quantity = request.POST.get('quantity')
+            reason = request.POST.get('reason', 'Sample')
+
+            if stock_id and quantity:
+                try:
+                    stock = Stock.objects.get(id=stock_id, branch=selected_branch)
+                    quantity = int(quantity)
+
+                    # Ensure stock availability
+                    if quantity > stock.total_stock:
+                        messages.error(request, f"Insufficient stock: only {stock.total_stock} available.")
+                    else:
+                        # Create a new order item with price set to 0
+                        order_item = {
+                            'stock_id': stock.id,
+                            'stock_name': str(stock.product.generic_name_dosage),
+                            'quantity': quantity,
+                            'temp_price': 0,  # Set price to 0 for samples
+                            'total_price': 0,  # Total will be 0 since price is 0
+                            'reason': reason
+                        }
+
+                        # Get existing items from session or initialize empty list
+                        order_items = request.session["order_items"]
+                        order_items.append(order_item)
+                        request.session.modified = True
+                        messages.success(request, f"Added {quantity} samples of {stock.product.generic_name_dosage} to the order.")
+                except Stock.DoesNotExist:
+                    messages.error(request, _('Selected product does not exist.'))
+                except ValueError:
+                    messages.error(request, _('Invalid quantity value.'))
+            else:
+                messages.error(request, _('Please fill in all required fields.'))
+
     # Calculate order details
     order_items = request.session["order_items"]
     grand_total = sum(item["temp_price"] * item["quantity"] for item in order_items)
@@ -2152,11 +2059,139 @@ def add_order_items(request):
         "item_form": item_form,
         "order_items": order_items,
         "grand_total": grand_total,
+        "stocks": stocks,  # Add stocks to the context
     }
 
     context = TemplateLayout.init(request, view_context)
     return render(request, "addOrderItems.html", context)
 
+
+
+@login_required
+def add_sample_items(request):
+    user_branch = request.user.worker_profile.branch
+
+    # Retrieve the branch from the purchase order details stored in the session
+    sample_order_details = request.session.get("sample_order_details", {})
+    selected_branch_id = sample_order_details.get("branch")  # Branch ID from session
+
+    # Get the actual branch object
+    selected_branch = get_object_or_404(Branch, id=selected_branch_id) if selected_branch_id else user_branch
+
+    # Initialize session data if it doesn't exist
+    if "sample_items" not in request.session:
+        request.session["sample_items"] = []
+
+    # Pass the selected branch to the form
+    sample_item_form = SampleOrderItemForm(user_branch=selected_branch)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+
+        # Add item to order
+        if action == "add_item":
+            sample_item_form = SampleOrderItemForm(data=request.POST, user_branch=selected_branch)
+            if sample_item_form.is_valid():
+                stock = sample_item_form.cleaned_data["stock"]
+                quantity = sample_item_form.cleaned_data["quantity"]
+                reason = sample_item_form.cleaned_data["reason"]
+
+                # Ensure stock availability
+                if quantity > stock.total_stock:
+                    messages.error(request, f"Insufficient stock: only {stock.total_stock} available.")
+                else:
+                    # Add item to session
+                    sample_items = request.session["sample_items"]
+                    sample_items.append({
+                        "stock_id": stock.id,
+                        "stock_name": str(stock.product.generic_name_dosage),
+                        "reason": reason,
+                        "quantity": quantity,
+                    })
+                    request.session.modified = True
+                    messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
+            else:
+                messages.error(request, _("Invalid form input. Please correct the errors."))
+
+        # Remove item from order
+        elif action == "remove_item":
+            try:
+                item_index = int(request.POST.get("item_index", -1))
+                sample_items = request.session["sample_items"]
+
+                if 0 <= item_index < len(sample_items):
+                    removed_item = sample_items.pop(item_index)
+                    request.session.modified = True
+                    messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
+                else:
+                    messages.error(request, _("Invalid item index provided."))
+            except ValueError:
+                messages.error(request, _("Invalid item index provided."))
+
+        # Submit order
+        elif action == "submit_order":
+            sample_items = request.session["sample_items"]
+            if sample_items:
+                try:
+                    created_at_str = sample_order_details.get("created_at")
+                    created_at = datetime.strptime(created_at_str, '%Y-%m-%d %H:%M:%S')
+
+                    # Retrieve related objects
+                    customer = get_object_or_404(Customer, id=sample_order_details.get("customer"))
+                    sales_rep = get_object_or_404(Worker, id=sample_order_details.get("sales_rep"))
+                    branch = get_object_or_404(Branch, id=selected_branch_id)
+
+                    # Create purchase order
+                    sample_order = SampleOrder.objects.create(
+                        created_at=created_at,
+                        branch=branch,
+                        customer=customer,
+                        sales_rep=sales_rep,
+                        created_by=request.user.worker_profile,
+                        status="Pending",
+                    )
+
+                    # Add items to the purchase order
+                    for item in sample_items:
+                        stock = get_object_or_404(Stock, id=item["stock_id"])
+                        SampleOrderItem.objects.create(
+                            sample_order=sample_order,
+                            stock=stock,
+                            quantity=item["quantity"],
+                            reason=item['reason'],
+                        )
+
+                    # Log submission
+                    worker = request.user.worker_profile if hasattr(request.user, 'worker_profile') else None
+                    SampleOrderAuditLog.objects.create(
+                        user=worker,
+                        action="create",
+                        order=sample_order.sample_order_id,
+                        branch=worker.branch.branch_name if worker else "Unknown",
+                        details=f"Sample Order Created by: {worker}",
+                    )
+
+                    # Clear session and redirect
+                    request.session["sample_items"] = []
+                    request.session["latest_sample_order_id"] = sample_order.id
+                    request.session.modified = True
+                    messages.success(request, _("Sample order submitted successfully."))
+                    return redirect("sample_orders")
+                except Exception as e:
+                    messages.error(request, f"Error submitting the Sample order: {e}")
+            else:
+                messages.error(request, _("No items added to the Sample order."))
+
+    # Calculate order details
+    sample_items = request.session["sample_items"]
+
+    view_context = {
+        "sample_item_form": sample_item_form,
+        "sample_items": sample_items,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "addSampleItems.html", context)
 
 
 
@@ -2470,14 +2505,18 @@ def approve_order(request, order_id):
                     messages.error(request, f"Insufficient stock for {stock.product.product_code}.")
                     return redirect(reverse('order_details', args=[order_id]))
 
-                stock.total_sold += item_quantity
-                stock.save()
+                if item.temp_price == 0:  # Sample item
+                    stock.samples_quantity += item_quantity
+                    stock.save()
+                else:  # Regular item
+                    stock.total_sold += item_quantity
+                    stock.save()
 
-                TemporaryStock.objects.create(
-                    purchase_order=order,
-                    stock=stock,
-                    ordered_quantity=item_quantity
-                )
+                    TemporaryStock.objects.create(
+                        purchase_order=order,
+                        stock=stock,
+                        ordered_quantity=item_quantity
+                    )
 
             # Update order status
             order.status = 'Approved'
@@ -2521,11 +2560,13 @@ def approve_order(request, order_id):
 
             # Create invoice items
             for item in order.items.all():
+                price = 0 if item.reason == 'Sample' else item.get_effective_price()
                 InvoiceOrderItem.objects.create(
                     invoice_order=invoice,
                     stock=item.stock,
                     quantity=item.quantity,
-                    price=item.get_effective_price()
+                    price=price,
+                    reason=item.reason
                 )
 
             messages.success(request, _("Order approved and invoice generated successfully."))

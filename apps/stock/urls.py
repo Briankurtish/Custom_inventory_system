@@ -48,4 +48,12 @@ urlpatterns = [
     path('beginning-inventory/', add_beginning_inventory_view, name="add-beginning-inventory"),
 
     path('reports/inventory-register/', inventory_register, name='inventory_register'),
+    path('damaged-products/', damaged_products_view, name='damaged-products'),
+    path('add-damaged-product/', add_damaged_product, name='add-damaged-product'),
+    path('edit-damaged-product/<int:product_id>/', edit_damaged_product, name='edit-damaged-product'),
+    path('delete-damaged-product/<int:product_id>/', delete_damaged_product, name='delete-damaged-product'),
+
+    # Add new URL patterns for search functionality
+    path('search-products/', search_products, name='search-products'),
+    path('search-batches/', search_batches, name='search-batches'),
 ]

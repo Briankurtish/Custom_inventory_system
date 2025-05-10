@@ -347,31 +347,31 @@
             {% endfor %}
             <!-- Grand Total Row -->
             <tr>
-                <td colspan="6"><strong>Total(THT)</strong></td>  <!-- Empty columns for alignment -->
+                <td colspan="7"><strong>Total(THT)</strong></td>  <!-- Empty columns for alignment -->
                 <td><strong><h6>{{ total_quantity|intcomma }}</h6></strong></td>
                 <td class="text-primary"><strong>{{ order.grand_total|floatformat:2|intcomma }} CFA</strong></td>
             </tr>
 
             <tr>
-                <td colspan="6"><strong>IR Tax</strong></td>  <!-- Empty columns for alignment -->
+                <td colspan="7"><strong>IR Tax</strong></td>  <!-- Empty columns for alignment -->
                 <td><strong></strong></td>
                 <td class="text-secondary"><strong>{{ tax_details.tax_amount|floatformat:2|intcomma }} CFA</strong></td>
             </tr>
 
             <tr>
-                <td colspan="6"><strong>Precompte</strong></td>  <!-- Empty columns for alignment -->
+                <td colspan="7"><strong>Precompte</strong></td>  <!-- Empty columns for alignment -->
                 <td><strong></strong></td>
                 <td class="text-secondary"><strong>{{ tax_details.precompte_amount|floatformat:2|intcomma }} CFA</strong></td>
             </tr>
 
             <tr>
-                <td colspan="6"><strong>TVA</strong></td>  <!-- Empty columns for alignment -->
+                <td colspan="7"><strong>TVA</strong></td>  <!-- Empty columns for alignment -->
                 <td><strong></strong></td>
                 <td class="text-secondary"><strong>{{ tax_details.tva_amount|floatformat:2|intcomma }} CFA</strong></td>
             </tr>
 
             <tr>
-                <td colspan="6"><strong>Total(TTC)</strong></td>  <!-- Empty columns for alignment -->
+                <td colspan="7"><strong>Total(TTC)</strong></td>  <!-- Empty columns for alignment -->
                 <td><strong></strong></td>
                 <td class="text-primary"><strong>{{ total_with_taxes|floatformat:2|intcomma }} CFA</strong></td>
             </tr>
