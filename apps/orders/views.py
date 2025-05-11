@@ -6,7 +6,7 @@ from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
 from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, SampleOrder, SampleOrderAuditLog, SampleOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
-from apps.stock.models import Stock
+from apps.stock.models import Stock, DamagedProduct
 from django.contrib import messages
 from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm
 from django.contrib.auth.decorators import login_required
@@ -31,6 +31,9 @@ from django.utils.translation import gettext_lazy as _
 from django.forms import formset_factory
 from datetime import datetime
 from num2words import num2words
+from collections import defaultdict
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 
 
@@ -1144,6 +1147,14 @@ def return_items(request, invoice_id):
                             # If the reason is "Damaged product", increment damaged_quantity
                             if return_item["reason_for_return"] == "Damaged product":
                                 stock.damaged_quantity += quantity_returned
+                                # Create a DamagedProduct record
+                                DamagedProduct.objects.create(
+                                    product=stock.product,
+                                    branch=stock.branch,
+                                    quantity=int(quantity_returned),
+                                    created_by=request.user.worker_profile,
+                                    notes=f"Returned from invoice {invoice.invoice_id}"
+                                )
                             stock.save()
 
                             ReturnOrderItem.objects.create(
@@ -3951,6 +3962,79 @@ def sales_report(request):
 
         return response
 
+    # Debt Recovery Section
+    from collections import defaultdict
+    from django.utils.timezone import now
+    from .models import Invoice, InvoicePayment, PaymentSchedule
+
+    # Gather all invoices in the filtered set
+    invoice_qs = Invoice.objects.all()
+    if branch_id:
+        invoice_qs = invoice_qs.filter(branch__id=branch_id)
+    if sales_rep_id:
+        invoice_qs = invoice_qs.filter(sales_rep__id=sales_rep_id)
+    if customer_id:
+        invoice_qs = invoice_qs.filter(customer__id=customer_id)
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            invoice_qs = invoice_qs.filter(created_at__date__gte=start_date_obj)
+        except ValueError:
+            invoice_qs = invoice_qs.none()
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            invoice_qs = invoice_qs.filter(created_at__date__lte=end_date_obj)
+        except ValueError:
+            invoice_qs = invoice_qs.none()
+
+    debt_recovery_rows = []
+    for invoice in invoice_qs.select_related('customer', 'sales_rep', 'purchase_order'):
+        schedules = PaymentSchedule.objects.filter(purchase_order=invoice.purchase_order).order_by('payment_date')
+        payments = InvoicePayment.objects.filter(invoice=invoice).order_by('payment_date')
+        payment_map = defaultdict(list)
+        for p in payments:
+            if p.payment_date:
+                payment_map[p.payment_date.date()].append(p)
+        balance = float(invoice.total_with_taxes)
+        payment_entries = []
+        max_days_past_due = 0
+        for idx, schedule in enumerate(schedules):
+            scheduled_date = schedule.payment_date.date() if schedule.payment_date else None
+            scheduled_amount = float(schedule.amount)
+            paid_amount = 0
+            paid_date = None
+            payment_obj = None
+            for pay in payments:
+                if pay.payment_date and scheduled_date and pay.payment_date.date() == scheduled_date:
+                    paid_amount = float(pay.amount_paid)
+                    paid_date = pay.payment_date
+                    payment_obj = pay
+                    break
+            balance -= paid_amount
+            days_past_due = 0
+            if scheduled_date and paid_amount < scheduled_amount:
+                days_past_due = (now().date() - scheduled_date).days
+                if days_past_due > max_days_past_due:
+                    max_days_past_due = days_past_due
+            payment_entries.append({
+                'schedule': schedule,
+                'scheduled_amount': scheduled_amount,
+                'paid_amount': paid_amount,
+                'paid_date': paid_date,
+                'balance': balance,
+                'days_past_due': days_past_due,
+                'payment_obj': payment_obj,
+            })
+        debt_recovery_rows.append({
+            'invoice': invoice,
+            'customer': invoice.customer,
+            'sales_rep': invoice.sales_rep,
+            'payment_entries': payment_entries,
+            'max_days_past_due': max_days_past_due,
+            'comments': invoice.purchase_order.notes if invoice.purchase_order else '',
+        })
+
     context = {
         'report_items': report_items,
         'totals': totals,
@@ -3968,6 +4052,266 @@ def sales_report(request):
         'customer_id': customer_id,  # Add customer_name to context
         'branch': branch,
         'customers': customers,
+        'debt_recovery_rows': debt_recovery_rows,
     }
 
     return render(request, 'sales_report.html', context)
+
+@login_required
+def debt_recovery_report_view(request):
+    # Get filter parameters
+    branch_id = request.GET.get('branch_id', '').strip()
+    generic_name = request.GET.get('generic_name', '').strip()
+    brand_name = request.GET.get('brand_name', '').strip()
+    sales_rep_id = request.GET.get('sales_rep_id', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+    customer_id = request.GET.get('customer_id', '').strip()
+
+    branches = Branch.objects.all()
+    sales_reps = Worker.objects.all().order_by('user__first_name')
+    generic_names = GenericName.objects.all()
+    customers = Customer.objects.all()
+    branch = Branch.objects.filter(id=branch_id).first() if branch_id else None
+
+    # --- Sales Report Data ---
+    sales_items = PurchaseOrderItem.objects.select_related(
+        'purchase_order', 'purchase_order__branch', 'purchase_order__customer',
+        'purchase_order__sales_rep', 'purchase_order__sales_rep__user',
+        'stock', 'stock__product',
+        'stock__product__brand_name', 'stock__product__generic_name_dosage',
+        'stock__product__dosage_form', 'stock__product__pack_size'
+    ).filter(purchase_order__status='Approved')
+    return_items = ReturnPurchaseOrderItem.objects.select_related(
+        'return_purchase_order', 'return_purchase_order__branch', 'return_purchase_order__customer',
+        'return_purchase_order__sales_rep', 'return_purchase_order__sales_rep__user',
+        'return_purchase_order__original_purchase_order',
+        'stock', 'stock__product',
+        'stock__product__brand_name', 'stock__product__generic_name_dosage',
+        'stock__product__dosage_form', 'stock__product__pack_size'
+    ).filter(return_purchase_order__status='Approved')
+    if branch_id:
+        try:
+            branch_id_int = int(branch_id)
+            sales_items = sales_items.filter(purchase_order__branch__id=branch_id_int)
+            return_items = return_items.filter(return_purchase_order__branch__id=branch_id_int)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+    if sales_rep_id:
+        try:
+            sales_rep_id_int = int(sales_rep_id)
+            sales_items = sales_items.filter(purchase_order__sales_rep__id=sales_rep_id_int)
+            return_items = return_items.filter(return_purchase_order__sales_rep__id=sales_rep_id_int)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            sales_items = sales_items.filter(purchase_order__created_at__date__gte=start_date_obj)
+            return_items = return_items.filter(return_purchase_order__created_at__date__gte=start_date_obj)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            sales_items = sales_items.filter(purchase_order__created_at__date__lte=end_date_obj)
+            return_items = return_items.filter(return_purchase_order__created_at__date__lte=end_date_obj)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+    if generic_name:
+        sales_items = sales_items.filter(stock__product__generic_name_dosage__generic_name__icontains=generic_name)
+        return_items = return_items.filter(stock__product__generic_name_dosage__generic_name__icontains=generic_name)
+    if brand_name:
+        sales_items = sales_items.filter(stock__product__brand_name__brand_name__icontains=brand_name)
+        return_items = return_items.filter(stock__product__brand_name__brand_name__icontains=brand_name)
+    if customer_id:
+        try:
+            customer_id_int = int(customer_id)
+            sales_items = sales_items.filter(purchase_order__customer__id=customer_id_int)
+            return_items = return_items.filter(return_purchase_order__customer__id=customer_id_int)
+        except ValueError:
+            sales_items = sales_items.none()
+            return_items = return_items.none()
+    report_items = []
+    totals = {
+        'quantity': 0,
+        'tax_amount_rate': Decimal('0.0'),
+        'tax_amount_tva': Decimal('0.0'),
+        'tax_amount_precompte': Decimal('0.0'),
+        'total': Decimal('0.0'),
+    }
+    for item in sales_items:
+        base_total = item.get_total_price()
+        tax_rate = item.purchase_order.tax_rate or Decimal('0.0')
+        tva = item.purchase_order.tva or Decimal('0.0')
+        precompte = item.purchase_order.precompte or Decimal('0.0')
+        tax_amount_rate = base_total * (tax_rate / Decimal('100')) if tax_rate else Decimal('0.0')
+        tax_amount_tva = base_total * (tva / Decimal('100')) if tva else Decimal('0.0')
+        tax_amount_precompte = base_total * (precompte / Decimal('100')) if precompte else Decimal('0.0')
+        total_with_taxes = base_total + tax_amount_rate + tax_amount_tva + tax_amount_precompte
+        invoice_number = 'N/A'
+        if hasattr(item.purchase_order, 'invoice') and item.purchase_order.invoice:
+            invoice_number = item.purchase_order.invoice.invoice_id if item.purchase_order.invoice else 'N/A'
+        sales_rep_name = (f"{item.purchase_order.sales_rep.user.first_name} {item.purchase_order.sales_rep.user.last_name}"
+                         if item.purchase_order.sales_rep and item.purchase_order.sales_rep.user else 'N/A')
+        report_items.append({
+            'date': item.purchase_order.created_at,
+            'order_number': item.purchase_order.purchase_order_id,
+            'invoice_number': invoice_number,
+            'branch': item.purchase_order.branch.branch_name,
+            'customer': str(item.purchase_order.customer.customer_name),
+            'sales_rep': sales_rep_name,
+            'brand_name': item.stock.product.brand_name.brand_name if item.stock.product.brand_name else 'N/A',
+            'generic_name': item.stock.product.generic_name_dosage.generic_name if item.stock.product.generic_name_dosage else 'N/A',
+            'dosage_form': item.stock.product.dosage_form.name if item.stock.product.dosage_form else 'N/A',
+            'pack_size': item.stock.product.pack_size if item.stock.product.pack_size else 'N/A',
+            'quantity': item.quantity,
+            'unit_price': item.get_effective_price(),
+            'tax_rate': tax_rate,
+            'tva': tva,
+            'precompte': precompte,
+            'tax_amount_rate': tax_amount_rate,
+            'tax_amount_tva': tax_amount_tva,
+            'tax_amount_precompte': tax_amount_precompte,
+            'total': total_with_taxes,
+        })
+        totals['quantity'] += item.quantity
+        totals['tax_amount_rate'] += tax_amount_rate
+        totals['tax_amount_tva'] += tax_amount_tva
+        totals['tax_amount_precompte'] += tax_amount_precompte
+        totals['total'] += total_with_taxes
+    for item in return_items:
+        base_total = item.get_total_price()
+        tax_rate = item.return_purchase_order.tax_rate or Decimal('0.0')
+        tva = item.return_purchase_order.tva or Decimal('0.0')
+        precompte = item.return_purchase_order.precompte or Decimal('0.0')
+        tax_amount_rate = base_total * (tax_rate / Decimal('100')) if tax_rate else Decimal('0.0')
+        tax_amount_tva = base_total * (tva / Decimal('100')) if tva else Decimal('0.0')
+        tax_amount_precompte = base_total * (precompte / Decimal('100')) if precompte else Decimal('0.0')
+        total_with_taxes = base_total + tax_amount_rate + tax_amount_tva + tax_amount_precompte
+        invoice_number = 'N/A'
+        if item.return_purchase_order.original_purchase_order and hasattr(item.return_purchase_order.original_purchase_order, 'invoice'):
+            invoice = item.return_purchase_order.original_purchase_order.invoice
+            invoice_number = invoice.invoice_id if invoice else 'N/A'
+        sales_rep_name = (f"{item.return_purchase_order.sales_rep.user.first_name} {item.return_purchase_order.sales_rep.user.last_name}"
+                         if item.return_purchase_order.sales_rep and item.return_purchase_order.sales_rep.user else 'N/A')
+        report_items.append({
+            'date': item.return_purchase_order.created_at,
+            'order_number': item.return_purchase_order.return_order_id,
+            'invoice_number': invoice_number,
+            'branch': item.return_purchase_order.branch.branch_name,
+            'customer': str(item.return_purchase_order.customer.customer_name),
+            'sales_rep': sales_rep_name,
+            'brand_name': item.stock.product.brand_name.brand_name if item.stock.product.brand_name else 'N/A',
+            'generic_name': item.stock.product.generic_name_dosage.generic_name if item.stock.product.generic_name_dosage else 'N/A',
+            'dosage_form': item.stock.product.dosage_form.name if item.stock.product.dosage_form else 'N/A',
+            'pack_size': item.stock.product.pack_size if item.stock.product.pack_size else 'N/A',
+            'quantity': item.quantity,
+            'unit_price': item.get_effective_price(),
+            'tax_rate': tax_rate,
+            'tva': tva,
+            'precompte': precompte,
+            'tax_amount_rate': tax_amount_rate,
+            'tax_amount_tva': tax_amount_tva,
+            'tax_amount_precompte': tax_amount_precompte,
+            'total': total_with_taxes,
+        })
+        totals['quantity'] += item.quantity
+        totals['tax_amount_rate'] += tax_amount_rate
+        totals['tax_amount_tva'] += tax_amount_tva
+        totals['tax_amount_precompte'] += tax_amount_precompte
+        totals['total'] += total_with_taxes
+    report_items.sort(key=lambda x: x['date'], reverse=True)
+
+    # --- Debt Recovery Data ---
+    from collections import defaultdict
+    from django.utils.timezone import now
+    from .models import Invoice, InvoicePayment, PaymentSchedule
+    invoice_qs = Invoice.objects.all()
+    if branch_id:
+        invoice_qs = invoice_qs.filter(branch__id=branch_id)
+    if sales_rep_id:
+        invoice_qs = invoice_qs.filter(sales_rep__id=sales_rep_id)
+    if customer_id:
+        invoice_qs = invoice_qs.filter(customer__id=customer_id)
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            invoice_qs = invoice_qs.filter(created_at__date__gte=start_date_obj)
+        except ValueError:
+            invoice_qs = invoice_qs.none()
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            invoice_qs = invoice_qs.filter(created_at__date__lte=end_date_obj)
+        except ValueError:
+            invoice_qs = invoice_qs.none()
+    debt_recovery_rows = []
+    for invoice in invoice_qs.select_related('customer', 'sales_rep', 'purchase_order'):
+        schedules = PaymentSchedule.objects.filter(purchase_order=invoice.purchase_order).order_by('payment_date')
+        payments = InvoicePayment.objects.filter(invoice=invoice).order_by('payment_date')
+        payment_map = defaultdict(list)
+        for p in payments:
+            if p.payment_date:
+                payment_map[p.payment_date.date()].append(p)
+        balance = float(invoice.total_with_taxes)
+        payment_entries = []
+        max_days_past_due = 0
+        for idx, schedule in enumerate(schedules):
+            scheduled_date = schedule.payment_date.date() if schedule.payment_date else None
+            scheduled_amount = float(schedule.amount)
+            paid_amount = 0
+            paid_date = None
+            payment_obj = None
+            for pay in payments:
+                if pay.payment_date and scheduled_date and pay.payment_date.date() == scheduled_date:
+                    paid_amount = float(pay.amount_paid)
+                    paid_date = pay.payment_date
+                    payment_obj = pay
+                    break
+            balance -= paid_amount
+            days_past_due = 0
+            if scheduled_date and paid_amount < scheduled_amount:
+                days_past_due = (now().date() - scheduled_date).days
+                if days_past_due > max_days_past_due:
+                    max_days_past_due = days_past_due
+            payment_entries.append({
+                'schedule': schedule,
+                'scheduled_amount': scheduled_amount,
+                'paid_amount': paid_amount,
+                'paid_date': paid_date,
+                'balance': balance,
+                'days_past_due': days_past_due,
+                'payment_obj': payment_obj,
+            })
+        debt_recovery_rows.append({
+            'invoice': invoice,
+            'customer': invoice.customer,
+            'sales_rep': invoice.sales_rep,
+            'payment_entries': payment_entries,
+            'max_days_past_due': max_days_past_due,
+            'comments': invoice.purchase_order.notes if invoice.purchase_order else '',
+        })
+    context = {
+        'report_items': report_items,
+        'totals': totals,
+        'current_date_time': timezone.now(),
+        'branches': branches,
+        'sales_reps': sales_reps,
+        'generic_names': generic_names,
+        'customers': customers,
+        'branch_id': branch_id,
+        'generic_name': generic_name,
+        'brand_name': brand_name,
+        'sales_rep_id': sales_rep_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'customer_id': customer_id,
+        'branch': branch,
+        'debt_recovery_rows': debt_recovery_rows,
+    }
+    return render(request, 'debt_recovery_report.html', context)

@@ -9,6 +9,13 @@
 
 {% block content %}
 
+<!-- Sales/Debt Recovery Report Button -->
+<div class="mb-3">
+  <a href="{% url 'debt_recovery_report' %}" target="_blank" class="btn btn-primary">
+    <i class="fa fa-chart-bar"></i> {% trans "Sales & Debt Recovery Report" %}
+  </a>
+</div>
+
 <hr class="my-8">
 
 <form method="GET" class="row g-2 align-items-center mb-3">
@@ -152,26 +159,26 @@
                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{% url 'invoice-doc' order.id %}" target="_blank">
+                  <a class="dropdown-item action-requires-pin" data-action-type="download" href="{% url 'invoice-doc' order.id %}" target="_blank">
                     <i class="fa-solid fa-download me-1"></i> {% trans "Download Invoice" %}
                   </a>
-                  <a class="dropdown-item {% if order.amount_due == 0 %}disabled text-muted{% endif %}"
+                  <a class="dropdown-item action-requires-pin {% if order.amount_due == 0 %}disabled text-muted{% endif %}" data-action-type="add-payment"
                      href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
                     <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Payment" %}
                   </a>
-                  <a class="dropdown-item" href="{% url 'payment_history' order.id %}">
+                  <a class="dropdown-item action-requires-pin" data-action-type="payment-history" href="{% url 'payment_history' order.id %}">
                     <i class="fa-solid fa-clock-rotate-left me-1"></i> {% trans "Payment History" %}
                   </a>
-                  <a class="dropdown-item" href="{% url 'upload_invoice_document' order.id %}">
+                  <a class="dropdown-item action-requires-pin" data-action-type="upload-docs" href="{% url 'upload_invoice_document' order.id %}">
                     <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
                   </a>
                   {% if order.return_purchase_order and order.status|lower == "unpaid" and order.return_purchase_order.id not in return_payment_schedules %}
-                    <a class="dropdown-item" href="{% url 'create_return_payment_schedule' order.id %}" class="btn btn-primary">
+                    <a class="dropdown-item action-requires-pin" data-action-type="add-schedule" href="{% url 'create_return_payment_schedule' order.id %}" class="btn btn-primary">
                       <i class="fa-solid fa-money-bill me-1"></i>{% trans "Add Payment Schedule" %}
                     </a>
                   {% endif %}
-                  {% if order.status|lower == "unpaid" and not order.has_return_invoice %}
-                    <a class="dropdown-item text-danger" href="{% url 'return_items' order.id %}">
+                  {% if order.status|lower == "unpaid" and not order.has_return_invoice and not order.return_invoice_id %}
+                    <a class="dropdown-item action-requires-pin text-danger" data-action-type="return-items" href="{% url 'return_items' order.id %}">
                       <i class="fa-solid fa-rotate-left me-1"></i> {% trans "Return Items" %}
                     </a>
                   {% endif %}
@@ -241,4 +248,117 @@
   </nav>
 </div>
 
+<!-- Security PIN and Warning Modals -->
+<div class="modal fade" id="invoiceWarningModal" tabindex="-1" aria-labelledby="invoiceWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="invoiceWarningModalLabel">{% trans "Warning" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans "You must create a Security PIN first." %}</p>
+        <a href="{% url 'create_security_pin' %}" class="btn btn-primary">{% trans "Create PIN" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="invoiceSecurityPinModal" tabindex="-1" aria-labelledby="invoiceSecurityPinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="invoiceSecurityPinModalLabel">{% trans "Enter Security PIN" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="invoiceSecurityPinForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="invoiceSecurityPinInput" class="form-label">{% trans "Security PIN" %}</label>
+            <input type="password" id="invoiceSecurityPinInput" class="form-control" maxlength="4" pattern="\d{4}" required>
+            <div class="form-text">{% trans "Enter your 4-digit security PIN" %}</div>
+          </div>
+          <button type="button" id="validateInvoicePinButton" class="btn btn-primary">{% trans "Confirm" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let invoiceActionUrl = null;
+    let invoiceActionType = null;
+    const warningModal = new bootstrap.Modal(document.getElementById('invoiceWarningModal'));
+    const pinModal = new bootstrap.Modal(document.getElementById('invoiceSecurityPinModal'));
+
+    // Attach handler to all dropdown actions that require PIN
+    document.querySelectorAll('.action-requires-pin').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            // Don't intercept disabled links
+            if (this.classList.contains('disabled') || this.classList.contains('text-muted')) return;
+            e.preventDefault();
+            invoiceActionUrl = this.getAttribute('href');
+            invoiceActionType = this.getAttribute('data-action-type');
+            fetch("{% url 'check_security_pin' %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_pin) {
+                        pinModal.show();
+                    } else {
+                        warningModal.show();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        });
+    });
+
+    document.getElementById('validateInvoicePinButton').addEventListener('click', function () {
+        const securityPinInput = document.getElementById('invoiceSecurityPinInput').value.trim();
+        if (securityPinInput.length !== 4 || !/^\d{4}$/.test(securityPinInput)) {
+            alert("Please enter a valid 4-digit PIN.");
+            return;
+        }
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        fetch("{% url 'validate_security_pin' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ pin: securityPinInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                if (invoiceActionUrl) {
+                    if (invoiceActionType === 'download' || invoiceActionType === 'upload-docs' || invoiceActionType === 'payment-history') {
+                        window.open(invoiceActionUrl, '_blank');
+                    } else {
+                        window.location.href = invoiceActionUrl;
+                    }
+                    pinModal.hide();
+                }
+            } else {
+                alert("Invalid PIN. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        })
+        .finally(() => {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        });
+    });
+});
+</script>
 {% endblock %}

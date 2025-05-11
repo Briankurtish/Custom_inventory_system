@@ -11,7 +11,7 @@
 {% if role_privileges %}
     {% for privilege in role_privileges %}
         {% if privilege.name == 'Create Orders' %}
-          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
+          <button type="button" class="btn btn-outline-primary">
             <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
           </button>
         {% endif %}
@@ -19,7 +19,7 @@
 {% endif %}
 
 {% if user.is_superuser %}
-  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-order' %}'">
+  <button type="button" class="btn btn-outline-primary">
     <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
   </button>
   <a href="{% url 'sales_report' %}" target="_blank" class="btn btn-outline-primary">
@@ -253,4 +253,161 @@
 <a href="{% url 'order-logs' %}" class="text-primary">See Logs</a>
 {% endif %}
 
+<!-- Warning Modal (No PIN Found) -->
+<div class="modal fade" id="orderWarningModal" tabindex="-1" aria-labelledby="orderWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderWarningModalLabel">{% trans "Warning" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans "You must create a Security PIN first." %}</p>
+        <a href="{% url 'create_security_pin' %}" class="btn btn-primary">{% trans "Create PIN" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Security PIN Modal -->
+<div class="modal fade" id="orderSecurityPinModal" tabindex="-1" aria-labelledby="orderSecurityPinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderSecurityPinModalLabel">{% trans "Enter Security PIN" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="orderSecurityPinForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="orderSecurityPinInput" class="form-label">{% trans "Security PIN" %}</label>
+            <input type="password" id="orderSecurityPinInput" class="form-control" maxlength="4" pattern="\d{4}" required>
+            <div class="form-text">{% trans "Enter your 4-digit security PIN" %}</div>
+          </div>
+          <button type="button" id="validateOrderPinButton" class="btn btn-primary">{% trans "Confirm" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block page_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let orderToViewUrl = null;
+    let orderActionType = null; // 'view', 'create', 'upload'
+    const orderWarningModal = new bootstrap.Modal(document.getElementById('orderWarningModal'));
+    const orderSecurityPinModal = new bootstrap.Modal(document.getElementById('orderSecurityPinModal'));
+
+    // Attach handler to all order view links
+    document.querySelectorAll('.dropdown-menu a.dropdown-item').forEach(function(link) {
+        const text = link.innerText.trim().toLowerCase();
+        if (text.includes('view')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                orderToViewUrl = this.getAttribute('href');
+                orderActionType = 'view';
+                fetch("{% url 'check_security_pin' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.has_pin) {
+                            orderSecurityPinModal.show();
+                        } else {
+                            orderWarningModal.show();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+            });
+        } else if (text.includes('upload documents')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                orderToViewUrl = this.getAttribute('href');
+                orderActionType = 'upload';
+                fetch("{% url 'check_security_pin' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.has_pin) {
+                            orderSecurityPinModal.show();
+                        } else {
+                            orderWarningModal.show();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+            });
+        }
+    });
+
+    // Attach handler to Create Order buttons
+    document.querySelectorAll('button.btn.btn-outline-primary').forEach(function(btn) {
+        if (btn.innerText.trim().toLowerCase().includes('create order')) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                orderToViewUrl = '{% url 'create-order' %}';
+                orderActionType = 'create';
+                fetch("{% url 'check_security_pin' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.has_pin) {
+                            orderSecurityPinModal.show();
+                        } else {
+                            orderWarningModal.show();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+            });
+        }
+    });
+
+    document.getElementById('validateOrderPinButton').addEventListener('click', function () {
+        const securityPinInput = document.getElementById('orderSecurityPinInput').value.trim();
+        if (securityPinInput.length !== 4 || !/^\d{4}$/.test(securityPinInput)) {
+            alert("Please enter a valid 4-digit PIN.");
+            return;
+        }
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        fetch("{% url 'validate_security_pin' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ pin: securityPinInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                if (orderToViewUrl) {
+                    if (orderActionType === 'view' || orderActionType === 'upload') {
+                        window.open(orderToViewUrl, '_blank');
+                    } else if (orderActionType === 'create') {
+                        window.location.href = orderToViewUrl;
+                    }
+                    orderSecurityPinModal.hide();
+                }
+            } else {
+                alert("Invalid PIN. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        })
+        .finally(() => {
+            // Hide loading overlay
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        });
+    });
+});
+</script>
 {% endblock %}

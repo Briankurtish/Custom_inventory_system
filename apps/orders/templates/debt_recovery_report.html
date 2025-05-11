@@ -1,0 +1,399 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Recovery Report</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .container {
+            max-width: 98vw;
+            margin: 32px auto 32px auto;
+            padding: 32px 24px 32px 24px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1.5px 4px rgba(0,0,0,0.04);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .po-number {
+            text-align: center;
+            font-size: 9px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .header h1 {
+            font-size: 14px;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .header .logo img {
+            max-width: 100px;
+            height: auto;
+        }
+        .header .date-time {
+            font-size: 10px;
+            text-align: left;
+            min-width: 120px;
+            color: #333;
+        }
+        .title-container {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .filter-form-container {
+            margin-bottom: 32px;
+        }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 150px;
+            height: 28px;
+            padding: 5px;
+            font-size: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+        .btn {
+            height: 28px;
+            padding: 0 10px;
+            font-size: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            display: block;
+            margin-bottom: 32px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        table {
+            min-width: 1200px;
+            width: max-content;
+            border-collapse: collapse;
+            margin: 10px 0 0;
+            border: 1px solid #ccc;
+        }
+        table th,
+        table td {
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+            padding: 6px;
+            background: #fff;
+        }
+        table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+        }
+        tr.totals-row td {
+            font-weight: bold;
+        }
+        th.stock-details, td.stock-details {
+            font-size: 10px;
+            white-space: normal;
+        }
+        th.quantity, td.quantity {
+            font-size: 9px;
+            text-align: center;
+        }
+        .footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            font-size: 9px;
+        }
+        .footer p {
+            margin: 0 10px;
+        }
+        @media screen and (max-width: 1200px) {
+            .container { width: 95%; min-height: auto; aspect-ratio: auto; }
+            th.stock-details, td.stock-details { font-size: 9px; padding: 4px; }
+            th.quantity, td.quantity { font-size: 8px; padding: 3px; }
+            .header .date-time { font-size: 9px; min-width: 100px; }
+            .form-group select, .form-group input, .btn { height: 26px; font-size: 9px; }
+        }
+        @media screen and (max-width: 768px) {
+            .container { width: 98%; padding: 10px; }
+            th.stock-details, td.stock-details { font-size: 8px; padding: 3px; }
+            th.quantity, td.quantity { font-size: 7px; padding: 2px; }
+            .header .date-time { font-size: 8px; min-width: 80px; }
+            .form-group select, .form-group input, .btn { height: 24px; font-size: 8px; width: 120px; }
+            .form-actions { flex-direction: column; gap: 5px; }
+        }
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        @media print {
+            .container { width: 100%; max-width: none; min-height: auto; margin: 0; padding: 10px; border: none; aspect-ratio: auto; }
+            .table-container { overflow-x: visible; }
+            table { width: 100%; font-size: 9px; }
+            th.stock-details, td.stock-details { font-size: 8px; padding: 4px; }
+            th.quantity, td.quantity { font-size: 7px; padding: 3px; }
+            .btn { display: none; }
+            .header h1 { font-size: 12px; }
+            .header .date-time { font-size: 8px; min-width: 100px; }
+            .footer { font-size: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+        <div class="date-time" style="text-align:center; min-width:120px;">
+                {{ current_date_time|date:"d M Y H:i" }}
+            </div>
+            <div class="column" style="flex:1; text-align:left;">
+                <h1 class="title-container">Debt Recovery Report</h1>
+                <p class="po-number">
+                    {{ branch.branch_name|default:"All Branches" }}
+                </p>
+            </div>
+            <div class="logo" style="flex:1; text-align:right;">
+                <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
+            </div>
+        </div>
+
+        <div class="filter-form-container d-print-none">
+            <form method="GET" action="" class="filter-form">
+                <div class="form-group">
+                    <label for="branch_id">Branch:</label>
+                    <select name="branch_id" id="branch_id">
+                        <option value="">All Branches</option>
+                        {% for branch in branches %}
+                            <option value="{{ branch.id }}" {% if branch_id == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customer_id">Customer:</label>
+                    <select name="customer_id" id="customer_id" style="width: 100%;">
+                      <option value="">All Customers</option>
+                      {% for customer in customers %}
+                        <option value="{{ customer.id }}" {% if customer_id|stringformat:"s" == customer.id|stringformat:"s" %}selected{% endif %}>
+                          {{ customer.customer_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sales_rep_id">Sales Rep:</label>
+                    <select name="sales_rep_id" id="sales_rep_id">
+                        <option value="">All Sales Reps</option>
+                        {% for sales_rep in sales_reps %}
+                            <option value="{{ sales_rep.id }}" {% if sales_rep_id == sales_rep.id|stringformat:"s" %}selected{% endif %}>
+                                {% if sales_rep.user %}
+                                    {{ sales_rep.user.first_name }} {{ sales_rep.user.last_name }}
+                                {% else %}
+                                    Unknown (ID: {{ sales_rep.id }})
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="?export=csv{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container" style="width: 100%; display: block; margin-bottom: 32px;">
+            <h5>Debt Recovery</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Date of Sale</th>
+                        <th rowspan="2">Order Number</th>
+                        <th rowspan="2">Invoice No.</th>
+                        <th rowspan="2">Sales Rep</th>
+                        <th rowspan="2">Branch</th>
+                        <th rowspan="2">Customer</th>
+                        <th rowspan="2">Brand Name</th>
+                        <th rowspan="2">Total (All)</th>
+                        {% for i in "12345"|make_list %}
+                            <th colspan="4" style="background:#f7b500; color:#222; text-align:center;">Payment {{ i }} {% if i == '1' %}(Upon Delivery){% endif %}</th>
+                        {% endfor %}
+                        <th rowspan="2" style="background:#2176bd; color:#fff;">Balance (Debt)</th>
+                        <th rowspan="2" style="background:#e57373; color:#fff;">Days Past Due</th>
+                    </tr>
+                    <tr>
+                        {% for i in "12345"|make_list %}
+                            <th style="background:#eee;">Date</th>
+                            <th style="background:#eee;">Cash</th>
+                            <th style="background:#eee;">Momo</th>
+                            <th style="background:#eee;">Bank</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in debt_recovery_rows %}
+                    <tr>
+                        <td>{{ row.invoice.created_at|date:"d-m-Y" }}</td>
+                        <td>{{ row.invoice.purchase_order.purchase_order_id }}</td>
+                        <td>{{ row.invoice.invoice_id }}</td>
+                        <td>{{ row.sales_rep.user.get_full_name }}</td>
+                        <td>{{ row.invoice.branch.branch_name }}</td>
+                        <td>{{ row.customer.customer_name }}</td>
+                        <td>
+                            {% if row.invoice.purchase_order.items.first %}
+                                {{ row.invoice.purchase_order.items.first.stock.product.brand_name.brand_name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ row.invoice.total_with_taxes|floatformat:0|intcomma }}</td>
+                        {% for entry in row.payment_entries|slice:":5" %}
+                            <td>{{ entry.schedule.payment_date|date:"d-m-Y" }}</td>
+                            <td>{% if entry.payment_obj and entry.payment_obj.payment_mode == 'Cash' %}{{ entry.paid_amount|floatformat:0|intcomma }}{% endif %}</td>
+                            <td>{% if entry.payment_obj and entry.payment_obj.payment_mode == 'Mobile Money' %}{{ entry.paid_amount|floatformat:0|intcomma }}{% endif %}</td>
+                            <td>
+                              {% if entry.payment_obj %}
+                                {% if entry.payment_obj.payment_mode == 'Bank Deposit' or entry.payment_obj.payment_mode == 'Check' %}
+                                  {{ entry.paid_amount|floatformat:0|intcomma }}
+                                {% endif %}
+                              {% endif %}
+                            </td>
+                        {% endfor %}
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter > row.payment_entries|length %}
+                                <td></td><td></td><td></td><td></td>
+                            {% endif %}
+                        {% endfor %}
+                        {% with last_entry=row.payment_entries|last %}
+                            <td style="background:#eaf6ff; font-weight:bold;">
+                                {% if last_entry %}
+                                    {{ last_entry.balance|floatformat:0|intcomma }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </td>
+                        {% endwith %}
+                        <td>
+                          {{ row.max_days_past_due }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background:#2176bd; color:#fff; font-weight:bold;">
+                        <td colspan="8"></td>
+                        {% for i in "12345"|make_list %}
+                            <td></td>
+                            <td><!-- Total Cash for Payment {{ i }} --></td>
+                            <td><!-- Total Momo for Payment {{ i }} --></td>
+                            <td><!-- Total Bank for Payment {{ i }} --></td>
+                        {% endfor %}
+                        <td><!-- Total Balance --></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>NIU: M022014416253M</p>
+            <p>-</p>
+            <p>Reg No: RC/YAO/2020/B/239</p>
+        </div>
+
+        <br><br>
+        <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+            <i class="fas fa-print"></i> Print
+        </a>
+        <br><br>
+    </div>
+</body>
+</html>
+
+<script>
+    $(document).ready(function () {
+      $("#customer_id").select2({
+        placeholder: "Search for a Customer",
+        allowClear: true,
+        width: "resolve"
+      });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+      $("#sales_rep_id").select2({
+        placeholder: "Search for a Sales Rep",
+        allowClear: true,
+        width: "100%",
+      });
+    });
+</script>
