@@ -34,6 +34,8 @@ from num2words import num2words
 from collections import defaultdict
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import Coalesce
+from decimal import Decimal
 
 
 
@@ -4315,3 +4317,135 @@ def debt_recovery_report_view(request):
         'debt_recovery_rows': debt_recovery_rows,
     }
     return render(request, 'debt_recovery_report.html', context)
+
+@login_required
+def sales_agent_performance_report(request):
+    from django.db.models.functions import Coalesce
+    from decimal import Decimal
+    branch_id = request.GET.get('branch_id', '').strip()
+    sales_rep_id = request.GET.get('sales_rep_id', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    # Get all branches for the filter dropdown
+    branches = Branch.objects.all()
+
+    # Base queryset for workers
+    workers_qs = Worker.objects.select_related('user', 'branch').order_by('user__first_name')
+
+    # Filter workers by branch if branch_id is provided
+    if branch_id:
+        workers_qs = workers_qs.filter(branch_id=branch_id)
+
+    # Get the filtered list of workers
+    sales_reps = workers_qs
+
+    # Base filter for purchase orders
+    po_filter = Q(status='Approved')
+    if branch_id:
+        po_filter &= Q(branch__id=branch_id)
+    if sales_rep_id:
+        po_filter &= Q(sales_rep__id=sales_rep_id)
+    if start_date:
+        po_filter &= Q(created_at__date__gte=start_date)
+    if end_date:
+        po_filter &= Q(created_at__date__lte=end_date)
+
+    agent_data = []
+    total_sales = Decimal(0)
+    total_balance = Decimal(0)
+    total_received = Decimal(0)
+
+    for rep in sales_reps:
+        # Get orders for this worker
+        orders = PurchaseOrder.objects.filter(po_filter, sales_rep=rep)
+        order_ids = orders.values_list('id', flat=True)
+
+        # Calculate total order amount
+        total_order_amount = orders.aggregate(
+            total=Coalesce(Sum('grand_total', output_field=DecimalField()), Decimal('0.00'))
+        )['total']
+
+        # Get invoices and payments for these orders
+        invoice_ids = Invoice.objects.filter(purchase_order__in=order_ids).values_list('id', flat=True)
+        amount_received = InvoicePayment.objects.filter(invoice_id__in=invoice_ids).aggregate(
+            total=Coalesce(Sum('amount_paid', output_field=DecimalField()), Decimal('0.00'))
+        )['total']
+
+        # Calculate metrics
+        balance = total_order_amount - amount_received if total_order_amount else Decimal(0)
+        percent_sold = (amount_received / total_order_amount * 100) if total_order_amount else 0
+        percent_received = (amount_received / total_order_amount * 100) if total_order_amount else 0
+        percent_balance = (balance / total_order_amount * 100) if total_order_amount else 0
+
+        # Only add to agent_data if there are orders or if no filters are applied
+        if total_order_amount > 0 or not any([branch_id, sales_rep_id, start_date, end_date]):
+            agent_data.append({
+                'agent': rep,
+                'branch': rep.branch,
+                'total_sales': total_order_amount,
+                'percent_sold': percent_sold,
+                'amount_received': amount_received,
+                'percent_received': percent_received,
+                'balance': balance,
+                'percent_balance': percent_balance,
+            })
+
+            total_sales += total_order_amount
+            total_balance += balance
+            total_received += amount_received
+
+    totals = {
+        'total_sales': total_sales,
+        'total_received': total_received,
+        'total_balance': total_balance,
+    }
+
+    # CSV Export logic
+    if 'export' in request.GET and request.GET['export'] == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        branch = Branch.objects.filter(id=branch_id).first() if branch_id else None
+        branch_part = branch.branch_name.replace(' ', '_') if branch else 'all'
+        filename = f"sales_agent_performance_{branch_part}_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
+        if sales_rep_id:
+            filename += f"_worker_{sales_rep_id}"
+        if start_date:
+            filename += f"_from_{start_date.replace('-', '')}"
+        if end_date:
+            filename += f"_to_{end_date.replace('-', '')}"
+        filename += ".csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response, quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerow([
+            'Sales Agent', 'Branch', 'Total (A)', '% Sold', 'Amount Received', '% of Payment Received to Sale', 'Balance', '% of Balance to Total Debt'
+        ])
+        for row in agent_data:
+            writer.writerow([
+                row['agent'].user.get_full_name() if row['agent'].user else f"ID: {row['agent'].id}",
+                row['branch'].branch_name if row['branch'] else '',
+                f"{row['total_sales']:.2f}",
+                f"{row['percent_sold']:.0f}",
+                f"{row['amount_received']:.2f}",
+                f"{row['percent_received']:.0f}",
+                f"{row['balance']:.2f}",
+                f"{row['percent_balance']:.0f}",
+            ])
+        writer.writerow([
+            'Totals:', '', f"{totals['total_sales']:.2f}", '', f"{totals['total_received']:.2f}", '', f"{totals['total_balance']:.2f}", ''
+        ])
+        return response
+
+    view_context = {
+        'agent_data': agent_data,
+        'totals': totals,
+        'branches': branches,
+        'branch_id': branch_id,
+        'sales_reps': sales_reps,
+        'sales_rep_id': sales_rep_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'current_date_time': timezone.now(),
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'sales_agent_performance.html', context)

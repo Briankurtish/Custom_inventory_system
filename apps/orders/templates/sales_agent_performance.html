@@ -1,0 +1,151 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Agent Performance Report</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11px; background-color: #f8f8f8; }
+        .container { width: 1200px; max-width: 95%; margin: 20px auto; padding: 20px; border: 1px solid #ccc; background-color: #fff; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .header h1 { font-size: 14px; margin: 0; text-align: center; flex-grow: 1; }
+        .header .logo img { max-width: 100px; height: auto; }
+        .header .date-time { font-size: 10px; text-align: left; min-width: 120px; color: #333; }
+        .title-container { background-color: #f0f0f0; padding: 10px 20px; border-radius: 4px; }
+        .filter-form-container { margin-bottom: 20px; }
+        .filter-form { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .form-group { margin-bottom: 10px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 10px; margin-bottom: 5px; }
+        .form-group select, .form-group input { width: 150px; height: 28px; padding: 5px; font-size: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-actions { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 10px; }
+        .btn { height: 28px; padding: 0 10px; font-size: 10px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; box-sizing: border-box; }
+        .btn-primary { background-color: #007bff; color: #fff; border: none; }
+        .btn-success { background-color: #28a745; color: #fff; border: none; }
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0 0; border: 1px solid #ccc; }
+        table th, table td { border: 1px solid #ccc; text-align: left; vertical-align: top; padding: 6px; }
+        table th { background-color: #f8f8f8; font-weight: bold; }
+        tr.totals-row td { font-weight: bold; }
+        .footer { display: flex; justify-content: flex-end; margin-top: 20px; font-size: 9px; }
+        .footer p { margin: 0 10px; }
+        @media screen and (max-width: 1200px) { .container { width: 95%; } }
+        @media screen and (max-width: 768px) { .container { width: 98%; padding: 10px; } }
+        @media print { .container { width: 100%; max-width: none; margin: 0; padding: 10px; border: none; } .table-container { overflow-x: visible; } table { width: 100%; font-size: 9px; } .btn { display: none; } .header h1 { font-size: 12px; } .header .date-time { font-size: 8px; min-width: 100px; } .footer { font-size: 8px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="date-time">
+                {{ current_date_time|date:"d M Y H:i" }}
+            </div>
+            <div class="column">
+                <h1 class="title-container">Sales Agent Performance Report</h1>
+            </div>
+            <div class="logo">
+                <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" style="max-width: 100px; height: auto;">
+            </div>
+        </div>
+
+        <div class="filter-form-container d-print-none">
+            <form method="GET" action="" class="filter-form">
+                <div class="form-group">
+                    <label for="branch_id">Branch:</label>
+                    <select name="branch_id" id="branch_id">
+                        <option value="">All Branches</option>
+                        {% for branch in branches %}
+                            <option value="{{ branch.id }}" {% if branch_id|stringformat:"s" == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sales_rep_id">Worker:</label>
+                    <select name="sales_rep_id" id="sales_rep_id">
+                        <option value="">All Workers</option>
+                        {% for sales_rep in sales_reps %}
+                            <option value="{{ sales_rep.id }}" {% if sales_rep_id|stringformat:"s" == sales_rep.id|stringformat:"s" %}selected{% endif %}>
+                                {% if sales_rep.user %}
+                                    {{ sales_rep.user.first_name }} {{ sales_rep.user.last_name }}
+                                {% else %}
+                                    Unknown (ID: {{ sales_rep.id }})
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="?export=csv{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sales Agent</th>
+                        <th>Branch</th>
+                        <th>Total (A)</th>
+                        <th>% Sold</th>
+                        <th>Amount Received</th>
+                        <th>% of Payment Received to Sale</th>
+                        <th>Balance</th>
+                        <th>% of Balance to Total Debt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in agent_data %}
+                    <tr>
+                        <td>{% if row.agent.user %}{{ row.agent.user.get_full_name }}{% else %}ID: {{ row.agent.id }}{% endif %}</td>
+                        <td>{{ row.branch.branch_name }}</td>
+                        <td>{{ row.total_sales|floatformat:2|intcomma }}</td>
+                        <td>{{ row.percent_sold|floatformat:0 }}%</td>
+                        <td>{{ row.amount_received|floatformat:2|intcomma }}</td>
+                        <td>{{ row.percent_received|floatformat:0 }}%</td>
+                        <td>{{ row.balance|floatformat:2|intcomma }}</td>
+                        <td>{{ row.percent_balance|floatformat:0 }}%</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="totals-row">
+                        <td colspan="2"><strong>Totals:</strong></td>
+                        <td><strong>{{ totals.total_sales|floatformat:2|intcomma }}</strong></td>
+                        <td></td>
+                        <td><strong>{{ totals.total_received|floatformat:2|intcomma }}</strong></td>
+                        <td></td>
+                        <td><strong>{{ totals.total_balance|floatformat:2|intcomma }}</strong></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>NIU: M022014416253M</p>
+            <p>-</p>
+            <p>Reg No: RC/YAO/2020/B/239</p>
+        </div>
+
+        <br><br>
+        <a class="btn btn-sm btn-info float-right mr-1 d-print-none" href="#" onclick="javascript:window.print();" data-abc="true">
+            <i class="fas fa-print"></i> Print
+        </a>
+        <br><br>
+    </div>
+</body>
+</html>
