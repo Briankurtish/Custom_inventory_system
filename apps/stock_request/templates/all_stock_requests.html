@@ -1,0 +1,200 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "View All Stock Requests" %}{% endblock %}
+
+{% block content %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Request Stock' %}
+          <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
+            <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Request" %}
+          </button>
+          <hr>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+{% if user.is_superuser%}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-request' %}'">
+    <span class="fa-solid fa-plus me-2"></span>{% trans "New Stock Request" %}
+  </button>
+  <hr>
+{% endif %}
+
+{% comment %} <!-- Filter Section with Improved Design -->
+<form method="get" action="" class="mb-3">
+  <div class="d-flex align-items-center justify-content-between">
+    <label for="status_filter" class="me-2 mb-0">{% trans "Filter by Status" %}:</label>
+    <div class="d-flex">
+      <select name="status_filter" id="status_filter" class="form-select form-select-sm" style="width: 180px;">
+        <option value="">{% trans "All" %}</option>
+        <option value="pending" {% if request.GET.status_filter == "pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+        <option value="accepted" {% if request.GET.status_filter == "in transit" %}selected{% endif %}>{% trans "In Transit" %}</option>
+        <option value="rejected" {% if request.GET.status_filter == "rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
+      </select>
+      <button type="submit" class="btn btn-outline-primary btn-sm ms-2">{% trans "Apply" %}</button>
+    </div>
+  </div>
+</form> {% endcomment %}
+
+<form method="GET" class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+  </div>
+
+  <div class="col-auto">
+    <label for="branch" class="form-label">{% trans "Branch" %}</label>
+    <select id="branch" name="branch" class="form-select form-select-sm">
+      <option value="">{% trans "All Branches" %}</option>
+      {% for b in branches %}
+        <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+          {{ b.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="requested_by" class="form-label">{% trans "Requested By" %}</label>
+    <select id="requested_by" name="requested_by" class="form-select form-select-sm">
+      <option value="">{% trans "All Requesters" %}</option>
+      {% for worker in workers %}
+        <option value="{{ worker.id }}" {% if requested_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
+          {{ worker.user.first_name }} {{ worker.user.last_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="status_filter" class="form-label">{% trans "Status" %}</label>
+    <select id="status_filter" name="status_filter" class="form-select form-select-sm">
+      <option value="">{% trans "All Statuses" %}</option>
+      <option value="pending" {% if status_filter == "pending" %}selected{% endif %}>{% trans "Pending" %}</option>
+      <option value="approved" {% if status_filter == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+      <option value="rejected" {% if status_filter == "rejected" %}selected{% endif %}>{% trans "Rejected" %}</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-sm mt-4">{% trans "Filter" %}</button>
+  </div>
+</form>
+
+<!-- Hoverable Table rows -->
+<div class="card">
+  <h5 class="card-header">{% trans "All Stock Requests" %}</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>{% trans "No" %}</th>
+          <th>{% trans "Request ID" %}</th>
+          <th>{% trans "Branch ID" %}</th>
+          <th>{% trans "Branch Name" %}</th>
+          <th>{% trans "Requested By" %}</th>
+          <th>{% trans "Date Requested" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for request in stock_requests %}
+          <tr>
+            <td><span>{{ forloop.counter }}</span></td>
+            <td><span>{{ request.request_number }}</span></td>
+            <td><span>{{ request.branch.branch_id }}</span></td>
+            <td><span>{{ request.branch.branch_name }}</span></td>
+            <td><span>{{ request.requested_by }}</span></td>
+            <td><span>{{ request.requested_at|date:"d-m-Y" }}</span></td>
+            <td>
+              {% if request.status|lower == "pending" %}
+                <span class="badge bg-label-warning me-1">{% trans "Pending" %}</span>
+              {% elif request.status|lower == "accepted" %}
+                <span class="badge bg-label-success me-1">{% trans "Accepted" %}</span>
+              {% elif request.status|lower == "rejected" %}
+                <span class="badge bg-label-danger me-1">{% trans "Rejected" %}</span>
+              {% else %}
+                <span class="badge bg-label-info me-1">{{ request.status }}</span> <!-- Default fallback -->
+              {% endif %}
+            </td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'stock_request_details' request.id %}">
+                    <i class="fa-solid fa-folder-open me-1"></i> View
+                  </a>
+                  <a class="dropdown-item" href="{% url 'upload_stock_request_document' request.id %}">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> {% trans "Upload Documents" %}
+                  </a>
+                  {% comment %} <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> {% trans "Edit" %}</a>
+                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> {% trans "Delete" %}</a> {% endcomment %}
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center">{% trans "No stock requests found" %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!--/ Hoverable Table rows -->
+
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+      {% if stock_requests.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stock_requests.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in stock_requests.paginator.page_range %}
+      <li class="page-item {% if stock_requests.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+
+      {% if stock_requests.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ stock_requests.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+
+{% if user.is_superuser %}
+
+<hr>
+
+<a href="{% url 'request-logs' %}" class="text-primary">See Logs</a>
+
+{% endif %}
+
+{% endblock %}

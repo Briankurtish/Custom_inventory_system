@@ -41,6 +41,7 @@ class Stock(models.Model):
     return_quantity = models.PositiveIntegerField(default=0)
     damaged_quantity = models.PositiveIntegerField(default=0)
     samples_quantity = models.PositiveIntegerField(default=0)
+    sickness_quantity = models.PositiveIntegerField(default=0)
     total_sold = models.PositiveIntegerField(
         default=0
     )

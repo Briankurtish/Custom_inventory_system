@@ -138,6 +138,7 @@
             <th>{% trans "Total Sold" %}</th>
             <th>{% trans "Total Samples" %}</th>
             <th>{% trans "Total Damaged" %}</th>
+            <th>{% trans "Total Sickness" %}</th>
             <th>{% trans "Available Inventory" %}</th>
             <th>{% trans "Status" %}</th>
             <th>{% trans "Actions" %}</th>
@@ -352,6 +353,7 @@
                 <td>${stock.total_sold}</td>
                 <td>${stock.samples_quantity}</td>
                 <td>${stock.damaged_quantity}</td>
+                <td>${stock.sickness_quantity}</td>
                 <td>${stock.total_stock}</td>
                 <td>
                   <span class="badge ${badgeClass}">${stockStatus}</span>

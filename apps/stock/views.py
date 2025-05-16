@@ -928,6 +928,7 @@ def get_stock_data(request):
                 "samples_quantity": stock.samples_quantity,
                 "quantity_transferred": stock.quantity_transferred,
                 "damaged_quantity": stock.damaged_quantity,
+                "sickness_quantity": stock.sickness_quantity,
             }
             for stock in stocks
         ]

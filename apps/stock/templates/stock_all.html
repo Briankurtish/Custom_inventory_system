@@ -107,8 +107,9 @@
           <th>{% trans "Total" %}</th>
           <th>{% trans "Total Transfered" %}</th>
           <th>{% trans "Total Sold" %}</th>
-          <th>{% trans "Samples Quantity" %}</th>
-          <th>{% trans "Damaged Quantity" %}</th>
+          <th>{% trans "Total Samples" %}</th>
+          <th>{% trans "Total Damaged" %}</th>
+          <th>{% trans "Total Sickness" %}</th>
           <th>{% trans "Available Inventory" %}</th>
           <th>{% trans "Status" %}</th>
           <th>{% trans "Date Added" %}</th>
@@ -131,6 +132,7 @@
             <td>{{ stock.total_sold|intcomma }}</td>
             <td>{{ stock.samples_quantity|intcomma }}</td>
             <td>{{ stock.damaged_quantity|intcomma }}</td>
+            <td>{{ stock.sickness_quantity|intcomma }}</td>
             <td>{{ stock.total_stock|intcomma }}</td>
             <td>
               {% if stock.total_stock == 0 %}

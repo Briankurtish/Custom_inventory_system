@@ -1289,3 +1289,114 @@ class ReturnOrderItem(models.Model):
 
     def __str__(self):
         return f"Return for {self.invoice_order_item.stock.product.product_code} (x{self.quantity_returned})"
+
+
+class Sickness(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
+    ]
+
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    employee = models.ForeignKey(
+        Worker,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='employee_sickness_orders',
+    )
+    has_prescription = models.BooleanField(default=False)
+    created_at = models.DateTimeField(null=True)
+    created_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Worker who created this Sickness Order", related_name='created_by_sickness_orders'
+    )
+    status = models.CharField(
+        max_length=50, choices=STATUS_CHOICES, default='Pending',
+        help_text="Current status of the Sickness order"
+    )
+    approved_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Worker who approved the Sickness order", related_name='approved_sickness_orders'
+    )
+    notes = models.TextField(
+        null=True, blank=True,
+        help_text="Optional notes for rejection or other updates"
+    )
+    sickness_order_id = models.CharField(
+        max_length=50, unique=True, editable=False, null=True, blank=True,
+        help_text="Unique identifier for the Sickness order"
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.sickness_order_id:
+            # Use the date from created_at or current date
+            order_date = self.created_at if self.created_at else timezone.now()
+            date_part = order_date.strftime("%Y%m%d")  # Keep date in ID for reference
+
+            # Extract REG from branch ID (e.g., "REG" from "REG-001")
+            branch_id_parts = self.branch.branch_id.split("-")
+            reg_part = branch_id_parts[0] if branch_id_parts else "UNKNOWN"
+
+            # Base prefix without sequence (SICK-REG-YYYYMMDD-)
+            base_prefix = f"SICK-{reg_part}-{date_part}-"
+
+            # Find the highest existing sequence number ACROSS ALL DATES for this branch
+            existing_ids = Sickness.objects.filter(
+                sickness_order_id__startswith=f"SICK-{reg_part}-"
+            ).values_list('sickness_order_id', flat=True)
+
+            # Extract all sequence numbers
+            sequences = []
+            for sick_id in existing_ids:
+                try:
+                    # Extract last part (sequence number)
+                    seq_part = sick_id.split("-")[-1]
+                    if seq_part.isdigit():
+                        sequences.append(int(seq_part))
+                except (IndexError, ValueError):
+                    continue
+
+            # Determine next sequence number
+            sequence = max(sequences) + 1 if sequences else 1
+
+            # Format final ID (SICK-REG-YYYYMMDD-XXXXX)
+            self.sickness_order_id = f"{base_prefix}{sequence:05d}"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.sickness_order_id} - {self.branch.branch_name}"
+
+
+class SicknessItem(models.Model):
+    sickness_order = models.ForeignKey(
+        Sickness, related_name="sickness_items", on_delete=models.CASCADE
+    )
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    reason = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        default="No Note",
+        help_text="Reason for medication"
+    )
+    price = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True,
+        help_text="Price per unit (0 if prescription, otherwise unit price)"
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.price:
+            if self.sickness_order.has_prescription:
+                self.price = 0
+            else:
+                self.price = self.stock.product.unit_price
+        super().save(*args, **kwargs)
+
+    def get_total_price(self):
+        return self.price * self.quantity
+
+    def __str__(self):
+        return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"

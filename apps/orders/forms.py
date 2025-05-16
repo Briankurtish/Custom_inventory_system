@@ -1,5 +1,5 @@
 from django import forms
-from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem, SampleOrderItem
+from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem, SampleOrderItem, Sickness, SicknessItem
 from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
@@ -529,3 +529,40 @@ class ReturnInvoiceDocumentForm(forms.ModelForm):
     class Meta:
         model = ReturnInvoiceDocument
         fields = ['document_type', 'document']
+
+class SicknessForm(forms.ModelForm):
+    class Meta:
+        model = Sickness
+        fields = ['branch', 'employee', 'has_prescription']
+        widgets = {
+            'branch': forms.Select(attrs={'class': 'form-select'}),
+            'employee': forms.Select(attrs={'class': 'form-select'}),
+            'has_prescription': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['employee'].queryset = Worker.objects.all().order_by("user__first_name")
+        self.fields['branch'].queryset = Branch.objects.all()
+
+
+class SicknessItemForm(forms.ModelForm):
+    class Meta:
+        model = SicknessItem
+        fields = ['stock', 'quantity', 'reason']
+        widgets = {
+            'stock': forms.Select(attrs={'class': 'form-select'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'reason': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_branch = kwargs.pop('user_branch', None)
+        super().__init__(*args, **kwargs)
+        if user_branch:
+            self.fields['stock'].queryset = Stock.objects.filter(branch=user_branch, quantity__gt=0)
+        else:
+            self.fields['stock'].queryset = Stock.objects.filter(quantity__gt=0)
+        self.fields['stock'].label_from_instance = (
+            lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.brand_name.brand_name if obj.product.brand_name else ''} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
+        )

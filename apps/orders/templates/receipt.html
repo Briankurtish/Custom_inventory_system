@@ -288,9 +288,15 @@
 
       <div class="totals">
         <div class="totals-section">
-          <strong><p>Amount Paid: {{ receipt.amount_paid|floatformat:2|intcomma }} CFA</p></strong>
-          <strong><p>Amount Due: {{ invoice.amount_due|floatformat:2|intcomma }} CFA</p></strong>
-
+          <p>Amount Paid: {{ receipt.amount_paid|intcomma }} FCFA</p>
+          <p>Payment Method: {{ receipt.payment_method }}</p>
+          {% if receipt.payment_method == "Mobile Money" and receipt.invoice_payment.momo_account %}
+            <p>Mobile Money Account: {{ receipt.invoice_payment.momo_account.account_name }} ({{ receipt.invoice_payment.momo_account.momo_name }})</p>
+          {% elif receipt.payment_method == "Check" and receipt.invoice_payment.check_account %}
+            <p>Check Account: {{ receipt.invoice_payment.check_account.account_name }} ({{ receipt.invoice_payment.check_account.bank.account_name }})</p>
+          {% elif receipt.payment_method == "Bank Deposit" and receipt.invoice_payment.bank_deposit_account %}
+            <p>Bank Account: {{ receipt.invoice_payment.bank_deposit_account.account_name }} ({{ receipt.invoice_payment.bank_deposit_account.bank.account_name }})</p>
+          {% endif %}
         </div>
       </div>
 

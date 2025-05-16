@@ -129,4 +129,13 @@ urlpatterns = [
     path('reports/debt-recovery/', debt_recovery_report_view, name='debt_recovery_report'),
     path('reports/sales-agent-performance/', sales_agent_performance_report, name='sales_agent_performance'),
 
+    # Sickness Order URLs
+    path('sickness-orders/', sickness_list, name='sickness_orders'),
+    path('sickness-order/<int:order_id>/', sickness_order_details, name='sickness_order_details'),
+    path('create-sickness-order/', create_sickness_order, name='create_sickness_order'),
+    path('add-sickness-items/', add_sickness_items, name='add_sickness_items'),
+    path('edit-sickness-prices/<int:order_id>/', edit_sickness_prices, name='edit_sickness_prices'),
+    path('approve-sickness-order/<int:order_id>/', approve_sickness_order, name='approve_sickness_order'),
+    path('reject-sickness-order/<int:order_id>/', reject_sickness_order, name='reject_sickness_order'),
+
 ]

@@ -36,6 +36,21 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.functions import Coalesce
 from decimal import Decimal
+from django.core.paginator import PageNotAnInteger, EmptyPage
+from .models import (
+    PurchaseOrder, PurchaseOrderItem, SampleOrder, SampleOrderItem,
+    PurchaseOrderDocument, ReturnPurchaseOrder, ReturnPurchaseOrderDocument,
+    ReturnPurchaseOrderItem, PaymentSchedule, ReturnPaymentSchedule,
+    PurchaseOrderAuditLog, SampleOrderAuditLog, InvoiceAuditLog,
+    Invoice, InvoiceDocument, InvoiceOrderItem, ReturnInvoice,
+    ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnItemTemp,
+    InvoicePayment, ReturnInvoicePayment, Receipt, ReturnReceipt,
+    ReturnOrderItem, Sickness, SicknessItem
+)
+from .forms import (
+    PurchaseOrderForm, PurchaseOrderItemForm, SampleOrderForm,
+    SampleOrderItemForm, SicknessForm, SicknessItemForm
+)
 
 
 
@@ -4449,3 +4464,331 @@ def sales_agent_performance_report(request):
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, 'sales_agent_performance.html', context)
+
+@login_required
+def create_sickness_order(request):
+    if request.method == 'POST':
+        form = SicknessForm(request.POST)
+        if form.is_valid():
+            # Store form data in session instead of creating database record
+            request.session['sickness_order_details'] = {
+                'branch': form.cleaned_data['branch'].id,
+                'employee': form.cleaned_data['employee'].id,
+                'has_prescription': form.cleaned_data['has_prescription'],
+                'created_at': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'created_by': request.user.worker_profile.id
+            }
+            return redirect('add_sickness_items')
+    else:
+        form = SicknessForm()
+
+    view_context = {
+        'form': form,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'createSicknessOrder.html', context)
+
+
+@login_required
+def add_sickness_items(request):
+    """
+    View to add items to a sickness order.
+    """
+    # Get the sickness order details from session
+    sickness_order_details = request.session.get('sickness_order_details')
+    if not sickness_order_details:
+        messages.error(request, "No active sickness order found.")
+        return redirect('create_sickness_order')
+
+    # Get the selected branch object
+    from apps.branches.models import Branch
+    selected_branch_id = sickness_order_details.get('branch')
+    selected_branch = Branch.objects.get(id=selected_branch_id) if selected_branch_id else None
+
+    # Initialize the session list for sickness items if it doesn't exist
+    if 'sickness_items' not in request.session:
+        request.session['sickness_items'] = []
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add_item':
+            form = SicknessItemForm(request.POST, user_branch=selected_branch)
+            if form.is_valid():
+                item = form.save(commit=False)
+
+                # Set price based on prescription
+                if sickness_order_details['has_prescription']:
+                    item.price = 0
+                else:
+                    item.price = item.stock.product.unit_price
+
+                # Store item in session
+                sickness_items = request.session['sickness_items']
+                sickness_items.append({
+                    'stock_id': item.stock.id,
+                    'stock_name': f"{item.stock.product.generic_name_dosage} - {item.stock.product.brand_name}",
+                    'quantity': item.quantity,
+                    'reason': item.reason,
+                    'price': float(item.price)
+                })
+                request.session['sickness_items'] = sickness_items
+                messages.success(request, "Item added successfully.")
+                return redirect('add_sickness_items')
+
+        elif action == 'remove_item':
+            item_index = int(request.POST.get('item_index', 0))
+            sickness_items = request.session['sickness_items']
+            if 0 <= item_index < len(sickness_items):
+                sickness_items.pop(item_index)
+                request.session['sickness_items'] = sickness_items
+            return redirect('add_sickness_items')
+
+        elif action == 'submit_order':
+            sickness_items = request.session['sickness_items']
+            if not sickness_items:
+                messages.error(request, "Cannot submit an empty order.")
+                return redirect('add_sickness_items')
+
+            try:
+                with transaction.atomic():
+                    # Create the sickness order
+                    sickness_order = Sickness.objects.create(
+                        branch_id=sickness_order_details['branch'],
+                        employee_id=sickness_order_details['employee'],
+                        has_prescription=sickness_order_details['has_prescription'],
+                        created_by_id=sickness_order_details['created_by'],
+                        created_at=datetime.strptime(sickness_order_details['created_at'], '%Y-%m-%d %H:%M:%S')
+                    )
+
+                    # Create SicknessItem objects
+                    for item_data in sickness_items:
+                        stock = Stock.objects.get(id=item_data['stock_id'])
+                        SicknessItem.objects.create(
+                            sickness_order=sickness_order,
+                            stock=stock,
+                            quantity=item_data['quantity'],
+                            reason=item_data['reason'],
+                            price=item_data['price']
+                        )
+
+                    # Clear the session
+                    del request.session['sickness_order_details']
+                    del request.session['sickness_items']
+
+                    messages.success(request, "Sickness order created successfully!")
+                    return redirect('sickness_orders')
+
+            except Exception as e:
+                messages.error(request, f"Error creating sickness order: {str(e)}")
+                return redirect('add_sickness_items')
+
+    else:
+        form = SicknessItemForm(user_branch=selected_branch)
+
+    view_context = {
+        'form': form,
+        'sickness_items': request.session.get('sickness_items', []),
+        'sickness_order_details': sickness_order_details,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'addSicknessItems.html', context)
+
+@login_required
+def sickness_list(request):
+    # Get filter parameters
+    search_query = request.GET.get('search_query', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    branch_id = request.GET.get('branch', '')
+    status_filter = request.GET.get('status', '')
+    sales_rep_id = request.GET.get('sales_rep', '')
+    created_by_id = request.GET.get('created_by', '')
+    selected_month = request.GET.get('month', '')
+
+    # Base queryset
+    orders = Sickness.objects.all()
+
+    # Apply filters
+    if search_query:
+        orders = orders.filter(
+            Q(sickness_order_id__icontains=search_query) |
+            Q(customer__customer_name__icontains=search_query) |
+            Q(branch__branch_name__icontains=search_query)
+        )
+
+    if start_date:
+        orders = orders.filter(created_at__gte=start_date)
+
+    if end_date:
+        orders = orders.filter(created_at__lte=end_date)
+
+    if branch_id:
+        orders = orders.filter(branch_id=branch_id)
+
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
+    if sales_rep_id:
+        orders = orders.filter(sales_rep_id=sales_rep_id)
+
+    if created_by_id:
+        orders = orders.filter(created_by_id=created_by_id)
+
+    if selected_month:
+        orders = orders.filter(created_at__month=selected_month)
+
+    # Get all branches for filter dropdown
+    branches = Branch.objects.all()
+
+    # Get all sales reps for filter dropdown
+    sales_reps = Worker.objects.filter(role='Sales Rep')
+
+    # Get all workers for filter dropdown
+    workers = Worker.objects.all()
+
+    # Get months for filter dropdown
+    months = [
+        {'id': 1, 'name': 'January'},
+        {'id': 2, 'name': 'February'},
+        {'id': 3, 'name': 'March'},
+        {'id': 4, 'name': 'April'},
+        {'id': 5, 'name': 'May'},
+        {'id': 6, 'name': 'June'},
+        {'id': 7, 'name': 'July'},
+        {'id': 8, 'name': 'August'},
+        {'id': 9, 'name': 'September'},
+        {'id': 10, 'name': 'October'},
+        {'id': 11, 'name': 'November'},
+        {'id': 12, 'name': 'December'},
+    ]
+
+    # Pagination
+    paginator = Paginator(orders.order_by('-created_at'), 10)  # Show 10 orders per page
+    page = request.GET.get('page')
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        orders = paginator.page(1)
+    except EmptyPage:
+        orders = paginator.page(paginator.num_pages)
+
+    offset = (orders.number - 1) * 10
+
+    view_context = {
+        'orders': orders,
+        'branches': branches,
+        'sales_reps': sales_reps,
+        'workers': workers,
+        'months': months,
+        'search_query': search_query,
+        'start_date': start_date,
+        'end_date': end_date,
+        'branch_id': branch_id,
+        'status_filter': status_filter,
+        'sales_rep_id': sales_rep_id,
+        'created_by_id': created_by_id,
+        'selected_month': selected_month,
+        'offset': offset,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'SicknessList.html', context)
+
+@login_required
+def sickness_order_details(request, order_id):
+    try:
+        order = Sickness.objects.get(id=order_id)
+        items = order.sickness_items.all()
+
+        # Add unit price information to each item
+        for item in items:
+            if order.has_prescription:
+                item.unit_price = 0
+            else:
+                # Use the edited price if it exists, otherwise use the product's unit price
+                item.unit_price = item.price if item.price is not None else item.stock.product.unit_price
+
+        view_context = {
+            'order': order,
+            'items': items,
+        }
+        context = TemplateLayout.init(request, view_context)
+
+        return render(request, 'sicknessOrderDetails.html', context)
+    except Sickness.DoesNotExist:
+        messages.error(request, 'Sickness order not found.')
+        return redirect('sickness_orders')
+
+@login_required
+def edit_sickness_prices(request, order_id):
+    try:
+        order = Sickness.objects.get(id=order_id)
+        if request.method == 'POST':
+            prices = request.POST  # This is a QueryDict
+            with transaction.atomic():
+                for item in order.sickness_items.all():
+                    price_key = f'prices[{item.id}]'
+                    new_price = prices.get(price_key)
+                    if new_price:
+                        item.price = float(new_price)
+                        item.save()
+
+                messages.success(request, 'Prices updated successfully.')
+                return redirect('sickness_order_details', order_id=order.id)
+    except Sickness.DoesNotExist:
+        messages.error(request, 'Sickness order not found.')
+        return redirect('sickness_orders')
+    except Exception as e:
+        messages.error(request, f'Error updating prices: {str(e)}')
+        return redirect('sickness_order_details', order_id=order.id)
+
+@login_required
+def approve_sickness_order(request, order_id):
+    try:
+        order = Sickness.objects.get(id=order_id)
+        if request.method == 'POST':
+            notes = request.POST.get('notes')
+
+            with transaction.atomic():
+                # Update order status and approved by
+                order.status = 'Approved'
+                order.approved_by = request.user.worker_profile
+                order.notes = notes
+                order.save()
+
+                # Update only the sickness_quantity field
+                for item in order.sickness_items.all():
+                    stock = item.stock
+                    stock.sickness_quantity += item.quantity  # Only update sickness_quantity
+                    stock.save()
+
+                messages.success(request, 'Sickness order approved successfully.')
+                return redirect('sickness_order_details', order_id=order.id)
+    except Sickness.DoesNotExist:
+        messages.error(request, 'Sickness order not found.')
+        return redirect('sickness_orders')
+    except Exception as e:
+        messages.error(request, f'Error approving order: {str(e)}')
+        return redirect('sickness_order_details', order_id=order.id)
+
+@login_required
+def reject_sickness_order(request, order_id):
+    try:
+        order = Sickness.objects.get(id=order_id)
+        if request.method == 'POST':
+            notes = request.POST.get('notes')
+
+            with transaction.atomic():
+                # Update order status
+                order.status = 'Rejected'
+                order.notes = notes
+                order.save()
+
+                messages.success(request, 'Sickness order rejected successfully.')
+                return redirect('sickness_order_details', order_id=order.id)
+    except Sickness.DoesNotExist:
+        messages.error(request, 'Sickness order not found.')
+        return redirect('sickness_orders')
+    except Exception as e:
+        messages.error(request, f'Error rejecting order: {str(e)}')
+        return redirect('sickness_order_details', order_id=order.id)

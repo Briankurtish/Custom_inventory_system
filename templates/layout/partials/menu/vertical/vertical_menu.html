@@ -175,6 +175,17 @@
                 </a>
             </li>
         {% endif %}
+        {% if privilege.name == 'View All Stock Requests'  %}
+            <li class="menu-item {% if request.resolver_match.url_name == 'all_requests' or '/all_requests/' in request.path %}active open{% endif %}">
+                <a href="{% url 'all_requests' %}" class="menu-link">
+                     <i class="menu-icon fa-solid fa-circle-exclamation"></i>
+                    <div class="text-truncate">{% trans "All Stock Request" %}</div>
+                    {% if pending_request_count > 0 %}
+                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+        {% endif %}
 
         {% if privilege.name == 'Transfer Stock'  %}
             <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
@@ -426,8 +437,19 @@
           {% endif %} {% endcomment %}
         </a>
       </li>
+      <li class="menu-item {% if 'sickness_orders' == request.resolver_match.url_name or '/sickness_orders/' in request.path %}active open{% endif %}">
+        <a href="{% url 'sickness_orders' %}" class="menu-link">
+          <i class="menu-icon fa-solid fa-clipboard-list"></i>
+          <div class="text-truncate" data-i18n="Dashboards">{% trans "Sickness" %}</div>
+          {% comment %} {% if pending_orders_count > 0 %}
+          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+          {% endif %} {% endcomment %}
+        </a>
+      </li>
       </ul>
     </li>
+
+
 
 
     <!-- Form -->
