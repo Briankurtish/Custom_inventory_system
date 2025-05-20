@@ -136,17 +136,86 @@
         </table>
 
 
-        <form method="post" action="{% if return_invoice %}{% url 'create_return_payment_schedule' return_invoice.id %}{% else %}{% url 'create_payment_schedule' %}{% endif %}">
+        <form method="post" action="{% if return_invoice %}{% url 'create_return_payment_schedule' return_invoice.id %}{% else %}{% url 'create_payment_schedule' %}{% endif %}" id="scheduleForm">
           {% csrf_token %}
           <br>
-          <button type="submit" name="action" value="submit_schedules" class="btn btn-success"
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#scheduleConfirmationModal"
               {% if return_invoice and not return_payment_schedules or not return_invoice and not payment_schedules %}disabled{% endif %}>
               {% trans "Submit Payment Schedule" %}
           </button>
-      </form>
+        </form>
 
 
 
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Schedule Confirmation Modal -->
+<div class="modal fade" id="scheduleConfirmationModal" tabindex="-1" aria-labelledby="scheduleConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scheduleConfirmationModalLabel">{% trans "Payment Schedule Summary" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Summary of Totals -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <strong>{% trans "Total(THT)" %}:</strong>
+            <span>{% if return_invoice %}{{ return_invoice.grand_total|floatformat:2|intcomma }}{% else %}{{ purchase_order.grand_total|floatformat:2|intcomma }}{% endif %} CFA</span>
+          </div>
+          <div class="col-md-4">
+            <strong>{% trans "Total(TTC)" %}:</strong>
+            <span>{{ total_with_taxes|floatformat:2|intcomma }} CFA</span>
+          </div>
+          <div class="col-md-4">
+            <strong>{% trans "Amount Left" %}:</strong>
+            <span>{{ amount_left|floatformat:2|intcomma }} CFA</span>
+          </div>
+        </div>
+
+        <!-- Payment Schedules Table -->
+        <h6 class="mb-3">{% trans "Payment Schedules" %}</h6>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{% trans "When" %}</th>
+                <th>{% trans "Amount" %}</th>
+                <th>{% trans "Due Date" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if return_invoice %}
+                {% for schedule in return_payment_schedules %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ schedule.when }}</td>
+                    <td>{{ schedule.amount|floatformat:2|intcomma }} CFA</td>
+                    <td>{{ schedule.payment_date }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                {% for schedule in payment_schedules %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ schedule.when }}</td>
+                    <td>{{ schedule.amount|floatformat:2|intcomma }} CFA</td>
+                    <td>{{ schedule.payment_date }}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Review Schedule" %}</button>
+        <button type="submit" form="scheduleForm" name="action" value="submit_schedules" class="btn btn-primary">{% trans "Confirm & Submit" %}</button>
       </div>
     </div>
   </div>

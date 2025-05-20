@@ -15,12 +15,106 @@
       </div>
       <br>
       <div class="card-body">
-        <form method="post">
+        <form method="post" id="poForm">
           {% csrf_token %}
           {{po_form|crispy}}
           <br>
-          <button type="submit" class="btn btn-primary">{% trans "Next" %}: {% trans "Add Items" %}</button>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#poConfirmationModal">{% trans "Next" %}: {% trans "Add Items" %}</button>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase Order Confirmation Modal -->
+<div class="modal fade" id="poConfirmationModal" tabindex="-1" aria-labelledby="poConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="poConfirmationModalLabel">{% trans "Purchase Order Details" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Basic Information -->
+          <div class="col-md-6">
+            <h6 class="mb-3">{% trans "Basic Information" %}</h6>
+            <div class="mb-3">
+              <strong>{% trans "Order Date" %}:</strong>
+              <span id="modalOrderDate"></span>
+            </div>
+            <div class="mb-3">
+              <strong>{% trans "Branch" %}:</strong>
+              <span id="modalBranch"></span>
+            </div>
+            <div class="mb-3">
+              <strong>{% trans "Customer" %}:</strong>
+              <span id="modalCustomer"></span>
+            </div>
+            <div class="mb-3">
+              <strong>{% trans "Sales Representative" %}:</strong>
+              <span id="modalSalesRep"></span>
+            </div>
+            <div class="mb-3">
+              <strong>{% trans "Special Customer" %}:</strong>
+              <span id="modalSpecialCustomer"></span>
+            </div>
+          </div>
+
+          <!-- Payment Information -->
+          <div class="col-md-6">
+            <h6 class="mb-3">{% trans "Payment Information" %}</h6>
+            <div class="mb-3">
+              <strong>{% trans "Payment Method" %}:</strong>
+              <span id="modalPaymentMethod"></span>
+            </div>
+            <div class="mb-3">
+              <strong>{% trans "Payment Mode" %}:</strong>
+              <span id="modalPaymentMode"></span>
+            </div>
+            <div class="mb-3" id="momoDetailsContainer" style="display: none;">
+              <strong>{% trans "Momo Details" %}:</strong>
+              <span id="modalMomoDetails"></span>
+            </div>
+            <div class="mb-3" id="checkDetailsContainer" style="display: none;">
+              <strong>{% trans "Check Details" %}:</strong>
+              <span id="modalCheckDetails"></span>
+            </div>
+            <div class="mb-3" id="bankDepositContainer" style="display: none;">
+              <strong>{% trans "Bank Deposit Details" %}:</strong>
+              <span id="modalBankDeposit"></span>
+            </div>
+          </div>
+
+          <!-- Tax Information -->
+          <div class="col-12 mt-3">
+            <h6 class="mb-3">{% trans "Tax Information" %}</h6>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <strong>{% trans "IR Tax" %}:</strong>
+                  <span id="modalTaxRate"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <strong>{% trans "Precompte" %}:</strong>
+                  <span id="modalPrecompte"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <strong>{% trans "TVA" %}:</strong>
+                  <span id="modalTVA"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Review Details" %}</button>
+        <button type="submit" form="poForm" class="btn btn-primary">{% trans "Confirm & Proceed" %}</button>
       </div>
     </div>
   </div>
@@ -33,6 +127,79 @@
     $("#id_customer").select2({ placeholder: "Search for a Customer", allowClear: true, width: "100%" });
     $("#id_sales_rep").select2({ placeholder: "Search for a Sales Rep", allowClear: true, width: "100%" });
     $("#id_stock").select2({ placeholder: "Search for a Product", allowClear: true, width: "100%" });
+
+    // Update modal content when form fields change
+    $('#poForm').on('change', 'select, input', function() {
+      updateModalContent();
+    });
+
+    // Initial modal content update
+    updateModalContent();
+
+    function updateModalContent() {
+      // Basic Information
+      var orderDate = $('#id_created_at').val();
+      $('#modalOrderDate').text(orderDate);
+
+      var branchSelect = $('#id_branch');
+      var branchText = branchSelect.find('option:selected').text();
+      $('#modalBranch').text(branchText);
+
+      var customerSelect = $('#id_customer');
+      var customerText = customerSelect.find('option:selected').text();
+      $('#modalCustomer').text(customerText);
+
+      var salesRepSelect = $('#id_sales_rep');
+      var salesRepText = salesRepSelect.find('option:selected').text();
+      $('#modalSalesRep').text(salesRepText);
+
+      var isSpecialCustomer = $('#id_is_special_customer').is(':checked');
+      $('#modalSpecialCustomer').text(isSpecialCustomer ? '{% trans "Yes" %}' : '{% trans "No" %}');
+
+      // Payment Information
+      var paymentMethodSelect = $('#id_payment_method');
+      var paymentMethodText = paymentMethodSelect.find('option:selected').text();
+      $('#modalPaymentMethod').text(paymentMethodText);
+
+      var paymentModeSelect = $('#id_payment_mode');
+      var paymentModeText = paymentModeSelect.find('option:selected').text();
+      $('#modalPaymentMode').text(paymentModeText);
+
+      // Show/hide payment details based on payment method
+      var momoDetails = $('#id_momo_account_details');
+      var checkDetails = $('#id_check_account_details');
+      var bankDeposit = $('#id_bank_deposit_account_details');
+
+      $('#momoDetailsContainer').hide();
+      $('#checkDetailsContainer').hide();
+      $('#bankDepositContainer').hide();
+
+      if (momoDetails.length && momoDetails.val()) {
+        $('#momoDetailsContainer').show();
+        $('#modalMomoDetails').text(momoDetails.find('option:selected').text());
+      }
+      if (checkDetails.length && checkDetails.val()) {
+        $('#checkDetailsContainer').show();
+        $('#modalCheckDetails').text(checkDetails.find('option:selected').text());
+      }
+      if (bankDeposit.length && bankDeposit.val()) {
+        $('#bankDepositContainer').show();
+        $('#modalBankDeposit').text(bankDeposit.find('option:selected').text());
+      }
+
+      // Tax Information
+      var taxRateSelect = $('#id_tax_rate');
+      var taxRateText = taxRateSelect.find('option:selected').text();
+      $('#modalTaxRate').text(taxRateText);
+
+      var precompteSelect = $('#id_precompte');
+      var precompteText = precompteSelect.find('option:selected').text();
+      $('#modalPrecompte').text(precompteText);
+
+      var tvaSelect = $('#id_tva');
+      var tvaText = tvaSelect.find('option:selected').text();
+      $('#modalTVA').text(tvaText);
+    }
   });
 </script>
 {% endblock %}

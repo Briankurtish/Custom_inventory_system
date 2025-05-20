@@ -35,7 +35,8 @@
           <thead>
               <tr>
                   <th>{% trans "No" %}</th>
-                  <th>{% trans "Product" %}</th>
+                  <th>{% trans "Generic Name Dosage" %}</th>
+                  <th>{% trans "Brand Name" %}</th>
                   <th>{% trans "Quantity" %}</th>
                   <th>{% trans "Unit Price" %}</th>
                   <th>{% trans "Total Price" %}</th>
@@ -47,7 +48,8 @@
               {% for item in order_items %}
               <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ item.stock_name }}</td>
+                  <td>{{ item.generic_name_dosage }}</td>
+                  <td>{{ item.brand_name }}</td>
                   <td>{{ item.quantity|intcomma }}</td>
                   <td>{{ item.temp_price|floatformat:2|intcomma }}</td>
                   <td>{{ item.total_price|floatformat:2|intcomma }}</td>
@@ -70,13 +72,62 @@
         <h5>{% trans "Grand Total" %}: {{ grand_total|floatformat:2|intcomma }} CFA</h5>
         <hr>
 
-        <!-- Move Submit Order Button to the Bottom -->
-        <form method="post">
+        <!-- Update Submit Order Button to trigger modal -->
+        <form method="post" id="orderForm">
           {% csrf_token %}
           <br>
-          <button type="submit" name="action" value="submit_order" class="btn btn-primary" {% if not order_items %}disabled{% endif %}>{% trans "Next:" %}{% trans "Payment Schedule" %}</button>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderConfirmationModal" {% if not order_items %}disabled{% endif %}>{% trans "Next:" %}{% trans "Payment Schedule" %}</button>
         </form>
 
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="modal fade" id="orderConfirmationModal" tabindex="-1" aria-labelledby="orderConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderConfirmationModalLabel">{% trans "Order Summary" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>{% trans "No" %}</th>
+                <th>{% trans "Generic Name Dosage" %}</th>
+                <th>{% trans "Brand Name" %}</th>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Unit Price" %}</th>
+                <th>{% trans "Total Price" %}</th>
+                <th>{% trans "Note" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in order_items %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.generic_name_dosage }}</td>
+                <td>{{ item.brand_name }}</td>
+                <td>{{ item.quantity|intcomma }}</td>
+                <td>{{ item.temp_price|floatformat:2|intcomma }}</td>
+                <td>{{ item.total_price|floatformat:2|intcomma }}</td>
+                <td>{{ item.reason }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="text-end mt-3">
+          <h5>{% trans "Grand Total" %}: {{ grand_total|floatformat:2|intcomma }} CFA</h5>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Review Order" %}</button>
+        <button type="submit" form="orderForm" name="action" value="submit_order" class="btn btn-primary">{% trans "Confirm & Proceed" %}</button>
       </div>
     </div>
   </div>

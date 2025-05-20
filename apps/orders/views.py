@@ -1938,7 +1938,8 @@ def add_order_items(request):
                     order_items = request.session["order_items"]
                     order_items.append({
                         "stock_id": stock.id,
-                        "stock_name": str(stock.product.generic_name_dosage),
+                        "generic_name_dosage": str(stock.product.generic_name_dosage),
+                        "brand_name": str(stock.product.brand_name.brand_name),
                         "temp_price": float(temp_price),
                         "reason": reason,
                         "quantity": quantity,

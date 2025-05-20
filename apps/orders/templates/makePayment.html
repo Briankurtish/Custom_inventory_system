@@ -43,16 +43,45 @@
     </div>
       <br>
       <div class="card-body">
-        <form method="post">
+        <form method="post" id="paymentForm">
           {% csrf_token %}
           <!-- Purchase invoice Form -->
           {{ form|crispy }}
 
           <br>
-          <button type="submit" class="btn btn-primary">{% trans "Submit Payment" %}</button>
-
+          <!-- Replace submit button with modal trigger -->
+          <button type="button" class="btn btn-primary" id="openConfirmModal">{% trans "Submit Payment" %}</button>
         </form>
 
+        <!-- Minimal Payment Confirmation Modal -->
+        <div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-labelledby="paymentConfirmModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="paymentConfirmModalLabel">{% trans "Confirm Payment" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <strong>{% trans "Amount Paid" %}:</strong>
+                  <span id="confirmAmountPaid"></span>
+                </div>
+                <div class="mb-3">
+                  <strong>{% trans "Payment Mode" %}:</strong>
+                  <span id="confirmPaymentMode"></span>
+                </div>
+                <div class="mb-3">
+                  <strong>{% trans "Payment Date" %}:</strong>
+                  <span id="confirmPaymentDate"></span>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmitBtn">{% trans "Confirm & Submit" %}</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -116,7 +145,24 @@
     });
 </script>
 
+<script>
+$(document).ready(function () {
+  // Open modal and fill values
+  $('#openConfirmModal').on('click', function () {
+    var amountPaid = $('#id_amount_paid').val() || 'N/A';
+    var paymentMode = $('#payment_mode').find('option:selected').text() || 'N/A';
+    var paymentDate = $('#id_payment_date').val() || 'N/A';
+    $('#confirmAmountPaid').text(amountPaid + ' CFA');
+    $('#confirmPaymentMode').text(paymentMode);
+    $('#confirmPaymentDate').text(paymentDate);
+    $('#paymentConfirmModal').modal('show');
+  });
 
-
+  // On confirm, submit the form
+  $('#confirmSubmitBtn').on('click', function () {
+    $('#paymentForm').submit();
+  });
+});
+</script>
 
 {% endblock %}
