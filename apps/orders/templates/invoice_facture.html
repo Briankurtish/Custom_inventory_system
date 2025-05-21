@@ -18,7 +18,7 @@
         padding: 0;
       }
       time {
-        font-size: 11px;
+        font-size: 13px;
       }
       .container {
         width: 100%;
@@ -44,6 +44,7 @@
         background-color: #f0f0f0;
         padding: 10px 20px;
         border-radius: 4px;
+        font-size: 13px;
       }
       .header .logo img {
         max-width: 50px;
@@ -79,12 +80,18 @@
       table td {
         border: 1px solid #ccc;
         padding: 5px;
-        font-size: 10px;
+        font-size: 13px;
         text-align: left;
+        word-wrap: break-word;
+        white-space: normal;
+        overflow-wrap: break-word;
+        max-width: 200px; /* Maximum width for cells */
       }
       table th {
         background-color: #f8f8f8;
         font-weight: bold;
+        word-wrap: break-word;
+        white-space: normal;
       }
       .totals {
         margin-top: 20px;
@@ -139,13 +146,13 @@
       }
       .po-number {
         text-align: center;
-        font-size: 9px;
+        font-size: 13px;
       }
       .footer {
         display: flex;
         justify-content: end;
         margin-top: 30px;
-        font-size: 9px;
+        font-size: 10px;
       }
       .totals-section {
         display: flex;
@@ -176,19 +183,26 @@
         flex-direction: row;
       }
       .generic-name-column {
-        width: 150px; /* Adjust the width as needed */
+        width: 300px;
+        max-width: 300x;
+        word-wrap: break-word;
+        white-space: normal;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <div class="date">
-          <time>{{ invoice.created_at|date:"M d, Y H:i" }}</time>
+        <div class="logo">
+          <a href="#">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
         </div>
         <div>
           <div class="column">
-            <h1 class="title-container">Invoice (Facture)</h1>
+            <h1 class="title-container text-center">Invoice (Facture)</h1>
             {% if is_return_invoice %}
             <p class="po-number">{{ invoice.return_invoice_id }}</p>
             {% else %}
@@ -196,13 +210,10 @@
             {% endif %}
           </div>
         </div>
-        <div class="logo">
-          <a href="https://imgbb.com/">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
-          </a>
-
-          <!-- Replace with actual logo URL -->
+        <div class="date">
+          <time>{{ invoice.created_at|date:"M d, Y H:i" }}</time>
         </div>
+
       </div>
 
       <div class="bill-to-container">
@@ -230,14 +241,14 @@
       <table>
         <thead>
           <tr>
-            <th>No</th>
-            <th>Product ID</th>
+            <th class="text" style="width: 50px;">No</th>
+            <th style="width: 90px;">Product ID</th>
             <th class="generic-name-column">Generic Name</th>
-            <th class="generic-name-column">Brand Name</th>
-            <th>Batch Number</th>
-            <th>Qty</th>
-            <th>U Price</th>
-            <th>Total</th>
+            <th class="generic-name-column" style="width: 120px;">Brand Name</th>
+            <th class="text" style="width: 120px;">Batch Number</th>
+            <th class="text" style="width: 60px;">Qty</th>
+            <th class="text" style="width: 120px;">U Price</th>
+            <th class="text" style="width: 120px;">Total</th>
           </tr>
         </thead>
         <tbody>
