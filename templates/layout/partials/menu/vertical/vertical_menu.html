@@ -428,24 +428,7 @@
           {% endif %}
         </a>
       </li>
-      <li class="menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active open{% endif %}">
-        <a href="{% url 'sample_orders' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-clipboard-list"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Samples" %}</div>
-          {% comment %} {% if pending_orders_count > 0 %}
-          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
-          {% endif %} {% endcomment %}
-        </a>
-      </li>
-      <li class="menu-item {% if 'sickness_orders' == request.resolver_match.url_name or '/sickness_orders/' in request.path %}active open{% endif %}">
-        <a href="{% url 'sickness_orders' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-clipboard-list"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Sickness" %}</div>
-          {% comment %} {% if pending_orders_count > 0 %}
-          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
-          {% endif %} {% endcomment %}
-        </a>
-      </li>
+
       </ul>
     </li>
 
