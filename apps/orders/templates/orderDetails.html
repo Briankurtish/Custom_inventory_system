@@ -10,7 +10,16 @@
 {% load tz %}
 
 
-<h4 class="text">{% trans "Order Details" %}</h4>
+<h4 class="text">
+    {% trans "Order Details" %}
+    {% if order.order_type == 'Sickness' %}
+        <span class="badge bg-warning ms-2">{% trans "Sickness Order" %}</span>
+    {% elif order.order_type == 'Sample' %}
+        <span class="badge bg-info ms-2">{% trans "Sample Order" %}</span>
+    {% elif order.order_type == 'Purchase' %}
+        <span class="badge bg-primary ms-2">{% trans "Purchase Order" %}</span>
+    {% endif %}
+</h4>
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
@@ -48,11 +57,19 @@
             </div>
             <div class="col-md-3">
                 <small class="text m-3">{% trans "Created By" %}</small>
-                <h6 class="mx-3">{{ order.created_by.user.get_full_name }}</h6>
+                <h6 class="mx-3">
+                    {% if order.created_by and order.created_by.user %}
+                        {{ order.created_by.user.get_full_name }}
+                    {% elif order.created_by %}
+                        {{ order.created_by }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h6>
             </div>
             <div class="col-md-3">
                 <small class="text m-3">{% trans "Date Created" %}</small>
-                <h6 class="mx-3">{{ order.created_at|date:"M d, Y H:i" }}</h6>
+                <h6 class="mx-3">{{ order.created_at|date:"M d, Y" }}</h6>
             </div>
         </div>
     </div>
@@ -82,25 +99,30 @@
                 {% endif %}
             </div>
             <div class="col-md-3">
-                <small class="text m-3">{% trans "Sales Representative" %}</small>
-                <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
-                {% if user.worker_profile.privileges.all %}
-                  {% for privilege in user.worker_profile.privileges.all %}
-                      {% if privilege.name == 'View Sales Rep Credits' %}
+                {% if order.order_type == 'Sickness' %}
+                    <small class="text m-3">{% trans "Employee" %}</small>
+                    <h6 class="mx-3">{{ order.employee.user.get_full_name }}</h6>
+                {% else %}
+                    <small class="text m-3">{% trans "Sales Representative" %}</small>
+                    <h6 class="mx-3">{{ order.sales_rep.user.get_full_name }}</h6>
+                    {% if user.worker_profile.privileges.all %}
+                      {% for privilege in user.worker_profile.privileges.all %}
+                          {% if privilege.name == 'View Sales Rep Credits' %}
+                            <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
+                            </button>
+                        </form>
+                          {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    {% if user.is_superuser %}
                         <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
-                        </button>
-                    </form>
-                      {% endif %}
-                  {% endfor %}
-                {% endif %}
-                {% if user.is_superuser %}
-                    <form action="{% url 'sales_rep_credit_history' worker_id=order.sales_rep.id %}" method="get">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
-                        </button>
-                    </form>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="fa-solid fa-file me-2"></span> {% trans "Get Credit Report" %}
+                            </button>
+                        </form>
+                    {% endif %}
                 {% endif %}
             </div>
             <div class="col-md-3">
@@ -156,8 +178,18 @@
                     <h6 class="mx-3">{{ order.tva }}%</h6>
                 </div>
                 <div class="col-md-2">
-                    <small class="text m-3">Special Customer</small>
-                    <h6 class="mx-3">{{ order.is_special_customer }}</h6>
+                    <h6 class="mx-3">
+                        {% if order.order_type == 'Sickness' %}
+                            <br>
+                            <span class="badge bg-info">
+                                {% if order.has_prescription %}
+                                    {% trans "Prescription: Yes" %}
+                                {% else %}
+                                    {% trans "Prescription: No" %}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </h6>
                 </div>
 
                 {% comment %} {% if user.worker_profile.privileges.all %}

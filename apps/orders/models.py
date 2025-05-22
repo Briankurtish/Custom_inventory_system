@@ -118,6 +118,12 @@ class PurchaseOrder(models.Model):
         ('Completed', 'Completed'),
     ]
 
+    ORDER_TYPE_CHOICES = [
+        ('Purchase Order', 'Purchase Order'),
+        ('Sample', 'Sample'),
+        ('Sickness', 'Sickness'),
+    ]
+
     PAYMENT_MODES = [
         ('Cash', 'Cash'),
         ('Mobile Money', 'Mobile Money'),
@@ -150,6 +156,7 @@ class PurchaseOrder(models.Model):
         ('Receipt', 'Receipt'),
     ]
 
+    order_type = models.CharField(max_length=50, choices=ORDER_TYPE_CHOICES, default='Purchase')
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     sales_rep = models.ForeignKey(
@@ -157,7 +164,12 @@ class PurchaseOrder(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         related_name='sales_rep_orders',
-
+    )
+    employee = models.ForeignKey(
+        Worker,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='employee_orders',
     )
     payment_method = models.CharField(
         max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')]
@@ -206,6 +218,9 @@ class PurchaseOrder(models.Model):
     precompte = models.DecimalField(max_digits=12, decimal_places=2, null=True, choices=PRECOMPTE_CHOICES, verbose_name="PreCompte", default=0.0)
     tva = models.DecimalField(max_digits=12, decimal_places=2, null=True, choices=TVA_CHOICES, verbose_name="TVA", default=0.0)
     is_special_customer = models.BooleanField(null=True, default=False, verbose_name="Is a Special Customer")
+
+    has_prescription = models.BooleanField(default=False, help_text="Does this order have a prescription?", null=True)
+    prescription_document = models.FileField(upload_to='prescriptions/', null=True, blank=True, help_text="Upload prescription document if available.")
 
     # document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES, null=True)
     # document = models.FileField(upload_to='purchase_order_documents/', null=True)

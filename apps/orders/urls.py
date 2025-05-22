@@ -31,15 +31,25 @@ urlpatterns = [
         invoice_list,  # View function for listing orders
         name="invoices",  # URL name for this path
     ),
+    # path(
+    #     "create-order/",  # Path for creating a new order
+    #     create_purchase_order,  # View function for creating orders
+    #     name="create-order",  # URL name for this path
+    # ),
     path(
-        "create-order/",  # Path for creating a new order
-        create_purchase_order,  # View function for creating orders
-        name="create-order",  # URL name for this path
+        "create-purchase-order/",
+        create_purchase_order,
+        name="create-purchase-order",
     ),
     path(
-        "create-sample-order/",  # Path for creating a new order
-        create_sample_order,  # View function for creating orders
-        name="create-sample-order",  # URL name for this path
+        "create-sample-order/",
+        create_sample_order,
+        name="create-sample-order",
+    ),
+    path(
+        "create-sickness-order/",
+        create_sickness_order,
+        name="create-sickness-order",
     ),
     path(
         "create-payment-schedule/",  # Path for creating a new order

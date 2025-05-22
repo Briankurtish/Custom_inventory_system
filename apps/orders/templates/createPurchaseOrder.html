@@ -17,7 +17,7 @@
       <div class="card-body">
         <form method="post" id="poForm">
           {% csrf_token %}
-          {{po_form|crispy}}
+          {{ form|crispy }}
           <br>
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#poConfirmationModal">{% trans "Next" %}: {% trans "Add Items" %}</button>
         </form>
@@ -51,11 +51,11 @@
               <strong>{% trans "Customer" %}:</strong>
               <span id="modalCustomer"></span>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" id="salesRepContainer">
               <strong>{% trans "Sales Representative" %}:</strong>
               <span id="modalSalesRep"></span>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" id="specialCustomerContainer">
               <strong>{% trans "Special Customer" %}:</strong>
               <span id="modalSpecialCustomer"></span>
             </div>

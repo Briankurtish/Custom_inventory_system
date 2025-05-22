@@ -8,6 +8,14 @@ from django.utils.translation import gettext_lazy as _
 
 
 class PurchaseOrderForm(forms.ModelForm):
+    ORDER_TYPE_CHOICES = [
+        ('Purchase Order', 'Purchase Order'),
+    ]
+
+    order_type = forms.ChoiceField(
+        choices=ORDER_TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
     momo_account_details = forms.ModelChoiceField(
         queryset=MomoInfo.objects.all(),
         required=False,
@@ -27,7 +35,7 @@ class PurchaseOrderForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrder
         fields = [
-            'created_at', 'branch', 'customer', 'sales_rep', 'payment_method',
+            'order_type', 'created_at', 'branch', 'customer', 'sales_rep', 'payment_method',
             'payment_mode', 'momo_account_details', 'check_account_details',
             'bank_deposit_account_details', 'tax_rate', 'precompte', 'tva', 'is_special_customer'
         ]
@@ -44,97 +52,230 @@ class PurchaseOrderForm(forms.ModelForm):
             'is_special_customer': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
-            'created_at': _('Order Date'),
-            'branch': _('Branch'),
-            'customer': _('Customer'),
-            'sales_rep': _('Sales Representative'),
-            'payment_method': _('Payment Method'),
-            'payment_mode': _('Payment Mode'),
-            'momo_account_details': _('Momo Details'),
-            'check_account_details': _('Check Details'),
-            'bank_deposit_account_details': _('Bank Deposit Details'),
-            'tax_rate': _('IR Tax'),
-            'precompte': _('Precompte'),
-            'tva': _('TVA'),
-            'is_special_customer': _('Is a Special Customer'),
+            'created_at': 'Date',
+            'branch': 'Branch',
+            'customer': 'Customer',
+            'sales_rep': 'Sales Representative',
+            'payment_method': 'Payment Method',
+            'payment_mode': 'Payment Mode',
+            'tax_rate': 'Tax Rate',
+            'precompte': 'Precompte',
+            'tva': 'TVA',
+            'is_special_customer': 'Special Customer',
         }
 
     def __init__(self, *args, **kwargs):
         user_is_superuser = kwargs.pop('user_is_superuser', False)
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
-
-        if user_is_superuser:
-            # Superuser: Access to all branches, sales reps, and customers
-            self.fields['branch'].queryset = Branch.objects.all()
-            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
-            self.fields['customer'].queryset = Customer.objects.all()
-        elif user_branch:
-            # Regular user: Restrict to their branch
+        if not user_is_superuser and user_branch:
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['branch'].disabled = False  # Make the field immutable
-            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
+            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
             self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
+            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
+            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
 
-        # Apply consistent styling to all fields
-        for field_name, field in self.fields.items():
-            if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
-            else:
-                field.widget.attrs.update({'class': 'form-control form-control'})  # Make fields shorter
+    def clean(self):
+        cleaned_data = super().clean()
+        order_type = cleaned_data.get('order_type')
+        payment_mode = cleaned_data.get('payment_mode')
 
+        # Validate payment account details based on payment mode
+        if payment_mode == 'Mobile Money':
+            if not cleaned_data.get('momo_account_details'):
+                raise forms.ValidationError('Mobile Money account details are required for Mobile Money payments.')
+        elif payment_mode == 'Check':
+            if not cleaned_data.get('check_account_details'):
+                raise forms.ValidationError('Check account details are required for Check payments.')
+        elif payment_mode == 'Bank Deposit':
+            if not cleaned_data.get('bank_deposit_account_details'):
+                raise forms.ValidationError('Bank deposit account details are required for Bank Deposit payments.')
 
-        # Ensure `is_special_customer` uses Bootstrap checkbox styling
-        self.fields['is_special_customer'].widget.attrs.update({'class': 'form-check-input'})
+        return cleaned_data
 
+class SicknessOrderForm(forms.ModelForm):
+    ORDER_TYPE_CHOICES = [
+        ('Sickness', 'Sickness'),
+    ]
 
-
-
-
-class SampleOrderForm(forms.ModelForm):
+    order_type = forms.ChoiceField(
+        choices=ORDER_TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    momo_account_details = forms.ModelChoiceField(
+        queryset=MomoInfo.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    check_account_details = forms.ModelChoiceField(
+        queryset=Check.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    bank_deposit_account_details = forms.ModelChoiceField(
+        queryset=BankDeposit.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    has_prescription = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_has_prescription'}),
+        label=_('Has Prescription')
+    )
+    prescription_document = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'id_prescription_document'}),
+        label=_('Prescription Document')
+    )
 
     class Meta:
         model = PurchaseOrder
         fields = [
-            'created_at', 'branch', 'customer', 'sales_rep',
+            'order_type', 'created_at', 'branch', 'customer', 'employee', 'payment_method',
+            'payment_mode', 'momo_account_details', 'check_account_details',
+            'bank_deposit_account_details', 'tax_rate', 'precompte', 'tva', 'has_prescription', 'prescription_document'
+        ]
+        widgets = {
+            'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
+            'branch': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'employee': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_mode': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tax_rate': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'precompte': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tva': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'has_prescription': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_has_prescription'}),
+            'prescription_document': forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'id_prescription_document'}),
+        }
+        labels = {
+            'created_at': 'Date',
+            'branch': 'Branch',
+            'customer': 'Customer',
+            'employee': 'Employee',
+            'payment_method': 'Payment Method',
+            'payment_mode': 'Payment Mode',
+            'tax_rate': 'Tax Rate',
+            'precompte': 'Precompte',
+            'tva': 'TVA',
+            'has_prescription': _('Has Prescription'),
+            'prescription_document': _('Prescription Document'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_is_superuser = kwargs.pop('user_is_superuser', False)
+        user_branch = kwargs.pop('user_branch', None)
+        super().__init__(*args, **kwargs)
+        if not user_is_superuser and user_branch:
+            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+            self.fields['employee'].queryset = Worker.objects.filter(branch=user_branch)
+            self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
+            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
+            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        payment_mode = cleaned_data.get('payment_mode')
+
+        # Validate payment account details based on payment mode
+        if payment_mode == 'Mobile Money':
+            if not cleaned_data.get('momo_account_details'):
+                raise forms.ValidationError('Mobile Money account details are required for Mobile Money payments.')
+        elif payment_mode == 'Check':
+            if not cleaned_data.get('check_account_details'):
+                raise forms.ValidationError('Check account details are required for Check payments.')
+        elif payment_mode == 'Bank Deposit':
+            if not cleaned_data.get('bank_deposit_account_details'):
+                raise forms.ValidationError('Bank deposit account details are required for Bank Deposit payments.')
+
+        return cleaned_data
+
+
+class SampleOrderForm(forms.ModelForm):
+    ORDER_TYPE_CHOICES = [
+        ('Sample', 'Sample'),
+    ]
+
+    order_type = forms.ChoiceField(
+        choices=ORDER_TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    momo_account_details = forms.ModelChoiceField(
+        queryset=MomoInfo.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    check_account_details = forms.ModelChoiceField(
+        queryset=Check.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    bank_deposit_account_details = forms.ModelChoiceField(
+        queryset=BankDeposit.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+
+    class Meta:
+        model = PurchaseOrder
+        fields = [
+            'order_type', 'created_at', 'branch', 'customer', 'sales_rep', 'payment_method',
+            'payment_mode', 'momo_account_details', 'check_account_details',
+            'bank_deposit_account_details', 'tax_rate', 'precompte', 'tva'
         ]
         widgets = {
             'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
             'branch': forms.Select(attrs={'class': 'form-control form-control-sm'}),
             'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
             'sales_rep': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_mode': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tax_rate': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'precompte': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tva': forms.Select(attrs={'class': 'form-control form-control-sm'}),
         }
         labels = {
-            'created_at': _('Order Date'),
-            'branch': _('Branch'),
-            'customer': _('Customer'),
-            'sales_rep': _('Sales Representative'),
-
+            'created_at': 'Date',
+            'branch': 'Branch',
+            'customer': 'Customer',
+            'sales_rep': 'Sales Representative',
+            'payment_method': 'Payment Method',
+            'payment_mode': 'Payment Mode',
+            'tax_rate': 'Tax Rate',
+            'precompte': 'Precompte',
+            'tva': 'TVA',
         }
 
     def __init__(self, *args, **kwargs):
         user_is_superuser = kwargs.pop('user_is_superuser', False)
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
-
-        if user_is_superuser:
-            # Superuser: Access to all branches, sales reps, and customers
-            self.fields['branch'].queryset = Branch.objects.all()
-            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
-            self.fields['customer'].queryset = Customer.objects.all()
-        elif user_branch:
-            # Regular user: Restrict to their branch
+        if not user_is_superuser and user_branch:
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['branch'].disabled = False  # Make the field immutable
-            self.fields['sales_rep'].queryset = Worker.objects.all().order_by("user__first_name")
+            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
             self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
+            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
+            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
 
-        # Apply consistent styling to all fields
-        for field_name, field in self.fields.items():
-            if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
-            else:
-                field.widget.attrs.update({'class': 'form-control form-control'})  # Make fields shorter
+    def clean(self):
+        cleaned_data = super().clean()
+        payment_mode = cleaned_data.get('payment_mode')
+
+        # Validate payment account details based on payment mode
+        if payment_mode == 'Mobile Money':
+            if not cleaned_data.get('momo_account_details'):
+                raise forms.ValidationError('Mobile Money account details are required for Mobile Money payments.')
+        elif payment_mode == 'Check':
+            if not cleaned_data.get('check_account_details'):
+                raise forms.ValidationError('Check account details are required for Check payments.')
+        elif payment_mode == 'Bank Deposit':
+            if not cleaned_data.get('bank_deposit_account_details'):
+                raise forms.ValidationError('Bank deposit account details are required for Bank Deposit payments.')
+
+        return cleaned_data
 
 
 

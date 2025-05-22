@@ -8,7 +8,7 @@ from django.forms import modelformset_factory
 from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, SampleOrder, SampleOrderAuditLog, SampleOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
 from apps.stock.models import Stock, DamagedProduct
 from django.contrib import messages
-from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm
+from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm, SicknessForm, SicknessItemForm, SicknessOrderForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
@@ -1805,9 +1805,6 @@ def payment_history(request, invoice_id):
 
 @login_required
 def create_purchase_order(request):
-    """
-    Create a purchase order. Superusers can access all branches, while regular users are restricted to their branch.
-    """
     # Determine if the user is a superuser or has a specific branch
     if request.user.is_superuser:
         user_is_superuser = True
@@ -1816,50 +1813,46 @@ def create_purchase_order(request):
         user_is_superuser = False
         user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
 
-    if request.method == "POST":
-        # Pass 'user_is_superuser' and 'user_branch' to the form
-        po_form = PurchaseOrderForm(data=request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
-
-        if po_form.is_valid():
-            created_at = po_form.cleaned_data["created_at"]
+    if request.method == 'POST':
+        form = PurchaseOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
             created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
 
             # Save form data to the session instead of creating the purchase order immediately
             request.session["purchase_order_details"] = {
                 "created_at": created_at_str,
-                "branch": po_form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
-                "customer": po_form.cleaned_data["customer"].id,
-                "sales_rep": po_form.cleaned_data["sales_rep"].id,
-                "payment_method": po_form.cleaned_data["payment_method"],
-                "payment_mode": po_form.cleaned_data["payment_mode"],
-                "momo_account_details": po_form.cleaned_data["momo_account_details"].id if po_form.cleaned_data["momo_account_details"] else None,
-                "check_account_details": po_form.cleaned_data["check_account_details"].id if po_form.cleaned_data["check_account_details"] else None,
-                "bank_deposit_account_details": po_form.cleaned_data["bank_deposit_account_details"].id if po_form.cleaned_data["bank_deposit_account_details"] else None,
-                "tax_rate": str(po_form.cleaned_data["tax_rate"]),  # Convert to string to store in session
-                "precompte": str(po_form.cleaned_data["precompte"]),
-                "tva": str(po_form.cleaned_data["tva"]),
-                "is_special_customer": po_form.cleaned_data["is_special_customer"],  # Boolean field
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "sales_rep": form.cleaned_data["sales_rep"].id,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+                "is_special_customer": form.cleaned_data["is_special_customer"],
             }
 
-            # Redirect to the page for adding order items
+            # Redirect to the page for adding purchase order items
             return redirect("add_order_items")
         else:
             messages.error(request, _("Invalid form submission. Please correct the errors."))
     else:
-        po_form = PurchaseOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+        form = PurchaseOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
 
-    view_context = {"po_form": po_form}
+    view_context = {
+        'form': form,
+    }
     context = TemplateLayout.init(request, view_context)
-    return render(request, "createPurchaseOrder.html", context)
 
-
+    return render(request, 'createPurchaseOrder.html', context)
 
 
 @login_required
 def create_sample_order(request):
-    """
-    Create a Sample order. Superusers can access all branches, while regular users are restricted to their branch.
-    """
     # Determine if the user is a superuser or has a specific branch
     if request.user.is_superuser:
         user_is_superuser = True
@@ -1868,32 +1861,93 @@ def create_sample_order(request):
         user_is_superuser = False
         user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
 
-    if request.method == "POST":
-        # Pass 'user_is_superuser' and 'user_branch' to the form
-        smple_form = SampleOrderForm(data=request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
-
-        if smple_form.is_valid():
-            created_at = smple_form.cleaned_data["created_at"]
+    if request.method == 'POST':
+        form = SampleOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
             created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
 
             # Save form data to the session instead of creating the purchase order immediately
             request.session["sample_order_details"] = {
                 "created_at": created_at_str,
-                "branch": smple_form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
-                "customer": smple_form.cleaned_data["customer"].id,
-                "sales_rep": smple_form.cleaned_data["sales_rep"].id,  # Boolean field
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "sales_rep": form.cleaned_data["sales_rep"].id,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+                "is_special_customer": form.cleaned_data["is_special_customer"],
             }
 
-            # Redirect to the page for adding order items
-            return redirect("add_sample_items")
+            # Redirect to the page for adding purchase order items
+            return redirect("add_order_items")
         else:
             messages.error(request, _("Invalid form submission. Please correct the errors."))
     else:
-        smple_form = SampleOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+        form = PurchaseOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
 
-    view_context = {"smple_form": smple_form}
+    view_context = {
+        'form': form,
+    }
     context = TemplateLayout.init(request, view_context)
-    return render(request, "createSampleOrder.html", context)
+
+    return render(request, 'createPurchaseOrder.html', context)
+
+@login_required
+def create_sickness_order(request):
+    # Determine if the user is a superuser or has a specific branch
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None  # Superuser can access all branches
+    else:
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+
+    if request.method == 'POST':
+        form = SicknessOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
+            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+            has_prescription = form.cleaned_data.get('has_prescription', False)
+            prescription_document = form.cleaned_data.get('prescription_document')
+
+            # Save form data to the session instead of creating the sickness order immediately
+            request.session["sickness_order_details"] = {
+                "created_at": created_at_str,
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "employee": form.cleaned_data["employee"].id,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+            }
+            if prescription_document:
+                request.session['sickness_prescription_document'] = prescription_document.name
+                request.session['sickness_prescription_document_content'] = prescription_document.read()
+
+            # Redirect to the page for adding sickness items
+            return redirect("add_sickness_items")
+        else:
+            messages.error(request, _( "Invalid form submission. Please correct the errors."))
+    else:
+        form = SicknessOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+
+    view_context = {
+        'form': form,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'createPurchaseOrder.html', context)
 
 
 
@@ -1959,7 +2013,7 @@ def add_order_items(request):
                 if 0 <= item_index < len(order_items):
                     removed_item = order_items.pop(item_index)
                     request.session.modified = True
-                    messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
+                    messages.success(request, f"Removed {removed_item['brand_name']} from the order.")
                 else:
                     messages.error(request, _("Invalid item index provided."))
             except ValueError:
@@ -2169,22 +2223,33 @@ def add_sample_items(request):
                     customer = get_object_or_404(Customer, id=sample_order_details.get("customer"))
                     sales_rep = get_object_or_404(Worker, id=sample_order_details.get("sales_rep"))
                     branch = get_object_or_404(Branch, id=selected_branch_id)
+                    created_by = get_object_or_404(Worker, id=sample_order_details.get("created_by")) if sample_order_details.get("created_by") else request.user.worker_profile
 
-                    # Create purchase order
-                    sample_order = SampleOrder.objects.create(
+                    # Create purchase order (order_type='Sample')
+                    purchase_order = PurchaseOrder.objects.create(
                         created_at=created_at,
                         branch=branch,
                         customer=customer,
                         sales_rep=sales_rep,
-                        created_by=request.user.worker_profile,
+                        created_by=created_by,
                         status="Pending",
+                        order_type="Sample",
+                        payment_method=sample_order_details.get("payment_method"),
+                        payment_mode=sample_order_details.get("payment_mode"),
+                        momo_account_id=sample_order_details.get("momo_account_details"),
+                        check_account_id=sample_order_details.get("check_account_details"),
+                        bank_deposit_account_id=sample_order_details.get("bank_deposit_account_details"),
+                        tax_rate=sample_order_details.get("tax_rate"),
+                        precompte=sample_order_details.get("precompte"),
+                        tva=sample_order_details.get("tva"),
+                        is_special_customer=sample_order_details.get("is_special_customer", False),
                     )
 
                     # Add items to the purchase order
                     for item in sample_items:
                         stock = get_object_or_404(Stock, id=item["stock_id"])
-                        SampleOrderItem.objects.create(
-                            sample_order=sample_order,
+                        PurchaseOrderItem.objects.create(
+                            purchase_order=purchase_order,
                             stock=stock,
                             quantity=item["quantity"],
                             reason=item['reason'],
@@ -2192,24 +2257,24 @@ def add_sample_items(request):
 
                     # Log submission
                     worker = request.user.worker_profile if hasattr(request.user, 'worker_profile') else None
-                    SampleOrderAuditLog.objects.create(
+                    PurchaseOrderAuditLog.objects.create(
                         user=worker,
                         action="create",
-                        order=sample_order.sample_order_id,
+                        order=purchase_order.purchase_order_id,
                         branch=worker.branch.branch_name if worker else "Unknown",
                         details=f"Sample Order Created by: {worker}",
                     )
 
                     # Clear session and redirect
                     request.session["sample_items"] = []
-                    request.session["latest_sample_order_id"] = sample_order.id
+                    request.session["latest_sample_order_id"] = purchase_order.id
                     request.session.modified = True
-                    messages.success(request, _("Sample order submitted successfully."))
-                    return redirect("sample_orders")
+                    messages.success(request, _( "Sample order submitted successfully."))
+                    return redirect("orders")
                 except Exception as e:
                     messages.error(request, f"Error submitting the Sample order: {e}")
             else:
-                messages.error(request, _("No items added to the Sample order."))
+                messages.error(request, _( "No items added to the Sample order."))
 
     # Calculate order details
     sample_items = request.session["sample_items"]
@@ -2534,13 +2599,17 @@ def approve_order(request, order_id):
                     messages.error(request, f"Insufficient stock for {stock.product.product_code}.")
                     return redirect(reverse('order_details', args=[order_id]))
 
-                if item.temp_price == 0:  # Sample item
+                # Update the correct stock field based on order type
+                if order.order_type == 'Sample':
                     stock.samples_quantity += item_quantity
-                    stock.save()
-                else:  # Regular item
+                elif order.order_type == 'Sickness':
+                    stock.sickness_quantity += item_quantity
+                else:  # 'Purchase Order' or any other
                     stock.total_sold += item_quantity
-                    stock.save()
+                stock.save()
 
+                # Only create TemporaryStock for non-sample and non-sickness orders
+                if order.order_type == 'Purchase Order':
                     TemporaryStock.objects.create(
                         purchase_order=order,
                         stock=stock,
@@ -2564,39 +2633,41 @@ def approve_order(request, order_id):
                 details=f"Approval Note: {order.notes}",
             )
 
-            # Generate invoice
-            invoice = Invoice.objects.create(
-                branch=order.branch,
-                customer=order.customer,
-                sales_rep=order.sales_rep,
-                payment_method=order.payment_method,
-                created_at=order.created_at,
-                created_by=worker,  # Assign worker_profile if it exists, otherwise None
-                purchase_order=order,
-                grand_total=order.grand_total,
-                amount_paid=Decimal('0.00'),
-                amount_due=order.grand_total
-            )
-
-            # Log invoice creation
-            InvoiceAuditLog.objects.create(
-                user=worker,
-                action="create",
-                invoice=invoice.invoice_id,
-                branch=worker.branch.branch_name if worker else "Superadmin Approval",
-                details=f"Invoice generated from Purchase Order: {invoice.purchase_order.purchase_order_id}",
-            )
-
-            # Create invoice items
-            for item in order.items.all():
-                price = 0 if item.reason == 'Sample' else item.get_effective_price()
-                InvoiceOrderItem.objects.create(
-                    invoice_order=invoice,
-                    stock=item.stock,
-                    quantity=item.quantity,
-                    price=price,
-                    reason=item.reason
+            # Only generate invoice for non-sickness orders
+            if order.order_type != 'Sickness':
+                # Generate invoice
+                invoice = Invoice.objects.create(
+                    branch=order.branch,
+                    customer=order.customer,
+                    sales_rep=order.sales_rep,
+                    payment_method=order.payment_method,
+                    created_at=order.created_at,
+                    created_by=worker,  # Assign worker_profile if it exists, otherwise None
+                    purchase_order=order,
+                    grand_total=order.grand_total,
+                    amount_paid=Decimal('0.00'),
+                    amount_due=order.grand_total
                 )
+
+                # Log invoice creation
+                InvoiceAuditLog.objects.create(
+                    user=worker,
+                    action="create",
+                    invoice=invoice.invoice_id,
+                    branch=worker.branch.branch_name if worker else "Superadmin Approval",
+                    details=f"Invoice generated from Purchase Order: {invoice.purchase_order.purchase_order_id}",
+                )
+
+                # Create invoice items
+                for item in order.items.all():
+                    price = 0 if item.reason == 'Sample' else item.get_effective_price()
+                    InvoiceOrderItem.objects.create(
+                        invoice_order=invoice,
+                        stock=item.stock,
+                        quantity=item.quantity,
+                        price=price,
+                        reason=item.reason
+                    )
 
             messages.success(request, _("Order approved and invoice generated successfully."))
             return redirect(reverse('order_details', args=[order_id]))
@@ -4468,38 +4539,69 @@ def sales_agent_performance_report(request):
 
 @login_required
 def create_sickness_order(request):
-    if request.method == 'POST':
-        form = SicknessForm(request.POST)
-        if form.is_valid():
-            # Store form data in session instead of creating database record
-            request.session['sickness_order_details'] = {
-                'branch': form.cleaned_data['branch'].id,
-                'employee': form.cleaned_data['employee'].id,
-                'has_prescription': form.cleaned_data['has_prescription'],
-                'created_at': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'created_by': request.user.worker_profile.id
-            }
-            return redirect('add_sickness_items')
+    # Determine if the user is a superuser or has a specific branch
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None  # Superuser can access all branches
     else:
-        form = SicknessForm()
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+
+    if request.method == 'POST':
+        form = SicknessOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
+            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Save form data to the session instead of creating the sickness order immediately
+            request.session["sickness_order_details"] = {
+                "created_at": created_at_str,
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "employee": form.cleaned_data["employee"].id,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+            }
+
+            # Redirect to the page for adding sickness items
+            return redirect("add_sickness_items")
+        else:
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
+    else:
+        form = SicknessOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
 
     view_context = {
         'form': form,
     }
     context = TemplateLayout.init(request, view_context)
-    return render(request, 'createSicknessOrder.html', context)
 
+    return render(request, 'createPurchaseOrder.html', context)
 
 @login_required
 def add_sickness_items(request):
     """
-    View to add items to a sickness order.
+    View to add items to a sickness order (creates a PurchaseOrder with order_type='Sickness').
     """
     # Get the sickness order details from session
     sickness_order_details = request.session.get('sickness_order_details')
     if not sickness_order_details:
         messages.error(request, "No active sickness order found.")
         return redirect('create_sickness_order')
+
+    # --- FIX: Ensure has_prescription is set in session from POST if present ---
+    if request.method == 'POST':
+        if 'has_prescription' in request.POST:
+            has_prescription = request.POST.get('has_prescription')
+            has_prescription_bool = bool(has_prescription)
+            sickness_order_details['has_prescription'] = has_prescription_bool
+            request.session['sickness_order_details'] = sickness_order_details
+    # -------------------------------------------------------------------------
 
     # Get the selected branch object
     from apps.branches.models import Branch
@@ -4519,7 +4621,7 @@ def add_sickness_items(request):
                 item = form.save(commit=False)
 
                 # Set price based on prescription
-                if sickness_order_details['has_prescription']:
+                if sickness_order_details.get('has_prescription'):
                     item.price = 0
                 else:
                     item.price = item.stock.product.unit_price
@@ -4553,35 +4655,58 @@ def add_sickness_items(request):
 
             try:
                 with transaction.atomic():
-                    # Create the sickness order
-                    sickness_order = Sickness.objects.create(
+                    # Create the PurchaseOrder with order_type='Sickness'
+                    from apps.orders.models import PurchaseOrder, PurchaseOrderItem
+                    from apps.stock.models import Stock
+                    from apps.workers.models import Worker
+                    from apps.customers.models import Customer
+                    created_by_id = sickness_order_details.get('created_by')
+                    created_by = Worker.objects.get(id=created_by_id) if created_by_id else None
+                    customer_id = sickness_order_details.get('customer')
+                    customer = Customer.objects.get(id=customer_id) if customer_id else None
+                    employee_id = sickness_order_details.get('employee')
+                    employee = Worker.objects.get(id=employee_id) if employee_id else None
+                    created_at = datetime.strptime(sickness_order_details['created_at'], '%Y-%m-%d %H:%M:%S')
+                    notes = "Has Prescription: Yes" if sickness_order_details.get('has_prescription') else "Has Prescription: No"
+
+                    purchase_order = PurchaseOrder.objects.create(
+                        order_type='Sickness',
                         branch_id=sickness_order_details['branch'],
-                        employee_id=sickness_order_details['employee'],
-                        has_prescription=sickness_order_details['has_prescription'],
-                        created_by_id=sickness_order_details['created_by'],
-                        created_at=datetime.strptime(sickness_order_details['created_at'], '%Y-%m-%d %H:%M:%S')
+                        customer=customer,
+                        employee=employee,
+                        payment_method=sickness_order_details.get('payment_method'),
+                        payment_mode=sickness_order_details.get('payment_mode'),
+                        momo_account_id=sickness_order_details.get('momo_account_details'),
+                        check_account_id=sickness_order_details.get('check_account_details'),
+                        bank_deposit_account_id=sickness_order_details.get('bank_deposit_account_details'),
+                        tax_rate=sickness_order_details.get('tax_rate'),
+                        precompte=sickness_order_details.get('precompte'),
+                        tva=sickness_order_details.get('tva'),
+                        created_by=request.user.worker_profile,
+                        created_at=created_at,
+                        notes=notes
                     )
 
-                    # Create SicknessItem objects
+                    # Create PurchaseOrderItem objects
                     for item_data in sickness_items:
                         stock = Stock.objects.get(id=item_data['stock_id'])
-                        SicknessItem.objects.create(
-                            sickness_order=sickness_order,
+                        PurchaseOrderItem.objects.create(
+                            purchase_order=purchase_order,
                             stock=stock,
                             quantity=item_data['quantity'],
                             reason=item_data['reason'],
-                            price=item_data['price']
+                            temp_price=item_data['price']
                         )
 
                     # Clear the session
                     del request.session['sickness_order_details']
                     del request.session['sickness_items']
 
-                    messages.success(request, "Sickness order created successfully!")
-                    return redirect('sickness_orders')
+                    messages.success(request, "Sickness purchase order created successfully!")
+                    return redirect('orders')
 
             except Exception as e:
-                messages.error(request, f"Error creating sickness order: {str(e)}")
+                messages.error(request, f"Error creating sickness purchase order: {str(e)}")
                 return redirect('add_sickness_items')
 
     else:
@@ -4793,3 +4918,49 @@ def reject_sickness_order(request, order_id):
     except Exception as e:
         messages.error(request, f'Error rejecting order: {str(e)}')
         return redirect('sickness_order_details', order_id=order.id)
+
+@login_required
+def create_sample_order(request):
+    # Determine if the user is a superuser or has a specific branch
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None  # Superuser can access all branches
+    else:
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+
+    if request.method == 'POST':
+        form = SampleOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
+            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Save form data to the session instead of creating the sample order immediately
+            request.session["sample_order_details"] = {
+                "created_at": created_at_str,
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "sales_rep": form.cleaned_data["sales_rep"].id,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+            }
+
+            # Redirect to the page for adding sample order items
+            return redirect("add_sample_items")
+        else:
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
+    else:
+        form = SampleOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+
+    view_context = {
+        'form': form,
+    }
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'createPurchaseOrder.html', context)

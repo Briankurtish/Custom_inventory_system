@@ -11,7 +11,7 @@
 {% if role_privileges %}
     {% for privilege in role_privileges %}
         {% if privilege.name == 'Create Orders' %}
-          <button type="button" class="btn btn-outline-primary">
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderTypeModal">
             <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
           </button>
         {% endif %}
@@ -19,13 +19,30 @@
 {% endif %}
 
 {% if user.is_superuser %}
-  <button type="button" class="btn btn-outline-primary">
+  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderTypeModal">
     <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
   </button>
   <a href="{% url 'sales_report' %}" target="_blank" class="btn btn-outline-primary">
     <span class="fa-solid fa-download me-2"></span>{% trans "Sales Report" %}
 </a>
 {% endif %}
+
+<!-- Order Type Selection Modal -->
+<div class="modal fade" id="orderTypeModal" tabindex="-1" aria-labelledby="orderTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderTypeModalLabel">{% trans "Select Order Type" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <button class="btn btn-primary w-100 mb-2" onclick="window.location.href='{% url 'create-purchase-order' %}'">{% trans "Purchase" %}</button>
+        <button class="btn btn-info w-100 mb-2" onclick="window.location.href='{% url 'create-sample-order' %}'">{% trans "Sample" %}</button>
+        <button class="btn btn-warning w-100" onclick="window.location.href='{% url 'create-sickness-order' %}'">{% trans "Sickness" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <hr class="my-8">
 
@@ -345,29 +362,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Attach handler to Create Order buttons
-    document.querySelectorAll('button.btn.btn-outline-primary').forEach(function(btn) {
-        if (btn.innerText.trim().toLowerCase().includes('create order')) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                orderToViewUrl = '{% url 'create-order' %}';
-                orderActionType = 'create';
-                fetch("{% url 'check_security_pin' %}")
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.has_pin) {
-                            orderSecurityPinModal.show();
-                        } else {
-                            orderWarningModal.show();
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                    });
-            });
-        }
-    });
-
     document.getElementById('validateOrderPinButton').addEventListener('click', function () {
         const securityPinInput = document.getElementById('orderSecurityPinInput').value.trim();
         if (securityPinInput.length !== 4 || !/^\d{4}$/.test(securityPinInput)) {
@@ -391,8 +385,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (orderToViewUrl) {
                     if (orderActionType === 'view' || orderActionType === 'upload') {
                         window.open(orderToViewUrl, '_blank');
-                    } else if (orderActionType === 'create') {
-                        window.location.href = orderToViewUrl;
                     }
                     orderSecurityPinModal.hide();
                 }
