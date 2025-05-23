@@ -17,7 +17,7 @@
         padding: 0;
       }
       time {
-        font-size: 11px;
+        font-size: 13px;
       }
       .container {
         width: 100%;
@@ -33,10 +33,10 @@
         padding: 10px 20px;
       }
       .header .date {
-        font-size: 14px;
+        font-size: 13px;
       }
       .header h1 {
-        font-size: 12px;
+        font-size: 13px;
         margin: 0;
       }
       .header .title-container {
@@ -78,7 +78,7 @@
       table td {
         border: 1px solid #ccc;
         padding: 5px;
-        font-size: 10px;
+        font-size: 13px;
         text-align: left;
       }
       table th {
@@ -138,13 +138,13 @@
       }
       .po-number {
         text-align: center;
-        font-size: 9px;
+        font-size: 13px;
       }
       .footer {
         display: flex;
         justify-content: end;
         margin-top: 30px;
-        font-size: 9px;
+        font-size: 10px;
       }
       .totals-section {
         display: flex;
@@ -184,28 +184,32 @@
         width: 50px; /* Adjust the width as needed */
       }
       .generic-name-column {
-        width: 150px; /* Adjust the width as needed */
+        width: 300px;
+        max-width: 300x;
+        word-wrap: break-word;
+        white-space: normal;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <div class="date">
-          <time>{{ receipt.payment_date|date:"M d, Y H:i" }}</time>
+      <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
         </div>
+
         <div>
           <div class="column">
             <h1 class="title-container">Receipt (Reçu)</h1>
             <p class="po-number">{{ receipt.receipt_id }}</p>
           </div>
         </div>
-        <div class="logo">
-          <a href="https://imgbb.com/">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
-          </a>
-
-          <!-- Replace with actual logo URL -->
+        <div class="date">
+          <time>{{ receipt.payment_date|date:"M d, Y" }}</time>
         </div>
       </div>
 
@@ -234,14 +238,14 @@
       <table>
         <thead>
           <tr>
-            <th class="no-column">No</th>
-            <th>Invoice Number</th>
-            <th>Product ID</th>
+            <th class="no-column" style="width: 50px;">No</th>
+            <th style="width: 150px;">Invoice Number</th>
+            <th style="width: 90px;">Product ID</th>
             <th class="generic-name-column">Generic Name</th>
-            <th class="generic-name-column">Brand Name</th>
-            <th>Qty</th>
-            <th>U Price</th>
-            <th>Total</th>
+            <th class="generic-name-column" style="width: 120px;">Brand Name</th>
+            <th style="width: 60px;">Qty</th>
+            <th style="width: 100px;">U Price</th>
+            <th style="width: 100px;">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -278,7 +282,7 @@
 
       <div class="payment-row">
         <p>Payment Mode: {{ receipt.payment_method }}</p>
-        <p>Date Payment Received: {{ receipt.payment_date|date:"M d, Y H:i" }}</p>
+        <p>Date Payment Received: {{ receipt.payment_date|date:"M d, Y" }}</p>
         <p>Total(THT):</p>
         <strong><p>{{ invoice.grand_total|floatformat:2|intcomma }} CFA</p></strong>
 

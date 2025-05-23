@@ -18,7 +18,7 @@
         padding: 0;
       }
       time {
-        font-size: 11px;
+        font-size: 13px;
       }
       .container {
         width: 100%;
@@ -34,10 +34,10 @@
         padding: 10px 20px;
       }
       .header .date {
-        font-size: 14px;
+        font-size: 13px;
       }
       .header h1 {
-        font-size: 12px;
+        font-size: 13px;
         margin: 0;
       }
       .header .title-container {
@@ -59,7 +59,7 @@
       table td {
         border: 1px solid #ccc;
         padding: 5px;
-        font-size: 10px;
+        font-size: 13px;
         text-align: left;
       }
       table th {
@@ -119,13 +119,13 @@
       }
       .po-number {
         text-align: center;
-        font-size: 9px;
+        font-size: 13px;
       }
       .footer {
         display: flex;
         justify-content: end;
         margin-top: 30px;
-        font-size: 9px;
+        font-size: 10px;
       }
       .totals-section {
         display: flex;
@@ -195,7 +195,10 @@
         margin-top: 30px;
       }
       .generic-name-column {
-        width: 130px; /* Adjust the width as needed */
+        width: 250px;
+        max-width: 250x;
+        word-wrap: break-word;
+        white-space: normal;
       }
       .dosage-column {
         width: 100px; /* Adjust the width as needed */
@@ -208,21 +211,22 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="date">
-          <time>{{ stock_request.requested_at|date:"M d, Y H:i" }}</time>
+      <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
         </div>
+
         <div>
           <div class="column">
             <h1 class="title-container">Receipt Note (Bon de réception)</h1>
             <p class="po-number">{{ stock_request.request_number }}</p>
           </div>
         </div>
-        <div class="logo">
-          <a href="https://imgbb.com/">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
-          </a>
-
-          <!-- Replace with actual logo URL -->
+        <div class="date">
+          <time>{{ stock_request.requested_at|date:"M d, Y" }}</time>
         </div>
       </div>
 
@@ -249,15 +253,15 @@
       <table>
         <thead>
           <tr>
-            <th class="no-column">No</th>
-            <th>Product ID</th>
+            <th class="no-column" style="width: 50px;">No</th>
+            <th style="width: 90px;">Product ID</th>
             <th class="generic-name-column">Generic Name</th>
-            <th class="generic-name-column">Brand Name</th>
-            <th>Batch Number</th>
+            <th class="generic-name-column" style="width: 100px;">Brand Name</th>
+            <th style="width: 100px;">Batch Number</th>
             <th class="dosage-column">Dosage Form</th>
-            <th>Mfg Date</th>
-            <th>Exp Date</th>
-            <th>Qty</th>
+            <th style="width: 100px;">Mfg Date</th>
+            <th style="width: 100px;">Exp Date</th>
+            <th style="width: 60px;">Qty</th>
           </tr>
         </thead>
         <tbody>

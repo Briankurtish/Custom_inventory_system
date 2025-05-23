@@ -137,6 +137,7 @@
         <tr>
           <th>{% trans "No" %}</th>
           <th>{% trans "Order ID" %}</th>
+          <th>{% trans "Order Type" %}</th>
           <th>{% trans "Branch ID" %}</th>
           <th>{% trans "Client" %}</th>
           <th>{% trans "Sales Rep" %}</th>
@@ -158,6 +159,17 @@
               <p class="text-danger">{{ order.return_order_id }}</p>
             {% else %}
               {{ order.purchase_order_id }}
+            {% endif %}
+          </td>
+          <td>
+            {% if order.order_type|lower == 'purchase' %}
+              <span class="badge bg-label-primary me-1">{% trans "Purchase Order" %}</span>
+            {% elif order.order_type|lower == 'sample' %}
+              <span class="badge bg-label-info me-1">{% trans "Sample Order" %}</span>
+            {% elif order.order_type|lower == 'sickness' %}
+              <span class="badge bg-label-warning me-1">{% trans "Sickness Order" %}</span>
+            {% else %}
+              <span class="badge bg-label-secondary me-1">{% trans "Return Order" %}</span>
             {% endif %}
           </td>
           <td>{{ order.branch.branch_id }}</td>

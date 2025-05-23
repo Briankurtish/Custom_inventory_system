@@ -18,7 +18,7 @@
         padding: 0;
       }
       time {
-        font-size: 11px;
+        font-size: 13px;
       }
       .container {
         width: 100%;
@@ -34,10 +34,10 @@
         padding: 10px 20px;
       }
       .header .date {
-        font-size: 14px;
+        font-size: 13px;
       }
       .header h1 {
-        font-size: 12px;
+        font-size: 13px;
         margin: 0;
       }
       .header .title-container {
@@ -59,8 +59,12 @@
       table td {
         border: 1px solid #ccc;
         padding: 5px;
-        font-size: 9px;
+        font-size: 13px;
         text-align: left;
+        word-wrap: break-word;
+        white-space: normal;
+        overflow-wrap: break-word;
+        max-width: 200px; /* Maximum width for cells */
       }
       table th {
         background-color: #f8f8f8;
@@ -119,13 +123,13 @@
       }
       .po-number {
         text-align: center;
-        font-size: 9px;
+        font-size: 13px;
       }
       .footer {
         display: flex;
         justify-content: end;
         margin-top: 30px;
-        font-size: 9px;
+        font-size: 10px;
       }
       .totals-section {
         display: flex;
@@ -182,7 +186,7 @@
 
       .branch h2 {
         margin: 0 0 10px 0;
-        font-size: 12px;
+        font-size: 13px;
       }
 
       .branch p {
@@ -200,16 +204,31 @@
       }
 
       .generic-name-column {
-        width: 150px; /* Adjust the width as needed */
+        width: 300px;
+        max-width: 300x;
+        word-wrap: break-word;
+        white-space: normal;
+      }
+      .customer {
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      .customer p {
+        margin: 5px 0;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <div class="date">
-          <time>{{ order.created_at|date:"M d, Y H:i" }}</time>
+      <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
         </div>
+
         <div>
           <div class="column">
             {% if is_return_purchase_order %}
@@ -222,12 +241,8 @@
 
           </div>
         </div>
-        <div class="logo">
-          <a href="https://imgbb.com/">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
-          </a>
-
-          <!-- Replace with actual logo URL -->
+        <div class="date">
+          <time>{{ order.created_at|date:"M d, Y" }}</time>
         </div>
       </div>
 
@@ -237,23 +252,33 @@
         <p>Carrefour Diderot, Ahala, BP 7761 Yaounde, Cameroon</p>
       </div>
 
-      <div class="container-header">
-        <div class="branch">
+
+
+      <div class="container-header" style="display: flex; justify-content: space-between;">
+
+        <div class="customer" style="border: none;">
+          <p><strong>Customer Name:</strong> {{ order.customer.customer_name }}</p>
+          <p><strong>Customer ID:</strong> {{ order.customer.customer_id }}</p>
+          <p><strong>Tel:</strong> {{ order.customer.telephone }}</p>
+          <p><strong>Address:</strong> {{ order.customer.postal_code }}</p>
+        </div>
+        <div class="branch" style="border: none;">
           <p><strong>Branch Name:</strong> {{ order.branch.branch_name }}</p>
           <p><strong>Branch ID: {{ order.branch.branch_id }}</strong></p>
         </div>
       </div>
 
+
       <table>
         <thead>
           <tr>
-            <th class="no-column">No</th>
-            <th>Product ID</th>
-            <th>Batch Number</th>
+            <th class="no-column" style="width: 50px;">No</th>
+            <th style="width: 90px;">Product ID</th>
+            <th style="width: 100px;">Batch Number</th>
             <th class="generic-name-column">Generic Name</th>
-            <th>Brand Name</th>
-            <th>Dosage Form</th>
-            <th>Qty</th>
+            <th class="generic-name-column" style="width: 120px;">Brand Name</th>
+            <th style="width: 100px;">Dosage Form</th>
+            <th style="width: 60px;">Qty</th>
           </tr>
         </thead>
         <tbody>

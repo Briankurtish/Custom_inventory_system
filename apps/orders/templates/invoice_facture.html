@@ -195,7 +195,7 @@
       <div class="header">
         <div class="logo">
           <a href="#">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
           </a>
 
           <!-- Replace with actual logo URL -->
@@ -211,7 +211,7 @@
           </div>
         </div>
         <div class="date">
-          <time>{{ invoice.created_at|date:"M d, Y H:i" }}</time>
+          <time>{{ invoice.created_at|date:"M d, Y" }}</time>
         </div>
 
       </div>
@@ -243,6 +243,7 @@
           <tr>
             <th class="text" style="width: 50px;">No</th>
             <th style="width: 90px;">Product ID</th>
+            <th class="text" style="width: 80px;">Order Type</th>
             <th class="generic-name-column">Generic Name</th>
             <th class="generic-name-column" style="width: 120px;">Brand Name</th>
             <th class="text" style="width: 120px;">Batch Number</th>
@@ -256,6 +257,7 @@
             <tr>
             <td>{{forloop.counter}}</td>
             <td>{{item.stock.product.product_code}}</td>
+            <td>{{invoice.purchase_order.order_type}}</td>
             <td>{{item.stock.product.generic_name_dosage}}</td>
             <td>{{item.stock.product.brand_name.brand_name}}</td>
             <td>{{item.stock.product.batch.batch_number}}</td>

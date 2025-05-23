@@ -17,7 +17,7 @@
         padding: 0;
       }
       time {
-        font-size: 11px;
+        font-size: 13px;
       }
       .container {
         width: 100%;
@@ -33,7 +33,7 @@
         padding: 10px 20px;
       }
       .header .date {
-        font-size: 14px;
+        font-size: 12px;
       }
       .header h1 {
         font-size: 12px;
@@ -43,6 +43,7 @@
         background-color: #f0f0f0;
         padding: 10px 20px;
         border-radius: 4px;
+        font-size: 13px;
       }
       .header .logo img {
         max-width: 50px;
@@ -78,8 +79,12 @@
       table td {
         border: 1px solid #ccc;
         padding: 5px;
-        font-size: 10px;
+        font-size: 13px;
         text-align: left;
+        word-wrap: break-word;
+        white-space: normal;
+        overflow-wrap: break-word;
+        max-width: 200px; /* Maximum width for cells */
       }
       table th {
         background-color: #f8f8f8;
@@ -138,13 +143,13 @@
       }
       .po-number {
         text-align: center;
-        font-size: 9px;
+        font-size: 13px;
       }
       .footer{
         display: flex;
         justify-content: end;
         margin-top: 30px;
-        font-size: 9px;
+        font-size: 10px;
       }
       .totals-section {
         display: flex;
@@ -170,7 +175,10 @@
       }
 
       .generic-name-column {
-        width: 150px; /* Adjust the width as needed */
+        width: 300px;
+        max-width: 300x;
+        word-wrap: break-word;
+        white-space: normal;
       }
       .batch-column {
         width: 80px; /* Adjust the width as needed */
@@ -181,9 +189,14 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="date">
-          <time>{{ order.created_at|date:"M d, Y H:i" }}</time>
+      <div class="logo">
+          <a href="https://imgbb.com/">
+            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 100px; height: auto;">
+          </a>
+
+          <!-- Replace with actual logo URL -->
         </div>
+
         <div >
           <div class="column">
           {% if order_type == "purchase_order" %}
@@ -200,12 +213,8 @@
           </p>
       </div>
         </div>
-        <div class="logo">
-          <a href="https://imgbb.com/">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="gcpharma-1-removebg-preview" border="0" style="max-width: 70px; height: auto;">
-          </a>
-
-          <!-- Replace with actual logo URL -->
+        <div class="date">
+          <time>{{ order.created_at|date:"M d, Y" }}</time>
         </div>
       </div>
 
@@ -237,12 +246,12 @@
             <th class="no-column">No</th>
             <th>Product ID</th>
             <th class="generic-name-column">Generic Name</th>
-            <th class="generic-name-column">Brand Name</th>
+            <th class="generic-name-column" style="width: 120px;">Brand Name</th>
             <th class="batch-column">Batch Number</th>
             <th>Dosage Form</th>
             <th>Mfg Date</th>
             <th>Exp Date</th>
-            <th>Qty</th>
+            <th style="width: 60px;">Qty</th>
             <th>U Price</th>
             <th>Total</th>
           </tr>
