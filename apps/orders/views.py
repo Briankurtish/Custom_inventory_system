@@ -525,25 +525,18 @@ def upload_purchase_order_document(request, order_id):
         if form.is_valid():
             new_document_type = form.cleaned_data['document_type']
 
-            # Prevent duplicate document types
-            if model_class.objects.filter(
-                **({'return_purchase_order': order} if is_return else {'purchase_order': order}),
-                document_type=new_document_type
-            ).exists():
-                messages.warning(request, f"A document of type '{new_document_type}' has already been uploaded.")
+            document = form.save(commit=False)
+            if is_return:
+                document.return_purchase_order = order
             else:
-                document = form.save(commit=False)
-                if is_return:
-                    document.return_purchase_order = order
-                else:
-                    document.purchase_order = order
+                document.purchase_order = order
 
-                # Assign the worker who uploaded the document
-                document.uploaded_by = worker
-                document.save()
+            # Assign the worker who uploaded the document
+            document.uploaded_by = worker
+            document.save()
 
-                messages.success(request, "Document uploaded successfully.")
-                return redirect('upload_purchase_order_document', order_id=order.id)
+            messages.success(request, "Document uploaded successfully.")
+            return redirect('upload_purchase_order_document', order_id=order.id)
 
         else:
             messages.error(request, "Error uploading document. Please check the form.")
@@ -665,21 +658,17 @@ def upload_invoice_document(request, invoice_id):
         if form.is_valid():
             new_document_type = form.cleaned_data['document_type']
 
-            # Prevent duplicate document types
-            if model_class.objects.filter(**({'return_invoice': invoice} if is_return else {'invoice': invoice}), document_type=new_document_type).exists():
-                messages.warning(request, f"A document of type '{new_document_type}' has already been uploaded.")
+            document = form.save(commit=False)
+            if is_return:
+                document.return_invoice = invoice
             else:
-                document = form.save(commit=False)
-                if is_return:
-                    document.return_invoice = invoice
-                else:
-                    document.invoice = invoice
+                document.invoice = invoice
 
-                # Assign the worker who uploaded the document
-                document.uploaded_by = worker
-                document.save()
-                messages.success(request, "Document uploaded successfully.")
-                return redirect('upload_invoice_document', invoice_id=invoice.id)
+            # Assign the worker who uploaded the document
+            document.uploaded_by = worker
+            document.save()
+            messages.success(request, "Document uploaded successfully.")
+            return redirect('upload_invoice_document', invoice_id=invoice.id)
 
         else:
             messages.error(request, "Error uploading document. Please check the form.")

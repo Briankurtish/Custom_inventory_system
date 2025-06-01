@@ -167,13 +167,25 @@ class SicknessOrderForm(forms.ModelForm):
         user_is_superuser = kwargs.pop('user_is_superuser', False)
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
+        sickness_customer_ids = [
+            "CUST-BAF-0101",
+            "CUST-DLA-0097",
+            "CUST-YDE-0293",
+        ]
         if not user_is_superuser and user_branch:
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
             self.fields['employee'].queryset = Worker.objects.filter(branch=user_branch)
-            self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+            self.fields['customer'].queryset = Customer.objects.filter(
+                branch=user_branch,
+                customer_id__in=sickness_customer_ids
+            )
             self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
             self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
             self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
+        else:
+            self.fields['customer'].queryset = Customer.objects.filter(
+                customer_id__in=sickness_customer_ids
+            )
 
     def clean(self):
         cleaned_data = super().clean()
