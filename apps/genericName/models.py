@@ -5,7 +5,7 @@ from apps.workers.models import Worker
 
 class GenericName(models.Model):
     generic_name = models.CharField(
-        max_length=255, unique=True
+        max_length=255
     )
     brand_name = models.CharField(
         max_length=255, null=True, blank=True
@@ -25,7 +25,7 @@ class GenericName(models.Model):
     )
 
     def __str__(self):
-        return f"{self.generic_name}"
+        return f"{self.generic_name} - {self.brand_name}"
 
 
 class GenericNameAuditLog(models.Model):
