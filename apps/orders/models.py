@@ -172,7 +172,8 @@ class PurchaseOrder(models.Model):
         related_name='employee_orders',
     )
     payment_method = models.CharField(
-        max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')]
+        max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')],
+        null=True, blank=True
     )
     payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODES, null=True)
     created_at = models.DateTimeField(null=True)

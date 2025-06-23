@@ -554,7 +554,6 @@ def upload_purchase_order_document(request, order_id):
     return render(request, "upload_documents.html", context)
 
 
-
 @login_required
 def edit_document(request, document_id):
     """
@@ -1231,7 +1230,7 @@ def return_items(request, invoice_id):
 #                     )
 
 #                     messages.success(request, "Item returned successfully.")
-#                     return redirect('invoice_details', invoice_id=invoice.id)
+#                     return redirect('invoice_details', invoice.id)
 #             except Exception as e:
 #                 messages.error(request, f"An error occurred: {str(e)}")
 #                 return redirect('return_items', invoice_id=invoice_id)
@@ -1842,13 +1841,12 @@ def create_purchase_order(request):
 
 @login_required
 def create_sample_order(request):
-    # Determine if the user is a superuser or has a specific branch
     if request.user.is_superuser:
         user_is_superuser = True
-        user_branch = None  # Superuser can access all branches
+        user_branch = None
     else:
         user_is_superuser = False
-        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+        user_branch = request.user.worker_profile.branch
 
     if request.method == 'POST':
         form = SampleOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
@@ -1856,29 +1854,17 @@ def create_sample_order(request):
             created_at = form.cleaned_data["created_at"]
             created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
 
-            # Save form data to the session instead of creating the purchase order immediately
             request.session["sample_order_details"] = {
                 "created_at": created_at_str,
                 "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
                 "customer": form.cleaned_data["customer"].id,
-                "sales_rep": form.cleaned_data["sales_rep"].id,
-                "payment_method": form.cleaned_data["payment_method"],
-                "payment_mode": form.cleaned_data["payment_mode"],
-                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
-                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
-                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
-                "tax_rate": str(form.cleaned_data["tax_rate"]),
-                "precompte": str(form.cleaned_data["precompte"]),
-                "tva": str(form.cleaned_data["tva"]),
-                "is_special_customer": form.cleaned_data["is_special_customer"],
             }
 
-            # Redirect to the page for adding purchase order items
-            return redirect("add_order_items")
+            return redirect("add_sample_items")
         else:
-            messages.error(request, _("Invalid form submission. Please correct the errors."))
+            messages.error(request, _( "Invalid form submission. Please correct the errors."))
     else:
-        form = PurchaseOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+        form = SampleOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
 
     view_context = {
         'form': form,
@@ -2142,37 +2128,23 @@ def add_order_items(request):
 @login_required
 def add_sample_items(request):
     user_branch = request.user.worker_profile.branch
-
-    # Retrieve the branch from the purchase order details stored in the session
     sample_order_details = request.session.get("sample_order_details", {})
-    selected_branch_id = sample_order_details.get("branch")  # Branch ID from session
-
-    # Get the actual branch object
+    selected_branch_id = sample_order_details.get("branch")
     selected_branch = get_object_or_404(Branch, id=selected_branch_id) if selected_branch_id else user_branch
-
-    # Initialize session data if it doesn't exist
     if "sample_items" not in request.session:
         request.session["sample_items"] = []
-
-    # Pass the selected branch to the form
     sample_item_form = SampleOrderItemForm(user_branch=selected_branch)
-
     if request.method == "POST":
         action = request.POST.get("action", "")
-
-        # Add item to order
         if action == "add_item":
             sample_item_form = SampleOrderItemForm(data=request.POST, user_branch=selected_branch)
             if sample_item_form.is_valid():
                 stock = sample_item_form.cleaned_data["stock"]
                 quantity = sample_item_form.cleaned_data["quantity"]
                 reason = sample_item_form.cleaned_data["reason"]
-
-                # Ensure stock availability
                 if quantity > stock.total_stock:
                     messages.error(request, f"Insufficient stock: only {stock.total_stock} available.")
                 else:
-                    # Add item to session
                     sample_items = request.session["sample_items"]
                     sample_items.append({
                         "stock_id": stock.id,
@@ -2183,58 +2155,36 @@ def add_sample_items(request):
                     request.session.modified = True
                     messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
             else:
-                messages.error(request, _("Invalid form input. Please correct the errors."))
-
-        # Remove item from order
+                messages.error(request, _( "Invalid form input. Please correct the errors."))
         elif action == "remove_item":
             try:
                 item_index = int(request.POST.get("item_index", -1))
                 sample_items = request.session["sample_items"]
-
                 if 0 <= item_index < len(sample_items):
                     removed_item = sample_items.pop(item_index)
                     request.session.modified = True
                     messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
                 else:
-                    messages.error(request, _("Invalid item index provided."))
+                    messages.error(request, _( "Invalid item index provided."))
             except ValueError:
-                messages.error(request, _("Invalid item index provided."))
-
-        # Submit order
+                messages.error(request, _( "Invalid item index provided."))
         elif action == "submit_order":
             sample_items = request.session["sample_items"]
             if sample_items:
                 try:
                     created_at_str = sample_order_details.get("created_at")
                     created_at = datetime.strptime(created_at_str, '%Y-%m-%d %H:%M:%S')
-
-                    # Retrieve related objects
                     customer = get_object_or_404(Customer, id=sample_order_details.get("customer"))
-                    sales_rep = get_object_or_404(Worker, id=sample_order_details.get("sales_rep"))
                     branch = get_object_or_404(Branch, id=selected_branch_id)
-                    created_by = get_object_or_404(Worker, id=sample_order_details.get("created_by")) if sample_order_details.get("created_by") else request.user.worker_profile
-
-                    # Create purchase order (order_type='Sample')
+                    created_by = request.user.worker_profile
                     purchase_order = PurchaseOrder.objects.create(
                         created_at=created_at,
                         branch=branch,
                         customer=customer,
-                        sales_rep=sales_rep,
                         created_by=created_by,
                         status="Pending",
                         order_type="Sample",
-                        payment_method=sample_order_details.get("payment_method"),
-                        payment_mode=sample_order_details.get("payment_mode"),
-                        momo_account_id=sample_order_details.get("momo_account_details"),
-                        check_account_id=sample_order_details.get("check_account_details"),
-                        bank_deposit_account_id=sample_order_details.get("bank_deposit_account_details"),
-                        tax_rate=sample_order_details.get("tax_rate"),
-                        precompte=sample_order_details.get("precompte"),
-                        tva=sample_order_details.get("tva"),
-                        is_special_customer=sample_order_details.get("is_special_customer", False),
                     )
-
-                    # Add items to the purchase order
                     for item in sample_items:
                         stock = get_object_or_404(Stock, id=item["stock_id"])
                         PurchaseOrderItem.objects.create(
@@ -2243,8 +2193,6 @@ def add_sample_items(request):
                             quantity=item["quantity"],
                             reason=item['reason'],
                         )
-
-                    # Log submission
                     worker = request.user.worker_profile if hasattr(request.user, 'worker_profile') else None
                     PurchaseOrderAuditLog.objects.create(
                         user=worker,
@@ -2253,8 +2201,6 @@ def add_sample_items(request):
                         branch=worker.branch.branch_name if worker else "Unknown",
                         details=f"Sample Order Created by: {worker}",
                     )
-
-                    # Clear session and redirect
                     request.session["sample_items"] = []
                     request.session["latest_sample_order_id"] = purchase_order.id
                     request.session.modified = True
@@ -2264,15 +2210,11 @@ def add_sample_items(request):
                     messages.error(request, f"Error submitting the Sample order: {e}")
             else:
                 messages.error(request, _( "No items added to the Sample order."))
-
-    # Calculate order details
     sample_items = request.session["sample_items"]
-
     view_context = {
         "sample_item_form": sample_item_form,
         "sample_items": sample_items,
     }
-
     context = TemplateLayout.init(request, view_context)
     return render(request, "addSampleItems.html", context)
 
@@ -2591,11 +2533,13 @@ def approve_order(request, order_id):
                 # Update the correct stock field based on order type
                 if order.order_type == 'Sample':
                     stock.samples_quantity += item_quantity
+                    stock.save()
                 elif order.order_type == 'Sickness':
                     stock.sickness_quantity += item_quantity
+                    stock.save()
                 else:  # 'Purchase Order' or any other
                     stock.total_sold += item_quantity
-                stock.save()
+                    stock.save()
 
                 # Only create TemporaryStock for non-sample and non-sickness orders
                 if order.order_type == 'Purchase Order':
@@ -2622,8 +2566,8 @@ def approve_order(request, order_id):
                 details=f"Approval Note: {order.notes}",
             )
 
-            # Only generate invoice for non-sickness orders
-            if order.order_type != 'Sickness':
+            # Only generate invoice for 'Purchase Order' (not for 'Sample' or 'Sickness')
+            if order.order_type == 'Purchase Order':
                 # Generate invoice
                 invoice = Invoice.objects.create(
                     branch=order.branch,
@@ -4910,13 +4854,12 @@ def reject_sickness_order(request, order_id):
 
 @login_required
 def create_sample_order(request):
-    # Determine if the user is a superuser or has a specific branch
     if request.user.is_superuser:
         user_is_superuser = True
-        user_branch = None  # Superuser can access all branches
+        user_branch = None
     else:
         user_is_superuser = False
-        user_branch = request.user.worker_profile.branch  # Get the branch for the logged-in user
+        user_branch = request.user.worker_profile.branch
 
     if request.method == 'POST':
         form = SampleOrderForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
@@ -4924,26 +4867,15 @@ def create_sample_order(request):
             created_at = form.cleaned_data["created_at"]
             created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
 
-            # Save form data to the session instead of creating the sample order immediately
             request.session["sample_order_details"] = {
                 "created_at": created_at_str,
                 "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
                 "customer": form.cleaned_data["customer"].id,
-                "sales_rep": form.cleaned_data["sales_rep"].id,
-                "payment_method": form.cleaned_data["payment_method"],
-                "payment_mode": form.cleaned_data["payment_mode"],
-                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data["momo_account_details"] else None,
-                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data["check_account_details"] else None,
-                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data["bank_deposit_account_details"] else None,
-                "tax_rate": str(form.cleaned_data["tax_rate"]),
-                "precompte": str(form.cleaned_data["precompte"]),
-                "tva": str(form.cleaned_data["tva"]),
             }
 
-            # Redirect to the page for adding sample order items
             return redirect("add_sample_items")
         else:
-            messages.error(request, _("Invalid form submission. Please correct the errors."))
+            messages.error(request, _( "Invalid form submission. Please correct the errors."))
     else:
         form = SampleOrderForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
 
@@ -4953,3 +4885,96 @@ def create_sample_order(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'createPurchaseOrder.html', context)
+
+@login_required
+def add_sample_items(request):
+    user_branch = request.user.worker_profile.branch
+    sample_order_details = request.session.get("sample_order_details", {})
+    selected_branch_id = sample_order_details.get("branch")
+    selected_branch = get_object_or_404(Branch, id=selected_branch_id) if selected_branch_id else user_branch
+    if "sample_items" not in request.session:
+        request.session["sample_items"] = []
+    sample_item_form = SampleOrderItemForm(user_branch=selected_branch)
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "add_item":
+            sample_item_form = SampleOrderItemForm(data=request.POST, user_branch=selected_branch)
+            if sample_item_form.is_valid():
+                stock = sample_item_form.cleaned_data["stock"]
+                quantity = sample_item_form.cleaned_data["quantity"]
+                reason = sample_item_form.cleaned_data["reason"]
+                if quantity > stock.total_stock:
+                    messages.error(request, f"Insufficient stock: only {stock.total_stock} available.")
+                else:
+                    sample_items = request.session["sample_items"]
+                    sample_items.append({
+                        "stock_id": stock.id,
+                        "stock_name": str(stock.product.generic_name_dosage),
+                        "reason": reason,
+                        "quantity": quantity,
+                    })
+                    request.session.modified = True
+                    messages.success(request, f"Added {quantity} of {stock.product.generic_name_dosage} to the order.")
+            else:
+                messages.error(request, _( "Invalid form input. Please correct the errors."))
+        elif action == "remove_item":
+            try:
+                item_index = int(request.POST.get("item_index", -1))
+                sample_items = request.session["sample_items"]
+                if 0 <= item_index < len(sample_items):
+                    removed_item = sample_items.pop(item_index)
+                    request.session.modified = True
+                    messages.success(request, f"Removed {removed_item['stock_name']} from the order.")
+                else:
+                    messages.error(request, _( "Invalid item index provided."))
+            except ValueError:
+                messages.error(request, _( "Invalid item index provided."))
+        elif action == "submit_order":
+            sample_items = request.session["sample_items"]
+            if sample_items:
+                try:
+                    created_at_str = sample_order_details.get("created_at")
+                    created_at = datetime.strptime(created_at_str, '%Y-%m-%d %H:%M:%S')
+                    customer = get_object_or_404(Customer, id=sample_order_details.get("customer"))
+                    branch = get_object_or_404(Branch, id=selected_branch_id)
+                    created_by = request.user.worker_profile
+                    purchase_order = PurchaseOrder.objects.create(
+                        created_at=created_at,
+                        branch=branch,
+                        customer=customer,
+                        created_by=created_by,
+                        status="Pending",
+                        order_type="Sample",
+                    )
+                    for item in sample_items:
+                        stock = get_object_or_404(Stock, id=item["stock_id"])
+                        PurchaseOrderItem.objects.create(
+                            purchase_order=purchase_order,
+                            stock=stock,
+                            quantity=item["quantity"],
+                            reason=item['reason'],
+                        )
+                    worker = request.user.worker_profile if hasattr(request.user, 'worker_profile') else None
+                    PurchaseOrderAuditLog.objects.create(
+                        user=worker,
+                        action="create",
+                        order=purchase_order.purchase_order_id,
+                        branch=worker.branch.branch_name if worker else "Unknown",
+                        details=f"Sample Order Created by: {worker}",
+                    )
+                    request.session["sample_items"] = []
+                    request.session["latest_sample_order_id"] = purchase_order.id
+                    request.session.modified = True
+                    messages.success(request, _( "Sample order submitted successfully."))
+                    return redirect("orders")
+                except Exception as e:
+                    messages.error(request, f"Error submitting the Sample order: {e}")
+            else:
+                messages.error(request, _( "No items added to the Sample order."))
+    sample_items = request.session["sample_items"]
+    view_context = {
+        "sample_item_form": sample_item_form,
+        "sample_items": sample_items,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "addSampleItems.html", context)

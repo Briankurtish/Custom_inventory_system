@@ -214,50 +214,23 @@ class SampleOrderForm(forms.ModelForm):
         choices=ORDER_TYPE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
     )
-    momo_account_details = forms.ModelChoiceField(
-        queryset=MomoInfo.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
-    )
-    check_account_details = forms.ModelChoiceField(
-        queryset=Check.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
-    )
-    bank_deposit_account_details = forms.ModelChoiceField(
-        queryset=BankDeposit.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
-    )
 
     class Meta:
         model = PurchaseOrder
         fields = [
-            'order_type', 'created_at', 'branch', 'customer', 'sales_rep', 'payment_method',
-            'payment_mode', 'momo_account_details', 'check_account_details',
-            'bank_deposit_account_details', 'tax_rate', 'precompte', 'tva'
+            'order_type', 'created_at', 'branch', 'sales_rep', 'customer'
         ]
         widgets = {
             'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
             'branch': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
             'sales_rep': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'payment_method': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'payment_mode': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'tax_rate': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'precompte': forms.Select(attrs={'class': 'form-control form-control-sm'}),
-            'tva': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
         }
         labels = {
             'created_at': 'Date',
             'branch': 'Branch',
-            'customer': 'Customer',
             'sales_rep': 'Sales Representative',
-            'payment_method': 'Payment Method',
-            'payment_mode': 'Payment Mode',
-            'tax_rate': 'Tax Rate',
-            'precompte': 'Precompte',
-            'tva': 'TVA',
+            'customer': 'Customer',
         }
 
     def __init__(self, *args, **kwargs):
@@ -265,28 +238,12 @@ class SampleOrderForm(forms.ModelForm):
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
         if not user_is_superuser and user_branch:
-            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
+            # self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+            self.fields['sales_rep'].queryset = Worker.objects.filter()
             self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
-            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
-            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
-            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
 
     def clean(self):
         cleaned_data = super().clean()
-        payment_mode = cleaned_data.get('payment_mode')
-
-        # Validate payment account details based on payment mode
-        if payment_mode == 'Mobile Money':
-            if not cleaned_data.get('momo_account_details'):
-                raise forms.ValidationError('Mobile Money account details are required for Mobile Money payments.')
-        elif payment_mode == 'Check':
-            if not cleaned_data.get('check_account_details'):
-                raise forms.ValidationError('Check account details are required for Check payments.')
-        elif payment_mode == 'Bank Deposit':
-            if not cleaned_data.get('bank_deposit_account_details'):
-                raise forms.ValidationError('Bank deposit account details are required for Bank Deposit payments.')
-
         return cleaned_data
 
 
@@ -303,7 +260,6 @@ class PaymentScheduleForm(forms.ModelForm):
             'amount': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter amount'}),
             'payment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
-
 
 
 class PurchaseOrderItemForm(forms.ModelForm):

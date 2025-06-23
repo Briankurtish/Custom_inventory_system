@@ -18,6 +18,17 @@
     {% endfor %}
 {% endif %}
 
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Create Sample Orders' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create-sample-order' %}'">
+              <span class="fa-solid fa-plus me-2"></span>{% trans "Create Sample Order" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+
 {% if user.is_superuser %}
   <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderTypeModal">
     <span class="fa-solid fa-plus me-2"></span>{% trans "Create Order" %}
