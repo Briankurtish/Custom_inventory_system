@@ -22,6 +22,7 @@ class GenericName(models.Model):
     created_by = models.ForeignKey(
         Worker, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='genericname_created'
+
     )
 
     def __str__(self):
