@@ -370,6 +370,13 @@
                     </div>
                   </div>
                 </td>
+                <td>
+                  ${stock.id ? `
+                    <a href="/en/edit-stock-details/${stock.id}/" class="btn btn-sm btn-warning">
+                      <span class="fa fa-edit"></span> Edit Details
+                    </a>
+                  ` : ''}
+                </td>
               </tr>
             `;
           })

@@ -29,11 +29,6 @@ urlpatterns = [
         name="add-stock",
     ),
     path("update-stock/", update_stock_view, name="update_stock"),
-    path(
-        "update-stock/",
-        update_existing_stock_view,
-        name="update-stock",
-    ),
     path('update-stock-entry/<int:stock_id>/', update_stock_entry_view, name='update-stock-entry'),
 
     path('get-branches/', get_branches, name='get-branches'),
@@ -56,4 +51,6 @@ urlpatterns = [
     # Add new URL patterns for search functionality
     path('search-products/', search_products, name='search-products'),
     path('search-batches/', search_batches, name='search-batches'),
+
+    path('edit-stock-details/<int:stock_id>/', edit_stock_details_view, name='edit-stock-details'),
 ]

@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from web_project import TemplateLayout
-from .forms import BeginningInventoryForm, StockAddForm, StockUpdateForm, UpdateStockForm
+from .forms import BeginningInventoryForm, StockAddForm, StockUpdateForm, UpdateStockForm, EditStockDetailsForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from apps.products.models import Batch, Product
@@ -627,6 +627,7 @@ def update_stock_view(request):
             if not temp_stock_list:
                 messages.error(request, _("No items in the update list."))
             else:
+                updated_any = False
                 for item in temp_stock_list:
                     # Retrieve the correct product and batch
                     product = Product.objects.filter(product_code=item["product_code"]).first()
@@ -641,7 +642,6 @@ def update_stock_view(request):
 
                     previous_quantity = stock.quantity
                     stock.quantity += item["new_quantity"]
-                    stock.total_stock = (stock.begining_inventory or 0) + stock.quantity
                     stock.save()
 
                     InventoryTransaction.objects.create(
@@ -653,12 +653,17 @@ def update_stock_view(request):
                         worker=request.user.worker_profile
                     )
 
-                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage} (Batch: {item['batch_number']})."))
+                    updated_any = True
+                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage} (Batch: {item['batch_number']}). Previous: {previous_quantity}, New: {stock.quantity}"))
 
                 # Clear the temporary update list
                 request.session.pop("TEMP_UPDATE_STOCK_LIST", None)
-                messages.success(request, _("Stock updated successfully."))
-                return redirect("stock")
+                request.session.modified = True
+                if updated_any:
+                    messages.success(request, _("Stock updated successfully."))
+                else:
+                    messages.warning(request, _( "No stock was updated. Please check your update list." ))
+                return redirect("update_stock")
 
     view_context = {
         "form": form,
@@ -1361,3 +1366,18 @@ def delete_damaged_product(request, product_id):
         'success': False,
         'error': 'Invalid request method.'
     })
+
+@login_required
+def edit_stock_details_view(request, stock_id):
+    stock = get_object_or_404(Stock, id=stock_id)
+    if request.method == "POST":
+        form = EditStockDetailsForm(request.POST, instance=stock)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _(f"Stock details updated successfully for {stock.product.generic_name_dosage}."))
+            return redirect("stock")
+    else:
+        form = EditStockDetailsForm(instance=stock)
+    view_context = {"form": form, "stock": stock}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "edit_stock_details.html", context)

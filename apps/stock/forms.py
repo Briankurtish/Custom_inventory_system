@@ -69,3 +69,9 @@ class UpdateStockForm(forms.ModelForm):
     class Meta:
         model = Stock
         fields = ('product', 'quantity', 'branch')
+
+
+class EditStockDetailsForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        exclude = ('quantity', 'total_inventory', 'begining_inventory', 'fixed_beginning_inventory', 'quantity_transferred', 'return_quantity', 'damaged_quantity', 'samples_quantity', 'sickness_quantity', 'total_sold', 'total_stock', 'created_by', 'date_added')
