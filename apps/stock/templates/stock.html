@@ -367,15 +367,13 @@
                       <a href="/en/delete-stock/${stock.id}/" class="text-danger dropdown-item">
                         <i class="fa-solid fa-trash me-1"></i> Delete
                       </a>
+                      ${stock.id ? `
+                        <a href="/en/edit-stock-details/${stock.id}/" class="dropdown-item">
+                          <span class="fa fa-edit"></span> Edit Details
+                        </a>
+                      ` : ''}
                     </div>
                   </div>
-                </td>
-                <td>
-                  ${stock.id ? `
-                    <a href="/en/edit-stock-details/${stock.id}/" class="btn btn-sm btn-warning">
-                      <span class="fa fa-edit"></span> Edit Details
-                    </a>
-                  ` : ''}
                 </td>
               </tr>
             `;
