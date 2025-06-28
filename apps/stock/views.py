@@ -5,11 +5,11 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from apps.products.models import Batch, Product
 from apps.branches.models import Branch
-from .models import Stock, InventoryTransaction, DamagedProduct, Supplier
+from .models import Stock, InventoryTransaction, DamagedProduct, Supplier, SupplierStockContribution
 from django.utils.timezone import now  # To handle timestamps
 from django.http import JsonResponse
 from apps.workers.models import Worker
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from django.http import HttpResponse
 from django.utils import timezone
 from .forms import SupplierForm
+from apps.orders.models import PurchaseOrderItem, PurchaseOrder
 
 
 
@@ -249,6 +250,11 @@ def add_stock_view(request):
                 batch = Batch.objects.get(batch_number=item["batch_number"]) if item["batch_number"] else None
                 branch = Branch.objects.get(id=item["branch_id"])
 
+                # Always define supplier before use
+                supplier = None
+                if "supplier_name" in item and item["supplier_name"] != "N/A":
+                    supplier = Supplier.objects.filter(name=item["supplier_name"]).first()
+
                 # Update or create stock entry with batch
                 stock, created = Stock.objects.update_or_create(
                     product=product,
@@ -268,6 +274,16 @@ def add_stock_view(request):
                     quantity=item["quantity"],
                     transaction_type=transaction_type,
                     transaction_date=now(),
+                    worker=request.user.worker_profile,
+                    supplier=supplier
+                )
+
+                # Create SupplierStockContribution record
+                SupplierStockContribution.objects.create(
+                    stock=stock,
+                    supplier=supplier,
+                    quantity=item["quantity"],
+                    transaction_type=transaction_type.upper(),
                     worker=request.user.worker_profile
                 )
 
@@ -278,7 +294,7 @@ def add_stock_view(request):
 
             # Clear the temporary list
             del request.session["TEMP_STOCK_LIST"]
-            messages.success(request, _("Stock updated successfully."))
+            messages.success(request, _("Stock updated successfully and supplier contribution recorded."))
             return redirect("stock")  # Replace with the correct URL name
 
     # Prepare context for rendering
@@ -591,9 +607,17 @@ def update_stock_view(request):
                     if existing_item:
                         # Update the quantity in the temporary list (add to existing)
                         existing_item["new_quantity"] += new_quantity
+                        # Update supplier if changed
+                        supplier = form.cleaned_data.get("supplier")
+                        if supplier:
+                            existing_item["supplier_id"] = supplier.id
+                            existing_item["supplier_name"] = supplier.name
                         messages.success(request, _("Quantity updated in the update list."))
                     else:
                         # Add the item to the temporary update list
+                        supplier = form.cleaned_data.get("supplier")
+                        supplier_id = supplier.id if supplier else None
+                        supplier_name = supplier.name if supplier else "N/A"
                         temp_stock_list.append({
                             "product_code": product.product_code,
                             "product_name": str(product.generic_name_dosage),
@@ -603,6 +627,8 @@ def update_stock_view(request):
                             "branch_id": branch.id,
                             "branch_name": branch.branch_name,
                             "batch_number": batch_number,
+                            "supplier_id": supplier_id,
+                            "supplier_name": supplier_name,
                         })
                         messages.success(request, _(f"Stock added to the update list for {product.generic_name_dosage} (Batch: {batch_number})."))
 
@@ -648,23 +674,40 @@ def update_stock_view(request):
                     stock.quantity += item["new_quantity"]
                     stock.save()
 
+                    # Set supplier for transaction
+                    supplier = None
+                    if item.get("supplier_id"):
+                        supplier = Supplier.objects.filter(id=item["supplier_id"]).first()
+
                     InventoryTransaction.objects.create(
                         product=product,
                         branch=branch,
                         quantity=item["new_quantity"],
                         transaction_type="update",
                         transaction_date=now(),
+                        worker=request.user.worker_profile,
+                        supplier=supplier
+                    )
+
+                    # Create SupplierStockContribution record for update
+                    SupplierStockContribution.objects.create(
+                        stock=stock,
+                        supplier=supplier,
+                        quantity=item["new_quantity"],
+                        transaction_type="UPDATE",
                         worker=request.user.worker_profile
                     )
 
                     updated_any = True
                     messages.info(request, _(f"Stock updated for {product.generic_name_dosage} (Batch: {item['batch_number']}). Previous: {previous_quantity}, New: {stock.quantity}"))
+                    return redirect("stock")
+
 
                 # Clear the temporary update list
                 request.session.pop("TEMP_UPDATE_STOCK_LIST", None)
                 request.session.modified = True
                 if updated_any:
-                    messages.success(request, _("Stock updated successfully."))
+                    messages.success(request, _("Stock updated successfully and supplier contribution recorded."))
                 else:
                     messages.warning(request, _( "No stock was updated. Please check your update list." ))
                 return redirect("update_stock")
@@ -1469,3 +1512,92 @@ def stock_details_view(request, stock_id):
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, "stock_details.html", context)
+
+@login_required
+def stock_supplier_quantities_view(request, stock_id):
+    stock = get_object_or_404(Stock, id=stock_id)
+    supplier_quantities = (
+        SupplierStockContribution.objects
+        .filter(stock=stock)
+        .values('supplier__id', 'supplier__name')
+        .annotate(total_quantity=Sum('quantity'))
+    )
+    view_context = {
+        'stock': stock,
+        'supplier_quantities': supplier_quantities,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'stock_supplier_quantities.html', context)
+
+@login_required
+def stock_daily_sales_view(request):
+    # Single search field for all criteria
+    search_query = request.GET.get('search_query', '').strip()
+    branch_id = request.GET.get('branch', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    # Set current date as default if no dates provided
+    if not start_date and not end_date:
+        current_date = timezone.now().date()
+        start_date = current_date.strftime('%Y-%m-%d')
+        end_date = current_date.strftime('%Y-%m-%d')
+
+    # Base queryset: join PurchaseOrderItem and PurchaseOrder
+    sales_qs = PurchaseOrderItem.objects.select_related('stock__product__generic_name_dosage', 'stock__product__brand_name', 'stock__branch', 'purchase_order')
+
+    # Filtering with single search field
+    if search_query:
+        sales_qs = sales_qs.filter(
+            Q(stock__product__generic_name_dosage__generic_name__icontains=search_query) |
+            Q(stock__product__brand_name__brand_name__icontains=search_query) |
+            Q(stock__product__product_code__icontains=search_query)
+        )
+
+    # Branch filtering based on user permissions
+    if request.user.is_superuser:
+        # Superusers can see all branches
+        if branch_id:
+            sales_qs = sales_qs.filter(stock__branch__id=branch_id)
+    else:
+        # Regular users can only see their own branch
+        user_branch = request.user.worker_profile.branch
+        if user_branch:
+            sales_qs = sales_qs.filter(stock__branch=user_branch)
+
+    if start_date:
+        sales_qs = sales_qs.filter(purchase_order__created_at__date__gte=start_date)
+    if end_date:
+        sales_qs = sales_qs.filter(purchase_order__created_at__date__lte=end_date)
+
+    # Group by day, stock, and order
+    sales = sales_qs.values(
+        'stock__id',
+        'stock__product__product_code',
+        'stock__product__generic_name_dosage__generic_name',
+        'stock__product__brand_name__brand_name',
+        'stock__branch__branch_name',
+        'purchase_order__purchase_order_id',
+        'purchase_order__created_at__date',
+    ).annotate(
+        total_quantity=Sum('quantity')
+    ).order_by('-purchase_order__created_at__date', 'stock__product__generic_name_dosage__generic_name')
+
+    # Branch options based on user permissions
+    if request.user.is_superuser:
+        branches = Branch.objects.all()
+    else:
+        user_branch = request.user.worker_profile.branch
+        branches = Branch.objects.filter(id=user_branch.id) if user_branch else Branch.objects.none()
+
+    view_context = {
+        'sales': sales,
+        'branches': branches,
+        'search_query': search_query,
+        'branch_id': branch_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'is_superuser': request.user.is_superuser,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'stock_daily_sales.html', context)

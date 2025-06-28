@@ -1,0 +1,85 @@
+{% extends layout_path %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4 class="mb-0 text-dark">{% trans "Daily Sales Report" %}</h4>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="search_query" class="form-label">{% trans "Search" %}</label>
+          <input type="text" class="form-control" id="search_query" name="search_query" value="{{ search_query }}" placeholder="{% trans 'Search by generic name, brand name, or product code' %}">
+        </div>
+        {% if is_superuser %}
+        <div class="col-md-2">
+          <label for="branch" class="form-label">{% trans "Branch" %}</label>
+          <select class="form-select" id="branch" name="branch">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if branch_id|default:'' == branch.id|stringformat:'s' %}selected{% endif %}>{{ branch.branch_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div class="col-md-2">
+          <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="col-md-2">
+          <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">&nbsp;</label>
+          <button type="submit" class="btn btn-outline-primary w-100">{% trans "Filter" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0 text-dark">{% trans "Sales Results" %}</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Product Code" %}</th>
+              <th>{% trans "Generic Name" %}</th>
+              <th>{% trans "Brand Name" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th>{% trans "Quantity Sold" %}</th>
+              <th>{% trans "Purchase Order No." %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if sales %}
+              {% for sale in sales %}
+                <tr>
+                  <td>{{ sale.purchase_order__created_at__date|date:'Y-m-d' }}</td>
+                  <td>{{ sale.stock__product__product_code }}</td>
+                  <td>{{ sale.stock__product__generic_name_dosage__generic_name }}</td>
+                  <td>{{ sale.stock__product__brand_name__brand_name|default:'N/A' }}</td>
+                  <td>{{ sale.stock__branch__branch_name }}</td>
+                  <td><span class="fw-bold text-success">{{ sale.total_quantity }}</span></td>
+                  <td>{{ sale.purchase_order__purchase_order_id }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">{% trans "No sales found for the selected criteria." %}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

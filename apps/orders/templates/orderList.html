@@ -35,7 +35,10 @@
   </button>
   <a href="{% url 'sales_report' %}" target="_blank" class="btn btn-outline-primary">
     <span class="fa-solid fa-download me-2"></span>{% trans "Sales Report" %}
-</a>
+  </a>
+  <a href="{% url 'stock-daily-sales' %}" class="btn btn-outline-success">
+    <span class="fa-solid fa-chart-line me-2"></span>{% trans "Daily Sales" %}
+  </a>
 {% endif %}
 
 <!-- Order Type Selection Modal -->

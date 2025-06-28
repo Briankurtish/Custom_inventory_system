@@ -62,4 +62,7 @@ urlpatterns = [
 
     # Stock details URL
     path('stock/<int:stock_id>/details/', stock_details_view, name='stock-details'),
+    path('stock/<int:stock_id>/supplier-quantities/', stock_supplier_quantities_view, name='stock-supplier-quantities'),
+
+    path('stock/daily-sales/', stock_daily_sales_view, name='stock-daily-sales'),
 ]

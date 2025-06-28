@@ -5,7 +5,26 @@
 <div class="container mt-5">
   <div class="card">
     <div class="card-header">
-      <h4>{% trans "Supplier Quantities for Stock" %}: {{ stock.product }} ({{ stock.branch }}, Batch: {{ stock.batch }})</h4>
+      <div class="mb-2">
+        <span class="fw-bold text-secondary">Product Code:</span>
+        <span class="ms-2">{{ stock.product.product_code }}</span>
+      </div>
+      <div class="mb-2">
+        <span class="fw-bold text-secondary">Generic Name:</span>
+        <span class="ms-2">{{ stock.product.generic_name_dosage.generic_name }}</span>
+      </div>
+      <div class="mb-2">
+        <span class="fw-bold text-secondary">Brand Name:</span>
+        <span class="ms-2">{{ stock.product.brand_name.brand_name|default:'N/A' }}</span>
+      </div>
+      <div class="mb-2">
+        <span class="fw-bold text-secondary">Branch:</span>
+        <span class="ms-2">{{ stock.branch }}</span>
+        {% if stock.batch %}
+        <span class="fw-bold text-secondary ms-4">Batch:</span>
+        <span class="ms-2">{{ stock.batch }}</span>
+        {% endif %}
+      </div>
     </div>
     <div class="card-body">
       <table class="table table-hover">

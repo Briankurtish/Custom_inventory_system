@@ -11,12 +11,12 @@
     <div class="col-lg-8 mb-4">
       <div class="card shadow-sm border-0 bg-white">
         <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">
+          <h5 class="mb-0" style="color: #fff;">
             <i class="fa-solid fa-boxes-stacked me-2"></i>{% trans "Stock Information" %}
           </h5>
         </div>
         <div class="card-body">
-          <div class="row">
+          <div class="row mt-5">
             <div class="col-md-6">
               <h6 class="text-primary">{% trans "Product Details" %}</h6>
               <table class="table table-borderless">
@@ -84,12 +84,12 @@
     <div class="col-lg-4 mb-4">
       <div class="card shadow-sm border-0 bg-white">
         <div class="card-header bg-info text-white">
-          <h5 class="mb-0">
+          <h5 class="mb-0" style="color: #fff;">
             <i class="fa-solid fa-chart-bar me-2"></i>{% trans "Stock Quantities" %}
           </h5>
         </div>
         <div class="card-body">
-          <div class="row text-center">
+          <div class="row text-center mt-5">
             <div class="col-6 mb-3">
               <div class="border rounded p-3">
                 <h4 class="text-primary mb-1">{{ stock.begining_inventory|default:0 }}</h4>
@@ -137,12 +137,12 @@
     <div class="col-lg-6 mb-4">
       <div class="card shadow-sm border-0 bg-white">
         <div class="card-header bg-warning text-white">
-          <h5 class="mb-0">
+          <h5 class="mb-0" style="color: #fff;">
             <i class="fa-solid fa-exclamation-triangle me-2"></i>{% trans "Special Quantities" %}
           </h5>
         </div>
         <div class="card-body">
-          <div class="row text-center">
+          <div class="row text-center mt-5">
             <div class="col-4 mb-3">
               <div class="border rounded p-3">
                 <h4 class="text-warning mb-1">{{ stock.samples_quantity|default:0 }}</h4>
@@ -169,7 +169,7 @@
     <div class="col-lg-6 mb-4">
       <div class="card shadow-sm border-0 bg-white">
         <div class="card-header bg-secondary text-white">
-          <h5 class="mb-0">
+          <h5 class="mb-0" style="color: #fff;">
             <i class="fa-solid fa-info-circle me-2"></i>{% trans "Additional Information" %}
           </h5>
         </div>
@@ -180,8 +180,12 @@
               <td>{{ stock.branch.branch_name }}</td>
             </tr>
             <tr>
-              <td><strong>{% trans "Supplier:" %}</strong></td>
-              <td>{{ stock.supplier.name|default:"N/A" }}</td>
+              <td><strong>{% trans "Supplier Contributions:" %}</strong></td>
+              <td>
+                <a href="{% url 'stock-supplier-quantities' stock.id %}">
+                  {% trans "View Supplier Contributions" %}
+                </a>
+              </td>
             </tr>
             <tr>
               <td><strong>{% trans "Created By:" %}</strong></td>
@@ -206,7 +210,7 @@
     <div class="col-12">
       <div class="card shadow-sm border-0 bg-white">
         <div class="card-header bg-dark text-white">
-          <h5 class="mb-0">
+          <h5 class="mb-0" style="color: #fff;">
             <i class="fa-solid fa-history me-2"></i>{% trans "Recent Transactions" %}
           </h5>
         </div>
@@ -219,6 +223,7 @@
                     <th>{% trans "Date" %}</th>
                     <th>{% trans "Type" %}</th>
                     <th>{% trans "Quantity" %}</th>
+                    <th>{% trans "Supplier" %}</th>
                     <th>{% trans "Worker" %}</th>
                   </tr>
                 </thead>
@@ -227,11 +232,26 @@
                   <tr>
                     <td>{{ transaction.transaction_date|date:"d M Y H:i" }}</td>
                     <td>
-                      <span class="badge {% if transaction.transaction_type == 'ADD' %}bg-success{% elif transaction.transaction_type == 'UPDATE' %}bg-info{% else %}bg-danger{% endif %}">
-                        {{ transaction.get_transaction_type_display }}
-                      </span>
+                      {% with type=transaction.get_transaction_type_display|capfirst %}
+                        {% if transaction.transaction_type == 'ADD' %}
+                          <span class="badge bg-success px-3 py-2">{{ type }}</span>
+                        {% elif transaction.transaction_type == 'UPDATE' %}
+                          <span class="badge bg-primary px-3 py-2">{{ type }}</span>
+                        {% elif transaction.transaction_type == 'REMOVE' %}
+                          <span class="badge bg-danger px-3 py-2">{{ type }}</span>
+                        {% else %}
+                          <span class="badge bg-secondary px-3 py-2">{{ type }}</span>
+                        {% endif %}
+                      {% endwith %}
                     </td>
                     <td>{{ transaction.quantity }}</td>
+                    <td>
+                      {% if transaction.supplier %}
+                        {{ transaction.supplier.name }}
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
                     <td>{{ transaction.worker.user.get_full_name|default:"N/A" }}</td>
                   </tr>
                   {% endfor %}
