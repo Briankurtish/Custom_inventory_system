@@ -113,6 +113,7 @@
           <th>{% trans "Available Inventory" %}</th>
           <th>{% trans "Status" %}</th>
           <th>{% trans "Date Added" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody id="stock-table-body" class="table-border-bottom-0">
@@ -144,7 +145,24 @@
               {% endif %}
             </td>
             <td>{{ stock.date_added }}</td>
-
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a href="{% url 'stock-details' stock.id %}" class="dropdown-item">
+                    <i class="fa-solid fa-circle-info me-1"></i>{% trans "Details" %}
+                  </a>
+                  <a href="{% url 'edit-stock-details' stock.id %}" class="dropdown-item">
+                    <i class="fa-solid fa-edit me-1"></i>{% trans "Edit Details" %}
+                  </a>
+                  <a href="{% url 'delete-stock' stock.id %}" class="text-danger dropdown-item">
+                    <i class="fa-solid fa-trash me-1"></i>{% trans "Delete" %}
+                  </a>
+                </div>
+              </div>
+            </td>
           </tr>
         {% empty %}
           <tr>

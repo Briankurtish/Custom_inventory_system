@@ -3,11 +3,13 @@ from django import forms
 from apps.branches.models import Branch
 from apps.products.models import Batch, Product
 from .models import Stock  # Import your Branch model
+from .models import Supplier
 
 class StockAddForm(forms.ModelForm):
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, label="Supplier")
     class Meta:
         model = Stock
-        fields = ('product', 'batch', 'branch', 'quantity')  # Added 'batch'
+        fields = ('product', 'batch', 'branch', 'quantity', 'supplier')
 
     def clean_quantity(self):
         quantity = self.cleaned_data.get('quantity')
@@ -26,8 +28,8 @@ class StockAddForm(forms.ModelForm):
                 "Selected batch {batch.batch_number} does not match product batch {product.batch.batch_number}."
             )
         return cleaned_data
-    
-    
+
+
 class BeginningInventoryForm(forms.Form):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
@@ -51,6 +53,7 @@ class StockUpdateForm(forms.Form):
     batch = forms.ModelChoiceField(queryset=Batch.objects.all(), required=True)  # Added batch field
     branch = forms.ModelChoiceField(queryset=Branch.objects.all())
     quantity = forms.IntegerField(min_value=0, label="Quantity")
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, label="Supplier")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -66,12 +69,20 @@ class StockUpdateForm(forms.Form):
 
 
 class UpdateStockForm(forms.ModelForm):
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, label="Supplier")
     class Meta:
         model = Stock
-        fields = ('product', 'quantity', 'branch')
+        fields = ('product', 'quantity', 'branch', 'supplier')
 
 
 class EditStockDetailsForm(forms.ModelForm):
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, label="Supplier")
     class Meta:
         model = Stock
         exclude = ('quantity', 'total_inventory', 'begining_inventory', 'fixed_beginning_inventory', 'quantity_transferred', 'return_quantity', 'damaged_quantity', 'samples_quantity', 'sickness_quantity', 'total_sold', 'total_stock', 'created_by', 'date_added')
+
+
+class SupplierForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['name', 'address']

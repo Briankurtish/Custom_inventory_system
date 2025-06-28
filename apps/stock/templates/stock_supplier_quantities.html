@@ -1,0 +1,41 @@
+{% extends layout_path %}
+{% load i18n %}
+{% block title %}{% trans "Supplier Quantities for Stock" %}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-header">
+      <h4>{% trans "Supplier Quantities for Stock" %}: {{ stock.product }} ({{ stock.branch }}, Batch: {{ stock.batch }})</h4>
+    </div>
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "Supplier" %}</th>
+            <th>{% trans "Total Quantity Supplied" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for supplier in supplier_quantities %}
+          <tr>
+            <td>
+              {% if supplier.supplier__id %}
+                <a href="{% url 'edit-supplier' supplier.supplier__id %}">{{ supplier.supplier__name }}</a>
+              {% else %}
+                <em>{% trans "Unknown Supplier" %}</em>
+              {% endif %}
+            </td>
+            <td>{{ supplier.total_quantity }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2">{% trans "No supplier data available for this stock." %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <a href="{% url 'stock' %}" class="btn btn-secondary mt-3">{% trans "Back to Stocks" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -45,6 +45,7 @@
             <th>{% trans "Batch Number" %}</th>
             <th>{% trans "Quantity" %}</th>
             <th>{% trans "Branch" %}</th>
+            <th>{% trans "Supplier" %}</th>
             <th>{% trans "Actions" %}</th>
           </tr>
         </thead>
@@ -59,6 +60,7 @@
                 <td>{{ item.batch_number }}</td>
                 <td>{{ item.new_quantity|intcomma }}</td>
                 <td>{{ item.branch_name }}</td>
+                <td>{{ item.supplier_name }}</td>
                 <td>
                   <form method="post" class="d-inline">
                     {% csrf_token %}

@@ -21,6 +21,7 @@
         <form method="POST">
           {% csrf_token %}
           {{ form|crispy }}
+          {% comment %} {{ form.supplier_name|as_crispy_field }} {% endcomment %}
 
           <div class="d-flex justify-content-end mt-3">
             <button type="submit" class="btn btn-info" name="add_to_list" value="true">{% trans "Add to List" %}</button>
@@ -45,6 +46,7 @@
             <th>{% trans "Batch Number" %}</th>
             <th>{% trans "Quantity" %}</th>
             <th>{% trans "Branch" %}</th>
+            <th>{% trans "Supplier" %}</th>
             <th>{% trans "Actions" %}</th>
           </tr>
         </thead>
@@ -59,6 +61,7 @@
                 <td>{{ item.batch_number }}</td>
                 <td>{{ item.quantity|intcomma }}</td>
                 <td>{{ item.branch_name }}</td>
+                <td>{{ item.supplier_name }}</td>
                 <td>
                   <form method="post" class="d-inline">
                     {% csrf_token %}

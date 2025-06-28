@@ -5,6 +5,13 @@ from apps.branches.models import Branch
 from apps.stock_request.models import StockRequest, StockTransfer
 from apps.workers.models import Worker
 
+class Supplier(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    address = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class Stock(models.Model):
     product = models.ForeignKey(
         Product,
@@ -46,6 +53,7 @@ class Stock(models.Model):
         default=0
     )
     total_stock = models.PositiveIntegerField(default=0)
+    supplier = models.ForeignKey('Supplier', on_delete=models.SET_NULL, null=True, blank=True, related_name='stocks')
 
     created_by = models.ForeignKey(
         Worker, on_delete=models.SET_NULL, null=True, blank=True,
@@ -96,6 +104,13 @@ class InventoryTransaction(models.Model):
         on_delete=models.CASCADE,
         related_name="transactions",
     )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions"
+    )
     transaction_type = models.CharField(
         max_length=255,
         choices=TRANSACTION_TYPES
@@ -113,7 +128,8 @@ class InventoryTransaction(models.Model):
     )
 
     def __str__(self):
-        return f"{self.get_transaction_type_display()} - {self.product.product_code} at {self.branch.branch_name} ({self.quantity}) by {self.worker if self.worker else 'Unknown'}"
+        supplier_info = f" from {self.supplier.name}" if self.supplier else ""
+        return f"{self.get_transaction_type_display()} - {self.product.product_code} at {self.branch.branch_name} ({self.quantity}){supplier_info} by {self.worker if self.worker else 'Unknown'}"
 
 
 class StockMovement(models.Model):
@@ -248,3 +264,51 @@ class DamagedProduct(models.Model):
     @property
     def dosage_form(self):
         return self.product.dosage_form
+
+class SupplierStockContribution(models.Model):
+    stock = models.ForeignKey(
+        'Stock',
+        on_delete=models.CASCADE,
+        related_name='supplier_contributions'
+    )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.CASCADE,
+        related_name='stock_contributions'
+    )
+    quantity = models.PositiveIntegerField(
+        help_text="Quantity provided by this supplier"
+    )
+    contribution_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Date when this contribution was recorded"
+    )
+    transaction_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('ADD', 'Add Stock'),
+            ('UPDATE', 'Update Stock'),
+        ],
+        default='ADD'
+    )
+    worker = models.ForeignKey(
+        'workers.Worker',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='supplier_contributions_created'
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes about this contribution"
+    )
+
+    class Meta:
+        verbose_name = "Supplier Stock Contribution"
+        verbose_name_plural = "Supplier Stock Contributions"
+        ordering = ['-contribution_date']
+        unique_together = ['stock', 'supplier', 'contribution_date']
+
+    def __str__(self):
+        return f"{self.supplier.name} - {self.stock.product.product_code} ({self.quantity}) - {self.contribution_date.strftime('%Y-%m-%d')}"

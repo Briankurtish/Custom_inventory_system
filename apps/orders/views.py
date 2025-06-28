@@ -1231,7 +1231,7 @@ def return_items(request, invoice_id):
 #                     )
 
 #                     messages.success(request, "Item returned successfully.")
-#                     return redirect('invoice_details', invoice_id=invoice.id)
+#                     return redirect('invoice_details', invoice.id)
 #             except Exception as e:
 #                 messages.error(request, f"An error occurred: {str(e)}")
 #                 return redirect('return_items', invoice_id=invoice_id)
@@ -1982,7 +1982,7 @@ def add_order_items(request):
                     order_items.append({
                         "stock_id": stock.id,
                         "generic_name_dosage": str(stock.product.generic_name_dosage),
-                        "brand_name": str(stock.product.brand_name.brand_name),
+                        "brand_name": str(stock.product.brand_name.brand_name) if stock.product.brand_name else "",
                         "temp_price": float(temp_price),
                         "reason": reason,
                         "quantity": quantity,

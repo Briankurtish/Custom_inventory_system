@@ -53,4 +53,13 @@ urlpatterns = [
     path('search-batches/', search_batches, name='search-batches'),
 
     path('edit-stock-details/<int:stock_id>/', edit_stock_details_view, name='edit-stock-details'),
+
+    # Supplier management URLs
+    path('suppliers/', supplier_list_view, name='supplier-list'),
+    path('suppliers/add/', add_supplier_view, name='add-supplier'),
+    path('suppliers/<int:supplier_id>/edit/', edit_supplier_view, name='edit-supplier'),
+    path('suppliers/<int:supplier_id>/delete/', delete_supplier_view, name='delete-supplier'),
+
+    # Stock details URL
+    path('stock/<int:stock_id>/details/', stock_details_view, name='stock-details'),
 ]

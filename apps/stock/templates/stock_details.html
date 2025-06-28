@@ -1,0 +1,270 @@
+{% extends layout_path %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Stock Details" %}{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5">
+  <div class="row">
+    <!-- Stock Information Card -->
+    <div class="col-lg-8 mb-4">
+      <div class="card shadow-sm border-0 bg-white">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-boxes-stacked me-2"></i>{% trans "Stock Information" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-primary">{% trans "Product Details" %}</h6>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>{% trans "Product Code:" %}</strong></td>
+                  <td>{{ stock.product.product_code|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Brand Name:" %}</strong></td>
+                  <td>{{ stock.product.brand_name.brand_name|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Generic Name:" %}</strong></td>
+                  <td>{{ stock.product.generic_name_dosage.generic_name|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Dosage Form:" %}</strong></td>
+                  <td>{{ stock.product.dosage_form.name|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Pack Size:" %}</strong></td>
+                  <td>{{ stock.product.pack_size|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Unit Price:" %}</strong></td>
+                  <td>{{ stock.product.unit_price|floatformat:2|default:"N/A" }}</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-primary">{% trans "Batch Information" %}</h6>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>{% trans "Batch Number:" %}</strong></td>
+                  <td>{{ stock.batch.batch_number|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Manufacturing Date:" %}</strong></td>
+                  <td>{{ stock.batch.prod_date|date:"d M Y"|default:"N/A" }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "Expiry Date:" %}</strong></td>
+                  <td>
+                    {% if stock.batch.expiry_date %}
+                      <span class="{% if stock.batch.expiry_date < today %}text-danger{% elif stock.batch.expiry_date < today_plus_30 %}text-warning{% else %}text-success{% endif %}">
+                        {{ stock.batch.expiry_date|date:"d M Y" }}
+                      </span>
+                    {% else %}
+                      N/A
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>{% trans "BL Number:" %}</strong></td>
+                  <td>{{ stock.batch.bl_number|default:"N/A" }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Quantities Card -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm border-0 bg-white">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-chart-bar me-2"></i>{% trans "Stock Quantities" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-primary mb-1">{{ stock.begining_inventory|default:0 }}</h4>
+                <small class="text-muted">{% trans "Beginning Inventory" %}</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-success mb-1">{{ stock.quantity|default:0 }}</h4>
+                <small class="text-muted">{% trans "Added Inventory" %}</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-info mb-1">{{ stock.total_inventory|default:0 }}</h4>
+                <small class="text-muted">{% trans "Total Inventory" %}</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-warning mb-1">{{ stock.quantity_transferred|default:0 }}</h4>
+                <small class="text-muted">{% trans "Transferred" %}</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-danger mb-1">{{ stock.total_sold|default:0 }}</h4>
+                <small class="text-muted">{% trans "Total Sold" %}</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-dark mb-1">{{ stock.total_stock|default:0 }}</h4>
+                <small class="text-muted">{% trans "Available Stock" %}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Stock Information -->
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 bg-white">
+        <div class="card-header bg-warning text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>{% trans "Special Quantities" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-warning mb-1">{{ stock.samples_quantity|default:0 }}</h4>
+                <small class="text-muted">{% trans "Samples" %}</small>
+              </div>
+            </div>
+            <div class="col-4 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-danger mb-1">{{ stock.damaged_quantity|default:0 }}</h4>
+                <small class="text-muted">{% trans "Damaged" %}</small>
+              </div>
+            </div>
+            <div class="col-4 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-info mb-1">{{ stock.sickness_quantity|default:0 }}</h4>
+                <small class="text-muted">{% trans "Sickness" %}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 bg-white">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-info-circle me-2"></i>{% trans "Additional Information" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless">
+            <tr>
+              <td><strong>{% trans "Branch:" %}</strong></td>
+              <td>{{ stock.branch.branch_name }}</td>
+            </tr>
+            <tr>
+              <td><strong>{% trans "Supplier:" %}</strong></td>
+              <td>{{ stock.supplier.name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+              <td><strong>{% trans "Created By:" %}</strong></td>
+              <td>{{ stock.created_by.user.get_full_name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+              <td><strong>{% trans "Date Added:" %}</strong></td>
+              <td>{{ stock.date_added|date:"d M Y" }}</td>
+            </tr>
+            <tr>
+              <td><strong>{% trans "Return Quantity:" %}</strong></td>
+              <td>{{ stock.return_quantity|default:0 }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 bg-white">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-history me-2"></i>{% trans "Recent Transactions" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if transactions %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th>{% trans "Worker" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for transaction in transactions %}
+                  <tr>
+                    <td>{{ transaction.transaction_date|date:"d M Y H:i" }}</td>
+                    <td>
+                      <span class="badge {% if transaction.transaction_type == 'ADD' %}bg-success{% elif transaction.transaction_type == 'UPDATE' %}bg-info{% else %}bg-danger{% endif %}">
+                        {{ transaction.get_transaction_type_display }}
+                      </span>
+                    </td>
+                    <td>{{ transaction.quantity }}</td>
+                    <td>{{ transaction.worker.user.get_full_name|default:"N/A" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted text-center">{% trans "No transactions found for this stock item." %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between">
+        <div>
+          <a href="{% url 'stock' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back to Stock List" %}
+          </a>
+        </div>
+        <div>
+          <a href="{% url 'edit-stock-details' stock.id %}" class="btn btn-primary">
+            <i class="fa-solid fa-edit me-1"></i>{% trans "Edit Stock Details" %}
+          </a>
+          <a href="{% url 'delete-stock' stock.id %}" class="btn btn-danger">
+            <i class="fa-solid fa-trash me-1"></i>{% trans "Delete Stock" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

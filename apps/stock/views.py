@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from apps.products.models import Batch, Product
 from apps.branches.models import Branch
-from .models import Stock, InventoryTransaction, DamagedProduct
+from .models import Stock, InventoryTransaction, DamagedProduct, Supplier
 from django.utils.timezone import now  # To handle timestamps
 from django.http import JsonResponse
 from apps.workers.models import Worker
@@ -26,6 +26,7 @@ import csv
 from datetime import datetime, timedelta
 from django.http import HttpResponse
 from django.utils import timezone
+from .forms import SupplierForm
 
 
 
@@ -200,7 +201,9 @@ def add_stock_view(request):
                     existing_item["quantity"] += quantity
                     messages.success(request, _("Quantity updated for existing item in the temporary stock list."))
                 else:
-                    # Add a new entry with batch info
+                    # Add a new entry with batch and supplier info
+                    supplier = form.cleaned_data.get("supplier")
+                    supplier_name = supplier.name if supplier else "N/A"
                     temp_stock_list.append({
                         "product_code": product.product_code,
                         "product_name": str(product.generic_name_dosage),
@@ -209,6 +212,7 @@ def add_stock_view(request):
                         "branch_id": branch.id,
                         "branch_name": branch.branch_name,
                         "batch_number": batch_number,
+                        "supplier_name": supplier_name,
                     })
                     messages.success(request, _("Item added to temporary stock list."))
 
@@ -1381,3 +1385,87 @@ def edit_stock_details_view(request, stock_id):
     view_context = {"form": form, "stock": stock}
     context = TemplateLayout.init(request, view_context)
     return render(request, "edit_stock_details.html", context)
+
+@login_required
+def supplier_list_view(request):
+    suppliers = Supplier.objects.all().order_by('name')
+
+    # Paginate results
+    paginator = Paginator(suppliers, 50)
+    page_number = request.GET.get('page')
+    paginated_suppliers = paginator.get_page(page_number)
+    offset = (paginated_suppliers.number - 1) * paginator.per_page
+
+    view_context = {
+        "suppliers": paginated_suppliers,
+        "offset": offset,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "supplier_list.html", context)
+
+@login_required
+def add_supplier_view(request):
+    if request.method == "POST":
+        form = SupplierForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Supplier added successfully."))
+            return redirect("supplier-list")
+    else:
+        form = SupplierForm()
+
+    view_context = {"form": form}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "add_supplier.html", context)
+
+@login_required
+def edit_supplier_view(request, supplier_id):
+    supplier = get_object_or_404(Supplier, id=supplier_id)
+    if request.method == "POST":
+        form = SupplierForm(request.POST, instance=supplier)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Supplier updated successfully."))
+            return redirect("supplier-list")
+    else:
+        form = SupplierForm(instance=supplier)
+
+    view_context = {"form": form, "supplier": supplier}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "edit_supplier.html", context)
+
+@login_required
+def delete_supplier_view(request, supplier_id):
+    supplier = get_object_or_404(Supplier, id=supplier_id)
+    if request.method == "POST":
+        supplier_name = supplier.name
+        supplier.delete()
+        messages.success(request, _(f"Supplier '{supplier_name}' deleted successfully."))
+        return redirect("supplier-list")
+
+    view_context = {"supplier": supplier}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "delete_supplier.html", context)
+
+@login_required
+def stock_details_view(request, stock_id):
+    stock = get_object_or_404(Stock, id=stock_id)
+
+    # Get related transactions for this stock
+    transactions = InventoryTransaction.objects.filter(
+        product=stock.product,
+        branch=stock.branch
+    ).order_by('-transaction_date')[:10]  # Get last 10 transactions
+
+    # Get current date for expiry comparison
+    today = timezone.now().date()
+    today_plus_30 = today + timedelta(days=30)
+
+    view_context = {
+        "stock": stock,
+        "transactions": transactions,
+        "today": today,
+        "today_plus_30": today_plus_30,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "stock_details.html", context)
