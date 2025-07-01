@@ -233,7 +233,7 @@ class SampleOrderForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrder
         fields = [
-            'order_type', 'created_at', 'branch', 'customer', 
+            'order_type', 'created_at', 'branch', 'customer',
         ]
         widgets = {
             'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
@@ -246,7 +246,7 @@ class SampleOrderForm(forms.ModelForm):
             'branch': 'Branch',
             'customer': 'Customer',
             # 'sales_rep': 'Sales Representative',
-            
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -698,9 +698,9 @@ class SicknessItemForm(forms.ModelForm):
         user_branch = kwargs.pop('user_branch', None)
         super().__init__(*args, **kwargs)
         if user_branch:
-            self.fields['stock'].queryset = Stock.objects.filter(branch=user_branch, quantity__gt=0)
+            self.fields['stock'].queryset = Stock.objects.filter(branch=user_branch, total_stock__gt=0)
         else:
-            self.fields['stock'].queryset = Stock.objects.filter(quantity__gt=0)
+            self.fields['stock'].queryset = Stock.objects.filter(total_stock__gt=0)
         self.fields['stock'].label_from_instance = (
             lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.brand_name.brand_name if obj.product.brand_name else ''} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
         )
