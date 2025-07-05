@@ -70,7 +70,8 @@ class PurchaseOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if not user_is_superuser and user_branch:
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
-            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
+            self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch)
+            # self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
             self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
             self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
             self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
