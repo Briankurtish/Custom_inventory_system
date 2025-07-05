@@ -9,6 +9,28 @@
 
 {% block content %}
 
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Sales & Debt Recovery Report' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'debt_recovery_report' %}'">
+              <span class="fa-solid fa-chart-line me-2"></span>{% trans "Sales & Debt Recovery Report" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Sales Agent Performance' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'sales_agent_performance' %}'">
+              <span class="fa-solid fa-user-tie me-2"></span>{% trans "Sales Agent Performance" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
 <!-- Sales/Debt Recovery Report Button -->
 <div class="mb-3">
   <a href="{% url 'debt_recovery_report' %}" target="_blank" class="btn btn-primary">
@@ -18,6 +40,7 @@
   <i class="fa fa-user-tie"></i> Sales Agent Performance
 </a>
 </div>
+{% endif %}
 
 <hr class="my-8">
 

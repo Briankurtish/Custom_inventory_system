@@ -28,6 +28,26 @@
     {% endfor %}
 {% endif %}
 
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Sales Report' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'sales_report' %}'">
+              <span class="fa-solid fa-chart-line me-2"></span>{% trans "Sales Report" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Daily Sales' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'stock-daily-sales' %}'">
+              <span class="fa-solid fa-chart-line me-2"></span>{% trans "Daily Sales" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% if user.is_superuser %}
   <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderTypeModal">

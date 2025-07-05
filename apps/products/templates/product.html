@@ -32,17 +32,48 @@
         </button>
 
         <hr>
-        <div class="mt-5">
-          <button type="button" class="btn btn-outline-primary" id="openProductPinModal">
-            <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
-          </button>
 
-        </div>
-
-        <hr class="my-8">
         {% endif %}
     {% endfor %}
   {% endif %}
+
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'Add Product' %}
+        <div class="mt-5">
+            <button type="button" class="btn btn-outline-primary" id="openProductPinModal">
+              <span class="fa-solid fa-plus me-2"></span>{% trans "Add Product" %}
+            </button>
+          </div>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Product List Report' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'product_list_report' %}'">
+              <span class="fa-solid fa-download me-2"></span>{% trans "Product List Report" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Product Price List Report' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'price_list_report' %}'">
+              <span class="fa-solid fa-download me-2"></span>{% trans "Product Price List Report" %}
+            </button>
+
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+<hr class="my-8">
+
 
 {% comment %} {% if user.worker_profile.privileges.all %}
     {% for privilege in user.worker_profile.privileges.all %}

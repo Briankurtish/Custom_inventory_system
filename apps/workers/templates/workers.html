@@ -32,9 +32,21 @@ th {
   <span class="fa-solid fa-plus me-2"></span>{% trans "Add Employee" %}
 </button>
 
+{% if role_privileges %}
+    {% for privilege in role_privileges %}
+        {% if privilege.name == 'View Employee Report' %}
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'employee_report' %}'">
+              <span class="fa-solid fa-download me-2"></span>{% trans "Employee Report" %}
+            </button>
+          {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
 <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'employee_report' %}'">
-  <span class="fa-solid fa-download me-2"></span>{% trans "Download Report" %}
+  <span class="fa-solid fa-download me-2"></span>{% trans "Employee Report" %}
 </button>
+{% endif %}
 
 {% comment %} <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'create_privilege' %}'">
   <span class="fa-solid fa-plus me-2"></span>{% trans "Create Privilege"%}
