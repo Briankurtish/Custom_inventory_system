@@ -72,10 +72,10 @@ class PurchaseOrderForm(forms.ModelForm):
             self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
             self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch)
             # self.fields['sales_rep'].queryset = Worker.objects.filter(branch=user_branch, role='Sales Rep')
-            self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
-            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
-            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
-            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
+            self.fields['customer'].queryset = Customer.objects.filter()
+            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter()
+            self.fields['check_account_details'].queryset = Check.objects.filter()
+            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter()
 
     def clean(self):
         cleaned_data = super().clean()
