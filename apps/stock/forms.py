@@ -49,22 +49,58 @@ class BeginningInventoryForm(forms.Form):
 
 
 class StockUpdateForm(forms.Form):
-    product = forms.ModelChoiceField(queryset=Product.objects.all())
-    batch = forms.ModelChoiceField(queryset=Batch.objects.all(), required=True)  # Added batch field
-    branch = forms.ModelChoiceField(queryset=Branch.objects.all())
-    quantity = forms.IntegerField(min_value=0, label="Quantity")
-    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, label="Supplier")
+    product = forms.ModelChoiceField(
+        queryset=Product.objects.all(),
+        label="Product"
+    )
+    batch = forms.ModelChoiceField(
+        queryset=Batch.objects.all(),
+        required=True,
+        label="Batch Number"
+    )
+    branch = forms.ModelChoiceField(
+        queryset=Branch.objects.all(),
+        label="Branch"
+    )
+    quantity = forms.IntegerField(
+        min_value=0,
+        label="Quantity"
+    )
+    supplier = forms.ModelChoiceField(
+        queryset=Supplier.objects.all(),
+        required=False,
+        label="Supplier"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter products based on existing stock for the selected branch and batch
+        if 'branch' in self.data:
+            branch_id = self.data.get('branch')
+            if branch_id:
+                self.fields['product'].queryset = Product.objects.filter(
+                    stocks__branch_id=branch_id  # Use 'stocks' as the reverse relation
+                ).distinct()
+        if 'batch' in self.data:
+            batch_id = self.data.get('batch')
+            if batch_id:
+                self.fields['product'].queryset = self.fields['product'].queryset.filter(
+                    stocks__batch_id=batch_id  # Use 'stocks' as the reverse relation
+                ).distinct()
 
     def clean(self):
         cleaned_data = super().clean()
         product = cleaned_data.get('product')
         batch = cleaned_data.get('batch')
+        branch = cleaned_data.get('branch')
 
-        # Optional: Validate that the batch matches the product's batch
-        if product and batch and product.batch != batch:
-            raise forms.ValidationError(
-                "Selected batch {batch.batch_number} does not match product batch {product.batch.batch_number}."
-            )
+        if product and batch and branch:
+            # Verify stock record exists
+            if not Stock.objects.filter(product=product, batch=batch, branch=branch).exists():
+                raise forms.ValidationError(
+                    f"No stock record found for {product.generic_name_dosage.generic_name} (Batch: {batch.batch_number}) "
+                    f"in branch {branch.branch_name}. Please select a valid product or create a new stock record."
+                )
         return cleaned_data
 
 

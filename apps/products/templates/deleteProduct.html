@@ -31,7 +31,7 @@
       <div class="card text-center">
         <div class="card-body">
           <h5 class="card-title text-warning"> <span class="tf-icons ri-notification-fill text-warning ri-16px me-1_5"></span>{% trans "Warning" %}</h5>
-          <p class="card-text">{% trans "Are you sure you want to delete" %} {{product.brand_name}}?</p>
+          <p class="card-text">{% trans "Are you sure you want to delete" %} {{ product.generic_name_dosage.generic_name }} - {{product.brand_name.brand_name}}?</p>
           <form method="POST">
             {% csrf_token %}
             {% comment %} {{form}} {% endcomment %}

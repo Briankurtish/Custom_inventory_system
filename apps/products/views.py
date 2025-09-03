@@ -680,10 +680,10 @@ def get_dosage_types(request):
 
 @login_required
 def product_list_report(request):
-    # Fetch all products with related fields
+    # Fetch all products with related fields, ordered by product_code
     products = Product.objects.all().select_related(
         'brand_name', 'generic_name_dosage', 'dosage_form', 'pack_size', 'batch'
-    )
+    ).order_by('product_code')
 
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':
@@ -724,10 +724,10 @@ def product_list_report(request):
 
 @login_required
 def product_price_list_report(request):
-    # Fetch all products with related fields
+    # Fetch all products with related fields, ordered by product_code
     products = Product.objects.all().select_related(
         'brand_name', 'generic_name_dosage', 'dosage_form', 'pack_size', 'batch'
-    )
+    ).order_by('product_code')
 
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':

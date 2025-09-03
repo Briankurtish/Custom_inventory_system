@@ -42,10 +42,10 @@ class BatchAuditLog(models.Model):
         'workers.Worker', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='batch_log_created'
     )
-    batch_number = models.CharField(max_length=255, null=True, blank=True)  # Add this line
+    batch_number = models.CharField(max_length=255, null=True, blank=True)
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
-    details = models.TextField(null=True, blank=True)  # To store extra details (e.g., changes)
+    details = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user} {self.get_action_display()} {self.batch_number} on {self.timestamp}"
@@ -96,8 +96,7 @@ class Product(models.Model):
     unit_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0.00,  # Default value for unit_price
-
+        default=0.00
     )
     batch = models.ForeignKey(
         Batch, on_delete=models.CASCADE, related_name="products"
@@ -114,7 +113,7 @@ class Product(models.Model):
 
 
     class Meta:
-        unique_together = ("brand_name", "batch")  # Ensure each brand_name and batch combination is unique
+        unique_together = ("brand_name", "batch")
 
     def __str__(self):
         brand_name = self.brand_name.brand_name if self.brand_name else 'No Brand'
@@ -124,9 +123,8 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         # Assign a product code only if it hasn't been set
         if not self.product_code:
-            # Check if a product with the same brand_name and generic_name_dosage exists
+            # Check if a product with the same generic_name_dosage exists (ignore batch)
             existing_product = Product.objects.filter(
-                brand_name=self.brand_name,
                 generic_name_dosage=self.generic_name_dosage
             ).exclude(id=self.id).first()
 
@@ -148,9 +146,9 @@ class Product(models.Model):
                 new_number = highest_number + 1
                 new_code = f"PROD-{new_number:04d}"
 
-                # Ensure the new product_code doesn't conflict with existing codes for different brand_name/generic_name_dosage
+                # Ensure the new product_code doesn't conflict with existing codes for different generic_name_dosage
                 while Product.objects.filter(product_code=new_code).exclude(
-                    brand_name=self.brand_name, generic_name_dosage=self.generic_name_dosage
+                    generic_name_dosage=self.generic_name_dosage
                 ).exclude(id=self.id).exists():
                     new_number += 1
                     new_code = f"PROD-{new_number:04d}"
@@ -173,10 +171,10 @@ class ProductAuditLog(models.Model):
         'workers.Worker', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='product_log_created'
     )
-    generic_name = models.CharField(max_length=255, null=True, blank=True)  # Add this line
+    generic_name = models.CharField(max_length=255, null=True, blank=True)
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
-    details = models.TextField(null=True, blank=True)  # To store extra details (e.g., changes)
+    details = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user} {self.get_action_display()} {self.generic_name} on {self.timestamp}"

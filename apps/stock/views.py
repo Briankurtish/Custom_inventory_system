@@ -587,71 +587,54 @@ def update_stock_view(request):
                 product = form.cleaned_data["product"]
                 new_quantity = form.cleaned_data["quantity"]
                 branch = form.cleaned_data["branch"]
-                batch = form.cleaned_data["batch"]  # Get batch from form
-                batch_number = batch.batch_number if batch else None
+                batch = form.cleaned_data["batch"]
+                batch_number = batch.batch_number
 
-                try:
-                    # Ensure a stock record exists for the given product, branch, and batch
-                    stock_entry = Stock.objects.filter(product=product, branch=branch, batch=batch).first()
-                except Stock.DoesNotExist:
-                    messages.error(request, _(f"No stock record found for {product.generic_name_dosage} (Batch: {batch_number}) in the selected branch."))
-                else:
-                    # Check if the product, branch, and batch are already in the temporary update list
-                    existing_item = next(
-                        (item for item in temp_stock_list
-                         if item["product_code"] == product.product_code
-                         and item["branch_id"] == branch.id
-                         and item["batch_number"] == batch_number),
-                        None
+                stock_entry = Stock.objects.filter(product=product, branch=branch, batch=batch).first()
+                if not stock_entry:
+                    messages.error(
+                        request,
+                        _(f"No stock record found for {product.generic_name_dosage.generic_name} (Batch: {batch_number}) "
+                          f"in branch {branch.branch_name}. This should not happen due to form validation.")
                     )
-                    if existing_item:
-                        # Update the quantity in the temporary list (add to existing)
-                        existing_item["new_quantity"] += new_quantity
-                        # Update supplier if changed
-                        supplier = form.cleaned_data.get("supplier")
-                        if supplier:
-                            existing_item["supplier_id"] = supplier.id
-                            existing_item["supplier_name"] = supplier.name
-                        messages.success(request, _("Quantity updated in the update list."))
-                    else:
-                        # Add the item to the temporary update list
-                        supplier = form.cleaned_data.get("supplier")
-                        supplier_id = supplier.id if supplier else None
-                        supplier_name = supplier.name if supplier else "N/A"
-                        temp_stock_list.append({
-                            "product_code": product.product_code,
-                            "product_name": str(product.generic_name_dosage),
-                            "brand_name": str(product.brand_name.brand_name if product.brand_name else "No Brand"),
-                            "current_quantity": stock_entry.quantity,
-                            "new_quantity": new_quantity,
-                            "branch_id": branch.id,
-                            "branch_name": branch.branch_name,
-                            "batch_number": batch_number,
-                            "supplier_id": supplier_id,
-                            "supplier_name": supplier_name,
-                        })
-                        messages.success(request, _(f"Stock added to the update list for {product.generic_name_dosage} (Batch: {batch_number})."))
+                    return render(request, "updateStock.html", TemplateLayout.init(request, {"form": form, "temp_stock": temp_stock_list}))
 
-                    request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
+                existing_item = next(
+                    (item for item in temp_stock_list
+                     if item["product_code"] == product.product_code
+                     and item["branch_id"] == branch.id
+                     and item["batch_number"] == batch_number),
+                    None
+                )
+                if existing_item:
+                    existing_item["new_quantity"] += new_quantity
+                    supplier = form.cleaned_data.get("supplier")
+                    if supplier:
+                        existing_item["supplier_id"] = supplier.id
+                        existing_item["supplier_name"] = supplier.name
+                    messages.success(request, _("Quantity updated in the update list."))
+                else:
+                    supplier = form.cleaned_data.get("supplier")
+                    supplier_id = supplier.id if supplier else None
+                    supplier_name = supplier.name if supplier else "N/A"
+                    temp_stock_list.append({
+                        "product_code": product.product_code,
+                        "product_name": str(product.generic_name_dosage.generic_name),
+                        "brand_name": str(product.brand_name.brand_name if product.brand_name else "No Brand"),
+                        "current_quantity": stock_entry.quantity,
+                        "new_quantity": new_quantity,
+                        "branch_id": branch.id,
+                        "branch_name": branch.branch_name,
+                        "batch_number": batch_number,
+                        "supplier_id": supplier_id,
+                        "supplier_name": supplier_name,
+                    })
+                    messages.success(request, _(f"Stock added to the update list for {product.generic_name_dosage.generic_name} (Batch: {batch_number})."))
+
+                request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
+                request.session.modified = True
             else:
                 messages.error(request, _("Please correct the errors in the form."))
-
-        elif "remove_item" in request.POST:
-            product_code = request.POST.get("product_code")
-            branch_id = int(request.POST.get("branch"))
-            batch_number = request.POST.get("batch_number")
-
-            # Remove the matching item from the temporary list by product, branch, and batch
-            temp_stock_list = [
-                item for item in temp_stock_list
-                if not (
-                    item["product_code"] == product_code
-                    and item["branch_id"] == branch_id
-                    and item["batch_number"] == batch_number
-                )
-            ]
-            request.session["TEMP_UPDATE_STOCK_LIST"] = temp_stock_list
-            messages.success(request, _("Item removed from the update list."))
 
         elif "update_stock" in request.POST:
             if not temp_stock_list:
@@ -659,22 +642,27 @@ def update_stock_view(request):
             else:
                 updated_any = False
                 for item in temp_stock_list:
-                    # Retrieve the correct product and batch
-                    product = Product.objects.filter(product_code=item["product_code"]).first()
-                    batch = Batch.objects.get(batch_number=item["batch_number"]) if item["batch_number"] else None
+                    # Filter Product by product_code and batch_number
+                    batch = Batch.objects.get(batch_number=item["batch_number"])
+                    product = Product.objects.filter(
+                        product_code=item["product_code"],
+                        batch=batch
+                    ).first()  # Use filter().first() to get the first match
+                    if not product:
+                        messages.error(request, _(f"Product with code {item['product_code']} and batch {item['batch_number']} not found."))
+                        continue
+
                     branch = Branch.objects.get(id=item["branch_id"])
 
-                    # Fetch and update the existing stock record by product, branch, and batch
                     stock = Stock.objects.filter(product=product, branch=branch, batch=batch).first()
                     if not stock:
-                        messages.error(request, _(f"No stock record found for {product.generic_name_dosage} (Batch: {item['batch_number']}) in branch {branch.branch_name}."))
+                        messages.error(request, _(f"No stock record found for {product.generic_name_dosage.generic_name} (Batch: {item['batch_number']}) in branch {branch.branch_name}."))
                         continue
 
                     previous_quantity = stock.quantity
                     stock.quantity += item["new_quantity"]
                     stock.save()
 
-                    # Set supplier for transaction
                     supplier = None
                     if item.get("supplier_id"):
                         supplier = Supplier.objects.filter(id=item["supplier_id"]).first()
@@ -686,30 +674,26 @@ def update_stock_view(request):
                         transaction_type="update",
                         transaction_date=now(),
                         worker=request.user.worker_profile,
-                        supplier=supplier
+                        supplier=supplier,
                     )
 
-                    # Create SupplierStockContribution record for update
                     SupplierStockContribution.objects.create(
                         stock=stock,
                         supplier=supplier,
                         quantity=item["new_quantity"],
                         transaction_type="UPDATE",
-                        worker=request.user.worker_profile
+                        worker=request.user.worker_profile,
                     )
 
                     updated_any = True
-                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage} (Batch: {item['batch_number']}). Previous: {previous_quantity}, New: {stock.quantity}"))
-                    return redirect("stock")
+                    messages.info(request, _(f"Stock updated for {product.generic_name_dosage.generic_name} (Batch: {item['batch_number']}). Previous: {previous_quantity}, New: {stock.quantity}"))
 
-
-                # Clear the temporary update list
                 request.session.pop("TEMP_UPDATE_STOCK_LIST", None)
                 request.session.modified = True
                 if updated_any:
                     messages.success(request, _("Stock updated successfully and supplier contribution recorded."))
                 else:
-                    messages.warning(request, _( "No stock was updated. Please check your update list." ))
+                    messages.warning(request, _("No stock was updated. Please check your update list."))
                 return redirect("update_stock")
 
     view_context = {
@@ -718,7 +702,6 @@ def update_stock_view(request):
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, "updateStock.html", context)
-
 
 
 
