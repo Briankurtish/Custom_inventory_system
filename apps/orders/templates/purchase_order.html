@@ -37,33 +37,26 @@
         .po-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
+            padding: 20px;
             position: relative;
         }
         
-        .header-top {
-        display: flex;
-        justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-        
-        .company-branding {
+        .header-main {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 25px;
-            flex: 1;
+            width: 100%;
         }
         
         .company-logo {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             background: white;
-            border-radius: 20px;
-            padding: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             display: flex;
-        align-items: center;
+            align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
@@ -77,10 +70,11 @@
         .company-name-header {
             text-align: center;
             flex: 1;
+            margin: 0 20px;
         }
         
         .company-name-header .company-title {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             margin-bottom: 0;
             letter-spacing: -1px;
@@ -93,32 +87,26 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            flex-shrink: 0;
         }
         
         .po-details-header .po-label {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             opacity: 0.9;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         .po-details-header .po-number {
             background: rgba(255, 255, 255, 0.2);
-            padding: 12px 20px;
-            border-radius: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .header-bottom {
-            text-align: center;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 0;
         }
         
         .po-content {
@@ -484,165 +472,262 @@
                 display: none;
             }
             
-            .po-header {
-                padding: 20px !important;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            }
-            
-            .company-logo {
-                width: 80px !important;
-                height: 80px !important;
-                padding: 10px !important;
-            }
-            
-            .company-name-header .company-title {
-                font-size: 28px !important;
-                margin-bottom: 0 !important;
-            }
-            
-            .po-details-header .po-label {
-                font-size: 12px !important;
-                margin-bottom: 4px !important;
-            }
-            
-            .po-details-header .po-number {
-                font-size: 14px !important;
-                padding: 10px 16px !important;
-            }
-            
-            .header-bottom h1 {
-                font-size: 22px !important;
-            }
-            
-            .po-content {
-                padding: 20px !important;
-            }
-            
-            .company-section {
-                margin-bottom: 15px !important;
-                padding-bottom: 10px !important;
-            }
-            
-            .customer-section {
-                margin-bottom: 15px !important;
-                padding: 15px !important;
-            }
-            
-            .items-table {
-                margin-bottom: 15px !important;
-                font-size: 9px !important;
-            }
-            
-            .items-table th {
-                padding: 6px 4px !important;
-                font-size: 8px !important;
-            }
-            
-            .items-table td {
-                padding: 5px 3px !important;
-                font-size: 8px !important;
-            }
-            
-            .totals-section {
-                padding: 10px !important;
-                margin-bottom: 10px !important;
-            }
-            
-            .totals-inline {
-                gap: 10px !important;
-            }
-            
-            .totals-item {
+            body {
+                padding: 5px !important;
                 font-size: 10px !important;
             }
             
-            .grand-total-inline {
+            .po-container {
+                max-width: none !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            
+            .po-header {
+                padding: 8px 12px !important;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            
+            .header-main {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                width: 100% !important;
+                flex-direction: row !important;
+            }
+            
+            .company-logo {
+                width: 50px !important;
+                height: 50px !important;
+                padding: 5px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .company-name-header {
+                text-align: center !important;
+                flex: 1 !important;
+                margin: 0 10px !important;
+            }
+            
+            .company-name-header .company-title {
+                font-size: 14px !important;
+                margin-bottom: 0 !important;
+            }
+            
+            .po-details-header {
+                text-align: right !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-end !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .po-details-header .po-label {
+                font-size: 7px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .po-details-header .po-number {
+                font-size: 9px !important;
+                padding: 3px 6px !important;
+            }
+            
+            .po-content {
+                padding: 8px 12px !important;
+            }
+            
+            .company-section {
+                margin-bottom: 8px !important;
+                padding-bottom: 6px !important;
+                gap: 15px !important;
+            }
+            
+            .company-info h3 {
+                font-size: 10px !important;
+                margin-bottom: 4px !important;
+            }
+            
+            .company-info .company-name {
                 font-size: 12px !important;
-                padding: 6px 12px !important;
+                margin-bottom: 3px !important;
+            }
+            
+            .company-info p {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .po-details .date {
+                font-size: 10px !important;
+                margin-bottom: 4px !important;
+            }
+            
+            .po-details .order-type {
+                font-size: 12px !important;
+            }
+            
+            .customer-section {
+                margin-bottom: 8px !important;
+                padding: 8px !important;
+            }
+            
+            .customer-section h3 {
+                font-size: 10px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .customer-grid {
+                gap: 10px !important;
+            }
+            
+            .customer-field label {
+                font-size: 8px !important;
+            }
+            
+            .customer-field .value {
+                font-size: 9px !important;
+            }
+            
+            .items-table {
+                margin-bottom: 8px !important;
+                font-size: 8px !important;
+            }
+            
+            .items-table th {
+                padding: 4px 3px !important;
+                font-size: 7px !important;
+            }
+            
+            .items-table td {
+                padding: 3px 2px !important;
+                font-size: 7px !important;
+            }
+            
+            .quantity, .price, .total {
+                font-size: 8px !important;
             }
             
             .payment-schedule,
             .totals-section,
             .signatures-section {
-                margin-bottom: 15px !important;
-                padding: 15px !important;
+                margin-bottom: 8px !important;
+                padding: 8px !important;
             }
             
             .payment-schedule h3,
             .totals-section h3,
             .signatures-section h3 {
-                font-size: 14px !important;
-                margin-bottom: 10px !important;
-            }
-            
-            .payment-schedule table th,
-            .payment-schedule table td {
                 font-size: 10px !important;
-                padding: 8px !important;
+                margin-bottom: 6px !important;
             }
             
-            .signatures-section h3 {
-                color: #8b5cf6 !important;
-                font-size: 14px !important;
-                margin-bottom: 12px !important;
+            .payment-schedule table th {
+                padding: 4px !important;
+                font-size: 8px !important;
+            }
+            
+            .payment-schedule table td {
+                padding: 3px !important;
+                font-size: 7px !important;
+            }
+            
+            .totals-inline {
+                gap: 8px !important;
+            }
+            
+            .totals-item {
+                font-size: 8px !important;
+            }
+            
+            .grand-total-inline {
+                font-size: 10px !important;
+                padding: 4px 8px !important;
             }
             
             .signature-grid {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
-                gap: 15px !important;
+                gap: 8px !important;
             }
             
             .signature-item {
                 background: white !important;
-                padding: 12px !important;
-                border-radius: 6px !important;
+                padding: 6px !important;
+                border-radius: 4px !important;
                 border: 1px solid #e2e8f0 !important;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
             }
             
             .signature-item h4 {
-                color: #374151 !important;
-                font-size: 12px !important;
-                font-weight: 600 !important;
-                margin-bottom: 10px !important;
-                text-align: center !important;
+                font-size: 8px !important;
+                margin-bottom: 4px !important;
             }
             
             .signature-line {
-                width: 100% !important;
-                height: 2px !important;
-                background: #d1d5db !important;
-                margin: 6px 0 !important;
+                height: 1px !important;
+                margin: 3px 0 !important;
             }
             
             .signature-label {
-                font-size: 9px !important;
-                color: #6b7280 !important;
-                text-align: center !important;
-                margin-top: 3px !important;
+                font-size: 7px !important;
+                margin-top: 2px !important;
             }
             
             .footer {
-                padding: 15px !important;
+                padding: 8px !important;
             }
             
-            /* Prevent page breaks within sections */
-            .po-container,
-            .po-header,
-            .company-section,
-            .customer-section,
-            .items-table,
-            .payment-schedule,
-            .totals-section,
-            .signatures-section {
-                page-break-inside: avoid !important;
+            .footer-item {
+                font-size: 8px !important;
             }
             
-            /* Ensure proper spacing for print */
+            /* Hide URL and page info that browsers add when printing */
+            @page {
+                margin: 0.5in !important;
+                @bottom-left {
+                    content: none !important;
+                }
+                @bottom-right {
+                    content: none !important;
+                }
+                @bottom-center {
+                    content: none !important;
+                }
+            }
+            
+            /* Hide any browser-generated content */
+            body::after,
+            body::before {
+                display: none !important;
+            }
+            
+            /* Ensure no URL appears at bottom */
+            a[href]:after {
+                content: none !important;
+            }
+            
+            /* Hide any potential URL display */
+            .url-display,
+            .print-url,
+            .browser-url {
+                display: none !important;
+            }
+            
+            /* Hide browser print headers and footers */
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Additional rules to hide browser-generated content */
             * {
                 -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Allow page breaks if absolutely necessary, but try to fit on one page */
+            .po-container {
+                page-break-inside: avoid !important;
             }
         }
         
@@ -662,47 +747,49 @@
             }
             
             .po-header {
-                padding: 25px 20px;
+                padding: 15px 20px;
             }
             
-            .header-top {
-        flex-direction: column;
-                gap: 20px;
-                align-items: center;
-                text-align: center;
-            }
-            
-            .company-branding {
-                justify-content: center;
-                text-align: center;
-                gap: 20px;
-            }
-            
-            .company-name-header {
-                text-align: center;
+            .header-main {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                width: 100% !important;
+                flex-direction: row !important;
             }
             
             .company-logo {
-                width: 100px;
-                height: 100px;
-                margin-right: 0;
+                width: 60px !important;
+                height: 60px !important;
+                padding: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .company-name-header {
+                text-align: center !important;
+                flex: 1 !important;
+                margin: 0 10px !important;
             }
             
             .company-name-header .company-title {
-                font-size: 32px;
+                font-size: 20px !important;
             }
             
             .po-details-header {
-                text-align: center;
-                align-items: center;
+                text-align: right !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-end !important;
+                flex-shrink: 0 !important;
             }
             
-            .header-bottom {
-                padding-top: 15px;
+            .po-details-header .po-label {
+                font-size: 10px !important;
             }
             
-            .header-bottom h1 {
-                font-size: 24px;
+            .po-details-header .po-number {
+                font-size: 12px !important;
+                padding: 6px 10px !important;
             }
             
             .signature-grid {
@@ -712,41 +799,83 @@
     </style>
   </head>
   <body>
-    <button class="print-button" onclick="window.print()">
+    <button class="print-button" onclick="printPurchaseOrder()">
         🖨️ Print Purchase Order
     </button>
+    
+    <script>
+        function printPurchaseOrder() {
+            // Get all styles from the current document
+            const styles = Array.from(document.styleSheets)
+                .map(styleSheet => {
+                    try {
+                        return Array.from(styleSheet.cssRules)
+                            .map(rule => rule.cssText)
+                            .join('\n');
+                    } catch (e) {
+                        return '';
+                    }
+                })
+                .join('\n');
+            
+            // Try to hide headers and footers programmatically
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print Purchase Order</title>
+                        <style>
+                            ${styles}
+                            
+                            @page {
+                                margin: 0.5in;
+                                @bottom-left { content: none; }
+                                @bottom-right { content: none; }
+                                @bottom-center { content: none; }
+                            }
+                            
+                            body { 
+                                margin: 0; 
+                                padding: 0; 
+                                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${document.querySelector('.po-container').outerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
     
     <div class="po-container">
         <!-- Header -->
         <div class="po-header">
-            <!-- Header Top Row -->
-            <div class="header-top">
-                <!-- Company Branding -->
-                <div class="company-branding">
-                    <div class="company-logo">
-                        <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="GC Pharma Logo" />
-                    </div>
-                    <div class="company-name-header">
-                        <div class="company-title">GC PHARMA</div>
-                    </div>
-        </div>
-
+            <div class="header-main">
+                <!-- Company Logo -->
+                <div class="company-logo">
+                    <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="GC Pharma Logo" />
+                </div>
+                
+                <!-- Company Name -->
+                <div class="company-name-header">
+                    <div class="company-title">GC PHARMA</div>
+                </div>
+                
                 <!-- PO Details -->
                 <div class="po-details-header">
                     <div class="po-label">Purchase Order Number</div>
                     <div class="po-number">
-              {% if order_type == "purchase_order" %}
-                  {{ order.purchase_order_id }}
-              {% elif order_type == "return_purchase_order" %}
-                  {{ order.return_order_id }}
-              {% endif %}
+                        {% if order_type == "purchase_order" %}
+                            {{ order.purchase_order_id }}
+                        {% elif order_type == "return_purchase_order" %}
+                            {{ order.return_order_id }}
+                        {% endif %}
                     </div>
-      </div>
-        </div>
-            
-            <!-- Header Bottom Row -->
-            <div class="header-bottom">
-                <!-- Removed title for cleaner, more compact look -->
+                </div>
             </div>
         </div>
 
