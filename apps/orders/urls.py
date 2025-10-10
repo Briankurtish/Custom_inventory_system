@@ -21,6 +21,12 @@ urlpatterns = [
         "purchase-order/<str:purchase_order_id>", view_purchase_order, name="purchase-order",
     ),
     path(
+        "purchase-order-sortie/<str:purchase_order_id>", view_purchase_order_sortie, name="purchase-order-sortie",
+    ),
+    path(
+        "purchase-order-livraison/<str:purchase_order_id>", view_purchase_order_livraison, name="purchase-order-livraison",
+    ),
+    path(
         "picking-list/<str:purchase_order_id>", picking_list_doc_view, name="picking-list",
     ),
     path(

@@ -540,6 +540,30 @@
             {% endfor %}
         {% endif %}
 
+        {% if worker_privileges %}
+            {% for privilege in worker_privileges %}
+                {% if privilege == 'Generate Bon de Sortie' %}
+                    {% if not is_return_purchase_order %}
+                        <a href="{% url 'purchase-order-sortie' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-warning">
+                            {% trans "Generate Bon de Sortie" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if worker_privileges %}
+            {% for privilege in worker_privileges %}
+                {% if privilege == 'Generate Bon de Livraison' %}
+                    {% if not is_return_purchase_order %}
+                        <a href="{% url 'purchase-order-livraison' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-info">
+                            {% trans "Generate Bon de Livraison" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
         <!-- Buttons for superuser -->
         {% if user.is_superuser %}
             {% if is_return_purchase_order %}
@@ -555,6 +579,12 @@
                 </a>
                 <a href="{% url 'picking-list' purchase_order_id=order.purchase_order_id %}?type=purchase" target="_blank" class="btn btn-primary">
                     {% trans "Generate Picking List" %}
+                </a>
+                <a href="{% url 'purchase-order-sortie' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-warning">
+                    {% trans "Generate Bon de Sortie" %}
+                </a>
+                <a href="{% url 'purchase-order-livraison' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-info">
+                    {% trans "Generate Bon de Livraison" %}
                 </a>
             {% endif %}
         {% endif %}

@@ -35,7 +35,7 @@
         }
         
         .po-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
             color: white;
             padding: 20px;
             position: relative;
@@ -49,11 +49,11 @@
         }
         
         .company-logo {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             background: white;
             border-radius: 12px;
-            padding: 10px;
+            padding: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
@@ -65,6 +65,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            transform: scale(1.3);
         }
         
         .company-name-header {
@@ -363,57 +364,6 @@
             box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         }
         
-        .signatures-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-        margin-bottom: 20px;
-            border-left: 4px solid #8b5cf6;
-        }
-        
-        .signatures-section h3 {
-            color: #8b5cf6;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .signature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .signature-item {
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .signature-item h4 {
-            color: #374151;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        text-align: center;
-      }
-        
-        .signature-line {
-            width: 100%;
-            height: 2px;
-            background: #d1d5db;
-            margin: 8px 0;
-        }
-        
-        .signature-label {
-            font-size: 11px;
-            color: #6b7280;
-        text-align: center;
-            margin-top: 4px;
-        }
         
         .footer {
             background: #1e293b;
@@ -486,7 +436,7 @@
             
             .po-header {
                 padding: 8px 12px !important;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%) !important;
             }
             
             .header-main {
@@ -498,9 +448,9 @@
             }
             
             .company-logo {
-                width: 50px !important;
-                height: 50px !important;
-                padding: 5px !important;
+                width: 80px !important;
+                height: 80px !important;
+                padding: 8px !important;
                 flex-shrink: 0 !important;
             }
             
@@ -609,15 +559,13 @@
             }
             
             .payment-schedule,
-            .totals-section,
-            .signatures-section {
+            .totals-section {
                 margin-bottom: 8px !important;
                 padding: 8px !important;
             }
             
             .payment-schedule h3,
-            .totals-section h3,
-            .signatures-section h3 {
+            .totals-section h3 {
                 font-size: 10px !important;
                 margin-bottom: 6px !important;
             }
@@ -645,33 +593,6 @@
                 padding: 4px 8px !important;
             }
             
-            .signature-grid {
-                display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px !important;
-            }
-            
-            .signature-item {
-                background: white !important;
-                padding: 6px !important;
-                border-radius: 4px !important;
-                border: 1px solid #e2e8f0 !important;
-            }
-            
-            .signature-item h4 {
-                font-size: 8px !important;
-                margin-bottom: 4px !important;
-            }
-            
-            .signature-line {
-                height: 1px !important;
-                margin: 3px 0 !important;
-            }
-            
-            .signature-label {
-                font-size: 7px !important;
-                margin-top: 2px !important;
-            }
             
             .footer {
                 padding: 8px !important;
@@ -759,9 +680,9 @@
             }
             
             .company-logo {
-                width: 60px !important;
-                height: 60px !important;
-                padding: 8px !important;
+                width: 100px !important;
+                height: 100px !important;
+                padding: 12px !important;
                 flex-shrink: 0 !important;
             }
             
@@ -792,9 +713,6 @@
                 padding: 6px 10px !important;
             }
             
-            .signature-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
   </head>
@@ -805,49 +723,8 @@
     
     <script>
         function printPurchaseOrder() {
-            // Get all styles from the current document
-            const styles = Array.from(document.styleSheets)
-                .map(styleSheet => {
-                    try {
-                        return Array.from(styleSheet.cssRules)
-                            .map(rule => rule.cssText)
-                            .join('\n');
-                    } catch (e) {
-                        return '';
-                    }
-                })
-                .join('\n');
-            
-            // Try to hide headers and footers programmatically
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Print Purchase Order</title>
-                        <style>
-                            ${styles}
-                            
-                            @page {
-                                margin: 0.5in;
-                                @bottom-left { content: none; }
-                                @bottom-right { content: none; }
-                                @bottom-center { content: none; }
-                            }
-                            
-                            body { 
-                                margin: 0; 
-                                padding: 0; 
-                                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        ${document.querySelector('.po-container').outerHTML}
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
+            // Print directly from the current page without opening a new tab
+            window.print();
         }
     </script>
     
@@ -1030,41 +907,6 @@
                 </div>
             </div>
 
-            <!-- Signatures -->
-            <div class="signatures-section">
-                <h3>Authorization & Delivery</h3>
-                <div class="signature-grid">
-                    <div class="signature-item">
-                        <h4>Release Note (Bon de Sortie)</h4>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Stock Keeper/Manager Name</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Signature</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Date</div>
-            </div>
-                    
-                    <div class="signature-item">
-                        <h4>Sales Agent/Driver</h4>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Name</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Signature</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Date</div>
-        </div>
-
-                    <div class="signature-item">
-                        <h4>Delivery Note (Bon de Livraison)</h4>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Client Name</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Signature</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Date</div>
-            </div>
-            </div>
-            </div>
           </div>
 
         <!-- Footer -->

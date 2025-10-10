@@ -11,7 +11,7 @@
       <form method="get" class="row g-3 align-items-end">
         <div class="col-md-4">
           <label for="search_query" class="form-label">{% trans "Search" %}</label>
-          <input type="text" class="form-control" id="search_query" name="search_query" value="{{ search_query }}" placeholder="{% trans 'Search by generic name, brand name, or product code' %}">
+          <input type="text" class="form-control" id="search_query" name="search_query" value="{{ search_query }}" placeholder="{% trans 'Search by generic name, brand name, product code, or customer name' %}">
         </div>
         {% if is_superuser %}
         <div class="col-md-2">
@@ -41,21 +41,26 @@
   </div>
 
   <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0 text-dark">{% trans "Sales Results" %}</h5>
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="printTable()">
+        <i class="fas fa-print me-1"></i>{% trans "Print" %}
+      </button>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table id="salesTable" class="table table-hover align-middle mb-0 table-sm">
           <thead>
             <tr>
               <th>{% trans "Date" %}</th>
+              <th>{% trans "Purchase Order No." %}</th>
               <th>{% trans "Product Code" %}</th>
               <th>{% trans "Generic Name" %}</th>
               <th>{% trans "Brand Name" %}</th>
+              <th>{% trans "Batch Number" %}</th>
               <th>{% trans "Branch" %}</th>
+              <th>{% trans "Customer Name" %}</th>
               <th>{% trans "Quantity Sold" %}</th>
-              <th>{% trans "Purchase Order No." %}</th>
             </tr>
           </thead>
           <tbody>
@@ -63,17 +68,19 @@
               {% for sale in sales %}
                 <tr>
                   <td>{{ sale.purchase_order__created_at__date|date:'Y-m-d' }}</td>
+                  <td>{{ sale.purchase_order__purchase_order_id }}</td>
                   <td>{{ sale.stock__product__product_code }}</td>
                   <td>{{ sale.stock__product__generic_name_dosage__generic_name }}</td>
                   <td>{{ sale.stock__product__brand_name__brand_name|default:'N/A' }}</td>
+                  <td>{{ sale.stock__batch__batch_number|default:'N/A' }}</td>
                   <td>{{ sale.stock__branch__branch_name }}</td>
+                  <td>{{ sale.purchase_order__customer__customer_name|default:'N/A' }}</td>
                   <td><span class="fw-bold text-success">{{ sale.total_quantity }}</span></td>
-                  <td>{{ sale.purchase_order__purchase_order_id }}</td>
                 </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="7" class="text-center text-muted py-4">{% trans "No sales found for the selected criteria." %}</td>
+                <td colspan="9" class="text-center text-muted py-4">{% trans "No sales found for the selected criteria." %}</td>
               </tr>
             {% endif %}
           </tbody>
@@ -82,4 +89,193 @@
     </div>
   </div>
 </div>
+
+<style>
+/* Compact table styling for more content per page */
+#salesTable {
+  font-size: 11px;
+}
+
+#salesTable th {
+  font-size: 10px;
+  padding: 4px 6px !important;
+  font-weight: 600;
+}
+
+#salesTable td {
+  padding: 3px 6px !important;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+#salesTable .fw-bold {
+  font-weight: 600 !important;
+}
+
+/* Column width optimization */
+#salesTable th:nth-child(1), #salesTable td:nth-child(1) { width: 8%; } /* Date */
+#salesTable th:nth-child(2), #salesTable td:nth-child(2) { width: 12%; } /* Purchase Order No. */
+#salesTable th:nth-child(3), #salesTable td:nth-child(3) { width: 10%; } /* Product Code */
+#salesTable th:nth-child(4), #salesTable td:nth-child(4) { width: 20%; } /* Generic Name */
+#salesTable th:nth-child(5), #salesTable td:nth-child(5) { width: 15%; } /* Brand Name */
+#salesTable th:nth-child(6), #salesTable td:nth-child(6) { width: 10%; } /* Batch Number */
+#salesTable th:nth-child(7), #salesTable td:nth-child(7) { width: 12%; } /* Branch */
+#salesTable th:nth-child(8), #salesTable td:nth-child(8) { width: 15%; } /* Customer Name */
+#salesTable th:nth-child(9), #salesTable td:nth-child(9) { width: 8%; } /* Quantity */
+
+/* Text truncation for long content */
+#salesTable td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+
+/* Allow some columns to wrap if needed */
+#salesTable td:nth-child(4), #salesTable td:nth-child(5), #salesTable td:nth-child(8) {
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.1;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0.5in;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  #salesTable, #salesTable * {
+    visibility: visible;
+  }
+  #salesTable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .card-header, .btn, .form-control, .form-select, .card {
+    display: none !important;
+  }
+  .table {
+    border-collapse: collapse !important;
+  }
+  .table th, .table td {
+    border: 1px solid #000 !important;
+    padding: 2px 4px !important;
+    font-size: 8px !important;
+    line-height: 1.1 !important;
+  }
+  .table thead th {
+    background-color: #f8f9fa !important;
+    font-weight: bold !important;
+  }
+}
+</style>
+
+<script>
+function printTable() {
+  // Get current date for the print title
+  const currentDate = new Date().toLocaleDateString();
+  
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  
+  // Get the table HTML
+  const table = document.getElementById('salesTable');
+  const tableHTML = table.outerHTML;
+  
+  // Create the print content
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Daily Sales Report - ${currentDate}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 10px;
+          font-size: 10px;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 10px;
+          color: #333;
+          font-size: 16px;
+        }
+        .report-info {
+          margin-bottom: 10px;
+          text-align: center;
+          color: #666;
+          font-size: 9px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+          font-size: 8px;
+        }
+        th, td {
+          border: 1px solid #000;
+          padding: 2px 4px;
+          text-align: left;
+          font-size: 8px;
+          line-height: 1.1;
+        }
+        th {
+          background-color: #f8f9fa;
+          font-weight: bold;
+          font-size: 8px;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .text-success {
+          color: #28a745 !important;
+          font-weight: bold;
+        }
+        /* Column width optimization for print */
+        th:nth-child(1), td:nth-child(1) { width: 8%; } /* Date */
+        th:nth-child(2), td:nth-child(2) { width: 12%; } /* Purchase Order No. */
+        th:nth-child(3), td:nth-child(3) { width: 10%; } /* Product Code */
+        th:nth-child(4), td:nth-child(4) { width: 20%; } /* Generic Name */
+        th:nth-child(5), td:nth-child(5) { width: 15%; } /* Brand Name */
+        th:nth-child(6), td:nth-child(6) { width: 10%; } /* Batch Number */
+        th:nth-child(7), td:nth-child(7) { width: 12%; } /* Branch */
+        th:nth-child(8), td:nth-child(8) { width: 15%; } /* Customer Name */
+        th:nth-child(9), td:nth-child(9) { width: 8%; } /* Quantity */
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 0.5in;
+          }
+          body { margin: 0; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Daily Sales Report</h1>
+      <div class="report-info">
+        <p>Generated on: ${currentDate}</p>
+        <p>Report Period: ${document.getElementById('start_date').value || 'N/A'} to ${document.getElementById('end_date').value || 'N/A'}</p>
+      </div>
+      ${tableHTML}
+    </body>
+    </html>
+  `;
+  
+  // Write content to the new window
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  
+  // Wait for content to load, then print
+  printWindow.onload = function() {
+    printWindow.print();
+    printWindow.close();
+  };
+}
+</script>
 {% endblock %}

@@ -1534,7 +1534,8 @@ def stock_daily_sales_view(request):
         sales_qs = sales_qs.filter(
             Q(stock__product__generic_name_dosage__generic_name__icontains=search_query) |
             Q(stock__product__brand_name__brand_name__icontains=search_query) |
-            Q(stock__product__product_code__icontains=search_query)
+            Q(stock__product__product_code__icontains=search_query) |
+            Q(purchase_order__customer__customer_name__icontains=search_query)
         )
 
     # Branch filtering based on user permissions
@@ -1559,9 +1560,11 @@ def stock_daily_sales_view(request):
         'stock__product__product_code',
         'stock__product__generic_name_dosage__generic_name',
         'stock__product__brand_name__brand_name',
+        'stock__batch__batch_number',
         'stock__branch__branch_name',
         'purchase_order__purchase_order_id',
         'purchase_order__created_at__date',
+        'purchase_order__customer__customer_name',
     ).annotate(
         total_quantity=Sum('quantity')
     ).order_by('-purchase_order__created_at__date', 'stock__product__generic_name_dosage__generic_name')

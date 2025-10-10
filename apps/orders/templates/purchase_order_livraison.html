@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice - {{ invoice.invoice_id }}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bon de Livraison - {{ order.purchase_order_id }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         * {
         margin: 0;
@@ -17,23 +17,24 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.6;
             color: #1a1a1a;
             background: #f8fafc;
             padding: 20px;
         }
         
-        .invoice-container {
-            max-width: 800px;
+        .po-container {
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
         
-        .invoice-header {
+        .po-header {
             background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
             color: white;
             padding: 20px;
@@ -74,25 +75,24 @@
         }
         
         .company-name-header .company-title {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             letter-spacing: -1px;
             line-height: 1.1;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        .company-name-header .document-title {
+        .document-type {
             font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 0;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0.9;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+            color:rgb(0, 0, 0);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-top: 8px;
+            letter-spacing: 1px;
         }
         
-        .invoice-details-header {
+        .po-details-header {
             text-align: right;
             display: flex;
             flex-direction: column;
@@ -100,7 +100,7 @@
             flex-shrink: 0;
         }
         
-        .invoice-details-header .invoice-label {
+        .po-details-header .po-label {
             font-size: 12px;
             font-weight: 500;
             opacity: 0.9;
@@ -109,7 +109,7 @@
             letter-spacing: 0.5px;
         }
         
-        .invoice-details-header .invoice-number {
+        .po-details-header .po-number {
             background: rgba(255, 255, 255, 0.2);
             padding: 10px 16px;
             border-radius: 8px;
@@ -119,8 +119,8 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        .invoice-content {
-            padding: 25px 30px 30px 30px;
+        .po-content {
+            padding: 25px;
         }
         
         .company-section {
@@ -134,7 +134,7 @@
         
         .company-info h3 {
             color: #667eea;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             margin-bottom: 8px;
             text-transform: uppercase;
@@ -144,43 +144,45 @@
         .company-info p {
             margin-bottom: 4px;
             color: #64748b;
-        font-size: 15px;
+        font-size: 13px;
       }
         
         .company-info .company-name {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: #1e293b;
             margin-bottom: 6px;
         }
         
-        .invoice-details {
+        .po-details {
             text-align: right;
         }
         
-        .invoice-details .date {
-            font-size: 18px;
+        .po-details .date {
+            font-size: 16px;
             color: #64748b;
             margin-bottom: 8px;
         }
         
-        .invoice-details .amount {
-            font-size: 28px;
+        .po-details .order-type {
+            font-size: 18px;
             font-weight: 700;
-            color: #059669;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .customer-section {
             background: #f8fafc;
-        padding: 20px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
             border-left: 4px solid #667eea;
         }
         
         .customer-section h3 {
             color: #667eea;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             margin-bottom: 16px;
             text-transform: uppercase;
@@ -201,7 +203,7 @@
         }
         
         .customer-field label {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             color: #64748b;
             text-transform: uppercase;
@@ -210,40 +212,41 @@
         }
         
         .customer-field .value {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             color: #1e293b;
         }
         
-        .items-table {
+                .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             border: 1px solid #e2e8f0;
+            font-size: 11px;
         }
         
-                .items-table th {
+        .items-table th {
             background: #f1f5f9;
-            padding: 12px 8px;
+            padding: 8px 6px;
             text-align: left;
             font-weight: 700;
-            color: #475569;
-            font-size: 12px;
+            color: #374151;
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 2px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             white-space: nowrap;
         }
         
         .items-table td {
-            padding: 10px 6px;
+            padding: 8px 6px;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
-            font-size: 14px;
+            font-size: 10px;
         }
         
         .items-table tr:nth-child(even) {
@@ -257,19 +260,32 @@
         .quantity, .price, .total {
             text-align: right;
             font-weight: 600;
-        font-size: 14px;
+            font-size: 10px;
         }
         
         .total {
             color: #059669;
             font-weight: 700;
-        font-size: 15px;
-      }
+            font-size: 11px;
+        }
+        
+        /* Optimize table columns for better fit */
+        .items-table th:nth-child(1), .items-table td:nth-child(1) { width: 30px; } /* # */
+        .items-table th:nth-child(2), .items-table td:nth-child(2) { width: 80px; } /* Product ID */
+        .items-table th:nth-child(3), .items-table td:nth-child(3) { width: 120px; } /* Generic Name */
+        .items-table th:nth-child(4), .items-table td:nth-child(4) { width: 100px; } /* Brand Name */
+        .items-table th:nth-child(5), .items-table td:nth-child(5) { width: 70px; } /* Batch */
+        .items-table th:nth-child(6), .items-table td:nth-child(6) { width: 80px; } /* Dosage Form */
+        .items-table th:nth-child(7), .items-table td:nth-child(7) { width: 70px; } /* Mfg Date */
+        .items-table th:nth-child(8), .items-table td:nth-child(8) { width: 70px; } /* Exp Date */
+        .items-table th:nth-child(9), .items-table td:nth-child(9) { width: 50px; } /* Qty */
+        .items-table th:nth-child(10), .items-table td:nth-child(10) { width: 80px; } /* Unit Price */
+        .items-table th:nth-child(11), .items-table td:nth-child(11) { width: 80px; } /* Total */
         
         .payment-schedule {
             background: #f8fafc;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
             border-left: 4px solid #f59e0b;
         }
@@ -284,155 +300,142 @@
         }
         
         .payment-schedule table {
-            width: 100%;
-            border-collapse: collapse;
+        width: 100%;
+        border-collapse: collapse;
         }
         
         .payment-schedule th {
             background: #fef3c7;
-        padding: 10px;
-            text-align: left;
+            padding: 12px;
+        text-align: left;
             font-weight: 600;
             color: #92400e;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         .payment-schedule td {
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid #fde68a;
+            font-size: 12px;
         }
         
-        .payment-method {
-            background: #f0f9ff;
-            padding: 20px;
+                .totals-section {
+            background: #f8fafc;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #0ea5e9;
+            margin-bottom: 15px;
+            border-left: 4px solid #059669;
         }
         
-        .payment-method h3 {
-            color: #0ea5e9;
-            font-size: 16px;
+        .totals-section h3 {
+            color: #059669;
+            font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .payment-details {
+        .totals-inline {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
+            justify-content: space-between;
         }
         
-        .payment-details span {
-            font-size: 13px;
-            color: #1e293b;
-            white-space: nowrap;
+        .totals-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
         }
         
-        .payment-details strong {
-            color: #0ea5e9;
-        }
-        
-        .totals-section {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .grand-total-section {
-            margin-bottom: 5px;
-        }
-        
-        .totals-table {
-        width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .totals-table tr {
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .totals-table tr:last-child {
-            border-bottom: none;
-        }
-        
-        .totals-table td {
-            padding: 6px 0;
-            font-size: 13px;
-        }
-        
-        .totals-table .label {
+        .totals-item .label {
             color: #64748b;
             font-weight: 500;
         }
         
-        .totals-table .value {
-            text-align: right;
+        .totals-item .value {
             font-weight: 600;
             color: #1e293b;
         }
         
-        .grand-total-box {
-            background: #10b981;
+        .grand-total-inline {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             color: white;
             padding: 8px 16px;
             border-radius: 8px;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         }
         
-        .grand-total-label {
-            font-size: 14px;
+        .signatures-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+        margin-bottom: 20px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .signatures-section h3 {
+            color: #8b5cf6;
+            font-size: 16px;
             font-weight: 600;
+            margin-bottom: 16px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .grand-total-amount {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
+        .signature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
         
-        .amount-words {
-            background: #fef7f0;
+        .signature-item {
+            background: white;
             padding: 16px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f97316;
+            border: 1px solid #e2e8f0;
         }
         
-        .amount-words p {
-            margin: 0;
-            color: #9a3412;
-            font-style: italic;
-            font-weight: 500;
-        }
-        
-        .amount-words .amount-text {
+        .signature-item h4 {
+            color: #374151;
+            font-size: 14px;
             font-weight: 600;
-            color: #ea580c;
-            margin-top: 6px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        
+        .signature-line {
+            width: 100%;
+            height: 2px;
+            background: #d1d5db;
+            margin: 12px 0;
+        }
+        
+        .signature-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-align: left;
+            margin-top: 8px;
+            margin-bottom: 8px;
         }
         
         .footer {
             background: #1e293b;
             color: white;
             padding: 20px;
-            text-align: center;
-            border-radius: 0 0 12px 12px;
-        }
+        text-align: center;
+            border-radius: 0 0 16px 16px;
+      }
         
         .footer-content {
-            display: flex;
+        display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
@@ -440,7 +443,7 @@
         }
         
         .footer-item {
-            display: flex;
+        display: flex;
             align-items: center;
             gap: 8px;
             font-size: 12px;
@@ -457,24 +460,25 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
             transition: all 0.3s ease;
+            font-size: 14px;
         }
         
         .print-button:hover {
-            background: #5a67d8;
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
         }
         
-                        @media print {
+        @media print {
             .print-button {
                 display: none;
             }
@@ -484,14 +488,14 @@
                 font-size: 10px !important;
             }
             
-            .invoice-container {
+            .po-container {
                 max-width: none !important;
                 margin: 0 !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
             }
             
-            .invoice-header {
+            .po-header {
                 padding: 8px 12px !important;
                 background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%) !important;
             }
@@ -501,6 +505,7 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 width: 100% !important;
+                flex-direction: row !important;
             }
             
             .company-logo {
@@ -517,16 +522,16 @@
             }
             
             .company-name-header .company-title {
-                font-size: 18px !important;
-                margin-bottom: 4px !important;
-            }
-            
-            .company-name-header .document-title {
-                font-size: 16px !important;
+                font-size: 14px !important;
                 margin-bottom: 0 !important;
             }
             
-            .invoice-details-header {
+            .document-type {
+                font-size: 12px !important;
+                margin-top: 2px !important;
+            }
+            
+            .po-details-header {
                 text-align: right !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -534,17 +539,17 @@
                 flex-shrink: 0 !important;
             }
             
-            .invoice-details-header .invoice-label {
+            .po-details-header .po-label {
                 font-size: 7px !important;
                 margin-bottom: 2px !important;
             }
             
-            .invoice-details-header .invoice-number {
+            .po-details-header .po-number {
                 font-size: 9px !important;
                 padding: 3px 6px !important;
             }
             
-            .invoice-content {
+            .po-content {
                 padding: 8px 12px !important;
             }
             
@@ -555,27 +560,27 @@
             }
             
             .company-info h3 {
-                font-size: 12px !important;
+                font-size: 10px !important;
                 margin-bottom: 4px !important;
             }
             
             .company-info .company-name {
-                font-size: 14px !important;
+                font-size: 12px !important;
                 margin-bottom: 3px !important;
             }
             
             .company-info p {
-                font-size: 11px !important;
+                font-size: 9px !important;
                 margin-bottom: 2px !important;
             }
             
-            .invoice-details .date {
-                font-size: 12px !important;
+            .po-details .date {
+                font-size: 10px !important;
                 margin-bottom: 4px !important;
             }
             
-            .invoice-details .amount {
-                font-size: 18px !important;
+            .po-details .order-type {
+                font-size: 12px !important;
             }
             
             .customer-section {
@@ -584,7 +589,7 @@
             }
             
             .customer-section h3 {
-                font-size: 12px !important;
+                font-size: 10px !important;
                 margin-bottom: 6px !important;
             }
             
@@ -593,40 +598,42 @@
             }
             
             .customer-field label {
-                font-size: 10px !important;
+                font-size: 8px !important;
             }
             
             .customer-field .value {
-                font-size: 11px !important;
+                font-size: 9px !important;
             }
             
             .items-table {
                 margin-bottom: 8px !important;
-                font-size: 10px !important;
+                font-size: 8px !important;
             }
             
             .items-table th {
                 padding: 4px 3px !important;
-                font-size: 9px !important;
+                font-size: 7px !important;
             }
             
             .items-table td {
                 padding: 3px 2px !important;
-                font-size: 9px !important;
+                font-size: 7px !important;
             }
             
             .quantity, .price, .total {
-                font-size: 10px !important;
+                font-size: 8px !important;
             }
             
             .payment-schedule,
-            .payment-method {
+            .totals-section,
+            .signatures-section {
                 margin-bottom: 8px !important;
                 padding: 8px !important;
             }
             
             .payment-schedule h3,
-            .payment-method h3 {
+            .totals-section h3,
+            .signatures-section h3 {
                 font-size: 10px !important;
                 margin-bottom: 6px !important;
             }
@@ -641,55 +648,48 @@
                 font-size: 7px !important;
             }
             
-            .payment-details {
-                gap: 10px !important;
+            .totals-inline {
+                gap: 8px !important;
             }
             
-            .payment-details span {
+            .totals-item {
                 font-size: 8px !important;
             }
             
-            .totals-section {
-                margin-bottom: 8px !important;
+            .grand-total-inline {
+                font-size: 10px !important;
+                padding: 4px 8px !important;
+            }
+            
+            .signature-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+            
+            .signature-item {
+                background: white !important;
                 padding: 6px !important;
+                border-radius: 4px !important;
+                border: 1px solid #e2e8f0 !important;
             }
             
-            .totals-table td {
-                padding: 2px 0 !important;
+            .signature-item h4 {
                 font-size: 8px !important;
+                margin-bottom: 4px !important;
+                text-align: left !important;
             }
             
-            .grand-total-section {
-                margin-bottom: 8px !important;
+            .signature-line {
+                height: 1px !important;
+                margin: 6px 0 !important;
             }
             
-            .grand-total-box {
-                padding: 6px 8px !important;
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-            }
-            
-            .grand-total-label {
-                font-size: 8px !important;
-            }
-            
-            .grand-total-amount {
-                font-size: 12px !important;
-            }
-            
-            .amount-words {
-                margin-bottom: 8px !important;
-                padding: 6px !important;
-            }
-            
-            .amount-words p {
-                font-size: 8px !important;
-            }
-            
-            .amount-words .amount-text {
-                font-size: 9px !important;
-                margin-top: 3px !important;
+            .signature-label {
+                font-size: 7px !important;
+                margin-top: 4px !important;
+                margin-bottom: 4px !important;
+                text-align: left !important;
             }
             
             .footer {
@@ -698,17 +698,6 @@
             
             .footer-item {
                 font-size: 8px !important;
-            }
-            
-            /* Allow page breaks if absolutely necessary, but try to fit on one page */
-            .invoice-container {
-                page-break-inside: avoid !important;
-            }
-            
-            /* Ensure proper spacing for print */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
             }
             
             /* Hide URL and page info that browsers add when printing */
@@ -732,29 +721,32 @@
             }
             
             /* Ensure no URL appears at bottom */
-            @media print {
-                a[href]:after {
-                    content: none !important;
-                }
-                
-                /* Hide any potential URL display */
-                .url-display,
-                .print-url,
-                .browser-url {
-                    display: none !important;
-                }
-                
-                /* Hide browser print headers and footers */
-                body {
-                    -webkit-print-color-adjust: exact !important;
-                    print-color-adjust: exact !important;
-                }
-                
-                /* Additional rules to hide browser-generated content */
-                * {
-                    -webkit-print-color-adjust: exact !important;
-                    print-color-adjust: exact !important;
-                }
+            a[href]:after {
+                content: none !important;
+            }
+            
+            /* Hide any potential URL display */
+            .url-display,
+            .print-url,
+            .browser-url {
+                display: none !important;
+            }
+            
+            /* Hide browser print headers and footers */
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Additional rules to hide browser-generated content */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Allow page breaks if absolutely necessary, but try to fit on one page */
+            .po-container {
+                page-break-inside: avoid !important;
             }
         }
         
@@ -765,15 +757,15 @@
             }
             
             .totals-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
                 gap: 20px;
             }
             
-            .invoice-content {
+            .po-content {
                 padding: 20px;
             }
             
-            .invoice-header {
+            .po-header {
                 padding: 15px 20px;
             }
             
@@ -782,6 +774,7 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 width: 100% !important;
+                flex-direction: row !important;
             }
             
             .company-logo {
@@ -798,10 +791,15 @@
             }
             
             .company-name-header .company-title {
-                font-size: 28px !important;
+                font-size: 20px !important;
             }
             
-            .invoice-details-header {
+            .document-type {
+                font-size: 16px !important;
+                margin-top: 4px !important;
+            }
+            
+            .po-details-header {
                 text-align: right !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -809,32 +807,36 @@
                 flex-shrink: 0 !important;
             }
             
-            .invoice-details-header .invoice-label {
+            .po-details-header .po-label {
                 font-size: 10px !important;
             }
             
-            .invoice-details-header .invoice-number {
+            .po-details-header .po-number {
                 font-size: 12px !important;
                 padding: 6px 10px !important;
             }
-      }
+            
+            .signature-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
   </head>
   <body>
-    <button class="print-button" onclick="printInvoice()">
-        🖨️ Print Invoice
+    <button class="print-button" onclick="printBonDeSortie()">
+        🖨️ Print Bon de Livraison
     </button>
     
     <script>
-        function printInvoice() {
+        function printBonDeSortie() {
             // Print directly from the current page without opening a new tab
             window.print();
         }
     </script>
     
-    <div class="invoice-container">
+    <div class="po-container">
         <!-- Header -->
-        <div class="invoice-header">
+        <div class="po-header">
             <div class="header-main">
                 <!-- Company Logo -->
                 <div class="company-logo">
@@ -844,17 +846,17 @@
                 <!-- Company Name -->
                 <div class="company-name-header">
                     <div class="company-title">GC PHARMA</div>
-                    <div class="document-title">INVOICE</div>
+                    <div class="document-type">BON DE LIVRAISON</div>
                 </div>
                 
-                <!-- Invoice Details -->
-                <div class="invoice-details-header">
-                    <div class="invoice-label">Invoice Number</div>
-                    <div class="invoice-number">
-                        {% if is_return_invoice %}
-                            {{ invoice.return_invoice_id }}
-                        {% else %}
-                            {{ invoice.invoice_id }}
+                <!-- PO Details -->
+                <div class="po-details-header">
+                    <div class="po-label">Purchase Order Number</div>
+                    <div class="po-number">
+                        {% if order_type == "purchase_order" %}
+                            {{ order.purchase_order_id }}
+                        {% elif order_type == "return_purchase_order" %}
+                            {{ order.return_order_id }}
                         {% endif %}
                     </div>
                 </div>
@@ -862,8 +864,8 @@
         </div>
 
         <!-- Content -->
-        <div class="invoice-content">
-            <!-- Company & Invoice Details -->
+        <div class="po-content">
+            <!-- Company & PO Details -->
             <div class="company-section">
                 <div class="company-info">
                     <h3>From</h3>
@@ -872,8 +874,11 @@
                     <p>📧 info@gcpharma.org | 📞 222 316 754</p>
       </div>
 
-                <div class="invoice-details">
-                    <div class="date">Invoice Date: {{ invoice.created_at|date:"M d, Y" }}</div>
+                <div class="po-details">
+                    <div class="date">Date: {{ order.created_at|date:"M d, Y" }}</div>
+                    {% comment %} <div class="order-type" style="text-decoration: line-through; color: #dc2626;">
+                        PURCHASE ORDER
+                    </div> {% endcomment %}
         </div>
       </div>
 
@@ -882,20 +887,20 @@
                 <h3>Bill To</h3>
                 <div class="customer-grid">
                     <div class="customer-field">
-                        <label>Customer ID</label>
-                        <div class="value">{{ invoice.customer.customer_id }}</div>
+                        <label>Customer ID:</label>
+                        <div class="value">{{ order.customer.customer_id }}</div>
                     </div>
                     <div class="customer-field">
-                        <label>Customer Name</label>
-                        <div class="value">{{ invoice.customer.customer_name }}</div>
+                        <label>Customer Name:</label>
+                        <div class="value">{{ order.customer.customer_name }}</div>
                     </div>
                     <div class="customer-field">
-                        <label>Address</label>
-                        <div class="value">{{ invoice.customer.postal_code }}</div>
+                        <label>Address:</label>
+                        <div class="value">{{ order.customer.postal_code }}</div>
                     </div>
                     <div class="customer-field">
-                        <label>Telephone</label>
-                        <div class="value">{{ invoice.customer.telephone }}</div>
+                        <label>Telephone:</label>
+                        <div class="value">{{ order.customer.telephone }}</div>
                     </div>
                 </div>
       </div>
@@ -905,27 +910,31 @@
         <thead>
           <tr>
                         <th>#</th>
-                        <th>Product ID</th>
+            <th>Product ID</th>
                         <th>Generic Name</th>
                         <th>Brand Name</th>
-                        <th>Order Type</th>
                         <th>Batch</th>
+            <th>Dosage Form</th>
+            <th>Mfg Date</th>
+            <th>Exp Date</th>
                         <th>Qty</th>
                         <th>Unit Price</th>
-                        <th>Total</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          {% for item in items %}
-            <tr>
+          {% for item in order_items %}
+          <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ item.stock.product.product_code }}</td>
                         <td>{{ item.stock.product.generic_name_dosage }}</td>
                         <td>{{ item.stock.product.brand_name.brand_name }}</td>
-                        <td>{{ invoice.purchase_order.order_type }}</td>
                         <td>{{ item.stock.product.batch.batch_number }}</td>
+                        <td>{{ item.stock.product.dosage_form }}</td>
+                        <td>{{ item.stock.product.batch.prod_date }}</td>
+                        <td>{{ item.stock.product.batch.expiry_date }}</td>
                         <td class="quantity">{{ item.quantity|intcomma }}</td>
-                        <td class="price">{{ item.temp_price|floatformat:2|intcomma }} CFA</td>
+                        <td class="price">{{ item.effective_price|floatformat:2|intcomma }} CFA</td>
                         <td class="total">{{ item.total_price|floatformat:2|intcomma }} CFA</td>
           </tr>
           {% endfor %}
@@ -935,111 +944,115 @@
             <!-- Payment Schedule -->
             <div class="payment-schedule">
                 <h3>Payment Schedule</h3>
-<table>
-  <thead>
-    <tr>
-      <th>When</th>
-      <th>Amount</th>
+          <table>
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Amount</th>
                             <th>Due Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% if is_return_invoice %}
-      {% for item in return_payment_schedules %}
-        <tr>
-          <td>{{ item.when }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if is_return_purchase_order %}
+                {% for item in return_payment_schedules %}
+                <tr>
+                                <td>{{ item.when }}</td>
                                 <td>{{ item.amount|floatformat:2|intcomma }} CFA</td>
-          <td>{{ item.payment_date|date:"M d, Y" }}</td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="3">No return payment schedules available.</td>
-        </tr>
-      {% endfor %}
-    {% else %}
-      {% for item in payment_schedules %}
-        <tr>
-          <td>{{ item.when }}</td>
+                                <td>{{ item.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No return payment schedules available.</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+              {% for item in payment_schedules %}
+                <tr>
+                                <td>{{ item.when }}</td>
                                 <td>{{ item.amount|floatformat:2|intcomma }} CFA</td>
-          <td>{{ item.payment_date|date:"M d, Y" }}</td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="3">No payment schedules available.</td>
-        </tr>
-      {% endfor %}
-    {% endif %}
-  </tbody>
-</table>
-            </div>
-            
-            <!-- Payment Method -->
-            <div class="payment-method">
-                <h3>Payment Information</h3>
-                <div class="payment-details">
-                    <span><strong>Payment Terms:</strong> {{ invoice.payment_method }}</span>
-                    <span><strong>Payment Mode:</strong> {{ purchase_order.payment_mode }}</span>
+                                <td>{{ item.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No payment schedules available.</td>
+                </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
 
-                    {% if purchase_order.payment_mode == "Mobile Money" %}
-                        <span><strong>Momo Number:</strong> {{ payment_mode_details.momo_number }}</span>
-                        <span><strong>Momo Name:</strong> {{ payment_mode_details.momo_name }}</span>
-                    {% elif purchase_order.payment_mode == "Check" or purchase_order.payment_mode == "Bank Deposit" %}
-                        <span><strong>Branch:</strong> {{ payment_mode_details.branch.branch_name }}</span>
-                        <span><strong>Bank:</strong> {{ payment_mode_details.bank.name }}</span>
-                        <span><strong>Account:</strong> {{ payment_mode_details.full_account_number }}</span>
-                        <span><strong>RIB:</strong> {{ payment_mode_details.bank.rib }}</span>
-                    {% endif %}
-                </div>
-            </div>
-            
                         <!-- Totals -->
             <div class="totals-section">
-                <table class="totals-table">
-                    <tr>
-                        <td class="label">Subtotal (THT):</td>
-                        <td class="value">{{ grand_total|floatformat:2|intcomma }} CFA</td>
-                    </tr>
-                    <tr>
-                        <td class="label">IR Tax ({{ tax_rate }}%):</td>
-                        <td class="value">
-                            {% if is_special_customer %}-{% else %}{{ tax_amount|floatformat:2|intcomma }}{% endif %} CFA
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label">Pre Compte ({{ precompte }}%):</td>
-                        <td class="value">{{ precompte_amount|floatformat:2|intcomma }} CFA</td>
-                    </tr>
-                    <tr>
-                        <td class="label">TVA ({{ tva }}%):</td>
-                        <td class="value">{{ tva_amount|floatformat:2|intcomma }} CFA</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <!-- Total (TTC) Section -->
-            <div class="grand-total-section">
-                <div class="grand-total-box">
-                    <span class="grand-total-label">Total (TTC):</span>
-                    <span class="grand-total-amount">{{ new_total|floatformat:2|intcomma }} CFA</span>
+                <h3>Order Summary</h3>
+                <div class="totals-inline">
+                    <div class="totals-item">
+                        <span class="label">Subtotal (THT):</span>
+                        <span class="value">{{ order.grand_total|floatformat:2|intcomma }} CFA</span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">IR Tax ({{ order.tax_rate }}%):</span>
+                        <span class="value">
+                            {% if is_special_customer %}-{% else %}{{ tax_amount|floatformat:0|intcomma }}{% endif %} CFA
+                        </span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">Pre Compte ({{ order.precompte }}%):</span>
+                        <span class="value">{{ precompte_amount|floatformat:0|intcomma }} CFA</span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">TVA ({{ order.tva }}%):</span>
+                        <span class="value">{{ tva_amount|floatformat:2|intcomma }} CFA</span>
+                    </div>
+                    <div class="grand-total-inline">
+                        Total (TTC): {{ new_total|floatformat:2|intcomma }} CFA
+                    </div>
                 </div>
             </div>
 
-      </div>
+            <!-- Signatures -->
+            <div class="signatures-section">
+                {% comment %} <h3>Authorization & Delivery</h3> {% endcomment %}
+                <div class="signature-grid">
+                    <div class="signature-item">
+                        <h4>Stock Manager</h4>
+                        <div class="signature-label">Name</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Signature</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Date</div>
+                        <div class="signature-line"></div>
+
+            </div>
+                    
+                    <div class="signature-item">
+                        <h4>Customer / Client</h4>
+                        <div class="signature-label">Name</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Signature</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Date</div>
+                        <div class="signature-line"></div>
+
+        </div>
+            </div>
+            </div>
+          </div>
 
         <!-- Footer -->
-      <div class="footer">
+        <div class="footer">
             <div class="footer-content">
                 <div class="footer-item">
                     <span>NIU:</span>
                     <strong>M022014416253M</strong>
-                </div>
+            </div>
                 <div class="footer-divider"></div>
                 <div class="footer-item">
                     <span>Reg No:</span>
                     <strong>RC/YAO/2020/B/239</strong>
-                </div>
             </div>
+            </div>
+        </div>
       </div>
-    </div>
   </body>
 </html>

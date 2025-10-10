@@ -2792,6 +2792,172 @@ def view_purchase_order(request, purchase_order_id):
     return render(request, 'purchase_order.html', context)
 
 
+@login_required
+def view_purchase_order_sortie(request, purchase_order_id):
+    user = request.user
+    worker = user.worker_profile
+
+    is_accountant_or_superuser = user.is_superuser or worker.role == "Accountant"
+
+    # Try to fetch the order as a PurchaseOrder
+    order = None
+    try:
+        if is_accountant_or_superuser:
+            order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id)
+        else:
+            order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id, branch=worker.branch)
+        order_type = "purchase_order"
+    except Http404:
+        # If not a PurchaseOrder, try fetching as a ReturnPurchaseOrder
+        if is_accountant_or_superuser:
+            order = get_object_or_404(ReturnPurchaseOrder, return_order_id=purchase_order_id)
+        else:
+            order = get_object_or_404(ReturnPurchaseOrder, return_order_id=purchase_order_id, branch=worker.branch)
+        order_type = "return_purchase_order"
+
+    # Fetch order items based on the order type
+    if order_type == "purchase_order":
+        order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F('temp_price')),
+                default=F('stock__product__unit_price'),
+                output_field=FloatField()
+            ),
+            total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
+        )
+    else:
+        order_items = ReturnPurchaseOrderItem.objects.filter(return_purchase_order=order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F('temp_price')),
+                default=F('stock__product__unit_price'),
+                output_field=FloatField()
+            ),
+            total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
+        )
+
+    total_quantity = order_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    worker_privileges = worker.privileges.values_list('name', flat=True)
+    payment_schedules = PaymentSchedule.objects.filter(purchase_order=order) if order_type == "purchase_order" else []
+
+    grand_total = order.grand_total
+
+    # Convert tax rates to Decimal to avoid TypeError
+    tax_rate = Decimal(order.tax_rate or 0)
+    precompte = Decimal(order.precompte or 0)
+    tva = Decimal(order.tva or 0)
+
+    # Calculate tax amounts
+    tax_amount = (grand_total * tax_rate) / Decimal(100)
+    tva_amount = (grand_total * tva) / Decimal(100)
+    precompte_amount = (grand_total * precompte) / Decimal(100)
+
+    # Calculate the new total
+    new_total = (grand_total + tva_amount + precompte_amount) - tax_amount
+
+    view_context = {
+        "order": order,
+        "order_items": order_items,
+        "total_quantity": total_quantity,
+        "worker_privileges": worker_privileges,
+        "payment_schedules": payment_schedules,
+        "grand_total": grand_total,
+        "tva": tva,
+        "tva_amount": tva_amount,
+        "tax_rate": tax_rate,
+        "tax_amount": tax_amount,
+        "precompte": precompte,
+        "precompte_amount": precompte_amount,
+        "new_total": new_total,
+        "is_special_customer": order.is_special_customer,
+        "order_type": order_type,  # Pass the order type to the template
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'purchase_order_sortie.html', context)
+
+
+@login_required
+def view_purchase_order_livraison(request, purchase_order_id):
+    user = request.user
+    worker = user.worker_profile
+
+    is_accountant_or_superuser = user.is_superuser or worker.role == "Accountant"
+
+    # Try to fetch the order as a PurchaseOrder
+    order = None
+    try:
+        if is_accountant_or_superuser:
+            order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id)
+        else:
+            order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id, branch=worker.branch)
+        order_type = "purchase_order"
+    except Http404:
+        # If not a PurchaseOrder, try fetching as a ReturnPurchaseOrder
+        if is_accountant_or_superuser:
+            order = get_object_or_404(ReturnPurchaseOrder, return_order_id=purchase_order_id)
+        else:
+            order = get_object_or_404(ReturnPurchaseOrder, return_order_id=purchase_order_id, branch=worker.branch)
+        order_type = "return_purchase_order"
+
+    # Fetch order items based on the order type
+    if order_type == "purchase_order":
+        order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F('temp_price')),
+                default=F('stock__product__unit_price'),
+                output_field=FloatField()
+            ),
+            total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
+        )
+    else:
+        order_items = ReturnPurchaseOrderItem.objects.filter(return_purchase_order=order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F('temp_price')),
+                default=F('stock__product__unit_price'),
+                output_field=FloatField()
+            ),
+            total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
+        )
+
+    total_quantity = order_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    worker_privileges = worker.privileges.values_list('name', flat=True)
+    payment_schedules = PaymentSchedule.objects.filter(purchase_order=order) if order_type == "purchase_order" else []
+
+    grand_total = order.grand_total
+
+    # Convert tax rates to Decimal to avoid TypeError
+    tax_rate = Decimal(order.tax_rate or 0)
+    precompte = Decimal(order.precompte or 0)
+    tva = Decimal(order.tva or 0)
+
+    # Calculate tax amounts
+    tax_amount = (grand_total * tax_rate) / Decimal(100)
+    tva_amount = (grand_total * tva) / Decimal(100)
+    precompte_amount = (grand_total * precompte) / Decimal(100)
+
+    # Calculate the new total
+    new_total = (grand_total + tva_amount + precompte_amount) - tax_amount
+
+    view_context = {
+        "order": order,
+        "order_items": order_items,
+        "total_quantity": total_quantity,
+        "worker_privileges": worker_privileges,
+        "payment_schedules": payment_schedules,
+        "grand_total": grand_total,
+        "tva": tva,
+        "tva_amount": tva_amount,
+        "tax_rate": tax_rate,
+        "tax_amount": tax_amount,
+        "precompte": precompte,
+        "precompte_amount": precompte_amount,
+        "new_total": new_total,
+        "is_special_customer": order.is_special_customer,
+        "order_type": order_type,  # Pass the order type to the template
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'purchase_order_livraison.html', context)
+
+
 
 
 
