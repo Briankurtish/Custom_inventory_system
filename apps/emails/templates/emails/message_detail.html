@@ -25,7 +25,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h6 class="text-muted mb-3">Recipient Information</h6>
-                            <div class="card bg-light">
+                            <div class="card">
                                 <div class="card-body">
                                     <p><strong>Name:</strong> {{ message.recipient_name }}</p>
                                     <p><strong>Email:</strong> {{ message.recipient_email }}</p>
@@ -37,7 +37,7 @@
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-muted mb-3">Message Information</h6>
-                            <div class="card bg-light">
+                            <div class="card">
                                 <div class="card-body">
                                     <p><strong>Status:</strong>
                                         {% if message.status == 'sent' %}
@@ -79,7 +79,7 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <h6 class="text-muted mb-3">Template Used</h6>
-                            <div class="card bg-light">
+                            <div class="card">
                                 <div class="card-body">
                                     <p><strong>Template:</strong> {{ message.template.name }}</p>
                                     <p><strong>Type:</strong> {{ message.template.get_template_type_display }}</p>
@@ -103,7 +103,7 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <h6 class="text-muted mb-3">Additional Information</h6>
-                            <div class="card bg-light">
+                            <div class="card">
                                 <div class="card-body">
                                     <p><strong>Created:</strong> {{ message.created_at|date:"M d, Y H:i" }}</p>
                                     {% if message.sent_by %}
