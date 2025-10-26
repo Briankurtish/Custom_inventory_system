@@ -86,8 +86,22 @@ def send_email(request):
             )
 
             if response['success']:
+                # Log successful send
+                EmailLog.objects.create(
+                    action='send',
+                    details=f'Email sent successfully to {recipient_name} ({recipient_email})',
+                    user=request.user,
+                    is_error=False
+                )
                 messages.success(request, 'Email sent successfully!')
             else:
+                # Log failed send
+                EmailLog.objects.create(
+                    action='send',
+                    details=f'Failed to send email to {recipient_name} ({recipient_email}): {response["error"]}',
+                    user=request.user,
+                    is_error=True
+                )
                 messages.error(request, f'Failed to send email: {response["error"]}')
 
             return redirect('emails:email_dashboard')
@@ -441,8 +455,22 @@ def resend_message(request, message_id):
         message.save()
 
         if response['success']:
+            # Log successful resend
+            EmailLog.objects.create(
+                action='send',
+                details=f'Email resent successfully to {message.recipient_name} ({message.recipient_email})',
+                user=request.user,
+                is_error=False
+            )
             messages.success(request, 'Email resent successfully!')
         else:
+            # Log failed resend
+            EmailLog.objects.create(
+                action='send',
+                details=f'Failed to resend email to {message.recipient_name} ({message.recipient_email}): {response["error"]}',
+                user=request.user,
+                is_error=True
+            )
             messages.error(request, f'Failed to resend email: {response["error"]}')
 
         return redirect('emails:message_detail', message_id=message.id)
