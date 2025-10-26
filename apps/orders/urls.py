@@ -118,6 +118,7 @@ urlpatterns = [
     path("edit-deposit/<int:pk>/", edit_deposit_details_view, name="edit-deposit"),
     path("delete-deposit/<int:pk>/", delete_deposit_details_view, name="delete-deposit"),
     path("invoice/<int:invoice_id>/", invoice_doc_view, name="invoice-doc"),
+    path("proforma/<int:invoice_id>/", proforma_doc_view, name="proforma-doc"),
 
     path('receipt/<str:receipt_id>/', receipt_doc_view, name='receipt_doc'),
     path('payment/<int:payment_id>/receipt/', payment_receipt_view, name='payment_receipt'),  # ✅ Find receipt

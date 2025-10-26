@@ -1389,6 +1389,137 @@ def invoice_doc_view(request, invoice_id):
     return render(request, "invoice_facture.html", context)
 
 
+@login_required
+def proforma_doc_view(request, invoice_id):
+    """
+    View to generate the proforma invoice document for a normal invoice or return invoice.
+    """
+    invoice = None
+    is_return_invoice = False
+
+    # Try fetching as a normal invoice first
+    try:
+        invoice = Invoice.objects.get(id=invoice_id)
+    except Invoice.DoesNotExist:
+        # If not found, try fetching as a return invoice
+        try:
+            invoice = ReturnInvoice.objects.get(id=invoice_id)
+            is_return_invoice = True
+        except ReturnInvoice.DoesNotExist:
+            messages.error(request, "Invoice not found.")
+            return redirect("invoices")  # Redirect to the invoice list page
+
+    # Initialize variables
+    purchase_order = None
+    return_purchase_order = None
+    items = []
+    subtotal = Decimal(0.0)
+    grand_total = Decimal(0.0)
+    tax_rate = Decimal(0.0)
+    precompte = Decimal(0.0)
+    tva = Decimal(0.0)
+    payment_schedules = []
+    return_payment_schedules = []  # Handle return payment schedules
+    payment_mode_details = None
+
+    if is_return_invoice:
+        # Handle ReturnInvoice
+        return_purchase_order = invoice.return_purchase_order
+
+        if not return_purchase_order:
+            messages.error(request, "Return Purchase Order not found for this Return Invoice.")
+            return redirect("invoices")
+
+        # Fetch items for ReturnInvoice
+        items = ReturnPurchaseOrderItem.objects.filter(return_purchase_order=return_purchase_order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F("temp_price")),
+                default=F("stock__product__unit_price"),
+                output_field=FloatField(),
+            ),
+            total_price=ExpressionWrapper(F("quantity") * F("effective_price"), output_field=FloatField()),
+        )
+
+        subtotal = sum(item.total_price for item in items)
+        grand_total = Decimal(return_purchase_order.grand_total)  # Fetch from return purchase order
+
+        tax_rate = Decimal(return_purchase_order.tax_rate or 0)
+        precompte = Decimal(return_purchase_order.precompte or 0)
+        tva = Decimal(return_purchase_order.tva or 0)
+
+        # Fetch return payment schedules
+        return_payment_schedules = ReturnPaymentSchedule.objects.filter(return_purchase_order=return_purchase_order)
+
+    else:
+        # Handle regular Invoice
+        purchase_order = invoice.purchase_order
+
+        if not purchase_order:
+            messages.error(request, "Purchase Order not found for this Invoice.")
+            return redirect("invoices")
+
+        # Fetch items for regular Invoice
+        items = PurchaseOrderItem.objects.filter(purchase_order=purchase_order).annotate(
+            effective_price=Case(
+                When(temp_price__isnull=False, then=F("temp_price")),
+                default=F("stock__product__unit_price"),
+                output_field=FloatField(),
+            ),
+            total_price=ExpressionWrapper(F("quantity") * F("effective_price"), output_field=FloatField()),
+        )
+
+        subtotal = sum(item.total_price for item in items)
+        grand_total = Decimal(purchase_order.grand_total)  # Fetch from purchase order
+
+        tax_rate = Decimal(purchase_order.tax_rate or 0)
+        precompte = Decimal(purchase_order.precompte or 0)
+        tva = Decimal(purchase_order.tva or 0)
+
+        # Fetch payment schedules for regular invoices
+        payment_schedules = PaymentSchedule.objects.filter(purchase_order=purchase_order)
+
+        if purchase_order:
+            if purchase_order.payment_mode == "Mobile Money":
+                payment_mode_details = purchase_order.momo_account
+            elif purchase_order.payment_mode == "Check":
+                payment_mode_details = purchase_order.check_account
+            elif purchase_order.payment_mode == "Bank Deposit":
+                payment_mode_details = purchase_order.bank_deposit_account
+
+    # Calculate tax amounts
+    tax_amount = (grand_total * tax_rate) / Decimal(100)
+    tva_amount = (grand_total * tva) / Decimal(100)
+    precompte_amount = (grand_total * precompte) / Decimal(100)
+
+    new_total = (grand_total + tva_amount + precompte_amount) - tax_amount
+    new_total_words = num2words(new_total, lang='en').capitalize()# Convert new_total to words
+
+    view_context = {
+        "invoice": invoice,
+        "purchase_order": purchase_order,
+        "return_purchase_order": return_purchase_order,
+        "items": items,
+        "payment_schedules": payment_schedules,
+        "return_payment_schedules": return_payment_schedules,  # Added return payment schedules
+        "payment_mode_details": payment_mode_details,
+        "subtotal": subtotal,
+        "grand_total": grand_total,
+        "tax_rate": tax_rate,
+        "precompte": precompte,
+        "tva": tva,
+        "tva_amount": tva_amount,
+        "tax_amount": tax_amount,
+        "precompte_amount": precompte_amount,
+        "new_total": new_total,
+        "new_total_words": new_total_words,  # Add the total amount in words
+        "is_special_customer": purchase_order.is_special_customer if purchase_order else False,
+        "is_return_invoice": is_return_invoice,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "proforma_invoice.html", context)
+
+
 
 
 
