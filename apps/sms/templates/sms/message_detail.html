@@ -1,0 +1,235 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}SMS Message Details{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">SMS Message Details</h4>
+                    <a href="{% url 'sms:sms_messages' %}" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back"></i> Back to Messages
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Message Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Recipient:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ message.recipient_name }}
+                            {% if message.customer %}
+                                <br><small class="text-muted">Customer ID: {{ message.customer.customer_id }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Phone:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ message.recipient_phone }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Subject:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ message.subject|default:"No subject" }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Message Type:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            <span class="badge bg-label-secondary">
+                                {{ message.get_message_type_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Message:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="border rounded p-3 bg-light">
+                                {{ message.message|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Status Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Status Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Status:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            {% if message.status == 'sent' %}
+                                <span class="badge bg-label-success">Sent</span>
+                            {% elif message.status == 'delivered' %}
+                                <span class="badge bg-label-primary">Delivered</span>
+                            {% elif message.status == 'failed' %}
+                                <span class="badge bg-label-danger">Failed</span>
+                            {% elif message.status == 'pending' %}
+                                <span class="badge bg-label-warning">Pending</span>
+                            {% else %}
+                                <span class="badge bg-label-info">{{ message.status|title }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if message.twilio_status %}
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Twilio Status:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="badge bg-label-info">{{ message.twilio_status }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if message.twilio_sid %}
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Twilio SID:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <small class="text-muted">{{ message.twilio_sid }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if message.error_message %}
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Error:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <small class="text-danger">{{ message.error_message }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Timestamps Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Timestamps</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Created:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <small>{{ message.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+
+                    {% if message.sent_at %}
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Sent:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <small>{{ message.sent_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if message.delivered_at %}
+                    <div class="row mb-3">
+                        <div class="col-sm-5">
+                            <strong>Delivered:</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <small>{{ message.delivered_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if message.status == 'failed' %}
+                        <a href="{% url 'sms:resend_message' message.id %}" class="btn btn-success w-100 mb-2">
+                            <i class="bx bx-refresh"></i> Resend Message
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'sms:send_sms' %}" class="btn btn-primary w-100 mb-2">
+                        <i class="bx bx-plus"></i> Send New SMS
+                    </a>
+
+                    <a href="{% url 'sms:sms_messages' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bx bx-list-ul"></i> View All Messages
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Information -->
+    {% if message.template %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Template Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Template Name:</strong> {{ message.template.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Template Type:</strong>
+                            <span class="badge bg-label-secondary">
+                                {{ message.template.get_template_type_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

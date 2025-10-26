@@ -1,0 +1,105 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Email Messages{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Email Messages</h4>
+                    <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
+                        <i class="bx bx-plus"></i> Send Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if email_messages %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bx bx-user me-1"></i>Recipient</th>
+                                        <th><i class="bx bx-envelope me-1"></i>Email</th>
+                                        <th><i class="bx bx-tag me-1"></i>Type</th>
+                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
+                                        <th><i class="bx bx-time me-1"></i>Sent At</th>
+                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for email_message in email_messages %}
+                                    <tr>
+                                        <td>{{ email_message.recipient_name }}</td>
+                                        <td>{{ email_message.recipient_email }}</td>
+                                        <td>
+                                            <span class="badge bg-label-secondary">
+                                                {{ email_message.get_message_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if email_message.status == 'sent' %}
+                                                <span class="badge bg-label-success">Sent</span>
+                                            {% elif email_message.status == 'delivered' %}
+                                                <span class="badge bg-label-primary">Delivered</span>
+                                            {% elif email_message.status == 'failed' %}
+                                                <span class="badge bg-label-danger">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-label-warning">{{ email_message.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ email_message.created_at|date:"M d, Y H:i" }}</td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'emails:message_detail' email_message.id %}">
+                                                            <i class="bx bx-show me-2"></i>View Details
+                                                        </a>
+                                                    </li>
+                                                    {% if email_message.status == 'failed' %}
+                                                    <li>
+                                                        <a class="dropdown-item text-success" href="{% url 'emails:resend_message' email_message.id %}">
+                                                            <i class="bx bx-refresh me-2"></i>Resend Email
+                                                        </a>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bx bx-envelope bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                            </div>
+                            <h5 class="text-muted mb-3">No emails sent yet</h5>
+                            <p class="text-muted mb-4">Start by sending your first email to customers!</p>
+                            <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
+                                <i class="bx bx-send me-2"></i>Send Email
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

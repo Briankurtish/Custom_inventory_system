@@ -281,6 +281,112 @@
           </a>
       </li>
 
+      <!-- SMS Management -->
+      <li class="menu-item {% if '/sms/' in request.path %}active open{% endif %}">
+        <a href="javascript:void(0)" class="menu-link menu-toggle">
+          <i class="menu-icon fa-solid fa-message-dots"></i>
+          <div class="text-truncate" data-i18n="SMS Management">{% trans "SMS Management" %}</div>
+          <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {% if 'sms:sms_dashboard' == request.resolver_match.url_name or '/sms/' == request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_dashboard' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-dashboard"></i>
+              <div class="text-truncate" data-i18n="SMS Dashboard">{% trans "SMS Dashboard" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:send_sms' == request.resolver_match.url_name or '/sms/send/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:send_sms' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-send"></i>
+              <div class="text-truncate" data-i18n="Send SMS">{% trans "Send SMS" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:send_bulk_sms' == request.resolver_match.url_name or '/sms/send/bulk/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:send_bulk_sms' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-send"></i>
+              <div class="text-truncate" data-i18n="Bulk SMS">{% trans "Bulk SMS" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:sms_templates' == request.resolver_match.url_name or '/sms/templates/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_templates' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-template"></i>
+              <div class="text-truncate" data-i18n="Templates">{% trans "Templates" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:sms_groups' == request.resolver_match.url_name or '/sms/groups/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_groups' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-group"></i>
+              <div class="text-truncate" data-i18n="Groups">{% trans "Groups" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:sms_messages' == request.resolver_match.url_name or '/sms/messages/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_messages' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-message-dots"></i>
+              <div class="text-truncate" data-i18n="Messages">{% trans "Messages" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'sms:sms_logs' == request.resolver_match.url_name or '/sms/logs/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_logs' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-history"></i>
+              <div class="text-truncate" data-i18n="Logs">{% trans "Logs" %}</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Email Management -->
+      <li class="menu-item {% if '/emails/' in request.path %}active open{% endif %}">
+        <a href="javascript:void(0)" class="menu-link menu-toggle">
+          <i class="menu-icon fa-solid fa-envelope"></i>
+          <div class="text-truncate" data-i18n="Email Management">{% trans "Email Management" %}</div>
+          <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {% if 'emails:email_dashboard' == request.resolver_match.url_name or '/emails/' == request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_dashboard' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-dashboard"></i>
+              <div class="text-truncate" data-i18n="Email Dashboard">{% trans "Email Dashboard" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:send_email' == request.resolver_match.url_name or '/emails/send/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:send_email' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-send"></i>
+              <div class="text-truncate" data-i18n="Send Email">{% trans "Send Email" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:send_bulk_email' == request.resolver_match.url_name or '/emails/send/bulk/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:send_bulk_email' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-send"></i>
+              <div class="text-truncate" data-i18n="Bulk Email">{% trans "Bulk Email" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:email_templates' == request.resolver_match.url_name or '/emails/templates/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_templates' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-template"></i>
+              <div class="text-truncate" data-i18n="Templates">{% trans "Templates" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:email_groups' == request.resolver_match.url_name or '/emails/groups/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_groups' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-group"></i>
+              <div class="text-truncate" data-i18n="Groups">{% trans "Groups" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:email_messages' == request.resolver_match.url_name or '/emails/messages/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_messages' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-envelope"></i>
+              <div class="text-truncate" data-i18n="Messages">{% trans "Messages" %}</div>
+            </a>
+          </li>
+          <li class="menu-item {% if 'emails:email_logs' == request.resolver_match.url_name or '/emails/logs/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_logs' %}" class="menu-link">
+              <i class="menu-icon fa-solid fa-history"></i>
+              <div class="text-truncate" data-i18n="Logs">{% trans "Logs" %}</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
 
 
       <!-- Form -->

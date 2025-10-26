@@ -1,0 +1,121 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Email Message Details{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Email Message Details</h4>
+                    <div class="d-flex gap-2">
+                        {% if message.status == 'failed' %}
+                        <a href="{% url 'emails:resend_message' message.id %}" class="btn btn-success">
+                            <i class="bx bx-refresh me-2"></i>Resend
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'emails:email_messages' %}" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back me-2"></i>Back to Messages
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Recipient Information</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ message.recipient_name }}</p>
+                                    <p><strong>Email:</strong> {{ message.recipient_email }}</p>
+                                    {% if message.customer %}
+                                    <p><strong>Customer:</strong> {{ message.customer.customer_name }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Message Information</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p><strong>Status:</strong>
+                                        {% if message.status == 'sent' %}
+                                            <span class="badge bg-label-success">Sent</span>
+                                        {% elif message.status == 'delivered' %}
+                                            <span class="badge bg-label-primary">Delivered</span>
+                                        {% elif message.status == 'failed' %}
+                                            <span class="badge bg-label-danger">Failed</span>
+                                        {% else %}
+                                            <span class="badge bg-label-warning">{{ message.status|title }}</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Type:</strong> {{ message.get_message_type_display }}</p>
+                                    <p><strong>Sent At:</strong> {{ message.sent_at|date:"M d, Y H:i" }}</p>
+                                    {% if message.delivered_at %}
+                                    <p><strong>Delivered At:</strong> {{ message.delivered_at|date:"M d, Y H:i" }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Message Content</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>{{ message.subject }}</h5>
+                                    <hr>
+                                    <div class="message-content">
+                                        {{ message.message|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if message.template %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Template Used</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p><strong>Template:</strong> {{ message.template.name }}</p>
+                                    <p><strong>Type:</strong> {{ message.template.get_template_type_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if message.error_message %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Error Details</h6>
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> {{ message.error_message }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Additional Information</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p><strong>Created:</strong> {{ message.created_at|date:"M d, Y H:i" }}</p>
+                                    {% if message.sent_by %}
+                                    <p><strong>Sent By:</strong> {{ message.sent_by.username }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

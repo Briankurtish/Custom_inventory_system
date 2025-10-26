@@ -1,0 +1,110 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}SMS Logs{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">SMS Activity Logs</h4>
+                    <a href="{% url 'sms:sms_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bx bx-cog me-1"></i>Action</th>
+                                        <th><i class="bx bx-file-text me-1"></i>Details</th>
+                                        <th><i class="bx bx-user me-1"></i>User</th>
+                                        <th><i class="bx bx-time me-1"></i>Timestamp</th>
+                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-label-secondary">
+                                                {{ log.get_action_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ log.details }}</td>
+                                        <td>
+                                            {% if log.user %}
+                                                {{ log.user.user.username }}
+                                            {% else %}
+                                                <span class="text-muted">System</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                                        <td>
+                                            {% if log.is_error %}
+                                                <span class="badge bg-label-danger">Error</span>
+                                            {% else %}
+                                                <span class="badge bg-label-success">Success</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if logs.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if logs.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ logs.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in logs.paginator.page_range %}
+                                    {% if logs.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if logs.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ logs.next_page_number }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bx bx-history bx-lg text-muted mb-3"></i>
+                            <p class="text-muted">No activity logs found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

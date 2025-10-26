@@ -1,0 +1,206 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}SMS Messages{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">SMS Messages</h4>
+                    <div>
+                        <a href="{% url 'sms:send_sms' %}" class="btn btn-primary">
+                            <i class="bx bx-plus"></i> Send SMS
+                        </a>
+                        <a href="{% url 'sms:send_bulk_sms' %}" class="btn btn-success">
+                            <i class="bx bx-send"></i> Bulk SMS
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="{{ filter_form.status.id_for_label }}" class="form-label">Status</label>
+                            {{ filter_form.status }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ filter_form.message_type.id_for_label }}" class="form-label">Type</label>
+                            {{ filter_form.message_type }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ filter_form.date_from.id_for_label }}" class="form-label">From Date</label>
+                            {{ filter_form.date_from }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ filter_form.date_to.id_for_label }}" class="form-label">To Date</label>
+                            {{ filter_form.date_to }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ filter_form.search.id_for_label }}" class="form-label">Search</label>
+                            {{ filter_form.search }}
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Messages ({{ total_count }} total)</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bx bx-user me-1"></i>Recipient</th>
+                                        <th><i class="bx bx-phone me-1"></i>Phone</th>
+                                        <th><i class="bx bx-tag me-1"></i>Type</th>
+                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
+                                        <th><i class="bx bx-time me-1"></i>Sent At</th>
+                                        <th><i class="bx bx-user-circle me-1"></i>Sent By</th>
+                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for message in messages %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ message.recipient_name }}</strong>
+                                            {% if message.customer %}
+                                                <br><small class="text-muted">{{ message.customer.customer_id }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ message.recipient_phone }}</td>
+                                        <td>
+                                            <span class="badge bg-label-secondary">
+                                                {{ message.get_message_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if message.status == 'sent' %}
+                                                <span class="badge bg-label-success">Sent</span>
+                                            {% elif message.status == 'delivered' %}
+                                                <span class="badge bg-label-primary">Delivered</span>
+                                            {% elif message.status == 'failed' %}
+                                                <span class="badge bg-label-danger">Failed</span>
+                                            {% elif message.status == 'pending' %}
+                                                <span class="badge bg-label-warning">Pending</span>
+                                            {% else %}
+                                                <span class="badge bg-label-info">{{ message.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if message.sent_at %}
+                                                {{ message.sent_at|date:"M d, Y H:i" }}
+                                            {% else %}
+                                                {{ message.created_at|date:"M d, Y H:i" }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if message.sent_by %}
+                                                {{ message.sent_by.user.username }}
+                                            {% else %}
+                                                <span class="text-muted">System</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'sms:message_detail' message.id %}">
+                                                            <i class="bx bx-show me-2"></i>View Details
+                                                        </a>
+                                                    </li>
+                                                    {% if message.status == 'failed' %}
+                                                    <li>
+                                                        <a class="dropdown-item text-success" href="{% url 'sms:resend_message' message.id %}">
+                                                            <i class="bx bx-refresh me-2"></i>Resend Message
+                                                        </a>
+                                                    </li>
+                                                    {% endif %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'sms:send_sms' %}">
+                                                            <i class="bx bx-plus me-2"></i>Send New SMS
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if messages.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if messages.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ messages.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in messages.paginator.page_range %}
+                                    {% if messages.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > messages.number|add:'-3' and num < messages.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if messages.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ messages.next_page_number }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bx bx-message-dots bx-lg text-muted mb-3"></i>
+                            <p class="text-muted">No messages found.</p>
+                            <a href="{% url 'sms:send_sms' %}" class="btn btn-primary">Send Your First SMS</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

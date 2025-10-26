@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     'apps.genericName',
     'apps.pack_size',
     'apps.oldinvoice',
+    'apps.emails',
+    'apps.sms',
     "crispy_forms",
     "crispy_bootstrap5",
     'django.contrib.humanize',
@@ -270,5 +272,10 @@ EMAIL_HOST = 'smtp.hostinger.com'
 EMAIL_PORT = 587 # or 465 for SSL
 EMAIL_USE_TLS = True # or
 EMAIL_HOST_USER = 'info@pharmamgtsystemgc.com' # Your email address
-EMAIL_HOST_PASSWORD = 'Password2023#@#' # Your email password
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '') # Your email password
 DEFAULT_FROM_EMAIL = 'info@pharmamgtsystemgc.com'
+
+# Twilio SMS Settings
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')

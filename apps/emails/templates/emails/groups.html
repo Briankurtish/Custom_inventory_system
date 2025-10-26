@@ -1,0 +1,92 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Email Groups{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Email Groups</h4>
+                    <a href="{% url 'emails:create_group' %}" class="btn btn-primary">
+                        <i class="bx bx-plus"></i> Create Group
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Groups List -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if groups %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bx bx-group me-1"></i>Group Name</th>
+                                        <th><i class="bx bx-file-text me-1"></i>Description</th>
+                                        <th><i class="bx bx-user me-1"></i>Customers</th>
+                                        <th><i class="bx bx-time me-1"></i>Created</th>
+                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for group in groups %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ group.name }}</strong>
+                                        </td>
+                                        <td>{{ group.description|truncatechars:50 }}</td>
+                                        <td>
+                                            <span class="badge bg-label-primary">{{ group.customer_count }}</span>
+                                        </td>
+                                        <td>{{ group.created_at|date:"M d, Y" }}</td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'emails:edit_group' group.id %}">
+                                                            <i class="bx bx-edit-alt me-2"></i>Edit Group
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="{% url 'emails:delete_group' group.id %}">
+                                                            <i class="bx bx-trash me-2"></i>Delete Group
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bx bx-group bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                            </div>
+                            <h5 class="text-muted mb-3">No groups created yet</h5>
+                            <p class="text-muted mb-4">Organize customers into groups for efficient bulk messaging!</p>
+                            <a href="{% url 'emails:create_group' %}" class="btn btn-primary">
+                                <i class="bx bx-plus me-2"></i>Create Your First Group
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

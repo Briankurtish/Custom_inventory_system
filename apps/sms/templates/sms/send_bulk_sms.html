@@ -1,0 +1,305 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Send Bulk SMS{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Send Bulk SMS</h4>
+                    <a href="{% url 'sms:sms_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Bulk SMS Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" id="bulkSmsForm">
+                        {% csrf_token %}
+
+                        <!-- Recipient Type Selection -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Recipient Type</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="recipient_type" id="group" value="group" checked>
+                                    <label class="form-check-label" for="group">Send to Group</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="recipient_type" id="all_customers" value="all_customers">
+                                    <label class="form-check-label" for="all_customers">Send to All Customers</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="recipient_type" id="customers" value="customers">
+                                    <label class="form-check-label" for="customers">Select Specific Customers</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group Selection -->
+                        <div class="row mb-4" id="groupSection">
+                            <div class="col-md-6">
+                                <label for="{{ form.group.id_for_label }}" class="form-label">SMS Group</label>
+                                {{ form.group }}
+                                <div class="form-text">Select a group to send SMS to all customers in that group</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Group Preview</label>
+                                <div id="groupPreview" class="border rounded p-3 bg-light">
+                                    <p class="text-muted mb-0">Select a group to see customer count</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- All Customers Info -->
+                        <div class="row mb-4" id="allCustomersSection" style="display: none;">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bx bx-info-circle me-2"></i>
+                                    This will send SMS to all customers who have phone numbers registered in the system.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specific Customers Selection -->
+                        <div class="row mb-4" id="customersSection" style="display: none;">
+                            <div class="col-12">
+                                <label for="{{ form.customers.id_for_label }}" class="form-label">Select Customers</label>
+                                {{ form.customers }}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple customers</div>
+                            </div>
+                        </div>
+
+                        <!-- Template Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.template.id_for_label }}" class="form-label">Template (Optional)</label>
+                                {{ form.template }}
+                                <div class="form-text">Select a template to pre-fill the message</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.message_type.id_for_label }}" class="form-label">Message Type</label>
+                                {{ form.message_type }}
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                                {{ form.subject }}
+                            </div>
+                        </div>
+
+                        <!-- Message -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="{{ form.message.id_for_label }}" class="form-label">Message</label>
+                                {{ form.message }}
+                                <div class="form-text">
+                                    <strong>Available placeholders:</strong> {customer_name}, {amount}, {balance}, {due_date}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Character Count -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-muted">Character count: </span>
+                                        <span id="charCount" class="fw-bold">0</span>
+                                        <span class="text-muted">/ 160</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted">Estimated messages: </span>
+                                        <span id="messageCount" class="fw-bold">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Count -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-warning" id="recipientCountAlert" style="display: none;">
+                                    <i class="bx bx-info-circle me-2"></i>
+                                    <span id="recipientCountText">0</span> recipients will receive this message.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'sms:sms_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-success" id="submitBtn">
+                                        <i class="bx bx-send"></i> Send Bulk SMS
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const recipientTypeRadios = document.querySelectorAll('input[name="recipient_type"]');
+    const groupSection = document.getElementById('groupSection');
+    const allCustomersSection = document.getElementById('allCustomersSection');
+    const customersSection = document.getElementById('customersSection');
+    const groupSelect = document.getElementById('id_group');
+    const groupPreview = document.getElementById('groupPreview');
+    const templateSelect = document.getElementById('id_template');
+    const messageTextarea = document.getElementById('id_message');
+    const subjectInput = document.getElementById('id_subject');
+    const messageTypeSelect = document.getElementById('id_message_type');
+    const charCountSpan = document.getElementById('charCount');
+    const messageCountSpan = document.getElementById('messageCount');
+    const recipientCountAlert = document.getElementById('recipientCountAlert');
+    const recipientCountText = document.getElementById('recipientCountText');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Handle recipient type change
+    recipientTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Hide all sections
+            groupSection.style.display = 'none';
+            allCustomersSection.style.display = 'none';
+            customersSection.style.display = 'none';
+
+            // Show selected section
+            if (this.value === 'group') {
+                groupSection.style.display = 'block';
+            } else if (this.value === 'all_customers') {
+                allCustomersSection.style.display = 'block';
+            } else if (this.value === 'customers') {
+                customersSection.style.display = 'block';
+            }
+
+            updateRecipientCount();
+        });
+    });
+
+    // Handle group selection
+    groupSelect.addEventListener('change', function() {
+        const groupId = this.value;
+        if (groupId) {
+            fetch(`{% url 'sms:get_group_customers' %}?group_id=${groupId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        groupPreview.innerHTML = `
+                            <strong>${data.count}</strong> customers in this group
+                            <br><small class="text-muted">Customers with phone numbers</small>
+                        `;
+                        updateRecipientCount();
+                    }
+                });
+        } else {
+            groupPreview.innerHTML = '<p class="text-muted mb-0">Select a group to see customer count</p>';
+            updateRecipientCount();
+        }
+    });
+
+    // Handle template selection
+    templateSelect.addEventListener('change', function() {
+        const templateId = this.value;
+        if (templateId) {
+            fetch(`{% url 'sms:get_template_content' %}?template_id=${templateId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        subjectInput.value = data.subject;
+                        messageTextarea.value = data.message;
+                        messageTypeSelect.value = data.message_type;
+                        updateCharCount();
+                    }
+                });
+        }
+    });
+
+    // Update character count
+    function updateCharCount() {
+        const messageLength = messageTextarea.value.length;
+        charCountSpan.textContent = messageLength;
+
+        // Calculate number of messages (160 characters per SMS)
+        const messageCount = Math.ceil(messageLength / 160);
+        messageCountSpan.textContent = messageCount;
+
+        // Change color based on length
+        if (messageLength > 160) {
+            charCountSpan.className = 'fw-bold text-warning';
+        } else if (messageLength > 140) {
+            charCountSpan.className = 'fw-bold text-info';
+        } else {
+            charCountSpan.className = 'fw-bold text-success';
+        }
+    }
+
+    // Update recipient count
+    function updateRecipientCount() {
+        const selectedType = document.querySelector('input[name="recipient_type"]:checked').value;
+        let count = 0;
+
+        if (selectedType === 'group') {
+            const groupId = groupSelect.value;
+            if (groupId) {
+                // Get count from group preview or make another request
+                const previewText = groupPreview.textContent;
+                const match = previewText.match(/(\d+)/);
+                if (match) {
+                    count = parseInt(match[1]);
+                }
+            }
+        } else if (selectedType === 'all_customers') {
+            // This would need to be fetched from server
+            count = 'All customers';
+        } else if (selectedType === 'customers') {
+            const selectedCustomers = document.querySelectorAll('#id_customers option:checked');
+            count = selectedCustomers.length;
+        }
+
+        if (count > 0) {
+            recipientCountText.textContent = count;
+            recipientCountAlert.style.display = 'block';
+
+            // Disable submit button if no recipients
+            submitBtn.disabled = false;
+        } else {
+            recipientCountAlert.style.display = 'none';
+            submitBtn.disabled = true;
+        }
+    }
+
+    // Add event listeners
+    messageTextarea.addEventListener('input', updateCharCount);
+
+    // Add change listener to customers select
+    const customersSelect = document.getElementById('id_customers');
+    if (customersSelect) {
+        customersSelect.addEventListener('change', updateRecipientCount);
+    }
+
+    // Initial updates
+    updateCharCount();
+    updateRecipientCount();
+});
+</script>
+{% endblock %}

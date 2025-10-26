@@ -1,0 +1,265 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Email Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Email Management Dashboard</h4>
+                    <div>
+                        <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
+                            <i class="bx bx-plus"></i> Send Email
+                        </a>
+                        <a href="{% url 'emails:send_bulk_email' %}" class="btn btn-success">
+                            <i class="bx bx-send"></i> Bulk Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4 mt-4">
+        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-info">
+                            <p class="card-text">Total Emails</p>
+                            <div class="d-flex align-items-end mb-2">
+                                <h4 class="card-title mb-0 me-2">{{ total_emails }}</h4>
+                            </div>
+                        </div>
+                        <div class="card-icon">
+                            <span class="badge bg-label-primary rounded p-2">
+                                <i class="bx bx-envelope bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-info">
+                            <p class="card-text">Emails Today</p>
+                            <div class="d-flex align-items-end mb-2">
+                                <h4 class="card-title mb-0 me-2">{{ emails_today }}</h4>
+                            </div>
+                        </div>
+                        <div class="card-icon">
+                            <span class="badge bg-label-success rounded p-2">
+                                <i class="bx bx-calendar bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-info">
+                            <p class="card-text">This Week</p>
+                            <div class="d-flex align-items-end mb-2">
+                                <h4 class="card-title mb-0 me-2">{{ emails_this_week }}</h4>
+                            </div>
+                        </div>
+                        <div class="card-icon">
+                            <span class="badge bg-label-info rounded p-2">
+                                <i class="bx bx-time-five bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-info">
+                            <p class="card-text">Success Rate</p>
+                            <div class="d-flex align-items-end mb-2">
+                                <h4 class="card-title mb-0 me-2">
+                                    {% if total_emails > 0 %}
+                                        {{ successful_emails|floatformat:0 }}/{{ total_emails }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="card-icon">
+                            <span class="badge bg-label-warning rounded p-2">
+                                <i class="bx bx-check-circle bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'emails:email_templates' %}" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="bx bx-template bx-sm me-2"></i>
+                                    Manage Templates
+                                </div>
+                                <small class="text-muted">{{ templates_count }} templates</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'emails:email_groups' %}" class="btn btn-outline-success w-100 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="bx bx-group bx-sm me-2"></i>
+                                    Manage Groups
+                                </div>
+                                <small class="text-muted">{{ groups_count }} groups</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'emails:email_messages' %}" class="btn btn-outline-info w-100 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="bx bx-envelope bx-sm me-2"></i>
+                                    View Messages
+                                </div>
+                                <small class="text-muted">{{ total_emails }} total</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'emails:email_logs' %}" class="btn btn-outline-warning w-100 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="bx bx-history bx-sm me-2"></i>
+                                    View Logs
+                                </div>
+                                <small class="text-muted">Activity history</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Emails -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Emails</h5>
+                    <a href="{% url 'emails:email_messages' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_emails %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bx bx-user me-1"></i>Recipient</th>
+                                        <th><i class="bx bx-envelope me-1"></i>Email</th>
+                                        <th><i class="bx bx-tag me-1"></i>Type</th>
+                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
+                                        <th><i class="bx bx-time me-1"></i>Sent At</th>
+                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for email in recent_emails %}
+                                    <tr>
+                                        <td>{{ email.recipient_name }}</td>
+                                        <td>{{ email.recipient_email }}</td>
+                                        <td>
+                                            <span class="badge bg-label-secondary">
+                                                {{ email.get_message_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if email.status == 'sent' %}
+                                                <span class="badge bg-label-success">Sent</span>
+                                            {% elif email.status == 'delivered' %}
+                                                <span class="badge bg-label-primary">Delivered</span>
+                                            {% elif email.status == 'failed' %}
+                                                <span class="badge bg-label-danger">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-label-warning">{{ email.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ email.created_at|date:"M d, Y H:i" }}</td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'emails:message_detail' email.id %}">
+                                                            <i class="bx bx-show me-2"></i>View Details
+                                                        </a>
+                                                    </li>
+                                                    {% if email.status == 'failed' %}
+                                                    <li>
+                                                        <a class="dropdown-item text-success" href="{% url 'emails:resend_message' email.id %}">
+                                                            <i class="bx bx-refresh me-2"></i>Resend Email
+                                                        </a>
+                                                    </li>
+                                                    {% endif %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'emails:send_email' %}">
+                                                            <i class="bx bx-plus me-2"></i>Send New Email
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bx bx-envelope bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                            </div>
+                            <h5 class="text-muted mb-3">No emails sent yet</h5>
+                            <p class="text-muted mb-4">Start by sending your first email to customers!</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
+                                    <i class="bx bx-send me-2"></i>Send Email
+                                </a>
+                                <a href="{% url 'emails:send_bulk_email' %}" class="btn btn-outline-success">
+                                    <i class="bx bx-send me-2"></i>Bulk Email
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

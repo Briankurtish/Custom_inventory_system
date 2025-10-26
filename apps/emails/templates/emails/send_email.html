@@ -1,0 +1,52 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Send Email{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Send Email</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.recipient_name.id_for_label }}" class="form-label">Recipient Name</label>
+                                {{ form.recipient_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.recipient_email.id_for_label }}" class="form-label">Recipient Email</label>
+                                {{ form.recipient_email }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                            {{ form.subject }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.template.id_for_label }}" class="form-label">Template (Optional)</label>
+                            {{ form.template }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.message.id_for_label }}" class="form-label">Message</label>
+                            {{ form.message }}
+                            <div class="form-text">Use placeholders like {customer_name}, {amount}, {due_date} for dynamic content</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-send me-2"></i>Send Email
+                            </button>
+                            <a href="{% url 'emails:email_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

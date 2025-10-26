@@ -1,0 +1,201 @@
+{% extends layout_path %}
+{% load static %}
+
+{% block title %}Send Bulk Email{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Send Bulk Email</h4>
+                    <a href="{% url 'emails:email_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" id="bulkEmailForm">
+                        {% csrf_token %}
+
+                        <!-- Email Type Selection -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Select Recipients</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="email_type" value="all_customers" id="all_customers" {% if form.email_type.value == 'all_customers' %}checked{% endif %}>
+                                            <label class="form-check-label" for="all_customers">
+                                                <strong>All Customers</strong>
+                                                <small class="d-block text-muted">Send to all customers with email addresses</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="email_type" value="selected_group" id="selected_group" {% if form.email_type.value == 'selected_group' %}checked{% endif %}>
+                                            <label class="form-check-label" for="selected_group">
+                                                <strong>Selected Group</strong>
+                                                <small class="d-block text-muted">Send to a specific customer group</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="email_type" value="selected_customers" id="selected_customers" {% if form.email_type.value == 'selected_customers' %}checked{% endif %}>
+                                            <label class="form-check-label" for="selected_customers">
+                                                <strong>Selected Customers</strong>
+                                                <small class="d-block text-muted">Choose specific customers</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group Selection -->
+                        <div class="row mb-4" id="groupSelection" style="display: none;">
+                            <div class="col-md-6">
+                                <label for="{{ form.group.id_for_label }}" class="form-label">Select Group</label>
+                                {{ form.group }}
+                            </div>
+                        </div>
+
+                        <!-- Customer Selection -->
+                        <div class="row mb-4" id="customerSelection" style="display: none;">
+                            <div class="col-12">
+                                <label for="{{ form.customers.id_for_label }}" class="form-label">Select Customers</label>
+                                <div class="card bg-light">
+                                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                                        {{ form.customers }}
+                                    </div>
+                                </div>
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple customers</div>
+                            </div>
+                        </div>
+
+                        <!-- Email Content -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">Email Subject</label>
+                                {{ form.subject }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.template.id_for_label }}" class="form-label">Template (Optional)</label>
+                                {{ form.template }}
+                                <div class="form-text">Choose a template to pre-fill the message</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.message.id_for_label }}" class="form-label">Message Content</label>
+                            {{ form.message }}
+                            <div class="form-text">
+                                <strong>Available placeholders:</strong> {customer_name}, {amount}, {due_date}, {balance}, {invoice_number}
+                            </div>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Preview</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>Recipients:</strong> <span id="recipientCount">0</span> customers</p>
+                                                <p><strong>Subject:</strong> <span id="subjectPreview">Enter subject above</span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>Message Length:</strong> <span id="messageLength">0</span> characters</p>
+                                                <p><strong>Estimated Recipients:</strong> <span id="estimatedRecipients">0</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bx bx-send me-2"></i>Send Bulk Email
+                            </button>
+                            <a href="{% url 'emails:email_dashboard' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailTypeRadios = document.querySelectorAll('input[name="email_type"]');
+    const groupSelection = document.getElementById('groupSelection');
+    const customerSelection = document.getElementById('customerSelection');
+    const subjectInput = document.getElementById('{{ form.subject.id_for_label }}');
+    const messageInput = document.getElementById('{{ form.message.id_for_label }}');
+    const subjectPreview = document.getElementById('subjectPreview');
+    const messageLength = document.getElementById('messageLength');
+    const recipientCount = document.getElementById('recipientCount');
+    const estimatedRecipients = document.getElementById('estimatedRecipients');
+
+    function updateRecipientSelection() {
+        const selectedType = document.querySelector('input[name="email_type"]:checked').value;
+
+        groupSelection.style.display = selectedType === 'selected_group' ? 'block' : 'none';
+        customerSelection.style.display = selectedType === 'selected_customers' ? 'block' : 'none';
+
+        updateRecipientCount();
+    }
+
+    function updateRecipientCount() {
+        const selectedType = document.querySelector('input[name="email_type"]:checked').value;
+        let count = 0;
+
+        if (selectedType === 'selected_customers') {
+            count = document.querySelectorAll('#{{ form.customers.id_for_label }} option:checked').length;
+        } else if (selectedType === 'selected_group') {
+            // This would need to be calculated based on the selected group
+            count = 0; // Placeholder
+        } else if (selectedType === 'all_customers') {
+            count = document.querySelectorAll('#{{ form.customers.id_for_label }} option').length;
+        }
+
+        recipientCount.textContent = count;
+        estimatedRecipients.textContent = count;
+    }
+
+    function updatePreview() {
+        subjectPreview.textContent = subjectInput.value || 'Enter subject above';
+        messageLength.textContent = messageInput.value.length;
+    }
+
+    // Event listeners
+    emailTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateRecipientSelection);
+    });
+
+    subjectInput.addEventListener('input', updatePreview);
+    messageInput.addEventListener('input', updatePreview);
+
+    // Initialize
+    updateRecipientSelection();
+    updatePreview();
+});
+</script>
+{% endblock %}
