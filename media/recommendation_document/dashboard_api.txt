@@ -1,0 +1,1774 @@
+List all users 
+
+/api/v1/users/list_all_users/
+
+Response 
+
+[
+    {
+        "id": 14,
+        "reference": "USR_00000014",
+        "phone": "+237671513243",
+        "email": "berkaj4001@gmail.com",
+        "username": null,
+        "first_name": "carl",
+        "last_name": "Johnson",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "2000-01-12",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [
+            {
+                "id": 4,
+                "first_name": "Carl",
+                "last_name": "johnson",
+                "phone_number": "+237671513243",
+                "address": "Bonabéri, Douala",
+                "license_id": "tvs-997865",
+                "id_number": "gdhd7373737383838",
+                "status": "approved",
+                "created_at": "2025-06-15T17:09:01.747919Z",
+                "updated_at": "2025-06-15T17:15:19.874790Z",
+                "product": {
+                    "id": 2,
+                    "name": "Ampersand 2023 E-Bike",
+                    "description": "Swappable Battery\r\n100Km on a single charge\r\nTop Speed 80Km",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "650000.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 4,
+                            "image": "/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T11:40:18.279919Z",
+                            "updated_at": "2025-05-17T11:40:18.279947Z"
+                        },
+                        {
+                            "id": 6,
+                            "image": "/product_images/e9d705483403750caae86b2a0805178b6be0dfe5.jpeg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/fb344a9f-2b92-4552-aab3-6443449cd9b1.jpeg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T11:43:16.485555Z",
+                            "updated_at": "2025-05-17T11:43:16.485587Z"
+                        },
+                        {
+                            "id": 5,
+                            "image": "/product_images/imageedit_8_5110187802.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/9ae5eb7b-3e61-4823-ba52-a0328736fb48.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T11:42:31.953895Z",
+                            "updated_at": "2025-05-17T11:42:31.953919Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 4,
+                        "image": "/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T11:40:18.279919Z",
+                        "updated_at": "2025-05-17T11:40:18.279947Z"
+                    },
+                    "is_active": true,
+                    "created_at": "2025-05-16T07:42:24.139508Z",
+                    "updated_at": "2025-05-27T17:56:13.732427Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/fcc50e2c-fb67-42f8-a935-403186e34705.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/f9b8caf9-8d1a-4196-b634-fd72082ce4ab.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/bb3812bd-227e-482a-b933-214f4a674b89.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6fdd8f8e-f340-4d2d-9991-303db0754ced.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/c0ba2a1f-82a6-4160-bfc2-759b4e84d9fd.jpg"
+            }
+        ],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-06-15T17:01:41.492995Z",
+            "updated_at": "2025-06-15T17:01:41.493026Z"
+        }
+    },
+    {
+        "id": 13,
+        "reference": "USR_00000013",
+        "phone": "237677807483",
+        "email": "berkaj400@gmail.com",
+        "username": "carlj99",
+        "first_name": "carl",
+        "last_name": "johnson",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "2000-11-11",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-23T14:11:46.133923Z",
+            "updated_at": "2025-05-23T14:11:46.133961Z"
+        }
+    },
+    {
+        "id": 12,
+        "reference": "USR_00000012",
+        "phone": "670204001",
+        "email": "garimobility@gmail.com",
+        "username": "",
+        "first_name": "raoul",
+        "last_name": "andre",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "2000-01-01",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": "/User/33aa0b2054c03f6fdf86efc50c71aa8236767044/scaled_20250426_162119.jpg",
+        "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/67f5451d-68cb-4ac2-a6bb-372a1389548d.jpg",
+        "loans": [
+            {
+                "id": 3,
+                "first_name": "andre",
+                "last_name": "raoul",
+                "phone_number": "670204001",
+                "address": "Douala, Cameroon",
+                "license_id": "098765",
+                "id_number": "8901235",
+                "status": "approved",
+                "created_at": "2025-05-21T17:01:29.251821Z",
+                "updated_at": "2025-05-26T18:04:53.340144Z",
+                "product": {
+                    "id": 3,
+                    "name": "Spiro Ekon 450M E-Bike",
+                    "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "800001.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 1,
+                            "image": "/product_images/spiro-removebg-preview.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T10:16:10.939372Z",
+                            "updated_at": "2025-05-17T10:16:10.939398Z"
+                        },
+                        {
+                            "id": 3,
+                            "image": "/product_images/2.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:05.733765Z",
+                            "updated_at": "2025-05-17T10:24:05.733790Z"
+                        },
+                        {
+                            "id": 2,
+                            "image": "/product_images/3.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:04.076467Z",
+                            "updated_at": "2025-05-17T10:24:04.076491Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 1,
+                        "image": "/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    "is_active": false,
+                    "created_at": "2025-05-16T13:48:00.285462Z",
+                    "updated_at": "2025-06-15T18:09:11.613349Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/a32da4d8-74a0-4f16-95ed-551c9792135d.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/9037a4b1-c967-461a-8887-ea3db0d55a06.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/aa884f02-2f8d-44c9-8278-189af72dfa5b.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/8aa9c921-48ce-4041-8570-7e15fcdabb6d.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/24e3d417-031b-467d-973c-c57d6515ee93.jpg"
+            }
+        ],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-21T16:57:40.754678Z",
+            "updated_at": "2025-05-21T16:57:40.754702Z"
+        }
+    },
+    {
+        "id": 11,
+        "reference": "USR_00000011",
+        "phone": null,
+        "email": "gari.mobility.tech@gmail.com",
+        "username": null,
+        "first_name": "Gari",
+        "last_name": "Mobility",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": true,
+        "role": "superadmin",
+        "groups": [
+            "Superuser"
+        ],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-13T03:37:20.971880Z",
+            "updated_at": "2025-05-13T03:37:20.971910Z"
+        }
+    },
+    {
+        "id": 10,
+        "reference": "USR_00000010",
+        "phone": "670204001",
+        "email": "raoulandre@gmail.com",
+        "username": null,
+        "first_name": "Raoul",
+        "last_name": "Andjongo",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "1991-04-05",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-07T14:09:26.567980Z",
+            "updated_at": "2025-05-07T14:09:26.568009Z"
+        }
+    },
+    {
+        "id": 9,
+        "reference": "USR_00000009",
+        "phone": "650644062",
+        "email": "asaforbrn18@gmail.com",
+        "username": "JHFELIX01",
+        "first_name": "Johny",
+        "last_name": "Felix",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "1999-01-28",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": "/User/32aaadd5bf67ad97d3a560f1639641873ff0f845/scaled_1000201253.jpg",
+        "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/b6b2b90a-ff9d-4755-abfc-9390287c59b2.jpg",
+        "loans": [
+            {
+                "id": 2,
+                "first_name": "Johnny",
+                "last_name": "Flex",
+                "phone_number": "650644062",
+                "address": "Bonaberi Douala",
+                "license_id": "6736370",
+                "id_number": "6374660",
+                "status": "approved",
+                "created_at": "2025-05-20T17:41:09.212375Z",
+                "updated_at": "2025-05-22T19:42:03.271915Z",
+                "product": {
+                    "id": 3,
+                    "name": "Spiro Ekon 450M E-Bike",
+                    "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "800001.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 1,
+                            "image": "/product_images/spiro-removebg-preview.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T10:16:10.939372Z",
+                            "updated_at": "2025-05-17T10:16:10.939398Z"
+                        },
+                        {
+                            "id": 3,
+                            "image": "/product_images/2.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:05.733765Z",
+                            "updated_at": "2025-05-17T10:24:05.733790Z"
+                        },
+                        {
+                            "id": 2,
+                            "image": "/product_images/3.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:04.076467Z",
+                            "updated_at": "2025-05-17T10:24:04.076491Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 1,
+                        "image": "/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    "is_active": false,
+                    "created_at": "2025-05-16T13:48:00.285462Z",
+                    "updated_at": "2025-06-15T18:09:11.613349Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/0cafb366-3d28-4d82-8f59-a3ab188db40c.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/29696c77-64e8-46ed-8b5b-8d87707a4ccc.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6b3d952d-e177-4b08-af01-6054d3cd06d9.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/ff6ce599-48a8-41f9-8ce3-9628791aa600.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/86254dd4-6849-487e-a1df-c652e6bf91ca.jpg"
+            },
+            {
+                "id": 1,
+                "first_name": "Johnny",
+                "last_name": "Flex",
+                "phone_number": "650644062",
+                "address": "Bonaberi Douala",
+                "license_id": "673637",
+                "id_number": "637466",
+                "status": "rejected",
+                "created_at": "2025-05-20T17:28:42.542794Z",
+                "updated_at": "2025-05-20T17:33:01.978736Z",
+                "product": {
+                    "id": 3,
+                    "name": "Spiro Ekon 450M E-Bike",
+                    "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "800001.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 1,
+                            "image": "/product_images/spiro-removebg-preview.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T10:16:10.939372Z",
+                            "updated_at": "2025-05-17T10:16:10.939398Z"
+                        },
+                        {
+                            "id": 3,
+                            "image": "/product_images/2.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:05.733765Z",
+                            "updated_at": "2025-05-17T10:24:05.733790Z"
+                        },
+                        {
+                            "id": 2,
+                            "image": "/product_images/3.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:04.076467Z",
+                            "updated_at": "2025-05-17T10:24:04.076491Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 1,
+                        "image": "/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    "is_active": false,
+                    "created_at": "2025-05-16T13:48:00.285462Z",
+                    "updated_at": "2025-06-15T18:09:11.613349Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg"
+            }
+        ],
+        "wallet": {
+            "available_balance": "200.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-03T15:09:59.000337Z",
+            "updated_at": "2025-05-28T11:45:14.334916Z"
+        }
+    },
+    {
+        "id": 8,
+        "reference": "USR_00000008",
+        "phone": "650644062",
+        "email": "kevin@gmail.com",
+        "username": null,
+        "first_name": "Kevin",
+        "last_name": "Peters",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "2000-01-04",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-27T16:31:42.273161Z",
+            "updated_at": "2025-04-27T16:31:42.273193Z"
+        }
+    },
+    {
+        "id": 7,
+        "reference": "USR_00000007",
+        "phone": "+237683185006",
+        "email": "colonelpirate@gmail.com",
+        "username": "Pirate",
+        "first_name": "Tyron101",
+        "last_name": "Mbiachare",
+        "nationality": "Cameroonian",
+        "gender": "male",
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": true,
+        "role": "superadmin",
+        "groups": [
+            "Superuser"
+        ],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-27T06:14:09.205210Z",
+            "updated_at": "2025-04-27T06:57:54.175712Z"
+        }
+    },
+    {
+        "id": 5,
+        "reference": "USR_00000005",
+        "phone": null,
+        "email": "blake@gmail.com",
+        "username": null,
+        "first_name": "blake",
+        "last_name": "brookes",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-19T16:59:29.523048Z",
+            "updated_at": "2025-04-19T16:59:29.523092Z"
+        }
+    },
+    {
+        "id": 4,
+        "reference": "USR_00000004",
+        "phone": null,
+        "email": "cipher2@gmail.com",
+        "username": null,
+        "first_name": "cipher",
+        "last_name": "Kendrick",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-19T16:57:08.991182Z",
+            "updated_at": "2025-04-19T16:57:08.991204Z"
+        }
+    },
+    {
+        "id": 3,
+        "reference": "USR_00000003",
+        "phone": null,
+        "email": "cipher1@gmail.com",
+        "username": null,
+        "first_name": "cipher",
+        "last_name": "Kendrick",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-19T16:49:07.082486Z",
+            "updated_at": "2025-04-19T16:49:07.082511Z"
+        }
+    },
+    {
+        "id": 2,
+        "reference": "USR_00000002",
+        "phone": null,
+        "email": "cipher@gmail.com",
+        "username": null,
+        "first_name": "cipher",
+        "last_name": "Kendrick",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-19T16:48:22.513710Z",
+            "updated_at": "2025-04-19T16:48:22.513746Z"
+        }
+    },
+    {
+        "id": 1,
+        "reference": "USR_00000001",
+        "phone": null,
+        "email": "mbiacharetyron@gmail.com",
+        "username": null,
+        "first_name": "Tyron",
+        "last_name": "Mbiachare",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-17T10:52:30.246108Z",
+            "updated_at": "2025-04-17T10:52:30.246150Z"
+        }
+    }
+]
+
+
+
+List loan applications
+
+/api/v1/admin/loan-applications/list_all_applications/
+
+{
+    "applications": [
+        {
+            "id": 4,
+            "first_name": "Carl",
+            "last_name": "johnson",
+            "phone_number": "+237671513243",
+            "address": "Bonabéri, Douala",
+            "license_id": "tvs-997865",
+            "id_number": "gdhd7373737383838",
+            "status": "approved",
+            "is_deleted": false,
+            "created_at": "2025-06-15T17:09:01.747919Z",
+            "updated_at": "2025-06-15T17:15:19.874790Z",
+            "user": {
+                "id": 14,
+                "reference": "USR_00000014",
+                "phone": "+237671513243",
+                "email": "berkaj4001@gmail.com",
+                "username": null,
+                "first_name": "carl",
+                "last_name": "Johnson",
+                "nationality": "Cameroon",
+                "gender": "Male",
+                "date_of_birth": "2000-01-12",
+                "is_active": true,
+                "is_admin": false,
+                "role": "user",
+                "groups": [],
+                "picture": null,
+                "picture_url": null,
+                "loans": [
+                    {
+                        "id": 4,
+                        "first_name": "Carl",
+                        "last_name": "johnson",
+                        "phone_number": "+237671513243",
+                        "address": "Bonabéri, Douala",
+                        "license_id": "tvs-997865",
+                        "id_number": "gdhd7373737383838",
+                        "status": "approved",
+                        "created_at": "2025-06-15T17:09:01.747919Z",
+                        "updated_at": "2025-06-15T17:15:19.874790Z",
+                        "product": {
+                            "id": 2,
+                            "name": "Ampersand 2023 E-Bike",
+                            "description": "Swappable Battery\r\n100Km on a single charge\r\nTop Speed 80Km",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "650000.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 4,
+                                    "image": "/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T11:40:18.279919Z",
+                                    "updated_at": "2025-05-17T11:40:18.279947Z"
+                                },
+                                {
+                                    "id": 6,
+                                    "image": "/product_images/e9d705483403750caae86b2a0805178b6be0dfe5.jpeg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/fb344a9f-2b92-4552-aab3-6443449cd9b1.jpeg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T11:43:16.485555Z",
+                                    "updated_at": "2025-05-17T11:43:16.485587Z"
+                                },
+                                {
+                                    "id": 5,
+                                    "image": "/product_images/imageedit_8_5110187802.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/9ae5eb7b-3e61-4823-ba52-a0328736fb48.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T11:42:31.953895Z",
+                                    "updated_at": "2025-05-17T11:42:31.953919Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 4,
+                                "image": "/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T11:40:18.279919Z",
+                                "updated_at": "2025-05-17T11:40:18.279947Z"
+                            },
+                            "is_active": true,
+                            "created_at": "2025-05-16T07:42:24.139508Z",
+                            "updated_at": "2025-05-27T17:56:13.732427Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/fcc50e2c-fb67-42f8-a935-403186e34705.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/f9b8caf9-8d1a-4196-b634-fd72082ce4ab.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/bb3812bd-227e-482a-b933-214f4a674b89.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6fdd8f8e-f340-4d2d-9991-303db0754ced.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/c0ba2a1f-82a6-4160-bfc2-759b4e84d9fd.jpg"
+                    }
+                ],
+                "wallet": {
+                    "available_balance": "0.00",
+                    "locked_balance": "0.00",
+                    "created_at": "2025-06-15T17:01:41.492995Z",
+                    "updated_at": "2025-06-15T17:01:41.493026Z"
+                }
+            },
+            "product": {
+                "id": 2,
+                "name": "Ampersand 2023 E-Bike",
+                "description": "Swappable Battery\r\n100Km on a single charge\r\nTop Speed 80Km",
+                "category": 1,
+                "category_name": "Electric Bikes",
+                "price": "650000.00",
+                "currency": "XAF",
+                "stock_quantity": 20,
+                "status": "active",
+                "images": [
+                    {
+                        "id": 4,
+                        "image": "http://api.gari-mobility.tech/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T11:40:18.279919Z",
+                        "updated_at": "2025-05-17T11:40:18.279947Z"
+                    },
+                    {
+                        "id": 6,
+                        "image": "http://api.gari-mobility.tech/product_images/e9d705483403750caae86b2a0805178b6be0dfe5.jpeg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/fb344a9f-2b92-4552-aab3-6443449cd9b1.jpeg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T11:43:16.485555Z",
+                        "updated_at": "2025-05-17T11:43:16.485587Z"
+                    },
+                    {
+                        "id": 5,
+                        "image": "http://api.gari-mobility.tech/product_images/imageedit_8_5110187802.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/9ae5eb7b-3e61-4823-ba52-a0328736fb48.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T11:42:31.953895Z",
+                        "updated_at": "2025-05-17T11:42:31.953919Z"
+                    }
+                ],
+                "primary_image": {
+                    "id": 4,
+                    "image": "/product_images/8a2a5379-581c-4775-aeac-f7f6b994eb6a.png",
+                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/4a4f0aa3-2ec0-41d4-b79f-b5655d536de4.png",
+                    "is_primary": true,
+                    "created_at": "2025-05-17T11:40:18.279919Z",
+                    "updated_at": "2025-05-17T11:40:18.279947Z"
+                },
+                "is_active": true,
+                "created_at": "2025-05-16T07:42:24.139508Z",
+                "updated_at": "2025-05-27T17:56:13.732427Z"
+            },
+            "rejection_reason": null,
+            "id_front": "http://api.gari-mobility.tech/loan_documents/id/1750007325896.jpg",
+            "id_back": "http://api.gari-mobility.tech/loan_documents/id/1750007327173.jpg",
+            "license_front": "http://api.gari-mobility.tech/loan_documents/license/1750007328429.jpg",
+            "license_back": "http://api.gari-mobility.tech/loan_documents/license/1750007329723.jpg",
+            "location_document": "http://api.gari-mobility.tech/loan_documents/location/1750007331054.jpg",
+            "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/fcc50e2c-fb67-42f8-a935-403186e34705.jpg",
+            "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/f9b8caf9-8d1a-4196-b634-fd72082ce4ab.jpg",
+            "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/bb3812bd-227e-482a-b933-214f4a674b89.jpg",
+            "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6fdd8f8e-f340-4d2d-9991-303db0754ced.jpg",
+            "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/c0ba2a1f-82a6-4160-bfc2-759b4e84d9fd.jpg"
+        },
+        {
+            "id": 3,
+            "first_name": "andre",
+            "last_name": "raoul",
+            "phone_number": "670204001",
+            "address": "Douala, Cameroon",
+            "license_id": "098765",
+            "id_number": "8901235",
+            "status": "approved",
+            "is_deleted": false,
+            "created_at": "2025-05-21T17:01:29.251821Z",
+            "updated_at": "2025-05-26T18:04:53.340144Z",
+            "user": {
+                "id": 12,
+                "reference": "USR_00000012",
+                "phone": "670204001",
+                "email": "garimobility@gmail.com",
+                "username": "",
+                "first_name": "raoul",
+                "last_name": "andre",
+                "nationality": "Cameroon",
+                "gender": "Male",
+                "date_of_birth": "2000-01-01",
+                "is_active": true,
+                "is_admin": false,
+                "role": "user",
+                "groups": [],
+                "picture": "http://api.gari-mobility.tech/User/33aa0b2054c03f6fdf86efc50c71aa8236767044/scaled_20250426_162119.jpg",
+                "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/67f5451d-68cb-4ac2-a6bb-372a1389548d.jpg",
+                "loans": [
+                    {
+                        "id": 3,
+                        "first_name": "andre",
+                        "last_name": "raoul",
+                        "phone_number": "670204001",
+                        "address": "Douala, Cameroon",
+                        "license_id": "098765",
+                        "id_number": "8901235",
+                        "status": "approved",
+                        "created_at": "2025-05-21T17:01:29.251821Z",
+                        "updated_at": "2025-05-26T18:04:53.340144Z",
+                        "product": {
+                            "id": 3,
+                            "name": "Spiro Ekon 450M E-Bike",
+                            "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "800001.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 1,
+                                    "image": "/product_images/spiro-removebg-preview.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T10:16:10.939372Z",
+                                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                                },
+                                {
+                                    "id": 3,
+                                    "image": "/product_images/2.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:05.733765Z",
+                                    "updated_at": "2025-05-17T10:24:05.733790Z"
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/product_images/3.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:04.076467Z",
+                                    "updated_at": "2025-05-17T10:24:04.076491Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 1,
+                                "image": "/product_images/spiro-removebg-preview.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T10:16:10.939372Z",
+                                "updated_at": "2025-05-17T10:16:10.939398Z"
+                            },
+                            "is_active": false,
+                            "created_at": "2025-05-16T13:48:00.285462Z",
+                            "updated_at": "2025-06-15T18:09:11.613349Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/a32da4d8-74a0-4f16-95ed-551c9792135d.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/9037a4b1-c967-461a-8887-ea3db0d55a06.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/aa884f02-2f8d-44c9-8278-189af72dfa5b.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/8aa9c921-48ce-4041-8570-7e15fcdabb6d.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/24e3d417-031b-467d-973c-c57d6515ee93.jpg"
+                    }
+                ],
+                "wallet": {
+                    "available_balance": "0.00",
+                    "locked_balance": "0.00",
+                    "created_at": "2025-05-21T16:57:40.754678Z",
+                    "updated_at": "2025-05-21T16:57:40.754702Z"
+                }
+            },
+            "product": {
+                "id": 3,
+                "name": "Spiro Ekon 450M E-Bike",
+                "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                "category": 1,
+                "category_name": "Electric Bikes",
+                "price": "800001.00",
+                "currency": "XAF",
+                "stock_quantity": 20,
+                "status": "active",
+                "images": [
+                    {
+                        "id": 1,
+                        "image": "http://api.gari-mobility.tech/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    {
+                        "id": 3,
+                        "image": "http://api.gari-mobility.tech/product_images/2.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:05.733765Z",
+                        "updated_at": "2025-05-17T10:24:05.733790Z"
+                    },
+                    {
+                        "id": 2,
+                        "image": "http://api.gari-mobility.tech/product_images/3.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:04.076467Z",
+                        "updated_at": "2025-05-17T10:24:04.076491Z"
+                    }
+                ],
+                "primary_image": {
+                    "id": 1,
+                    "image": "/product_images/spiro-removebg-preview.png",
+                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                    "is_primary": true,
+                    "created_at": "2025-05-17T10:16:10.939372Z",
+                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                },
+                "is_active": false,
+                "created_at": "2025-05-16T13:48:00.285462Z",
+                "updated_at": "2025-06-15T18:09:11.613349Z"
+            },
+            "rejection_reason": null,
+            "id_front": "http://api.gari-mobility.tech/loan_documents/id/1747846875420.jpg",
+            "id_back": "http://api.gari-mobility.tech/loan_documents/id/1747846875764.jpg",
+            "license_front": "http://api.gari-mobility.tech/loan_documents/license/1747846876103.jpg",
+            "license_back": "http://api.gari-mobility.tech/loan_documents/license/1747846876542.jpg",
+            "location_document": "http://api.gari-mobility.tech/loan_documents/location/1747846876875.jpg",
+            "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/a32da4d8-74a0-4f16-95ed-551c9792135d.jpg",
+            "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/9037a4b1-c967-461a-8887-ea3db0d55a06.jpg",
+            "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/aa884f02-2f8d-44c9-8278-189af72dfa5b.jpg",
+            "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/8aa9c921-48ce-4041-8570-7e15fcdabb6d.jpg",
+            "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/24e3d417-031b-467d-973c-c57d6515ee93.jpg"
+        },
+        {
+            "id": 2,
+            "first_name": "Johnny",
+            "last_name": "Flex",
+            "phone_number": "650644062",
+            "address": "Bonaberi Douala",
+            "license_id": "6736370",
+            "id_number": "6374660",
+            "status": "approved",
+            "is_deleted": false,
+            "created_at": "2025-05-20T17:41:09.212375Z",
+            "updated_at": "2025-05-22T19:42:03.271915Z",
+            "user": {
+                "id": 9,
+                "reference": "USR_00000009",
+                "phone": "650644062",
+                "email": "asaforbrn18@gmail.com",
+                "username": "JHFELIX01",
+                "first_name": "Johny",
+                "last_name": "Felix",
+                "nationality": "Cameroon",
+                "gender": "Male",
+                "date_of_birth": "1999-01-28",
+                "is_active": true,
+                "is_admin": false,
+                "role": "user",
+                "groups": [],
+                "picture": "http://api.gari-mobility.tech/User/32aaadd5bf67ad97d3a560f1639641873ff0f845/scaled_1000201253.jpg",
+                "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/b6b2b90a-ff9d-4755-abfc-9390287c59b2.jpg",
+                "loans": [
+                    {
+                        "id": 2,
+                        "first_name": "Johnny",
+                        "last_name": "Flex",
+                        "phone_number": "650644062",
+                        "address": "Bonaberi Douala",
+                        "license_id": "6736370",
+                        "id_number": "6374660",
+                        "status": "approved",
+                        "created_at": "2025-05-20T17:41:09.212375Z",
+                        "updated_at": "2025-05-22T19:42:03.271915Z",
+                        "product": {
+                            "id": 3,
+                            "name": "Spiro Ekon 450M E-Bike",
+                            "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "800001.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 1,
+                                    "image": "/product_images/spiro-removebg-preview.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T10:16:10.939372Z",
+                                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                                },
+                                {
+                                    "id": 3,
+                                    "image": "/product_images/2.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:05.733765Z",
+                                    "updated_at": "2025-05-17T10:24:05.733790Z"
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/product_images/3.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:04.076467Z",
+                                    "updated_at": "2025-05-17T10:24:04.076491Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 1,
+                                "image": "/product_images/spiro-removebg-preview.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T10:16:10.939372Z",
+                                "updated_at": "2025-05-17T10:16:10.939398Z"
+                            },
+                            "is_active": false,
+                            "created_at": "2025-05-16T13:48:00.285462Z",
+                            "updated_at": "2025-06-15T18:09:11.613349Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/0cafb366-3d28-4d82-8f59-a3ab188db40c.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/29696c77-64e8-46ed-8b5b-8d87707a4ccc.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6b3d952d-e177-4b08-af01-6054d3cd06d9.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/ff6ce599-48a8-41f9-8ce3-9628791aa600.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/86254dd4-6849-487e-a1df-c652e6bf91ca.jpg"
+                    },
+                    {
+                        "id": 1,
+                        "first_name": "Johnny",
+                        "last_name": "Flex",
+                        "phone_number": "650644062",
+                        "address": "Bonaberi Douala",
+                        "license_id": "673637",
+                        "id_number": "637466",
+                        "status": "rejected",
+                        "created_at": "2025-05-20T17:28:42.542794Z",
+                        "updated_at": "2025-05-20T17:33:01.978736Z",
+                        "product": {
+                            "id": 3,
+                            "name": "Spiro Ekon 450M E-Bike",
+                            "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "800001.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 1,
+                                    "image": "/product_images/spiro-removebg-preview.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T10:16:10.939372Z",
+                                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                                },
+                                {
+                                    "id": 3,
+                                    "image": "/product_images/2.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:05.733765Z",
+                                    "updated_at": "2025-05-17T10:24:05.733790Z"
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/product_images/3.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:04.076467Z",
+                                    "updated_at": "2025-05-17T10:24:04.076491Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 1,
+                                "image": "/product_images/spiro-removebg-preview.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T10:16:10.939372Z",
+                                "updated_at": "2025-05-17T10:16:10.939398Z"
+                            },
+                            "is_active": false,
+                            "created_at": "2025-05-16T13:48:00.285462Z",
+                            "updated_at": "2025-06-15T18:09:11.613349Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg"
+                    }
+                ],
+                "wallet": {
+                    "available_balance": "200.00",
+                    "locked_balance": "0.00",
+                    "created_at": "2025-05-03T15:09:59.000337Z",
+                    "updated_at": "2025-05-28T11:45:14.334916Z"
+                }
+            },
+            "product": {
+                "id": 3,
+                "name": "Spiro Ekon 450M E-Bike",
+                "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                "category": 1,
+                "category_name": "Electric Bikes",
+                "price": "800001.00",
+                "currency": "XAF",
+                "stock_quantity": 20,
+                "status": "active",
+                "images": [
+                    {
+                        "id": 1,
+                        "image": "http://api.gari-mobility.tech/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    {
+                        "id": 3,
+                        "image": "http://api.gari-mobility.tech/product_images/2.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:05.733765Z",
+                        "updated_at": "2025-05-17T10:24:05.733790Z"
+                    },
+                    {
+                        "id": 2,
+                        "image": "http://api.gari-mobility.tech/product_images/3.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:04.076467Z",
+                        "updated_at": "2025-05-17T10:24:04.076491Z"
+                    }
+                ],
+                "primary_image": {
+                    "id": 1,
+                    "image": "/product_images/spiro-removebg-preview.png",
+                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                    "is_primary": true,
+                    "created_at": "2025-05-17T10:16:10.939372Z",
+                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                },
+                "is_active": false,
+                "created_at": "2025-05-16T13:48:00.285462Z",
+                "updated_at": "2025-06-15T18:09:11.613349Z"
+            },
+            "rejection_reason": null,
+            "id_front": "http://api.gari-mobility.tech/loan_documents/id/1747762858386.jpg",
+            "id_back": "http://api.gari-mobility.tech/loan_documents/id/1747762859064.jpg",
+            "license_front": "http://api.gari-mobility.tech/loan_documents/license/1747762859779.jpg",
+            "license_back": "http://api.gari-mobility.tech/loan_documents/license/1747762860439.jpg",
+            "location_document": "http://api.gari-mobility.tech/loan_documents/location/1747762861158.jpg",
+            "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/0cafb366-3d28-4d82-8f59-a3ab188db40c.jpg",
+            "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/29696c77-64e8-46ed-8b5b-8d87707a4ccc.jpg",
+            "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6b3d952d-e177-4b08-af01-6054d3cd06d9.jpg",
+            "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/ff6ce599-48a8-41f9-8ce3-9628791aa600.jpg",
+            "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/86254dd4-6849-487e-a1df-c652e6bf91ca.jpg"
+        },
+        {
+            "id": 1,
+            "first_name": "Johnny",
+            "last_name": "Flex",
+            "phone_number": "650644062",
+            "address": "Bonaberi Douala",
+            "license_id": "673637",
+            "id_number": "637466",
+            "status": "rejected",
+            "is_deleted": false,
+            "created_at": "2025-05-20T17:28:42.542794Z",
+            "updated_at": "2025-05-20T17:33:01.978736Z",
+            "user": {
+                "id": 9,
+                "reference": "USR_00000009",
+                "phone": "650644062",
+                "email": "asaforbrn18@gmail.com",
+                "username": "JHFELIX01",
+                "first_name": "Johny",
+                "last_name": "Felix",
+                "nationality": "Cameroon",
+                "gender": "Male",
+                "date_of_birth": "1999-01-28",
+                "is_active": true,
+                "is_admin": false,
+                "role": "user",
+                "groups": [],
+                "picture": "http://api.gari-mobility.tech/User/32aaadd5bf67ad97d3a560f1639641873ff0f845/scaled_1000201253.jpg",
+                "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/b6b2b90a-ff9d-4755-abfc-9390287c59b2.jpg",
+                "loans": [
+                    {
+                        "id": 2,
+                        "first_name": "Johnny",
+                        "last_name": "Flex",
+                        "phone_number": "650644062",
+                        "address": "Bonaberi Douala",
+                        "license_id": "6736370",
+                        "id_number": "6374660",
+                        "status": "approved",
+                        "created_at": "2025-05-20T17:41:09.212375Z",
+                        "updated_at": "2025-05-22T19:42:03.271915Z",
+                        "product": {
+                            "id": 3,
+                            "name": "Spiro Ekon 450M E-Bike",
+                            "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "800001.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 1,
+                                    "image": "/product_images/spiro-removebg-preview.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T10:16:10.939372Z",
+                                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                                },
+                                {
+                                    "id": 3,
+                                    "image": "/product_images/2.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:05.733765Z",
+                                    "updated_at": "2025-05-17T10:24:05.733790Z"
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/product_images/3.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:04.076467Z",
+                                    "updated_at": "2025-05-17T10:24:04.076491Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 1,
+                                "image": "/product_images/spiro-removebg-preview.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T10:16:10.939372Z",
+                                "updated_at": "2025-05-17T10:16:10.939398Z"
+                            },
+                            "is_active": false,
+                            "created_at": "2025-05-16T13:48:00.285462Z",
+                            "updated_at": "2025-06-15T18:09:11.613349Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/0cafb366-3d28-4d82-8f59-a3ab188db40c.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/29696c77-64e8-46ed-8b5b-8d87707a4ccc.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6b3d952d-e177-4b08-af01-6054d3cd06d9.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/ff6ce599-48a8-41f9-8ce3-9628791aa600.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/86254dd4-6849-487e-a1df-c652e6bf91ca.jpg"
+                    },
+                    {
+                        "id": 1,
+                        "first_name": "Johnny",
+                        "last_name": "Flex",
+                        "phone_number": "650644062",
+                        "address": "Bonaberi Douala",
+                        "license_id": "673637",
+                        "id_number": "637466",
+                        "status": "rejected",
+                        "created_at": "2025-05-20T17:28:42.542794Z",
+                        "updated_at": "2025-05-20T17:33:01.978736Z",
+                        "product": {
+                            "id": 3,
+                            "name": "Spiro Ekon 450M E-Bike",
+                            "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                            "category": 1,
+                            "category_name": "Electric Bikes",
+                            "price": "800001.00",
+                            "currency": "XAF",
+                            "stock_quantity": 20,
+                            "status": "active",
+                            "images": [
+                                {
+                                    "id": 1,
+                                    "image": "/product_images/spiro-removebg-preview.png",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                    "is_primary": true,
+                                    "created_at": "2025-05-17T10:16:10.939372Z",
+                                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                                },
+                                {
+                                    "id": 3,
+                                    "image": "/product_images/2.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:05.733765Z",
+                                    "updated_at": "2025-05-17T10:24:05.733790Z"
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/product_images/3.jpg",
+                                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                                    "is_primary": false,
+                                    "created_at": "2025-05-17T10:24:04.076467Z",
+                                    "updated_at": "2025-05-17T10:24:04.076491Z"
+                                }
+                            ],
+                            "primary_image": {
+                                "id": 1,
+                                "image": "/product_images/spiro-removebg-preview.png",
+                                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                                "is_primary": true,
+                                "created_at": "2025-05-17T10:16:10.939372Z",
+                                "updated_at": "2025-05-17T10:16:10.939398Z"
+                            },
+                            "is_active": false,
+                            "created_at": "2025-05-16T13:48:00.285462Z",
+                            "updated_at": "2025-06-15T18:09:11.613349Z"
+                        },
+                        "rejection_reason": null,
+                        "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+                        "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+                        "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+                        "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+                        "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg"
+                    }
+                ],
+                "wallet": {
+                    "available_balance": "200.00",
+                    "locked_balance": "0.00",
+                    "created_at": "2025-05-03T15:09:59.000337Z",
+                    "updated_at": "2025-05-28T11:45:14.334916Z"
+                }
+            },
+            "product": {
+                "id": 3,
+                "name": "Spiro Ekon 450M E-Bike",
+                "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                "category": 1,
+                "category_name": "Electric Bikes",
+                "price": "800001.00",
+                "currency": "XAF",
+                "stock_quantity": 20,
+                "status": "active",
+                "images": [
+                    {
+                        "id": 1,
+                        "image": "http://api.gari-mobility.tech/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    {
+                        "id": 3,
+                        "image": "http://api.gari-mobility.tech/product_images/2.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:05.733765Z",
+                        "updated_at": "2025-05-17T10:24:05.733790Z"
+                    },
+                    {
+                        "id": 2,
+                        "image": "http://api.gari-mobility.tech/product_images/3.jpg",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                        "is_primary": false,
+                        "created_at": "2025-05-17T10:24:04.076467Z",
+                        "updated_at": "2025-05-17T10:24:04.076491Z"
+                    }
+                ],
+                "primary_image": {
+                    "id": 1,
+                    "image": "/product_images/spiro-removebg-preview.png",
+                    "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                    "is_primary": true,
+                    "created_at": "2025-05-17T10:16:10.939372Z",
+                    "updated_at": "2025-05-17T10:16:10.939398Z"
+                },
+                "is_active": false,
+                "created_at": "2025-05-16T13:48:00.285462Z",
+                "updated_at": "2025-06-15T18:09:11.613349Z"
+            },
+            "rejection_reason": null,
+            "id_front": "http://api.gari-mobility.tech/loan_documents/id/1747762112729.jpg",
+            "id_back": "http://api.gari-mobility.tech/loan_documents/id/1747762113692.jpg",
+            "license_front": "http://api.gari-mobility.tech/loan_documents/license/1747762114460.jpg",
+            "license_back": "http://api.gari-mobility.tech/loan_documents/license/1747762115117.jpg",
+            "location_document": "http://api.gari-mobility.tech/loan_documents/location/1747762115837.jpg",
+            "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+            "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+            "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+            "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+            "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg"
+        }
+    ],
+    "summary": {
+        "total_applications": 4,
+        "status_breakdown": [
+            {
+                "status": "approved",
+                "count": 1
+            },
+            {
+                "status": "approved",
+                "count": 1
+            },
+            {
+                "status": "approved",
+                "count": 1
+            },
+            {
+                "status": "rejected",
+                "count": 1
+            }
+        ],
+        "product_distribution": [
+            {
+                "product__name": "Ampersand 2023 E-Bike",
+                "count": 1
+            },
+            {
+                "product__name": "Spiro Ekon 450M E-Bike",
+                "count": 1
+            },
+            {
+                "product__name": "Spiro Ekon 450M E-Bike",
+                "count": 1
+            },
+            {
+                "product__name": "Spiro Ekon 450M E-Bike",
+                "count": 1
+            }
+        ],
+        "daily_applications": [
+            {
+                "day": "2025-05-20",
+                "count": 2
+            },
+            {
+                "day": "2025-05-21",
+                "count": 1
+            },
+            {
+                "day": "2025-06-15",
+                "count": 1
+            }
+        ]
+    }
+}
+
+
+
+
+Get user loan details 
+
+/api/v1/loan-application/1/
+
+{
+    "id": 1,
+    "first_name": "Johnny",
+    "last_name": "Flex",
+    "phone_number": "650644062",
+    "address": "Bonaberi Douala",
+    "license_id": "673637",
+    "id_number": "637466",
+    "status": "rejected",
+    "is_deleted": false,
+    "created_at": "2025-05-20T17:28:42.542794Z",
+    "updated_at": "2025-05-20T17:33:01.978736Z",
+    "user": {
+        "id": 9,
+        "reference": "USR_00000009",
+        "phone": "650644062",
+        "email": "asaforbrn18@gmail.com",
+        "username": "JHFELIX01",
+        "first_name": "Johny",
+        "last_name": "Felix",
+        "nationality": "Cameroon",
+        "gender": "Male",
+        "date_of_birth": "1999-01-28",
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": "http://api.gari-mobility.tech/User/32aaadd5bf67ad97d3a560f1639641873ff0f845/scaled_1000201253.jpg",
+        "picture_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/user_profiles/b6b2b90a-ff9d-4755-abfc-9390287c59b2.jpg",
+        "loans": [
+            {
+                "id": 2,
+                "first_name": "Johnny",
+                "last_name": "Flex",
+                "phone_number": "650644062",
+                "address": "Bonaberi Douala",
+                "license_id": "6736370",
+                "id_number": "6374660",
+                "status": "approved",
+                "created_at": "2025-05-20T17:41:09.212375Z",
+                "updated_at": "2025-05-22T19:42:03.271915Z",
+                "product": {
+                    "id": 3,
+                    "name": "Spiro Ekon 450M E-Bike",
+                    "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "800001.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 1,
+                            "image": "/product_images/spiro-removebg-preview.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T10:16:10.939372Z",
+                            "updated_at": "2025-05-17T10:16:10.939398Z"
+                        },
+                        {
+                            "id": 3,
+                            "image": "/product_images/2.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:05.733765Z",
+                            "updated_at": "2025-05-17T10:24:05.733790Z"
+                        },
+                        {
+                            "id": 2,
+                            "image": "/product_images/3.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:04.076467Z",
+                            "updated_at": "2025-05-17T10:24:04.076491Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 1,
+                        "image": "/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    "is_active": false,
+                    "created_at": "2025-05-16T13:48:00.285462Z",
+                    "updated_at": "2025-06-15T18:09:11.613349Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/0cafb366-3d28-4d82-8f59-a3ab188db40c.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/29696c77-64e8-46ed-8b5b-8d87707a4ccc.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/6b3d952d-e177-4b08-af01-6054d3cd06d9.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/ff6ce599-48a8-41f9-8ce3-9628791aa600.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/86254dd4-6849-487e-a1df-c652e6bf91ca.jpg"
+            },
+            {
+                "id": 1,
+                "first_name": "Johnny",
+                "last_name": "Flex",
+                "phone_number": "650644062",
+                "address": "Bonaberi Douala",
+                "license_id": "673637",
+                "id_number": "637466",
+                "status": "rejected",
+                "created_at": "2025-05-20T17:28:42.542794Z",
+                "updated_at": "2025-05-20T17:33:01.978736Z",
+                "product": {
+                    "id": 3,
+                    "name": "Spiro Ekon 450M E-Bike",
+                    "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+                    "category": 1,
+                    "category_name": "Electric Bikes",
+                    "price": "800001.00",
+                    "currency": "XAF",
+                    "stock_quantity": 20,
+                    "status": "active",
+                    "images": [
+                        {
+                            "id": 1,
+                            "image": "/product_images/spiro-removebg-preview.png",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                            "is_primary": true,
+                            "created_at": "2025-05-17T10:16:10.939372Z",
+                            "updated_at": "2025-05-17T10:16:10.939398Z"
+                        },
+                        {
+                            "id": 3,
+                            "image": "/product_images/2.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:05.733765Z",
+                            "updated_at": "2025-05-17T10:24:05.733790Z"
+                        },
+                        {
+                            "id": 2,
+                            "image": "/product_images/3.jpg",
+                            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                            "is_primary": false,
+                            "created_at": "2025-05-17T10:24:04.076467Z",
+                            "updated_at": "2025-05-17T10:24:04.076491Z"
+                        }
+                    ],
+                    "primary_image": {
+                        "id": 1,
+                        "image": "/product_images/spiro-removebg-preview.png",
+                        "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                        "is_primary": true,
+                        "created_at": "2025-05-17T10:16:10.939372Z",
+                        "updated_at": "2025-05-17T10:16:10.939398Z"
+                    },
+                    "is_active": false,
+                    "created_at": "2025-05-16T13:48:00.285462Z",
+                    "updated_at": "2025-06-15T18:09:11.613349Z"
+                },
+                "rejection_reason": null,
+                "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+                "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+                "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+                "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+                "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg"
+            }
+        ],
+        "wallet": {
+            "available_balance": "200.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-05-03T15:09:59.000337Z",
+            "updated_at": "2025-05-28T11:45:14.334916Z"
+        }
+    },
+    "product": {
+        "id": 3,
+        "name": "Spiro Ekon 450M E-Bike",
+        "description": "Model : Spiro Ekon 450M\r\nKerb Weight : 105 kg\r\nRange : Up to 80 km in normal riding modes",
+        "category": 1,
+        "category_name": "Electric Bikes",
+        "price": "800001.00",
+        "currency": "XAF",
+        "stock_quantity": 20,
+        "status": "active",
+        "images": [
+            {
+                "id": 1,
+                "image": "http://api.gari-mobility.tech/product_images/spiro-removebg-preview.png",
+                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+                "is_primary": true,
+                "created_at": "2025-05-17T10:16:10.939372Z",
+                "updated_at": "2025-05-17T10:16:10.939398Z"
+            },
+            {
+                "id": 3,
+                "image": "http://api.gari-mobility.tech/product_images/2.jpg",
+                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/b42653fc-f2c7-4119-8d0a-6bee58e0dea1.jpg",
+                "is_primary": false,
+                "created_at": "2025-05-17T10:24:05.733765Z",
+                "updated_at": "2025-05-17T10:24:05.733790Z"
+            },
+            {
+                "id": 2,
+                "image": "http://api.gari-mobility.tech/product_images/3.jpg",
+                "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/0010e37c-7080-4003-a05c-216b0c351d13.jpg",
+                "is_primary": false,
+                "created_at": "2025-05-17T10:24:04.076467Z",
+                "updated_at": "2025-05-17T10:24:04.076491Z"
+            }
+        ],
+        "primary_image": {
+            "id": 1,
+            "image": "/product_images/spiro-removebg-preview.png",
+            "image_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/products/ec01483b-ea4b-452f-b2e6-998a4dab3b0c.png",
+            "is_primary": true,
+            "created_at": "2025-05-17T10:16:10.939372Z",
+            "updated_at": "2025-05-17T10:16:10.939398Z"
+        },
+        "is_active": false,
+        "created_at": "2025-05-16T13:48:00.285462Z",
+        "updated_at": "2025-06-15T18:09:11.613349Z"
+    },
+    "rejection_reason": null,
+    "id_front": "http://api.gari-mobility.tech/loan_documents/id/1747762112729.jpg",
+    "id_back": "http://api.gari-mobility.tech/loan_documents/id/1747762113692.jpg",
+    "license_front": "http://api.gari-mobility.tech/loan_documents/license/1747762114460.jpg",
+    "license_back": "http://api.gari-mobility.tech/loan_documents/license/1747762115117.jpg",
+    "location_document": "http://api.gari-mobility.tech/loan_documents/location/1747762115837.jpg",
+    "id_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/808b14f3-fcc2-4a90-927f-17dda760bf04.jpg",
+    "id_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/id/24573af8-4d62-4099-82a5-1b22ff9d6365.jpg",
+    "license_front_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/15a5db90-0d62-4a70-bcc0-adffcdaa7aa5.jpg",
+    "license_back_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/license/4f83c332-31d3-4b9e-9c02-5ef5614904a7.jpg",
+    "location_document_url": "https://storage.googleapis.com/gari-app-7d0a6.firebasestorage.app/loan_documents/location/6b23083b-1641-4c55-94d1-2fb3aca7d982.jpg",
+    "total_paid": {
+        "amount": 0.0,
+        "currency": "XAF"
+    },
+    "remaining_amount": {
+        "amount": 800001.0,
+        "currency": "XAF"
+    },
+    "loan_amount": {
+        "amount": 800001.0,
+        "currency": "XAF"
+    },
+    "payment_details": [],
+    "payments": []
+}
+
+
+
+Get User Details 
+
+/api/v1/users/19/get_user_details/
+
+
+{
+    "user": {
+        "id": 2,
+        "reference": "USR_00000002",
+        "phone": null,
+        "email": "cipher@gmail.com",
+        "username": null,
+        "first_name": "cipher",
+        "last_name": "Kendrick",
+        "nationality": null,
+        "gender": null,
+        "date_of_birth": null,
+        "is_active": true,
+        "is_admin": false,
+        "role": "user",
+        "groups": [],
+        "picture": null,
+        "picture_url": null,
+        "loans": [],
+        "wallet": {
+            "available_balance": "0.00",
+            "locked_balance": "0.00",
+            "created_at": "2025-04-19T16:48:22.513710Z",
+            "updated_at": "2025-04-19T16:48:22.513746Z"
+        }
+    },
+    "wallet": {
+        "available_balance": "0.00",
+        "locked_balance": "0.00",
+        "created_at": "2025-04-19T16:48:22.513710Z",
+        "updated_at": "2025-04-19T16:48:22.513746Z"
+    },
+    "devices": [],
+    "loan_applications": [],
+    "statistics": {
+        "total_loans": 0,
+        "active_devices": 0,
+        "last_login": null
+    }
+}
+
+
+
+
+Send Notification
+
+/api/v1/users/send_notification/
+
+
+{
+    "device_tokens": ["dJwmJptg4k9YuYzC7H53Ld:APA91bEihiSBAln09W3ltfXEOUF_XahvoU2w3zHQnvKVhBAPHz967pMcOyvr9IdZx3fltWCFsEHGOMo2CGROXVbMohucngNRVSBz8TOh2Xw1ykNBpCBwahc", "dB3YyseEH0_NnRj2dYZ-wA:APA91bEY99JOcLwQjP8Nm_kmLTEI0PNFYe97diXnQplArv9ytTN9O22zvIjOeCvAELvLJJrQrCKQCqqm8dLZmEUgiSfnZhxYPaQoODDPyj-tTjsMrQ5AsAw"],
+    "title": "System Update",
+    "body": "A new system update is available",
+    "data": {
+        "type": "system",
+        "update_id": "789"
+    }
+}

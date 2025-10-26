@@ -38,11 +38,15 @@ def ManageCustomerView(request):
     # Filter customers based on the user's privileges and search query
     if is_superuser:
         customers = Customer.objects.all()
-        if branch_filter:
-            customers = customers.filter(branch_id=branch_filter)
+        # Only apply branch filter if branch_filter is a valid integer
+        if branch_filter and branch_filter != 'None':
+            try:
+                customers = customers.filter(branch_id=int(branch_filter))
+            except (ValueError, TypeError):
+                # Handle invalid branch_filter values gracefully
+                pass
     else:
         customers = Customer.objects.filter(branch=worker.branch)
-
 
     # Apply the search filter if a search query is provided
     if search_query:
