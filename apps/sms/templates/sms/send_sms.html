@@ -122,7 +122,7 @@
                             <div class="col-12">
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{% url 'sms:sms_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="sendSmsBtn">
                                         <i class="bx bx-send"></i> Send SMS
                                     </button>
                                 </div>
@@ -219,6 +219,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial character count
     updateCharCount();
+
+    // Prevent duplicate form submissions
+    const form = document.getElementById('sendSmsForm');
+    const submitBtn = document.getElementById('sendSmsBtn');
+
+    form.addEventListener('submit', function(e) {
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Sending...';
+
+        // Re-enable button after 5 seconds as fallback
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bx bx-send"></i> Send SMS';
+        }, 5000);
+    });
 });
 </script>
 {% endblock %}

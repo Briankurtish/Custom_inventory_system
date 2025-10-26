@@ -40,6 +40,8 @@ class TwilioSMSService:
             if not to_phone.startswith('+'):
                 to_phone = '+' + to_phone.lstrip('+')
 
+            logger.info(f"Attempting to send SMS to {to_phone} from {from_phone}")
+
             # Check if from_phone is a sender ID (alphanumeric) or phone number
             if from_phone.startswith('+') or from_phone.isdigit():
                 # It's a phone number
@@ -55,6 +57,8 @@ class TwilioSMSService:
                     from_=from_phone,
                     to=to_phone
                 )
+
+            logger.info(f"SMS sent successfully. SID: {message_obj.sid}, Status: {message_obj.status}")
 
             return {
                 'success': True,
