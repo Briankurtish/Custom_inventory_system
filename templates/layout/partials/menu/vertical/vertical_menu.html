@@ -1,82 +1,602 @@
 {% load i18n %}
 
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  /* Professional shadcn/ui Style Menu */
+  .shadcn-menu {
+    background: hsl(var(--card));
+    border-right: 1px solid hsl(var(--border));
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .shadcn-menu::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .shadcn-menu::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .shadcn-menu::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .shadcn-menu::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  .shadcn-menu-brand {
+    padding: 1.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .shadcn-menu-brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: hsl(var(--card-foreground));
+    font-weight: 600;
+    font-size: 1.125rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+  }
+
+  .shadcn-menu-brand-link:hover {
+    color: hsl(var(--primary));
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-menu-inner {
+    padding: 1rem 0;
+  }
+
+  .shadcn-menu-item {
+    margin: 0.125rem 0.75rem;
+    border-radius: var(--radius);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .shadcn-menu-item:hover {
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-menu-item.active {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-menu-item.active:hover {
+    background: hsl(var(--primary) / 0.9);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-menu-item.active::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: hsl(var(--primary));
+    border-radius: 0 2px 2px 0;
+  }
+
+  .shadcn-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: hsl(var(--card-foreground));
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: var(--radius);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-height: 2.5rem;
+  }
+
+  .shadcn-menu-link:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .shadcn-menu-item.active .shadcn-menu-link {
+    color: hsl(var(--primary-foreground));
+    font-weight: 600;
+  }
+
+  .shadcn-menu-item.active .shadcn-menu-link:hover {
+    background: hsl(var(--primary) / 0.9);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-menu-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .shadcn-menu-item.active .shadcn-menu-icon {
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-menu-item.active:hover .shadcn-menu-icon {
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-menu-text {
+    flex: 1;
+    font-weight: 500;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shadcn-menu-toggle {
+    margin-left: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: hsl(var(--muted-foreground));
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: hsl(var(--muted) / 0.5);
+    padding: 0.125rem;
+  }
+
+  .shadcn-menu-item:hover .shadcn-menu-toggle {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    transform: scale(1.1);
+  }
+
+  .shadcn-menu-item.open .shadcn-menu-toggle {
+    transform: rotate(180deg) scale(1.1);
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  .shadcn-menu-item.active .shadcn-menu-toggle {
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary-foreground) / 0.1);
+  }
+
+  .shadcn-menu-item.active:hover .shadcn-menu-toggle {
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary-foreground) / 0.2);
+    transform: scale(1.1);
+  }
+
+  .shadcn-menu-sub {
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+    border-left: 2px solid hsl(var(--border));
+    padding-left: 0.75rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  .shadcn-menu-item.open .shadcn-menu-sub {
+    max-height: 1000px;
+    padding-bottom: 0.75rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item {
+    margin: 0.25rem 0;
+    border-radius: var(--radius);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item:hover {
+    background: hsl(var(--accent));
+    transform: translateX(4px);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-link {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    color: hsl(var(--muted-foreground));
+    min-height: 2.25rem;
+    border-radius: var(--radius);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .shadcn-menu-sub .shadcn-menu-link:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    transform: translateX(2px);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.625rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item:hover .shadcn-menu-icon {
+    color: hsl(var(--accent-foreground));
+    transform: scale(1.1);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active {
+    background: hsl(var(--primary) / 0.1);
+    border-left: 3px solid hsl(var(--primary));
+    margin-left: -0.875rem;
+    padding-left: 0.875rem;
+    box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active .shadcn-menu-link {
+    color: hsl(var(--primary));
+    font-weight: 600;
+    background: hsl(var(--primary) / 0.05);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active .shadcn-menu-icon {
+    color: hsl(var(--primary));
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active:hover {
+    background: hsl(var(--primary) / 0.15);
+    transform: translateX(4px);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active:hover .shadcn-menu-link {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active:hover .shadcn-menu-icon {
+    color: hsl(var(--primary));
+    transform: scale(1.1);
+  }
+
+  /* Enhanced dropdown animation */
+  .shadcn-menu-sub .shadcn-menu-item {
+    animation: slideInSubmenu 0.3s ease-out forwards;
+    animation-delay: calc(var(--item-index, 0) * 0.05s);
+  }
+
+  @keyframes slideInSubmenu {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Dropdown visual enhancements */
+  .shadcn-menu-sub::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--primary) / 0.3) 0%,
+      hsl(var(--primary) / 0.1) 50%,
+      hsl(var(--primary) / 0.3) 100%
+    );
+    border-radius: 1px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .shadcn-menu-item.open .shadcn-menu-sub::before {
+    opacity: 1;
+  }
+
+  /* Subtle shadow for dropdown */
+  .shadcn-menu-sub {
+    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.1);
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Enhanced hover effects for better UX */
+  .shadcn-menu-sub .shadcn-menu-item::before {
+    content: '';
+    position: absolute;
+    left: -0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 2px;
+    background: hsl(var(--primary));
+    border-radius: 1px;
+    transition: width 0.2s ease;
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item:hover::before {
+    width: 0.5rem;
+  }
+
+  .shadcn-menu-sub .shadcn-menu-item.active::before {
+    width: 0.75rem;
+    background: hsl(var(--primary));
+  }
+
+  .shadcn-menu-divider {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 1rem 0.75rem;
+  }
+
+  .shadcn-menu-section-title {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-menu-badge {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    margin-left: auto;
+    min-width: 1.25rem;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .shadcn-menu-badge.warning {
+    background: hsl(38 92% 50%);
+    color: hsl(0 0% 100%);
+  }
+
+  .shadcn-menu-badge.danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-menu-badge.success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: hsl(0 0% 100%);
+  }
+
+  /* Responsive */
+  @media (max-width: 1199.98px) {
+    .shadcn-menu {
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      width: 280px;
+    }
+
+    .shadcn-menu.show {
+      transform: translateX(0);
+    }
+  }
+
+  /* Animation for menu items */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .shadcn-menu-item {
+    animation: slideIn 0.2s ease-out;
+  }
+
+  /* Focus states for accessibility */
+  .shadcn-menu-link:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  .shadcn-menu-item,
+  .shadcn-menu-link,
+  .shadcn-menu-icon,
+  .shadcn-menu-toggle {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Enhanced focus states for better accessibility */
+  .shadcn-menu-link:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    background: hsl(var(--accent));
+  }
+
+  /* Improved badge positioning and styling */
+  .shadcn-menu-badge {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    margin-left: auto;
+    min-width: 1.25rem;
+    text-align: center;
+    line-height: 1;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .shadcn-menu-item:hover .shadcn-menu-badge {
+    transform: scale(1.05);
+  }
+
+  /* Subtle pulse animation for active badges */
+  .shadcn-menu-badge.warning {
+    animation: pulseWarning 2s infinite;
+  }
+
+  @keyframes pulseWarning {
+    0%, 100% { box-shadow: 0 1px 2px rgb(0 0 0 / 0.1); }
+    50% { box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 4px hsl(38 92% 50% / 0.2); }
+  }
+</style>
+
+<aside id="layout-menu" class="layout-menu menu-vertical menu shadcn-menu">
   <!-- ! Hide app brand if navbar-full -->
   {% if not navbar_full %}
-  <div class="app-brand demo">
-    <a href="{% url 'index' %}" class="app-brand-link">
+  <div class="shadcn-menu-brand">
+    <a href="{% url 'index' %}" class="shadcn-menu-brand-link">
       <span class="app-brand-logo demo">
         {% include 'partials/logo.html' with withbg="#696cff" %}
       </span>
-      <span class="app-brand-text demo menu-text fw-bold ms-2">{% get_theme_variables 'template_name' %}</span>
+      <span class="app-brand-text demo shadcn-menu-text fw-bold ms-2">{% get_theme_variables 'template_name' %}</span>
     </a>
 
-    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+    <a href="javascript:void(0);" class="layout-menu-toggle shadcn-menu-link text-large ms-auto d-block d-xl-none">
       <i class="fa-solid fa-chevron-down ms-auto d-flex align-items-center justify-content-center"></i>
     </a>
   </div>
   {% endif %}
 
-
-  <div class="menu-inner-shadow"></div>
-
-  <ul class="menu-inner py-1">
+  <ul class="shadcn-menu-inner">
 
 {# Always display Dashboard if user role is Central Stock Manager #}
 {% if user.worker_profile.role == 'Central Stock Manager' %}
-    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active open{% endif %}">
-      <a href="{% url 'index' %}" class="menu-link">
-        <i class="menu-icon fa-solid fa-house"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
+    <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+      <a href="{% url 'index' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-house"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
   {% elif user.worker_profile.role == 'Stock Manager' %}
-    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active open{% endif %}">
-      <a href="{% url 'index' %}" class="menu-link">
-        <i class="menu-icon fa-solid fa-house"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
+    <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+      <a href="{% url 'index' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-house"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
 {% elif user.worker_profile.role == 'Pharmacist'%}
-    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-      <a href="{% url 'index' %}" class="menu-link ">
-        <i class="menu-icon fa-solid fa-house"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+    <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+      <a href="{% url 'index' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-house"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
 {% elif user.worker_profile.role == 'Marketing Director'%}
-    <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-      <a href="{% url 'index' %}" class="menu-link ">
-        <i class="menu-icon fa-solid fa-house"></i>
-        <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
-        {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+    <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+      <a href="{% url 'index' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-house"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
       </a>
     </li>
 {% elif user.worker_profile.role == 'Secretary'%}
-  <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-    <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon fa-solid fa-house"></i>
-      <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
-      {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+  <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+    <a href="{% url 'index' %}" class="shadcn-menu-link">
+      <i class="shadcn-menu-icon fa-solid fa-house"></i>
+      <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
     </a>
   </li>
 
 {% elif user.worker_profile.role == 'Accountant'%}
-  <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-    <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon fa-solid fa-house"></i>
-      <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
-      {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+  <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+    <a href="{% url 'index' %}" class="shadcn-menu-link">
+      <i class="shadcn-menu-icon fa-solid fa-house"></i>
+      <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
     </a>
   </li>
 
   {% elif user.worker_profile.role == 'Cashier'%}
-  <li class="menu-item {% if 'index' == request.resolver_match.url_name or '/dashbord/' in request.path %}active open{% endif %}">
-    <a href="{% url 'index' %}" class="menu-link ">
-      <i class="menu-icon fa-solid fa-house"></i>
-      <div class="text-truncate" data-i18n="Dashboards">{% trans "Home"%}</div>
-      {% comment %} <span class="badge bg-danger rounded-pill ms-auto">5</span> {% endcomment %}
+  <li class="shadcn-menu-item {% if 'index' == request.resolver_match.url_name or '/dashboard/' in request.path %}active{% endif %}">
+    <a href="{% url 'index' %}" class="shadcn-menu-link">
+      <i class="shadcn-menu-icon fa-solid fa-house"></i>
+      <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home"%}</div>
     </a>
   </li>
 
@@ -86,60 +606,60 @@
 {% if role_privileges %}
     {% for privilege in role_privileges %}
         {% if privilege.name == 'View Products' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'products' or '/products/' in request.path %}active open{% endif %}">
-                <a href="{% url 'products' %}" class="menu-link">
-                    <i class="menu-icon fa-solid fa-cubes"></i>
-                    <div class="text-truncate">{% trans "Products" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'products' or '/products/' in request.path %}active{% endif %}">
+                <a href="{% url 'products' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-cubes"></i>
+                    <div class="shadcn-menu-text">{% trans "Products" %}</div>
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'Manage Customers' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'customers' or '/customers/' in request.path %}active open{% endif %}">
-                <a href="{% url 'customers' %}" class="menu-link">
-                    <i class="menu-icon fa-regular fa-user"></i>
-                    <div class="text-truncate">{% trans "Customers" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'customers' or '/customers/' in request.path %}active{% endif %}">
+                <a href="{% url 'customers' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-regular fa-user"></i>
+                    <div class="shadcn-menu-text">{% trans "Customers" %}</div>
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'Manage Employees' %}
-            <!-- Form -->
-      <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-        <a href="javascript:void(0)" class="menu-link menu-toggle">
-            <i class="menu-icon fa-regular fa-user"></i>
-              <div class="text-truncate" data-i18n="Form Elements">Human Resource</div>
-            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+            <!-- Human Resource -->
+      <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+        <a href="javascript:void(0)" class="shadcn-menu-link shadcn-menu-toggle">
+            <i class="shadcn-menu-icon fa-solid fa-users"></i>
+              <div class="shadcn-menu-text" data-i18n="Form Elements">Human Resource</div>
+            <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
           </a>
-        <ul class="menu-sub">
-          <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
-              <a href="{% url 'workers' %}" class="menu-link">
-                  <i class="menu-icon fa-regular fa-user"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
+        <ul class="shadcn-menu-sub">
+          <li class="shadcn-menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active{% endif %}">
+              <a href="{% url 'workers' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-regular fa-user"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Employees" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active open{% endif %}">
-            <a href="{% url 'create_privilege' %}" class="menu-link">
-                <i class="menu-icon fa-solid fa-lock"></i>
-                <div class="text-truncate" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
+          <li class="shadcn-menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active{% endif %}">
+            <a href="{% url 'create_privilege' %}" class="shadcn-menu-link">
+                <i class="shadcn-menu-icon fa-solid fa-lock"></i>
+                <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
             </a>
         </li>
-          <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
-              <a href="{% url 'privileges' %}" class="menu-link">
-                  <i class="menu-icon fa-solid fa-user-lock"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
+          <li class="shadcn-menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active{% endif %}">
+              <a href="{% url 'privileges' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-solid fa-user-lock"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active open{% endif %}">
-              <a href="{% url 'assign_privileges' %}" class="menu-link">
-                  <i class="menu-icon fa-solid fa-user-lock"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
+          <li class="shadcn-menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active{% endif %}">
+              <a href="{% url 'assign_privileges' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-solid fa-user-lock"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active open{% endif %}">
-              <a href="{% url 'sales-rep' %}" class="menu-link">
-                  <i class="menu-icon fa-regular fa-user"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
+          <li class="shadcn-menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active{% endif %}">
+              <a href="{% url 'sales-rep' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-regular fa-user"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
               </a>
           </li>
         </ul>
@@ -147,105 +667,99 @@
         {% endif %}
 
         {% if privilege.name == 'View Stocks' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'branch-stock' or '/branch-stock/' in request.path %}active open{% endif %}">
-                <a href="{% url 'branch-stock' %}" class="menu-link">
-                    <i class="menu-icon fa-solid fa-boxes-stacked"></i>
-                    <div class="text-truncate">{% trans "Branch Stocks" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'branch-stock' or '/branch-stock/' in request.path %}active{% endif %}">
+                <a href="{% url 'branch-stock' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-boxes-stacked"></i>
+                    <div class="shadcn-menu-text">{% trans "Branch Stocks" %}</div>
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'View all stocks' %}
-            <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
-                <a href="{% url 'stock' %}" class="menu-link">
-                    <i class="menu-icon fa-solid fa-cubes"></i>
-                    <div class="text-truncate" data-i18n="Dashboards">{% trans "Track All Stocks" %}</div>
+            <li class="shadcn-menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active{% endif %}">
+                <a href="{% url 'stock' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-cubes"></i>
+                    <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Track All Stocks" %}</div>
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'View Stock Requests'  %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'requests' or '/requests/' in request.path %}active open{% endif %}">
-                <a href="{% url 'requests' %}" class="menu-link">
-                     <i class="menu-icon fa-solid fa-circle-exclamation"></i>
-                    <div class="text-truncate">{% trans "Stock Request" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'requests' or '/requests/' in request.path %}active{% endif %}">
+                <a href="{% url 'requests' %}" class="shadcn-menu-link">
+                     <i class="shadcn-menu-icon fa-solid fa-circle-exclamation"></i>
+                    <div class="shadcn-menu-text">{% trans "Stock Request" %}</div>
                     {% if pending_request_count > 0 %}
-                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+                        <span class="shadcn-menu-badge warning">{{ pending_request_count }}</span>
                     {% endif %}
                 </a>
             </li>
         {% endif %}
         {% if privilege.name == 'View All Stock Requests'  %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'all_requests' or '/all_requests/' in request.path %}active open{% endif %}">
-                <a href="{% url 'all_requests' %}" class="menu-link">
-                     <i class="menu-icon fa-solid fa-circle-exclamation"></i>
-                    <div class="text-truncate">{% trans "All Stock Request" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'all_requests' or '/all_requests/' in request.path %}active{% endif %}">
+                <a href="{% url 'all_requests' %}" class="shadcn-menu-link">
+                     <i class="shadcn-menu-icon fa-solid fa-circle-exclamation"></i>
+                    <div class="shadcn-menu-text">{% trans "All Stock Request" %}</div>
                     {% if pending_request_count > 0 %}
-                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+                        <span class="shadcn-menu-badge warning">{{ pending_request_count }}</span>
                     {% endif %}
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'Transfer Stock'  %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
-                <a href="{% url 'transfers' %}" class="menu-link">
-                     <i class="menu-icon fa-solid fa-arrow-right-arrow-left"></i>
-                    <div class="text-truncate">{% trans "Stock Transfer" %}</div>
-                    {% comment %} {% if pending_request_count > 0 %}
-                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
-                    {% endif %} {% endcomment %}
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active{% endif %}">
+                <a href="{% url 'transfers' %}" class="shadcn-menu-link">
+                     <i class="shadcn-menu-icon fa-solid fa-arrow-right-arrow-left"></i>
+                    <div class="shadcn-menu-text">{% trans "Stock Transfer" %}</div>
                 </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'View Stock In Transit' %}
-            <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
-              <a href="{% url 'stocks_in_transit' %}" class="menu-link">
-                <i class="menu-icon fa-solid fa-truck"></i>
-                <div class="text-truncate" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
+            <li class="shadcn-menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active{% endif %}">
+              <a href="{% url 'stocks_in_transit' %}" class="shadcn-menu-link">
+                <i class="shadcn-menu-icon fa-solid fa-truck"></i>
+                <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
               </a>
             </li>
         {% endif %}
 
 
         {% if privilege.name == 'View Stock In Transit' %}
-            <li class="menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active open{% endif %}">
-              <a href="{% url 'stock_received' %}" class="menu-link">
-                <i class="menu-icon fa-solid fa-truck-ramp-box"></i>
-                <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
+            <li class="shadcn-menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active{% endif %}">
+              <a href="{% url 'stock_received' %}" class="shadcn-menu-link">
+                <i class="shadcn-menu-icon fa-solid fa-truck-ramp-box"></i>
+                <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
               </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'View Orders' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'orders' or '/orders/' in request.path %}active open{% endif %}">
-                <a href="{% url 'orders' %}" class="menu-link">
-                    <i class="menu-icon fa-solid fa-clipboard-list"></i>
-                    <div class="text-truncate">{% trans "Orders" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'orders' or '/orders/' in request.path %}active{% endif %}">
+                <a href="{% url 'orders' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+                    <div class="shadcn-menu-text">{% trans "Orders" %}</div>
                     {% if pending_orders_count > 0 %}
-                        <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+                        <span class="shadcn-menu-badge warning">{{ pending_orders_count }}</span>
                     {% endif %}
                 </a>
             </li>
-            <li class="menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active open{% endif %}">
-              <a href="{% url 'sample_orders' %}" class="menu-link">
-                <i class="menu-icon fa-solid fa-clipboard-list"></i>
-                <div class="text-truncate" data-i18n="Dashboards">{% trans "Samples" %}</div>
-                {% comment %} {% if pending_orders_count > 0 %}
-                <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
-                {% endif %} {% endcomment %}
+            <li class="shadcn-menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active{% endif %}">
+              <a href="{% url 'sample_orders' %}" class="shadcn-menu-link">
+                <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+                <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Samples" %}</div>
               </a>
             </li>
         {% endif %}
 
         {% if privilege.name == 'Process Payments' %}
-            <li class="menu-item {% if request.resolver_match.url_name == 'invoices' or '/invoice_list/' in request.path %}active open{% endif %}">
-                <a href="{% url 'invoices' %}" class="menu-link">
-                    <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-                    <div class="text-truncate">{% trans "Invoices" %}</div>
+            <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'invoices' or '/invoice_list/' in request.path %}active{% endif %}">
+                <a href="{% url 'invoices' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-file-invoice-dollar"></i>
+                    <div class="shadcn-menu-text">{% trans "Invoices" %}</div>
                     {% if unpaid_invoices_count > 0 %}
-                        <span class="badge bg-warning rounded-pill ms-auto">{{ unpaid_invoices_count }}</span>
+                        <span class="shadcn-menu-badge warning">{{ unpaid_invoices_count }}</span>
                     {% endif %}
                 </a>
             </li>
@@ -256,132 +770,132 @@
 
 {% if user.is_superuser %}
 
-    <li class="menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashbord-phar/' in request.path %}active open{% endif %}">
-        <a href="{% url 'index-phar' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-house"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Home" %}</div>
+    <li class="shadcn-menu-item {% if 'index-phar' == request.resolver_match.url_name or '/dashboard-phar/' in request.path %}active{% endif %}">
+        <a href="{% url 'index-phar' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-house"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Home" %}</div>
         </a>
     </li>
-    <li class="menu-item {% if 'branches' == request.resolver_match.url_name or '/branches/' in request.path %}active open{% endif %}">
-        <a href="{% url 'branches' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-house-user"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Branches" %}</div>
+    <li class="shadcn-menu-item {% if 'branches' == request.resolver_match.url_name or '/branches/' in request.path %}active{% endif %}">
+        <a href="{% url 'branches' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-house-user"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Branches" %}</div>
         </a>
     </li>
-    <li class="menu-item {% if 'recommend' == request.resolver_match.url_name or '/recommendations/' in request.path %}active open{% endif %}">
-          <a href="{% url 'recommend' %}" class="menu-link">
-            <i class="menu-icon fa-regular fa-comment-dots"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Recommendations" %}</div>
+    <li class="shadcn-menu-item {% if 'recommend' == request.resolver_match.url_name or '/recommendations/' in request.path %}active{% endif %}">
+          <a href="{% url 'recommend' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-regular fa-comment-dots"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Recommendations" %}</div>
           </a>
       </li>
-       <li class="menu-item {% if 'clearance_dashboard' == request.resolver_match.url_name or '/custom-clearance/' in request.path %}active open{% endif %}">
-          <a href="{% url 'clearance_dashboard' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-ship"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Custom Clearing" %}</div>
+       <li class="shadcn-menu-item {% if 'clearance_dashboard' == request.resolver_match.url_name or '/custom-clearance/' in request.path %}active{% endif %}">
+          <a href="{% url 'clearance_dashboard' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-ship"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Custom Clearing" %}</div>
           </a>
       </li>
 
       <!-- SMS Management -->
-      <li class="menu-item {% if '/sms/' in request.path %}active open{% endif %}">
-        <a href="javascript:void(0)" class="menu-link menu-toggle">
-          <i class="menu-icon fa-solid fa-comment-dots"></i>
-          <div class="text-truncate" data-i18n="SMS Management">{% trans "SMS Management" %}</div>
-          <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+      <li class="shadcn-menu-item {% if '/sms/' in request.path %}open{% endif %}">
+        <a href="javascript:void(0)" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-comment-dots"></i>
+          <div class="shadcn-menu-text" data-i18n="SMS Management">{% trans "SMS Management" %}</div>
+          <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
         </a>
-        <ul class="menu-sub">
-          <li class="menu-item {% if 'sms:sms_dashboard' == request.resolver_match.url_name or '/sms/' == request.path %}active{% endif %}">
-            <a href="{% url 'sms:sms_dashboard' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-chart-line"></i>
-              <div class="text-truncate" data-i18n="SMS Dashboard">{% trans "SMS Dashboard" %}</div>
+        <ul class="shadcn-menu-sub">
+          <li class="shadcn-menu-item {% if 'sms:sms_dashboard' == request.resolver_match.url_name or '/sms/' == request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_dashboard' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
+              <div class="shadcn-menu-text" data-i18n="SMS Dashboard">{% trans "SMS Dashboard" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:send_sms' == request.resolver_match.url_name or '/sms/send/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:send_sms' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-paper-plane"></i>
-              <div class="text-truncate" data-i18n="Send SMS">{% trans "Send SMS" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:send_sms' == request.resolver_match.url_name or '/sms/send/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:send_sms' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-paper-plane"></i>
+              <div class="shadcn-menu-text" data-i18n="Send SMS">{% trans "Send SMS" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:send_bulk_sms' == request.resolver_match.url_name or '/sms/send/bulk/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:send_bulk_sms' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-broadcast-tower"></i>
-              <div class="text-truncate" data-i18n="Bulk SMS">{% trans "Bulk SMS" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:send_bulk_sms' == request.resolver_match.url_name or '/sms/send/bulk/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:send_bulk_sms' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-broadcast-tower"></i>
+              <div class="shadcn-menu-text" data-i18n="Bulk SMS">{% trans "Bulk SMS" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:sms_templates' == request.resolver_match.url_name or '/sms/templates/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:sms_templates' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-file-text"></i>
-              <div class="text-truncate" data-i18n="Templates">{% trans "Templates" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:sms_templates' == request.resolver_match.url_name or '/sms/templates/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_templates' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-file-text"></i>
+              <div class="shadcn-menu-text" data-i18n="Templates">{% trans "Templates" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:sms_groups' == request.resolver_match.url_name or '/sms/groups/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:sms_groups' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-users"></i>
-              <div class="text-truncate" data-i18n="Groups">{% trans "Groups" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:sms_groups' == request.resolver_match.url_name or '/sms/groups/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_groups' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-users"></i>
+              <div class="shadcn-menu-text" data-i18n="Groups">{% trans "Groups" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:sms_messages' == request.resolver_match.url_name or '/sms/messages/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:sms_messages' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-comments"></i>
-              <div class="text-truncate" data-i18n="Messages">{% trans "Messages" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:sms_messages' == request.resolver_match.url_name or '/sms/messages/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_messages' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-comments"></i>
+              <div class="shadcn-menu-text" data-i18n="Messages">{% trans "Messages" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'sms:sms_logs' == request.resolver_match.url_name or '/sms/logs/' in request.path %}active{% endif %}">
-            <a href="{% url 'sms:sms_logs' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-history"></i>
-              <div class="text-truncate" data-i18n="Logs">{% trans "Logs" %}</div>
+          <li class="shadcn-menu-item {% if 'sms:sms_logs' == request.resolver_match.url_name or '/sms/logs/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms:sms_logs' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-history"></i>
+              <div class="shadcn-menu-text" data-i18n="Logs">{% trans "Logs" %}</div>
             </a>
           </li>
         </ul>
       </li>
 
       <!-- Email Management -->
-      <li class="menu-item {% if '/emails/' in request.path %}active open{% endif %}">
-        <a href="javascript:void(0)" class="menu-link menu-toggle">
-          <i class="menu-icon fa-solid fa-envelope"></i>
-          <div class="text-truncate" data-i18n="Email Management">{% trans "Email Management" %}</div>
-          <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+      <li class="shadcn-menu-item {% if '/emails/' in request.path %}open{% endif %}">
+        <a href="javascript:void(0)" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-envelope"></i>
+          <div class="shadcn-menu-text" data-i18n="Email Management">{% trans "Email Management" %}</div>
+          <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
         </a>
-        <ul class="menu-sub">
-          <li class="menu-item {% if 'emails:email_dashboard' == request.resolver_match.url_name or '/emails/' == request.path %}active{% endif %}">
-            <a href="{% url 'emails:email_dashboard' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-chart-line"></i>
-              <div class="text-truncate" data-i18n="Email Dashboard">{% trans "Email Dashboard" %}</div>
+        <ul class="shadcn-menu-sub">
+          <li class="shadcn-menu-item {% if 'emails:email_dashboard' == request.resolver_match.url_name or '/emails/' == request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_dashboard' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
+              <div class="shadcn-menu-text" data-i18n="Email Dashboard">{% trans "Email Dashboard" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:send_email' == request.resolver_match.url_name or '/emails/send/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:send_email' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-paper-plane"></i>
-              <div class="text-truncate" data-i18n="Send Email">{% trans "Send Email" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:send_email' == request.resolver_match.url_name or '/emails/send/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:send_email' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-paper-plane"></i>
+              <div class="shadcn-menu-text" data-i18n="Send Email">{% trans "Send Email" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:send_bulk_email' == request.resolver_match.url_name or '/emails/send/bulk/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:send_bulk_email' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-broadcast-tower"></i>
-              <div class="text-truncate" data-i18n="Bulk Email">{% trans "Bulk Email" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:send_bulk_email' == request.resolver_match.url_name or '/emails/send/bulk/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:send_bulk_email' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-broadcast-tower"></i>
+              <div class="shadcn-menu-text" data-i18n="Bulk Email">{% trans "Bulk Email" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:email_templates' == request.resolver_match.url_name or '/emails/templates/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:email_templates' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-file-text"></i>
-              <div class="text-truncate" data-i18n="Templates">{% trans "Templates" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:email_templates' == request.resolver_match.url_name or '/emails/templates/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_templates' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-file-text"></i>
+              <div class="shadcn-menu-text" data-i18n="Templates">{% trans "Templates" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:email_groups' == request.resolver_match.url_name or '/emails/groups/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:email_groups' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-users"></i>
-              <div class="text-truncate" data-i18n="Groups">{% trans "Groups" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:email_groups' == request.resolver_match.url_name or '/emails/groups/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_groups' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-users"></i>
+              <div class="shadcn-menu-text" data-i18n="Groups">{% trans "Groups" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:email_messages' == request.resolver_match.url_name or '/emails/messages/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:email_messages' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-inbox"></i>
-              <div class="text-truncate" data-i18n="Messages">{% trans "Messages" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:email_messages' == request.resolver_match.url_name or '/emails/messages/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_messages' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-inbox"></i>
+              <div class="shadcn-menu-text" data-i18n="Messages">{% trans "Messages" %}</div>
             </a>
           </li>
-          <li class="menu-item {% if 'emails:email_logs' == request.resolver_match.url_name or '/emails/logs/' in request.path %}active{% endif %}">
-            <a href="{% url 'emails:email_logs' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-history"></i>
-              <div class="text-truncate" data-i18n="Logs">{% trans "Logs" %}</div>
+          <li class="shadcn-menu-item {% if 'emails:email_logs' == request.resolver_match.url_name or '/emails/logs/' in request.path %}active{% endif %}">
+            <a href="{% url 'emails:email_logs' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-history"></i>
+              <div class="shadcn-menu-text" data-i18n="Logs">{% trans "Logs" %}</div>
             </a>
           </li>
         </ul>
@@ -389,42 +903,42 @@
 
 
 
-      <!-- Form -->
-      <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-        <a href="javascript:void(0)" class="menu-link menu-toggle">
-            <i class="menu-icon fa-regular fa-user"></i>
-              <div class="text-truncate" data-i18n="Form Elements">Human Resource</div>
-            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+      <!-- Human Resource -->
+      <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+        <a href="javascript:void(0)" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-users"></i>
+              <div class="shadcn-menu-text" data-i18n="Form Elements">Human Resource</div>
+            <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
           </a>
-        <ul class="menu-sub">
-          <li class="menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active open{% endif %}">
-              <a href="{% url 'workers' %}" class="menu-link">
-                  <i class="menu-icon fa-regular fa-user"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Employees" %}</div>
+        <ul class="shadcn-menu-sub">
+          <li class="shadcn-menu-item {% if 'workers' == request.resolver_match.url_name or '/workers/' in request.path %}active{% endif %}">
+              <a href="{% url 'workers' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-regular fa-user"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Employees" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active open{% endif %}">
-            <a href="{% url 'create_privilege' %}" class="menu-link">
-                <i class="menu-icon fa-solid fa-lock"></i>
-                <div class="text-truncate" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
+          <li class="shadcn-menu-item {% if 'create_privilege' == request.resolver_match.url_name or '/create-privilege/' in request.path %}active{% endif %}">
+            <a href="{% url 'create_privilege' %}" class="shadcn-menu-link">
+                <i class="shadcn-menu-icon fa-solid fa-lock"></i>
+                <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Privileges List" %}</div>
             </a>
         </li>
-          <li class="menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active open{% endif %}">
-              <a href="{% url 'privileges' %}" class="menu-link">
-                  <i class="menu-icon fa-solid fa-user-lock"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
+          <li class="shadcn-menu-item {% if 'privileges' == request.resolver_match.url_name or '/privileges/' in request.path %}active{% endif %}">
+              <a href="{% url 'privileges' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-solid fa-user-lock"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Roles & Privileges" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active open{% endif %}">
-              <a href="{% url 'assign_privileges' %}" class="menu-link">
-                  <i class="menu-icon fa-solid fa-user-lock"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
+          <li class="shadcn-menu-item {% if 'assign_privileges' == request.resolver_match.url_name or '/assign-privileges/' in request.path %}active{% endif %}">
+              <a href="{% url 'assign_privileges' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-solid fa-user-lock"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Assign Privileges" %}</div>
               </a>
           </li>
-          <li class="menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active open{% endif %}">
-              <a href="{% url 'sales-rep' %}" class="menu-link">
-                  <i class="menu-icon fa-regular fa-user"></i>
-                  <div class="text-truncate" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
+          <li class="shadcn-menu-item {% if 'sales-rep' == request.resolver_match.url_name or '/sales-rep/' in request.path %}active{% endif %}">
+              <a href="{% url 'sales-rep' %}" class="shadcn-menu-link">
+                  <i class="shadcn-menu-icon fa-regular fa-user"></i>
+                  <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Sales Rep" %}</div>
               </a>
           </li>
         </ul>
@@ -436,73 +950,69 @@
       <span class="menu-header-text">Inventory Management</span>
     </li> {% endcomment %}
 
-    <!-- Form -->
-    <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-      <a href="javascript:void(0)" class="menu-link menu-toggle">
-          <i class="menu-icon fa-solid fa-cubes"></i>
-           <div class="text-truncate" data-i18n="Form Elements">Inventory Management</div>
-           <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+    <!-- Inventory Management -->
+    <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-cubes"></i>
+           <div class="shadcn-menu-text" data-i18n="Form Elements">Inventory Management</div>
+           <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
        </a>
-     <ul class="menu-sub">
-      <li class="menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active open{% endif %}">
-          <a href="{% url 'products' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-boxes-stacked"></i>
-              <div class="text-truncate" data-i18n="Dashboards">{% trans "Products" %}</div>
+     <ul class="shadcn-menu-sub">
+      <li class="shadcn-menu-item {% if 'products' == request.resolver_match.url_name or '/products/' in request.path %}active{% endif %}">
+          <a href="{% url 'products' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-boxes-stacked"></i>
+              <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Products" %}</div>
           </a>
       </li>
-      <li class="menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active open{% endif %}">
-          <a href="{% url 'stock' %}" class="menu-link">
-              <i class="menu-icon fa-solid fa-cubes"></i>
-              <div class="text-truncate" data-i18n="Dashboards">{% trans "Track Stocks" %}</div>
+      <li class="shadcn-menu-item {% if 'stock' == request.resolver_match.url_name or '/stock/' in request.path %}active{% endif %}">
+          <a href="{% url 'stock' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-solid fa-cubes"></i>
+              <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Track Stocks" %}</div>
           </a>
       </li>
 
-      <li class="menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active open{% endif %}">
-        <a href="{% url 'requests' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-circle-exclamation"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Request" %}</div>
+      <li class="shadcn-menu-item {% if 'requests' == request.resolver_match.url_name or '/requests/' in request.path %}active{% endif %}">
+        <a href="{% url 'requests' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-circle-exclamation"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Stock Request" %}</div>
           {% if pending_request_count > 0 %}
-          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
+          <span class="shadcn-menu-badge warning">{{ pending_request_count }}</span>
           {% endif %}
         </a>
       </li>
 
-      <li class="menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active open{% endif %}">
-        <a href="{% url 'transfers' %}" class="menu-link">
-             <i class="menu-icon fa-solid fa-arrow-right-arrow-left"></i>
-            <div class="text-truncate">{% trans "Stock Transfer" %}</div>
-            {% comment %} {% if pending_request_count > 0 %}
-                <span class="badge bg-warning rounded-pill ms-auto">{{ pending_request_count }}</span>
-            {% endif %} {% endcomment %}
+      <li class="shadcn-menu-item {% if request.resolver_match.url_name == 'transfers' or '/transfers/' in request.path %}active{% endif %}">
+        <a href="{% url 'transfers' %}" class="shadcn-menu-link">
+             <i class="shadcn-menu-icon fa-solid fa-arrow-right-arrow-left"></i>
+            <div class="shadcn-menu-text">{% trans "Stock Transfer" %}</div>
         </a>
     </li>
 
-      <li class="menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active open{% endif %}">
-        <a href="{% url 'stocks_in_transit' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-truck"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
+      <li class="shadcn-menu-item {% if 'stocks_in_transit' == request.resolver_match.url_name or '/stocks_in_transit/' in request.path %}active{% endif %}">
+        <a href="{% url 'stocks_in_transit' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-truck"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
         </a>
       </li>
 
-      <li class="menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active open{% endif %}">
-        <a href="{% url 'stock_received' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-truck-ramp-box"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
+      <li class="shadcn-menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active{% endif %}">
+        <a href="{% url 'stock_received' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-truck-ramp-box"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
         </a>
       </li>
 
-
-      <li class="menu-item {% if 'stock_movement' == request.resolver_match.url_name or '/stock_movement/' in request.path %}active open{% endif %}">
-        <a href="{% url 'stock_movement' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-dolly"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Stock Movement" %}</div>
+      <li class="shadcn-menu-item {% if 'stock_movement' == request.resolver_match.url_name or '/stock_movement/' in request.path %}active{% endif %}">
+        <a href="{% url 'stock_movement' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-dolly"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Stock Movement" %}</div>
         </a>
       </li>
 
-      <li class="menu-item {% if 'damaged-products' == request.resolver_match.url_name or '/damaged-products/' in request.path %}active open{% endif %}">
-        <a href="{% url 'damaged-products' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-triangle-exclamation"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Damaged Products" %}</div>
+      <li class="shadcn-menu-item {% if 'damaged-products' == request.resolver_match.url_name or '/damaged-products/' in request.path %}active{% endif %}">
+        <a href="{% url 'damaged-products' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-triangle-exclamation"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Damaged Products" %}</div>
         </a>
       </li>
      </ul>
@@ -510,27 +1020,27 @@
 
 
 
-    <!-- Form -->
-    <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-      <a href="javascript:void(0)" class="menu-link menu-toggle">
-        <i class="menu-icon fa-solid fa-clipboard-list"></i>
-            <div class="text-truncate" data-i18n="Form Elements">Sales</div>
-            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+    <!-- Sales -->
+    <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+            <div class="shadcn-menu-text" data-i18n="Form Elements">Sales</div>
+            <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
         </a>
-      <ul class="menu-sub">
-        <li class="menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active open{% endif %}">
-          <a href="{% url 'customers' %}" class="menu-link">
-              <i class="menu-icon fa-regular fa-user"></i>
-              <div class="text-truncate" data-i18n="Dashboards">{% trans "Customers" %}</div>
+      <ul class="shadcn-menu-sub">
+        <li class="shadcn-menu-item {% if 'customers' == request.resolver_match.url_name or '/customers/' in request.path %}active{% endif %}">
+          <a href="{% url 'customers' %}" class="shadcn-menu-link">
+              <i class="shadcn-menu-icon fa-regular fa-user"></i>
+              <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Customers" %}</div>
           </a>
       </li>
 
-      <li class="menu-item {% if 'orders' == request.resolver_match.url_name or '/orders/' in request.path %}active open{% endif %}">
-        <a href="{% url 'orders' %}" class="menu-link">
-          <i class="menu-icon fa-solid fa-clipboard-list"></i>
-          <div class="text-truncate" data-i18n="Dashboards">{% trans "Orders" %}</div>
+      <li class="shadcn-menu-item {% if 'orders' == request.resolver_match.url_name or '/orders/' in request.path %}active{% endif %}">
+        <a href="{% url 'orders' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Orders" %}</div>
           {% if pending_orders_count > 0 %}
-          <span class="badge bg-warning rounded-pill ms-auto">{{ pending_orders_count }}</span>
+          <span class="shadcn-menu-badge warning">{{ pending_orders_count }}</span>
           {% endif %}
         </a>
       </li>
@@ -541,63 +1051,66 @@
 
 
 
-    <!-- Form -->
-    <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-      <a href="javascript:void(0)" class="menu-link menu-toggle">
-        <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-            <div class="text-truncate" data-i18n="Form Elements">Finance</div>
-            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+    <!-- Finance -->
+    <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="shadcn-menu-text" data-i18n="Form Elements">Finance</div>
+            <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
         </a>
-      <ul class="menu-sub">
-        <li class="menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active open{% endif %}">
-          <a href="{% url 'invoices' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Invoices" %}</div>
+      <ul class="shadcn-menu-sub">
+        <li class="shadcn-menu-item {% if 'invoices' == request.resolver_match.url_name or 'invoice_list/' in request.path %}active{% endif %}">
+          <a href="{% url 'invoices' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Invoices" %}</div>
             {% if unpaid_invoices_count > 0 %}
-            <span class="badge bg-warning rounded-pill ms-auto">{{ unpaid_invoices_count }}</span>
+            <span class="shadcn-menu-badge warning">{{ unpaid_invoices_count }}</span>
             {% endif %}
           </a>
         </li>
 
-
-        <li class="menu-item {% if 'old-invoice' == request.resolver_match.url_name or '/old-invoice/' in request.path %}active open{% endif %}">
-          <a href="{% url 'old-invoice' %}" class="menu-link">
-            <i class="menu-icon fa-solid fa-file-invoice-dollar"></i>
-            <div class="text-truncate" data-i18n="Dashboards">{% trans "Old Invoice" %}</div>
+        <li class="shadcn-menu-item {% if 'old-invoice' == request.resolver_match.url_name or '/old-invoice/' in request.path %}active{% endif %}">
+          <a href="{% url 'old-invoice' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-file-invoice-dollar"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Old Invoice" %}</div>
           </a>
         </li>
       </ul>
     </li>
 
 
-    <!-- Form -->
-    <li class="menu-item {% if '/forms/' in request.path %}active open{% endif %}">
-      <a href="javascript:void(0)" class="menu-link menu-toggle">
-            <i class="menu-icon fa-solid fa-money-check-dollar"></i>
-            <div class="text-truncate" data-i18n="Form Elements">Payment Info</div>
-            <i class="fa-solid fa-chevron-down ms-auto menu-dropdown-icon"></i>
+    <!-- Payment Info -->
+    <li class="shadcn-menu-item {% if '/forms/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-money-check-dollar"></i>
+            <div class="shadcn-menu-text" data-i18n="Form Elements">Payment Info</div>
+            <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
         </a>
-      <ul class="menu-sub">
-        <li class="menu-item {% if 'add-bank' in request.path %}active{% endif %}">
-          <a href="{% url 'add-bank' %}" class="menu-link">
-            <div class="text-truncate" data-i18n="Basic Inputs">Bank Details</div>
+      <ul class="shadcn-menu-sub">
+        <li class="shadcn-menu-item {% if 'add-bank' in request.path %}active{% endif %}">
+          <a href="{% url 'add-bank' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-university"></i>
+            <div class="shadcn-menu-text" data-i18n="Basic Inputs">Bank Details</div>
           </a>
         </li>
-        <li class="menu-item {% if 'add-momo' in request.path %}active{% endif %}">
-          <a href="{% url 'add-momo' %}" class="menu-link">
-            <div class="text-truncate" data-i18n="Input groups">MoMo Details</div>
-          </a>
-        </li>
-
-        <li class="menu-item {% if 'add-check' in request.path %}active{% endif %}">
-          <a href="{% url 'add-check' %}" class="menu-link">
-            <div class="text-truncate" data-i18n="Input groups">Check Details</div>
+        <li class="shadcn-menu-item {% if 'add-momo' in request.path %}active{% endif %}">
+          <a href="{% url 'add-momo' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-mobile-alt"></i>
+            <div class="shadcn-menu-text" data-i18n="Input groups">MoMo Details</div>
           </a>
         </li>
 
-        <li class="menu-item {% if 'add-deposit' in request.path %}active{% endif %}">
-          <a href="{% url 'add-deposit' %}" class="menu-link">
-            <div class="text-truncate" data-i18n="Input groups">Bank Deposit Details</div>
+        <li class="shadcn-menu-item {% if 'add-check' in request.path %}active{% endif %}">
+          <a href="{% url 'add-check' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-file-invoice"></i>
+            <div class="shadcn-menu-text" data-i18n="Input groups">Check Details</div>
+          </a>
+        </li>
+
+        <li class="shadcn-menu-item {% if 'add-deposit' in request.path %}active{% endif %}">
+          <a href="{% url 'add-deposit' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-piggy-bank"></i>
+            <div class="shadcn-menu-text" data-i18n="Input groups">Bank Deposit Details</div>
           </a>
         </li>
       </ul>
@@ -1032,5 +1545,107 @@
 
   </ul>
 
-
 </aside>
+
+<script>
+// Professional shadcn/ui Menu JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  // Menu toggle functionality
+  const menuToggles = document.querySelectorAll('.shadcn-menu-toggle');
+
+  menuToggles.forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const menuItem = this.closest('.shadcn-menu-item');
+      const isOpen = menuItem.classList.contains('open');
+
+      // Close all other open menu items
+      document.querySelectorAll('.shadcn-menu-item.open').forEach(item => {
+        if (item !== menuItem) {
+          item.classList.remove('open');
+        }
+      });
+
+      // Toggle current menu item
+      if (isOpen) {
+        menuItem.classList.remove('open');
+      } else {
+        menuItem.classList.add('open');
+
+        // Add staggered animation delays to submenu items
+        const submenuItems = menuItem.querySelectorAll('.shadcn-menu-sub .shadcn-menu-item');
+        submenuItems.forEach((item, index) => {
+          item.style.setProperty('--item-index', index);
+        });
+      }
+    });
+  });
+
+  // Mobile menu toggle
+  const layoutMenuToggle = document.querySelector('.layout-menu-toggle');
+  const layoutMenu = document.querySelector('.shadcn-menu');
+
+  if (layoutMenuToggle && layoutMenu) {
+    layoutMenuToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      layoutMenu.classList.toggle('show');
+    });
+  }
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(e) {
+    if (layoutMenu && !layoutMenu.contains(e.target) && !layoutMenuToggle.contains(e.target)) {
+      layoutMenu.classList.remove('show');
+    }
+  });
+
+  // Smooth scroll for menu items
+  const menuLinks = document.querySelectorAll('.shadcn-menu-link[href^="#"]');
+  menuLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  // Add active state based on current URL
+  const currentPath = window.location.pathname;
+  const menuItems = document.querySelectorAll('.shadcn-menu-item');
+
+  menuItems.forEach(item => {
+    const link = item.querySelector('.shadcn-menu-link');
+    if (link) {
+      const href = link.getAttribute('href');
+      if (href && currentPath.includes(href.replace('/', ''))) {
+        item.classList.add('active');
+
+        // If it's a submenu item, also open the parent
+        const parentSubmenu = item.closest('.shadcn-menu-sub');
+        if (parentSubmenu) {
+          const parentItem = parentSubmenu.closest('.shadcn-menu-item');
+          if (parentItem) {
+            parentItem.classList.add('open');
+          }
+        }
+      }
+    }
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && layoutMenu && layoutMenu.classList.contains('show')) {
+      layoutMenu.classList.remove('show');
+    }
+  });
+});
+</script>

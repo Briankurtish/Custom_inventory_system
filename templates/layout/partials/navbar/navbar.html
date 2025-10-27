@@ -1,148 +1,522 @@
 {% load i18n %}
 {% load static %}
 
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
 
-<nav class="layout-navbar {{container_class}} navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  /* Modern shadcn-style navbar */
+  .shadcn-navbar {
+    background: hsl(var(--card));
+    border-bottom: 1px solid hsl(var(--border));
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 0.75rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    background: hsl(var(--card) / 0.8);
+  }
+
+  .shadcn-navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: hsl(var(--card-foreground));
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-navbar-brand:hover {
+    color: hsl(var(--primary));
+  }
+
+  .shadcn-navbar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .shadcn-navbar-toggle:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-navbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .shadcn-navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .shadcn-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+  }
+
+  .shadcn-navbar-welcome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .shadcn-navbar-user {
+    color: hsl(var(--primary));
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .shadcn-language-selector {
+    position: relative;
+  }
+
+  .shadcn-language-select {
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 100px;
+  }
+
+  .shadcn-language-select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  .shadcn-language-select:hover {
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-user-dropdown {
+    position: relative;
+  }
+
+  .shadcn-user-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    background: transparent;
+    border: 1px solid transparent;
+    color: hsl(var(--card-foreground));
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .shadcn-user-button:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-user-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid hsl(var(--border));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-user-button i {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-user-button:hover i {
+    transform: scale(1.1);
+  }
+
+  .shadcn-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background: hsl(var(--popover));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    min-width: 16rem;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  .shadcn-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .shadcn-dropdown-header {
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .shadcn-dropdown-user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid hsl(var(--border));
+  }
+
+  .shadcn-dropdown-user-details h6 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--popover-foreground));
+  }
+
+  .shadcn-dropdown-user-details small {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.75rem;
+  }
+
+  .shadcn-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: hsl(var(--popover-foreground));
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius);
+    margin: 0.125rem 0.5rem;
+  }
+
+  .shadcn-dropdown-item:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .shadcn-dropdown-item i {
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--muted-foreground));
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-dropdown-item:hover i {
+    color: hsl(var(--accent-foreground));
+  }
+
+  .shadcn-dropdown-divider {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 0.5rem 0;
+  }
+
+  .shadcn-dropdown-footer {
+    padding: 0.5rem 1rem 1rem;
+  }
+
+  .shadcn-logout-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+    border: 1px solid hsl(var(--destructive));
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-logout-button:hover {
+    background: hsl(var(--destructive) / 0.9);
+    border-color: hsl(var(--destructive) / 0.9);
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .shadcn-navbar {
+      padding: 0.5rem 1rem;
+    }
+
+    .shadcn-navbar-welcome {
+      display: none;
+    }
+
+    .shadcn-language-select {
+      min-width: 80px;
+      font-size: 0.75rem;
+    }
+  }
+</style>
+
+<nav class="shadcn-navbar {{container_class}}" id="layout-navbar">
+  <div class="shadcn-navbar-content">
+    <!-- Left side -->
+    <div class="shadcn-navbar-left">
   {% if not navbar_hide_toggle %}
-  <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+      <button class="shadcn-navbar-toggle layout-menu-toggle d-xl-none" type="button">
       <i class="fa-solid fa-bars"></i>
-    </a>
-  </div>
+      </button>
   {% endif %}
-  <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
-    <small class="">{% trans "Welcome Back" %} </small>
-    &nbsp
-    <h6 class="mb-0 text-primary">{{user.first_name}} {{user.last_name}}</h6>
-
-    <!-- Search -->
-    {% comment %} <div class="navbar-nav align-items-center">
-      <div class="nav-item d-flex align-items-center">
-        <i class="bx bx-search bx-md"></i>
-        <input type="text" class="form-control border-0 shadow-none ps-1 ps-sm-2" placeholder="Search..." aria-label="Search...">
+      <div class="shadcn-navbar-welcome">
+        <span>{% trans "Welcome Back" %}</span>
+        <span class="shadcn-navbar-user">{{user.first_name}} {{user.last_name}}</span>
       </div>
-    </div> {% endcomment %}
-    <!-- /Search -->
+    </div>
 
-    <ul class="navbar-nav flex-row align-items-center ms-auto">
-      {% comment %} <strong class="">{{user.worker_profile.role}}</strong> {% endcomment %}
-
-
-      <li class="nav-item dropdown">
+    <!-- Right side -->
+    <div class="shadcn-navbar-right">
+      <!-- Language Selector -->
+      <div class="shadcn-language-selector">
         <form action="{% url 'set_language' %}" method="post" class="d-inline">
           {% csrf_token %}
-          <select name="language" onchange="this.form.submit()">
-              <option value="en" {% if request.LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
-              <option value="fr" {% if request.LANGUAGE_CODE == 'fr' %}selected{% endif %}>French</option>
+          <select name="language" class="shadcn-language-select" onchange="this.form.submit()">
+            <option value="en" {% if request.LANGUAGE_CODE == 'en' %}selected{% endif %}>🇺🇸 English</option>
+            <option value="fr" {% if request.LANGUAGE_CODE == 'fr' %}selected{% endif %}>🇫🇷 Français</option>
           </select>
           <input type="hidden" name="next" value="{{ request.path }}">
       </form>
-    </li>
+      </div>
 
+      <!-- User Dropdown -->
+      <div class="shadcn-user-dropdown">
+        <button class="shadcn-user-button" type="button" aria-expanded="false">
+          <img src="{{ user.worker_profile.profile_image.url }}" alt="User Avatar" class="shadcn-user-avatar">
+          <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+        </button>
 
-      {% comment %} <li class="nav-item dropdown">
-        <form action="{% url 'set_language' %}" method="post">
-          {% csrf_token %}
-          <select name="language">
-              <option value="en">English</option>
-              <option value="fr">French</option>
-          </select>
-          <button type="submit">Switch Language</button>
-      </form>
-        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-          <li>
-            <a class="dropdown-item" href="{% url 'set_language' %}?next={{ request.path }}&language=en">English</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="{% url 'set_language' %}?next={{ request.path }}&language=fr">French</a>
-          </li>
-        </ul>
-      </li> {% endcomment %}
-
-    &nbsp
-    &nbsp
-    &nbsp
-
-
-      <!-- User -->
-      <li class="nav-item navbar-dropdown dropdown-user dropdown">
-        <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
-          <div class="avatar avatar-online">
-            <img src="{{ user.worker_profile.profile_image.url }}" alt="User Avatar" class="w-px-10 h-auto rounded-circle">
-
+        <div class="shadcn-dropdown-menu">
+          <!-- User Info Header -->
+          <div class="shadcn-dropdown-header">
+            <div class="shadcn-dropdown-user-info">
+              <img src="{{ user.worker_profile.profile_image.url }}" alt="User Avatar" class="shadcn-dropdown-user-avatar">
+              <div class="shadcn-dropdown-user-details">
+                <h6>{{ user.first_name }} {{ user.last_name }}</h6>
+                <small>{{ user.worker_profile.role }}</small>
           </div>
-        </a>
-   <ul class="dropdown-menu dropdown-menu-end">
-  <li>
-    <a class="dropdown-item" href="javascript:void(0);">
-      <div class="d-flex">
-        <div class="flex-grow-1">
-          <h6 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h6>
-          <small class="text-muted">{{ user.worker_profile.role }}</small>
         </div>
       </div>
-    </a>
-  </li>
-  <li>
-    <div class="dropdown-divider my-1"></div>
-  </li>
-  <li>
-    <a class="dropdown-item" href="{% url 'online-workers' %}">
-      <i class="fa-regular fa-user me-3"></i><span>Users Online</span>
-      <span class="badge bg-success rounded-pill ms-auto">{{ online_users_count }}</span>
-    </a>
-  </li>
-  <li>
-    <a class="dropdown-item" href="{% url 'edit_worker_profile' pk=user.worker_profile.id %}">
-      <i class="fa-regular fa-user me-3"></i><span>My Profile</span>
-    </a>
-  </li>
-  <li>
-    <a class="dropdown-item" href="{% url 'password_change' %}">
-      <i class="fa-solid fa-gear me-3"></i><span>Settings</span>
-    </a>
-  </li>
 
-  <!-- Conditionally show Create/Update Security PIN -->
+          <!-- Menu Items -->
+          <a class="shadcn-dropdown-item" href="{% url 'online-workers' %}">
+            <i class="fa-solid fa-users"></i>
+            <span>{% trans "Users Online" %}</span>
+            <span class="shadcn-badge shadcn-badge-success ms-auto">{{ online_users_count }}</span>
+          </a>
+
+          <a class="shadcn-dropdown-item" href="{% url 'edit_worker_profile' pk=user.worker_profile.id %}">
+            <i class="fa-solid fa-user"></i>
+            <span>{% trans "My Profile" %}</span>
+          </a>
+
+          <a class="shadcn-dropdown-item" href="{% url 'password_change' %}">
+            <i class="fa-solid fa-gear"></i>
+            <span>{% trans "Settings" %}</span>
+          </a>
+
+          <!-- Security PIN -->
   {% if not user.worker_profile.security_pin %}
-    <li>
-      <a class="dropdown-item" href="{% url 'create_security_pin' %}">
-        <i class="fa-solid fa-key me-3"></i><span>Create Security PIN</span>
-      </a>
-    </li>
+          <a class="shadcn-dropdown-item" href="{% url 'create_security_pin' %}">
+            <i class="fa-solid fa-key"></i>
+            <span>{% trans "Create Security PIN" %}</span>
+          </a>
   {% else %}
-    <li>
-      <a class="dropdown-item" href="{% url 'update_security_pin' %}">
-        <i class="fa-solid fa-key me-3"></i><span>Update Security PIN</span>
-      </a>
-    </li>
+          <a class="shadcn-dropdown-item" href="{% url 'update_security_pin' %}">
+            <i class="fa-solid fa-key"></i>
+            <span>{% trans "Update Security PIN" %}</span>
+          </a>
   {% endif %}
 
-  <li>
-            <div class="dropdown-divider my-1"></div>
-          </li>
-          <li>
-            <div class="d-grid px-4 pt-2 pb-1">
-              <a class="btn btn-danger d-flex" href="{% url 'logout' %}">
-                <small class="align-middle">Logout</small>
-                <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
-              </a>
-            </div>
-          </li>
-</ul>
-          {% comment %} <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <span class="d-flex align-items-center align-middle">
-                <i class="flex-shrink-0 bx bx-credit-card bx-md me-3"></i><span class="flex-grow-1 align-middle">Billing Plan</span>
-                <span class="flex-shrink-0 badge rounded-pill bg-danger">4</span>
-              </span>
-            </a>
-          </li> {% endcomment %}
+          <div class="shadcn-dropdown-divider"></div>
 
-        </ul>
-      </li>
-      <!--/ User -->
-    </ul>
+          <!-- Logout -->
+          <div class="shadcn-dropdown-footer">
+            <a class="shadcn-logout-button" href="{% url 'logout' %}">
+              <i class="fa-solid fa-sign-out-alt"></i>
+              <span>{% trans "Logout" %}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle dropdown toggle
+  const userButton = document.querySelector('.shadcn-user-button');
+  const dropdownMenu = document.querySelector('.shadcn-dropdown-menu');
+  const chevronIcon = userButton?.querySelector('.fa-chevron-down');
+
+  if (userButton && dropdownMenu) {
+    userButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const isOpen = dropdownMenu.classList.contains('show');
+
+      // Close all other dropdowns first
+      document.querySelectorAll('.shadcn-dropdown-menu.show').forEach(menu => {
+        if (menu !== dropdownMenu) {
+          menu.classList.remove('show');
+        }
+      });
+
+      // Toggle current dropdown
+      if (isOpen) {
+        dropdownMenu.classList.remove('show');
+        userButton.setAttribute('aria-expanded', 'false');
+        if (chevronIcon) {
+          chevronIcon.style.transform = 'rotate(0deg)';
+        }
+      } else {
+        dropdownMenu.classList.add('show');
+        userButton.setAttribute('aria-expanded', 'true');
+        if (chevronIcon) {
+          chevronIcon.style.transform = 'rotate(180deg)';
+        }
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!userButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+        userButton.setAttribute('aria-expanded', 'false');
+        if (chevronIcon) {
+          chevronIcon.style.transform = 'rotate(0deg)';
+        }
+      }
+    });
+
+    // Close dropdown on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && dropdownMenu.classList.contains('show')) {
+        dropdownMenu.classList.remove('show');
+        userButton.setAttribute('aria-expanded', 'false');
+        if (chevronIcon) {
+          chevronIcon.style.transform = 'rotate(0deg)';
+        }
+        userButton.focus();
+      }
+    });
+
+    // Prevent dropdown from closing when clicking inside
+    dropdownMenu.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  }
+
+  // Handle language form submission
+  const languageSelect = document.querySelector('.shadcn-language-select');
+  if (languageSelect) {
+    languageSelect.addEventListener('change', function() {
+      this.form.submit();
+    });
+  }
+});
+</script>

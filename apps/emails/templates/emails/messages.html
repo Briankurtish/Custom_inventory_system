@@ -1,105 +1,570 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}Email Messages{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+    border-color: hsl(142.1 76.2% 36.3%);
+  }
+
+  .shadcn-button-success:hover {
+    background: hsl(142.1 76.2% 36.3% / 0.9);
+    border-color: hsl(142.1 76.2% 36.3% / 0.9);
+  }
+
+  .shadcn-button-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-section {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .form-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) * 1.5);
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-table th {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(38 92% 50%);
+    color: white;
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-badge-info {
+    background: hsl(199.4 89.4% 48.4%);
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: hsl(var(--muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .page-item {
+    list-style: none;
+  }
+
+  .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page-link:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .page-item.active .page-link {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Header -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Email Messages</h4>
-                    <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Send Email
-                    </a>
-                </div>
-            </div>
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-envelope me-3"></i>{% trans "Email Messages"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "View and manage all your email communications"%}</p>
         </div>
+        <div class="flex gap-2">
+          <a href="{% url 'emails:send_email' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+            <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Send Email"%}
+          </a>
+          <a href="{% url 'emails:send_bulk_email' %}" class="shadcn-button shadcn-button-success shadcn-button-md">
+            <i class="fa-solid fa-broadcast-tower me-2"></i>{% trans "Bulk Email"%}
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Messages List -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    {% if email_messages %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th><i class="bx bx-user me-1"></i>Recipient</th>
-                                        <th><i class="bx bx-envelope me-1"></i>Email</th>
-                                        <th><i class="bx bx-tag me-1"></i>Type</th>
-                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
-                                        <th><i class="bx bx-time me-1"></i>Sent At</th>
-                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for email_message in email_messages %}
-                                    <tr>
-                                        <td>{{ email_message.recipient_name }}</td>
-                                        <td>{{ email_message.recipient_email }}</td>
-                                        <td>
-                                            <span class="badge bg-label-secondary">
-                                                {{ email_message.get_message_type_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if email_message.status == 'sent' %}
-                                                <span class="badge bg-label-success">Sent</span>
-                                            {% elif email_message.status == 'delivered' %}
-                                                <span class="badge bg-label-primary">Delivered</span>
-                                            {% elif email_message.status == 'failed' %}
-                                                <span class="badge bg-label-danger">Failed</span>
-                                            {% else %}
-                                                <span class="badge bg-label-warning">{{ email_message.status|title }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ email_message.created_at|date:"M d, Y H:i" }}</td>
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a class="dropdown-item" href="{% url 'emails:message_detail' email_message.id %}">
-                                                            <i class="bx bx-show me-2"></i>View Details
-                                                        </a>
-                                                    </li>
-                                                    {% if email_message.status == 'failed' %}
-                                                    <li>
-                                                        <a class="dropdown-item text-success" href="{% url 'emails:resend_message' email_message.id %}">
-                                                            <i class="bx bx-refresh me-2"></i>Resend Email
-                                                        </a>
-                                                    </li>
-                                                    {% endif %}
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="bx bx-envelope bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                            </div>
-                            <h5 class="text-muted mb-3">No emails sent yet</h5>
-                            <p class="text-muted mb-4">Start by sending your first email to customers!</p>
-                            <a href="{% url 'emails:send_email' %}" class="btn btn-primary">
-                                <i class="bx bx-send me-2"></i>Send Email
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-list text-primary me-2"></i>{% trans "Messages"%} ({{ total_count }} {% trans "total"%})
+            </h3>
+            <p class="shadcn-card-description">{% trans "All email messages sent through the system"%}</p>
+          </div>
         </div>
+      </div>
+      <div class="shadcn-card-content">
+        {% if email_messages %}
+          <div class="overflow-x-auto">
+            <table class="shadcn-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-user me-1"></i>{% trans "Recipient"%}</th>
+                  <th><i class="fa-solid fa-envelope me-1"></i>{% trans "Email"%}</th>
+                  <th><i class="fa-solid fa-tag me-1"></i>{% trans "Type"%}</th>
+                  <th><i class="fa-solid fa-check-circle me-1"></i>{% trans "Status"%}</th>
+                  <th><i class="fa-solid fa-clock me-1"></i>{% trans "Sent At"%}</th>
+                  <th class="text-center"><i class="fa-solid fa-cog me-1"></i>{% trans "Actions"%}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for email_message in email_messages %}
+                <tr>
+                  <td>
+                    <strong>{{ email_message.recipient_name }}</strong>
+                    {% if email_message.customer %}
+                      <br><small class="text-muted-foreground">{{ email_message.customer.customer_id }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted-foreground">{{ email_message.recipient_email }}</td>
+                  <td>
+                    <span class="shadcn-badge shadcn-badge-secondary">
+                      {{ email_message.get_message_type_display }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if email_message.status == 'sent' %}
+                      <span class="shadcn-badge shadcn-badge-success">{% trans "Sent"%}</span>
+                    {% elif email_message.status == 'delivered' %}
+                      <span class="shadcn-badge shadcn-badge-primary">{% trans "Delivered"%}</span>
+                    {% elif email_message.status == 'failed' %}
+                      <span class="shadcn-badge shadcn-badge-danger">{% trans "Failed"%}</span>
+                    {% elif email_message.status == 'pending' %}
+                      <span class="shadcn-badge shadcn-badge-warning">{% trans "Pending"%}</span>
+                    {% else %}
+                      <span class="shadcn-badge shadcn-badge-info">{{ email_message.status|title }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted-foreground">
+                    {% if email_message.sent_at %}
+                      {{ email_message.sent_at|date:"M d, Y H:i" }}
+                    {% else %}
+                      {{ email_message.created_at|date:"M d, Y H:i" }}
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="dropdown">
+                      <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" href="{% url 'emails:message_detail' email_message.id %}">
+                            <i class="fa-solid fa-eye me-2"></i>{% trans "View Details"%}
+                          </a>
+                        </li>
+                        {% if email_message.status == 'failed' %}
+                        <li>
+                          <a class="dropdown-item text-success" href="{% url 'emails:resend_message' email_message.id %}">
+                            <i class="fa-solid fa-redo me-2"></i>{% trans "Resend Email"%}
+                          </a>
+                        </li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item" href="{% url 'emails:send_email' %}">
+                            <i class="fa-solid fa-plus me-2"></i>{% trans "Send New Email"%}
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if email_messages.has_other_pages %}
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              {% if email_messages.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ email_messages.previous_page_number }}">{% trans "Previous"%}</a>
+                </li>
+              {% endif %}
+
+              {% for num in email_messages.paginator.page_range %}
+                {% if email_messages.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% elif num > email_messages.number|add:'-3' and num < email_messages.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if email_messages.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ email_messages.next_page_number }}">{% trans "Next"%}</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <h4 class="font-semibold text-lg mb-2 text-muted-foreground">{% trans "No emails sent yet"%}</h4>
+            <p class="text-muted-foreground mb-6">{% trans "Start by sending your first email to customers"%}</p>
+            <div class="flex gap-2 justify-center">
+              <a href="{% url 'emails:send_email' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+                <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Send Email"%}
+              </a>
+              <a href="{% url 'emails:send_bulk_email' %}" class="shadcn-button shadcn-button-success shadcn-button-md">
+                <i class="fa-solid fa-broadcast-tower me-2"></i>{% trans "Bulk Email"%}
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
+
+  </div>
 </div>
+
 {% endblock %}

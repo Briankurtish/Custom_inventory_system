@@ -1,110 +1,431 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}SMS Logs{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) * 1.5);
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-table th {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: hsl(var(--muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .page-item {
+    list-style: none;
+  }
+
+  .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page-link:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .page-item.active .page-link {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Header -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">SMS Activity Logs</h4>
-                    <a href="{% url 'sms:sms_dashboard' %}" class="btn btn-outline-secondary">
-                        <i class="bx bx-arrow-back"></i> Back to Dashboard
-                    </a>
-                </div>
-            </div>
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-history me-3"></i>{% trans "SMS Activity Logs"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Track all SMS system activities and events"%}</p>
         </div>
+        <div class="flex gap-2">
+          <a href="{% url 'sms:sms_dashboard' %}" class="shadcn-button shadcn-button-secondary shadcn-button-md">
+            <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Dashboard"%}
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Logs List -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    {% if logs %}
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th><i class="bx bx-cog me-1"></i>Action</th>
-                                        <th><i class="bx bx-file-text me-1"></i>Details</th>
-                                        <th><i class="bx bx-user me-1"></i>User</th>
-                                        <th><i class="bx bx-time me-1"></i>Timestamp</th>
-                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for log in logs %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge bg-label-secondary">
-                                                {{ log.get_action_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ log.details }}</td>
-                                        <td>
-                                            {% if log.user %}
-                                                {{ log.user.user.username }}
-                                            {% else %}
-                                                <span class="text-muted">System</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
-                                        <td>
-                                            {% if log.is_error %}
-                                                <span class="badge bg-label-danger">Error</span>
-                                            {% else %}
-                                                <span class="badge bg-label-success">Success</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        {% if logs.has_other_pages %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                {% if logs.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ logs.previous_page_number }}">Previous</a>
-                                    </li>
-                                {% endif %}
-
-                                {% for num in logs.paginator.page_range %}
-                                    {% if logs.number == num %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-
-                                {% if logs.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ logs.next_page_number }}">Next</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bx bx-history bx-lg text-muted mb-3"></i>
-                            <p class="text-muted">No activity logs found.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-list text-primary me-2"></i>{% trans "Activity Logs"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "System activities and SMS operations"%}</p>
+          </div>
         </div>
+      </div>
+      <div class="shadcn-card-content">
+        {% if logs %}
+          <div class="overflow-x-auto">
+            <table class="shadcn-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-cog me-1"></i>{% trans "Action"%}</th>
+                  <th><i class="fa-solid fa-file-text me-1"></i>{% trans "Details"%}</th>
+                  <th><i class="fa-solid fa-user me-1"></i>{% trans "User"%}</th>
+                  <th><i class="fa-solid fa-clock me-1"></i>{% trans "Timestamp"%}</th>
+                  <th><i class="fa-solid fa-check-circle me-1"></i>{% trans "Status"%}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in logs %}
+                <tr>
+                  <td>
+                    <span class="shadcn-badge shadcn-badge-secondary">
+                      {{ log.get_action_display }}
+                    </span>
+                  </td>
+                  <td class="text-muted-foreground">{{ log.details }}</td>
+                  <td class="text-muted-foreground">
+                    {% if log.user %}
+                      {{ log.user.user.username }}
+                    {% else %}
+                      {% trans "System"%}
+                    {% endif %}
+                  </td>
+                  <td class="text-muted-foreground">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                  <td>
+                    {% if log.is_error %}
+                      <span class="shadcn-badge shadcn-badge-danger">{% trans "Error"%}</span>
+                    {% else %}
+                      <span class="shadcn-badge shadcn-badge-success">{% trans "Success"%}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if logs.has_other_pages %}
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              {% if logs.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ logs.previous_page_number }}">{% trans "Previous"%}</a>
+                </li>
+              {% endif %}
+
+              {% for num in logs.paginator.page_range %}
+                {% if logs.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if logs.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ logs.next_page_number }}">{% trans "Next"%}</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-history"></i>
+            </div>
+            <h4 class="font-semibold text-lg mb-2 text-muted-foreground">{% trans "No activity logs found"%}</h4>
+            <p class="text-muted-foreground mb-6">{% trans "Activity logs will appear here as you use the SMS system"%}</p>
+            <a href="{% url 'sms:sms_dashboard' %}" class="shadcn-button shadcn-button-secondary shadcn-button-md">
+              <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Dashboard"%}
+            </a>
+          </div>
+        {% endif %}
+      </div>
     </div>
+  </div>
 </div>
+
 {% endblock %}

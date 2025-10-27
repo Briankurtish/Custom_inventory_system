@@ -1,213 +1,610 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}SMS Dashboard{% endblock %}
+{% block title %}SMS Dashboard - Admin{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .stat-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.5));
+  }
+
+  .stat-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: calc(var(--radius) * 1.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 1rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .shadcn-button-lg {
+    height: 2.75rem;
+    padding: 0 1.5rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .action-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 1.5rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .action-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .action-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: hsl(var(--muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  @media (min-width: 640px) {
+    .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 768px) {
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+
+  /* Table styling */
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) * 1.5);
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-table th {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(38 92% 50%);
+    color: white;
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+</style>
+{% endblock vendor_css %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Header -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">SMS Management Dashboard</h4>
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
                     <div>
-                        <a href="{% url 'sms:send_sms' %}" class="btn btn-primary">
-                            <i class="bx bx-plus"></i> Send SMS
-                        </a>
-                        <a href="{% url 'sms:send_bulk_sms' %}" class="btn btn-success">
-                            <i class="bx bx-send"></i> Bulk SMS
+          <h1 class="hero-title">
+            <i class="fa-solid fa-comment-dots me-3"></i>{% trans "SMS Management Dashboard"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Send messages and manage SMS communications"%}</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'sms:send_sms' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+            <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Send SMS"%}
+          </a>
+          <a href="{% url 'sms:send_bulk_sms' %}" class="shadcn-button shadcn-button-secondary shadcn-button-md">
+            <i class="fa-solid fa-broadcast-tower me-2"></i>{% trans "Bulk SMS"%}
                         </a>
                     </div>
                 </div>
             </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <!-- Total Messages Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-primary/10 text-primary">
+          <i class="fa-solid fa-comment-dots"></i>
         </div>
+        <div class="stat-number">{{total_messages}}</div>
+        <div class="stat-label">{% trans "Total Messages"%}</div>
+        <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Messages"%}
+        </a>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4 mt-4">
-        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div class="card-info">
-                            <p class="card-text">Total Messages</p>
-                            <div class="d-flex align-items-end mb-2">
-                                <h4 class="card-title mb-0 me-2">{{ total_messages }}</h4>
-                            </div>
-                        </div>
-                        <div class="card-icon">
-                            <span class="badge bg-label-primary rounded p-2">
-                                <i class="bx bx-message-dots bx-sm"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Messages Today Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-success/10 text-success">
+          <i class="fa-solid fa-calendar-day"></i>
         </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div class="card-info">
-                            <p class="card-text">Messages Today</p>
-                            <div class="d-flex align-items-end mb-2">
-                                <h4 class="card-title mb-0 me-2">{{ messages_today }}</h4>
+        <div class="stat-number">{{messages_today}}</div>
+        <div class="stat-label">{% trans "Messages Today"%}</div>
+        <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Today"%}
+        </a>
                             </div>
-                        </div>
-                        <div class="card-icon">
-                            <span class="badge bg-label-success rounded p-2">
-                                <i class="bx bx-calendar bx-sm"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div class="card-info">
-                            <p class="card-text">This Week</p>
-                            <div class="d-flex align-items-end mb-2">
-                                <h4 class="card-title mb-0 me-2">{{ messages_this_week }}</h4>
+      <!-- This Week Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-info/10 text-info">
+          <i class="fa-solid fa-calendar-week"></i>
+        </div>
+        <div class="stat-number">{{messages_this_week}}</div>
+        <div class="stat-label">{% trans "This Week"%}</div>
+        <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Week"%}
+        </a>
                             </div>
-                        </div>
-                        <div class="card-icon">
-                            <span class="badge bg-label-info rounded p-2">
-                                <i class="bx bx-time-five bx-sm"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div class="card-info">
-                            <p class="card-text">Success Rate</p>
-                            <div class="d-flex align-items-end mb-2">
-                                <h4 class="card-title mb-0 me-2">
+      <!-- Success Rate Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-warning/10 text-warning">
+          <i class="fa-solid fa-check-circle"></i>
+        </div>
+        <div class="stat-number">
                                     {% if total_messages > 0 %}
                                         {{ successful_messages|floatformat:0 }}/{{ total_messages }}
                                     {% else %}
                                         0
                                     {% endif %}
-                                </h4>
-                            </div>
-                        </div>
-                        <div class="card-icon">
-                            <span class="badge bg-label-warning rounded p-2">
-                                <i class="bx bx-check-circle bx-sm"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        </div>
+        <div class="stat-label">{% trans "Success Rate"%}</div>
+        <a href="{% url 'sms:sms_logs' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-chart-line me-1"></i>{% trans "View Logs"%}
+        </a>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
+    <div class="shadcn-card mb-8">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-bolt text-primary me-2"></i>{% trans "Quick Actions"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Manage templates, groups, and view activity"%}</p>
+          </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'sms:sms_templates' %}" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <i class="bx bx-template bx-sm me-2"></i>
-                                    Manage Templates
                                 </div>
-                                <small class="text-muted">{{ templates_count }} templates</small>
-                            </a>
+      <div class="shadcn-card-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          <a href="{% url 'sms:sms_templates' %}" class="action-card">
+            <div class="action-icon bg-primary/10 text-primary">
+              <i class="fa-solid fa-file-text"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'sms:sms_groups' %}" class="btn btn-outline-success w-100 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <i class="bx bx-group bx-sm me-2"></i>
-                                    Manage Groups
+            <h4 class="font-semibold text-lg mb-2">{% trans "Manage Templates"%}</h4>
+            <p class="text-muted-foreground text-sm mb-4">{{ templates_count }} {% trans "templates available"%}</p>
+            <div class="flex items-center text-primary text-sm font-medium">
+              <span>{% trans "View Templates"%}</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
                                 </div>
-                                <small class="text-muted">{{ groups_count }} groups</small>
                             </a>
+
+          <a href="{% url 'sms:sms_groups' %}" class="action-card">
+            <div class="action-icon bg-success/10 text-success">
+              <i class="fa-solid fa-users"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'sms:sms_messages' %}" class="btn btn-outline-info w-100 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <i class="bx bx-message-dots bx-sm me-2"></i>
-                                    View Messages
+            <h4 class="font-semibold text-lg mb-2">{% trans "Manage Groups"%}</h4>
+            <p class="text-muted-foreground text-sm mb-4">{{ groups_count }} {% trans "groups available"%}</p>
+            <div class="flex items-center text-success text-sm font-medium">
+              <span>{% trans "View Groups"%}</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
                                 </div>
-                                <small class="text-muted">{{ total_messages }} total</small>
                             </a>
+
+          <a href="{% url 'sms:sms_messages' %}" class="action-card">
+            <div class="action-icon bg-info/10 text-info">
+              <i class="fa-solid fa-comments"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'sms:sms_logs' %}" class="btn btn-outline-warning w-100 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <i class="bx bx-history bx-sm me-2"></i>
-                                    View Logs
+            <h4 class="font-semibold text-lg mb-2">{% trans "View Messages"%}</h4>
+            <p class="text-muted-foreground text-sm mb-4">{{ total_messages }} {% trans "total messages"%}</p>
+            <div class="flex items-center text-info text-sm font-medium">
+              <span>{% trans "View All"%}</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
                                 </div>
-                                <small class="text-muted">Activity history</small>
                             </a>
+
+          <a href="{% url 'sms:sms_logs' %}" class="action-card">
+            <div class="action-icon bg-warning/10 text-warning">
+              <i class="fa-solid fa-history"></i>
                         </div>
-                    </div>
-                </div>
+            <h4 class="font-semibold text-lg mb-2">{% trans "View Logs"%}</h4>
+            <p class="text-muted-foreground text-sm mb-4">{% trans "Activity history"%}</p>
+            <div class="flex items-center text-warning text-sm font-medium">
+              <span>{% trans "View Logs"%}</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
+            </div>
+          </a>
             </div>
         </div>
     </div>
 
     <!-- Recent Messages -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Recent Messages</h5>
-                    <a href="{% url 'sms:sms_messages' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    <div class="shadcn-card mb-8">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-clock text-primary me-2"></i>{% trans "Recent Messages"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Latest SMS activity and status"%}</p>
+          </div>
+          <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+            <i class="fa-solid fa-eye me-1"></i>{% trans "View All"%}
+          </a>
+        </div>
                 </div>
-                <div class="card-body">
+      <div class="shadcn-card-content">
                     {% if recent_messages %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
+          <div class="overflow-x-auto">
+            <table class="shadcn-table">
                                 <thead>
                                     <tr>
-                                        <th><i class="bx bx-user me-1"></i>Recipient</th>
-                                        <th><i class="bx bx-phone me-1"></i>Phone</th>
-                                        <th><i class="bx bx-tag me-1"></i>Type</th>
-                                        <th><i class="bx bx-check-circle me-1"></i>Status</th>
-                                        <th><i class="bx bx-time me-1"></i>Sent At</th>
-                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
+                  <th><i class="fa-solid fa-user me-1"></i>{% trans "Recipient"%}</th>
+                  <th><i class="fa-solid fa-phone me-1"></i>{% trans "Phone"%}</th>
+                  <th><i class="fa-solid fa-tag me-1"></i>{% trans "Type"%}</th>
+                  <th><i class="fa-solid fa-check-circle me-1"></i>{% trans "Status"%}</th>
+                  <th><i class="fa-solid fa-clock me-1"></i>{% trans "Sent At"%}</th>
+                  <th class="text-center"><i class="fa-solid fa-cog me-1"></i>{% trans "Actions"%}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for message in recent_messages %}
                                     <tr>
-                                        <td>{{ message.recipient_name }}</td>
-                                        <td>{{ message.recipient_phone }}</td>
+                  <td class="font-medium">{{ message.recipient_name }}</td>
+                  <td class="text-muted-foreground">{{ message.recipient_phone }}</td>
                                         <td>
-                                            <span class="badge bg-label-secondary">
+                    <span class="shadcn-badge shadcn-badge-secondary">
                                                 {{ message.get_message_type_display }}
                                             </span>
                                         </td>
                                         <td>
                                             {% if message.status == 'sent' %}
-                                                <span class="badge bg-label-success">Sent</span>
+                      <span class="shadcn-badge shadcn-badge-success">{% trans "Sent"%}</span>
                                             {% elif message.status == 'delivered' %}
-                                                <span class="badge bg-label-primary">Delivered</span>
+                      <span class="shadcn-badge shadcn-badge-primary">{% trans "Delivered"%}</span>
                                             {% elif message.status == 'failed' %}
-                                                <span class="badge bg-label-danger">Failed</span>
+                      <span class="shadcn-badge shadcn-badge-danger">{% trans "Failed"%}</span>
                                             {% else %}
-                                                <span class="badge bg-label-warning">{{ message.status|title }}</span>
+                      <span class="shadcn-badge shadcn-badge-warning">{{ message.status|title }}</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ message.created_at|date:"M d, Y H:i" }}</td>
+                  <td class="text-muted-foreground">{{ message.created_at|date:"M d, Y H:i" }}</td>
                                         <td class="text-center">
                                             <div class="dropdown">
                                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
@@ -216,20 +613,20 @@
                                                 <ul class="dropdown-menu">
                                                     <li>
                                                         <a class="dropdown-item" href="{% url 'sms:message_detail' message.id %}">
-                                                            <i class="bx bx-show me-2"></i>View Details
+                            <i class="fa-solid fa-eye me-2"></i>{% trans "View Details"%}
                                                         </a>
                                                     </li>
                                                     {% if message.status == 'failed' %}
                                                     <li>
                                                         <a class="dropdown-item text-success" href="{% url 'sms:resend_message' message.id %}">
-                                                            <i class="bx bx-refresh me-2"></i>Resend Message
+                            <i class="fa-solid fa-redo me-2"></i>{% trans "Resend Message"%}
                                                         </a>
                                                     </li>
                                                     {% endif %}
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
                                                         <a class="dropdown-item" href="{% url 'sms:send_sms' %}">
-                                                            <i class="bx bx-plus me-2"></i>Send New SMS
+                            <i class="fa-solid fa-plus me-2"></i>{% trans "Send New SMS"%}
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -241,25 +638,26 @@
                             </table>
                         </div>
                     {% else %}
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="bx bx-message-dots bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-comment-dots"></i>
                             </div>
-                            <h5 class="text-muted mb-3">No messages sent yet</h5>
-                            <p class="text-muted mb-4">Start by sending your first SMS to customers!</p>
-                            <div class="d-flex gap-2 justify-content-center">
-                                <a href="{% url 'sms:send_sms' %}" class="btn btn-primary">
-                                    <i class="bx bx-send me-2"></i>Send SMS
-                                </a>
-                                <a href="{% url 'sms:send_bulk_sms' %}" class="btn btn-outline-success">
-                                    <i class="bx bx-send me-2"></i>Bulk SMS
+            <h4 class="font-semibold text-lg mb-2 text-muted-foreground">{% trans "No messages sent yet"%}</h4>
+            <p class="text-muted-foreground mb-6">{% trans "Start by sending your first SMS to customers"%}</p>
+            <div class="flex gap-2 justify-center">
+              <a href="{% url 'sms:send_sms' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+                <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Send SMS"%}
+              </a>
+              <a href="{% url 'sms:send_bulk_sms' %}" class="shadcn-button shadcn-button-secondary shadcn-button-md">
+                <i class="fa-solid fa-broadcast-tower me-2"></i>{% trans "Bulk SMS"%}
                                 </a>
                             </div>
                         </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
+
     </div>
 </div>
+
 {% endblock %}

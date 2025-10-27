@@ -1,49 +1,335 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}Delete Email Template{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+    border-color: hsl(var(--destructive));
+  }
+
+  .shadcn-button-danger:hover {
+    background: hsl(var(--destructive) / 0.9);
+    border-color: hsl(var(--destructive) / 0.9);
+  }
+
+  .shadcn-button-outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-outline:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--destructive)) 0%, hsl(var(--destructive) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .alert {
+    background: hsl(var(--destructive) / 0.1);
+    border: 1px solid hsl(var(--destructive) / 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: hsl(var(--destructive));
+  }
+
+  .alert-warning {
+    background: hsl(38 92% 50% / 0.1);
+    border: 1px solid hsl(38 92% 50% / 0.3);
+    color: hsl(38 92% 50%);
+  }
+
+  .template-preview {
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Delete Email Template</h4>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-danger">
-                        <i class="bx bx-error-circle me-2"></i>
-                        <strong>Warning!</strong> Are you sure you want to delete this template? This action cannot be undone.
-                    </div>
 
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h5>{{ template.name }}</h5>
-                            <p><strong>Type:</strong> {{ template.get_template_type_display }}</p>
-                            <p><strong>Subject:</strong> {{ template.subject }}</p>
-                            <p><strong>Status:</strong>
-                                {% if template.is_active %}
-                                    <span class="badge bg-label-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-label-danger">Inactive</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
+<div class="dashboard-container">
+  <div class="container-xxl">
 
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bx bx-trash me-2"></i>Delete Template
-                            </button>
-                            <a href="{% url 'emails:email_templates' %}" class="btn btn-outline-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-trash me-3"></i>{% trans "Delete Email Template"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Permanently remove this email template from the system"%}</p>
         </div>
+        <div class="flex gap-2">
+          <a href="{% url 'emails:email_templates' %}" class="shadcn-button shadcn-button-outline shadcn-button-md">
+            <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Templates"%}
+          </a>
+        </div>
+      </div>
     </div>
+
+    <!-- Delete Confirmation -->
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <h3 class="shadcn-card-title">
+          <i class="fa-solid fa-exclamation-triangle text-danger me-2"></i>{% trans "Confirm Deletion"%}
+        </h3>
+        <p class="shadcn-card-description">{% trans "This action cannot be undone. Please review the template details below."%}</p>
+      </div>
+      <div class="shadcn-card-content">
+        <div class="alert alert-warning">
+          <i class="fa-solid fa-exclamation-triangle me-2"></i>
+          <strong>{% trans "Warning!"%}</strong> {% trans "Are you sure you want to delete this template? This action cannot be undone."%}
+        </div>
+
+        <div class="template-preview">
+          <h5 class="font-semibold mb-3">{{ template.name }}</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-2"><strong>{% trans "Type:"%}</strong>
+                <span class="shadcn-badge shadcn-badge-secondary">
+                  {{ template.get_template_type_display }}
+                </span>
+              </p>
+              <p class="mb-2"><strong>{% trans "Subject:"%}</strong> {{ template.subject }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-2"><strong>{% trans "Status:"%}</strong>
+                {% if template.is_active %}
+                  <span class="shadcn-badge shadcn-badge-success">{% trans "Active"%}</span>
+                {% else %}
+                  <span class="shadcn-badge shadcn-badge-danger">{% trans "Inactive"%}</span>
+                {% endif %}
+              </p>
+              <p class="mb-2"><strong>{% trans "Created:"%}</strong> {{ template.created_at|date:"M d, Y" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="flex gap-2 justify-end">
+            <a href="{% url 'emails:email_templates' %}" class="shadcn-button shadcn-button-outline shadcn-button-md">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel"%}
+            </a>
+            <button type="submit" class="shadcn-button shadcn-button-danger shadcn-button-md">
+              <i class="fa-solid fa-trash me-2"></i>{% trans "Delete Template"%}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
 </div>
+
 {% endblock %}

@@ -397,7 +397,7 @@ def sms_messages(request):
     messages_page = paginator.get_page(page_number)
 
     context = TemplateLayout.init(request, {
-        'messages': messages_page,
+        'sms_messages': messages_page,
         'filter_form': filter_form,
         'total_count': messages_qs.count()
     })

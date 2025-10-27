@@ -1,44 +1,372 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}Create Email Group{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-outline:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-section {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .form-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  .form-text {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.25rem;
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Create Email Group</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label">Group Name</label>
-                                {{ form.name }}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                            {{ form.description }}
-                        </div>
-                        <div class="mb-3">
-                            <label for="{{ form.customers.id_for_label }}" class="form-label">Select Customers</label>
-                            {{ form.customers }}
-                            <div class="form-text">Hold Ctrl/Cmd to select multiple customers</div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bx bx-save me-2"></i>Create Group
-                            </button>
-                            <a href="{% url 'emails:email_groups' %}" class="btn btn-outline-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-plus me-3"></i>{% trans "Create Email Group"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Create a group of customers for efficient bulk messaging"%}</p>
         </div>
+        <div class="flex gap-2">
+          <a href="{% url 'emails:email_groups' %}" class="shadcn-button shadcn-button-outline shadcn-button-md">
+            <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Groups"%}
+          </a>
+        </div>
+      </div>
     </div>
+
+    <!-- Create Group Form -->
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <h3 class="shadcn-card-title">
+          <i class="fa-solid fa-users text-primary me-2"></i>{% trans "Group Details"%}
+        </h3>
+        <p class="shadcn-card-description">{% trans "Fill in the details to create your email group"%}</p>
+      </div>
+      <div class="shadcn-card-content">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-section">
+            <h4 class="form-section-title">
+              <i class="fa-solid fa-info-circle text-primary"></i>{% trans "Basic Information"%}
+            </h4>
+
+            <div class="form-group">
+              <label for="{{ form.name.id_for_label }}" class="form-label">
+                <i class="fa-solid fa-tag me-2 text-primary"></i>{% trans "Group Name"%}
+              </label>
+              {{ form.name }}
+              {% if form.name.errors %}
+                <div class="text-danger text-sm mt-1">
+                  {% for error in form.name.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.description.id_for_label }}" class="form-label">
+                <i class="fa-solid fa-file-text me-2 text-primary"></i>{% trans "Description"%}
+              </label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger text-sm mt-1">
+                  {% for error in form.description.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="form-section-title">
+              <i class="fa-solid fa-user-check text-primary"></i>{% trans "Customer Selection"%}
+            </h4>
+
+            <div class="form-group">
+              <label for="{{ form.customers.id_for_label }}" class="form-label">
+                <i class="fa-solid fa-users me-2 text-primary"></i>{% trans "Select Customers"%}
+              </label>
+              <div class="shadcn-card">
+                <div class="shadcn-card-content" style="max-height: 300px; overflow-y: auto;">
+                  {{ form.customers }}
+                </div>
+              </div>
+              <div class="form-text">{% trans "Hold Ctrl/Cmd to select multiple customers"%}</div>
+              {% if form.customers.errors %}
+                <div class="text-danger text-sm mt-1">
+                  {% for error in form.customers.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="flex gap-2 justify-end">
+            <a href="{% url 'emails:email_groups' %}" class="shadcn-button shadcn-button-outline shadcn-button-md">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel"%}
+            </a>
+            <button type="submit" class="shadcn-button shadcn-button-primary shadcn-button-md">
+              <i class="fa-solid fa-save me-2"></i>{% trans "Create Group"%}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
 </div>
+
 {% endblock %}

@@ -8,6 +8,364 @@
 {% block vendor_css %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'vendor/libs/apex-charts/apex-charts.css' %}" />
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .stat-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.5));
+  }
+
+  .stat-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: calc(var(--radius) * 1.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 1rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .shadcn-button-lg {
+    height: 2.75rem;
+    padding: 0 1.5rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .time-display {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .time-current {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.25rem;
+  }
+
+  .time-date {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .communication-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 1.5rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .communication-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .notice-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 1.25rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+  }
+
+  .notice-card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .notice-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: hsl(var(--muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  @media (min-width: 640px) {
+    .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 768px) {
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+</style>
 {% endblock vendor_css %}
 
 {% block vendor_js %}
@@ -22,38 +380,175 @@
 
 {% block content %}
 
-<div class="row">
-  <div class="col-xxl-8 mb-6 order-0">
-    <div class="card">
-      <div class="d-flex align-items-start row">
-        <div class="col-sm-7">
-          <div class="card-body">
-            <h5 class="card-title text-primary mb-3">{% trans "GC PHARMA Admin Panel 💻"%}</h5>
-            <p class="mb-6">{% trans "Manage and control all aspects of your inventory system<br>Monitor and get up-to-date information about your stock"%}</p>
+<div class="dashboard-container">
+  <div class="container-xxl">
 
-            <a href="{% url 'products' %}" class="btn btn-sm btn-outline-primary">{% trans "View Stock"%}</a>
-          </div>
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-hospital me-3"></i>{% trans "GC PHARMA Dashboard"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Comprehensive inventory management and communication system"%}</p>
         </div>
-        <div class="col-sm-5 text-center text-sm-left">
-          <div class="card-body pb-0 px-0 px-md-6">
-            <img src="{% static 'img/illustrations/man-with-laptop.png' %}" height="175" alt="View Badge User">
+        <div class="time-display">
+          <div class="time-current">
+            <script>document.write(new Date().toLocaleTimeString());</script>
+          </div>
+          <div class="time-date">
+            <script>document.write(new Date().toDateString());</script>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="col-lg-4 col-md-4 order-1">
-    <div class="row">
-      <div class="col-lg-6 col-md-12 col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="fa-solid fa-boxes-stacked text-success" style="font-size: 2em;"></i>
 
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <!-- Products Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-primary/10 text-primary">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div class="stat-number">{{total_product_count}}</div>
+        <div class="stat-label">{% trans "Total Products"%}</div>
+        <a href="{% url 'products' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Products"%}
+        </a>
+      </div>
+
+      <!-- Sales Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-success/10 text-success">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="stat-number">{{total_sales_count}}</div>
+        <div class="stat-label">{% trans "Total Orders"%}</div>
+        <a href="{% url 'orders' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Orders"%}
+        </a>
+      </div>
+
+      <!-- Customers Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-info/10 text-info">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-number">{{total_customers_count}}</div>
+        <div class="stat-label">{% trans "Total Customers"%}</div>
+        <a href="{% url 'customers' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Customers"%}
+        </a>
+      </div>
+
+      <!-- Stock Requests Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-warning/10 text-warning">
+          <i class="fa-solid fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-number">{{total_requests_count}}</div>
+        <div class="stat-label">{% trans "Stock Requests"%}</div>
+        <a href="{% url 'requests' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+          <i class="fa-solid fa-eye me-1"></i>{% trans "View Requests"%}
+        </a>
+      </div>
+    </div>
+
+    <!-- Communication Systems -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 mb-8">
+      <!-- SMS Management -->
+      <div class="communication-card">
+        <div class="flex items-center mb-4">
+          <div class="stat-icon bg-success/10 text-success me-4">
+            <i class="fa-solid fa-comment-dots"></i>
+          </div>
+          <div>
+            <h3 class="shadcn-card-title">{% trans "SMS Management"%}</h3>
+            <p class="shadcn-card-description">{% trans "Send messages and notifications"%}</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'sms:sms_dashboard' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+            <i class="fa-solid fa-tachometer-alt me-1"></i>{% trans "Dashboard"%}
+          </a>
+          <a href="{% url 'sms:send_sms' %}" class="shadcn-button shadcn-button-secondary shadcn-button-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i>{% trans "Send SMS"%}
+          </a>
+        </div>
+      </div>
+
+      <!-- Email Management -->
+      <div class="communication-card">
+        <div class="flex items-center mb-4">
+          <div class="stat-icon bg-primary/10 text-primary me-4">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div>
+            <h3 class="shadcn-card-title">{% trans "Email Management"%}</h3>
+            <p class="shadcn-card-description">{% trans "Send emails and manage templates"%}</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'emails:email_dashboard' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+            <i class="fa-solid fa-tachometer-alt me-1"></i>{% trans "Dashboard"%}
+          </a>
+          <a href="{% url 'emails:send_email' %}" class="shadcn-button shadcn-button-secondary shadcn-button-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i>{% trans "Send Email"%}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notice Board -->
+    <div class="shadcn-card mb-8">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-bullhorn text-primary me-2"></i>{% trans "Notice Board"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Latest announcements and updates"%}</p>
+          </div>
+          <a href="{% url 'notice_board' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+            <i class="fa-solid fa-plus me-1"></i>{% trans "Create Notice"%}
+          </a>
+        </div>
+      </div>
+      <div class="shadcn-card-content">
+        {% if notices %}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {% for notice in notices %}
+              <div class="notice-card">
+                <div class="notice-icon bg-primary/10 text-primary">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <h4 class="font-semibold text-lg mb-2">{{ notice.title }}</h4>
+                <p class="text-muted-foreground text-sm mb-4">{{ notice.description|truncatewords:20 }}</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-muted-foreground">{{ notice.created_at|date:"M d, Y" }}</span>
+                  <button type="button" class="shadcn-button shadcn-button-secondary shadcn-button-sm" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">
+                    <i class="fa-solid fa-eye me-1"></i>{% trans "View"%}
+                  </button>
+                </div>
               </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-bell-slash"></i>
+            </div>
+            <h4 class="font-semibold text-lg mb-2 text-muted-foreground">{% trans "No notices available"%}</h4>
+            <p class="text-muted-foreground mb-6">{% trans "Create your first notice to keep everyone informed"%}</p>
+            <a href="{% url 'notice_board' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+              <i class="fa-solid fa-plus me-1"></i>{% trans "Create First Notice"%}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
 
-              {% if show_password_modal %}
+    {% if show_password_modal %}
     <!-- Modal for first-time login users to change password -->
     <div class="modal fade show" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" style="display: block;" aria-hidden="false">
       <div class="modal-dialog" role="document">
@@ -73,131 +568,8 @@
         </div>
       </div>
     </div>
-  {% endif %}
+    {% endif %}
 
-
-              {% comment %} <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "View More"%}</a>
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "Delete"%}</a>
-                </div>
-              </div> {% endcomment %}
-            </div>
-            <p class="mb-1">{% trans "Products"%}</p>
-            <h4 class="card-title mb-3">{{total_product_count}}<small> Products</small></h4>
-            <a href="{% url 'products' %}"><small class="text-info fw-medium"><i class='fa-solid fa-boxes-stacked'></i> {% trans "View Products"%}</small></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6 col-md-12 col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <img src="{% static 'img/icons/unicons/wallet-info.png' %}" alt="wallet info" class="rounded">
-              </div>
-              {% comment %} <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt6" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "View More"%}</a>
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "Delete"%}</a>
-                </div>
-              </div> {% endcomment %}
-            </div>
-            <p class="mb-1">{%trans "Sales"%}</p>
-            <h4 class="card-title mb-3">{{total_sales_count}}<small> Orders</small></h4>
-            <a href="{% url 'orders' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans "View Orders"%}</small></a>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-<!-- Notice Board Section -->
-<div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
-  <div class="card">
-    <div class="row row-bordered g-0">
-      <div class="col-lg-8">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <div class="card-title mb-0">
-            <h5 class="m-0 me-2"><i class="fa-solid fa-bell text-warning"></i> {% trans "Notice Board" %}</h5>
-          </div>
-        </div>
-
-        <div class="m-2">
-          <marquee behavior="scroll" direction="left">
-            <h3 class="my-4">{% trans "GC PHARMA - ANNOUNCEMENTS" %}</h3>
-          </marquee>
-
-          <!-- Notices Carousel -->
-          {% if notices %}
-            <div id="noticeCarousel" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                {% for notice in notices %}
-                  {% if forloop.counter0|divisibleby:2 %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                      <div class="row">
-                  {% endif %}
-                        <div class="col-md-6 mb-3">
-                          <div class="card border-primary">
-                            <div class="card-body">
-                              <h5 class="card-title text-primary">{{ notice.title }}</h5>
-                              <p class="card-text text-muted">{{ notice.description|truncatewords:15 }}</p>
-                              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">
-                                {% trans "View Details" %}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                  {% if forloop.counter|divisibleby:2 or forloop.last %}
-                      </div>
-                    </div>
-                  {% endif %}
-                {% endfor %}
-              </div>
-            </div>
-
-            <!-- Carousel Controls (Placed Below the Carousel) -->
-            <div class="d-flex justify-content-center mt-3">
-              <button class="btn btn-outline-dark mx-2" type="button" data-bs-target="#noticeCarousel" data-bs-slide="prev">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
-              <button class="btn btn-outline-dark mx-2" type="button" data-bs-target="#noticeCarousel" data-bs-slide="next">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
-          {% else %}
-            <p class="fw-medium">{% trans "No Notice to show at the moment ⚠️" %}</p>
-          {% endif %}
-
-          <!-- Button to Navigate to Create Notice Page -->
-          <a href="{% url 'notice_board' %}" class="btn btn-outline-primary">
-            {% trans "Create Notice" %}
-          </a>
-        </div>
-      </div>
-
-      <!-- Right Column: Admin Dashboard Info -->
-      <div class="col-lg-4 d-flex align-items-center">
-        <div class="card-body px-xl-9">
-          <div class="text-center mb-6">
-            <p class="text-info fw-medium fs-5">
-              <script>document.write(new Date().toDateString());</script>
-            </p>
-            <p class="text-warning fw-bold fs-4">
-              <script>document.write(new Date().toLocaleTimeString());</script>
-            </p>
-          </div>
-          <div id="growthChart"></div>
-          <div class="text-center fw-bold my-6">{% trans "ADMIN DASHBOARD" %}</div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -222,341 +594,4 @@
   </div>
 {% endfor %}
 
-
-  <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
-    <div class="row">
-      <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="fa-solid fa-circle-exclamation text-warning" style="font-size: 2em;"></i>
-
-              </div>
-              {% comment %} <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt4" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "View More"%}</a>
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "Delete"%}</a>
-                </div>
-              </div> {% endcomment %}
-            </div>
-            <p class="mb-1">Stock Requests</p>
-            <h4 class="card-title mb-3">{{total_requests_count}} <small> Requests</small></h4>
-            <a href="{% url 'requests' %}"><small class="text-info fw-medium"><i class='fa-solid fa-circle-exclamation'></i> {% trans "View Requests"%}</small></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="fa-regular fa-user text-primary" style="font-size: 2em;"></i>
-
-              </div>
-              {% comment %} <div class="dropdown">
-                <button class="btn p-0" type="button" id="cardOpt1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bx bx-dots-vertical-rounded text-muted"></i>
-                </button>
-                <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "View More"%}</a>
-                  <a class="dropdown-item" href="javascript:void(0);">{% trans "Delete"%}</a>
-                </div>
-              </div> {% endcomment %}
-            </div>
-            <p class="mb-1">{% trans "Customers"%}</p>
-            <h4 class="card-title mb-3">{{total_customers_count}}<small> Customers</small></h4>
-            <a href="{% url 'customers' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans "View Customers"%}</small></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 mb-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between mb-4">
-              <div class="avatar flex-shrink-0">
-                <i class="bx bx-message-dots text-success" style="font-size: 2em;"></i>
-              </div>
-            </div>
-            <p class="mb-1">{% trans "SMS Management"%}</p>
-            <h4 class="card-title mb-3">SMS <small>System</small></h4>
-            <a href="{% url 'sms:sms_dashboard' %}"><small class="text-info fw-medium"><i class='bx bx-open'></i> {% trans "Send Messages"%}</small></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 mb-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-10">
-              <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
-                <div class="card-title mb-6">
-                  <h5 class="text-nowrap mb-1">{% trans "Profile Report"%}</h5>
-                  <span class="badge bg-label-warning">YEAR 2025</span>
-                </div>
-                <div class="mt-sm-auto">
-                  <span class="text-success text-nowrap fw-medium"><i class='fa-solid fa-arrow-up-long'></i> 68.2%</span>
-                  <h4 class="mb-0">$84,686k</h4>
-                </div>
-              </div>
-              <div id="profileReportChart"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% comment %} <div class="row">
-  <!-- Order Statistics -->
-  <div class="col-md-6 col-lg-4 col-xl-4 order-0 mb-6">
-    <div class="card h-100">
-      <div class="card-header d-flex justify-content-between">
-        <div class="card-title mb-0">
-          <h5 class="mb-1 me-2">Order Statistics</h5>
-          <p class="card-subtitle">42.82k Total Sales</p>
-        </div>
-        <div class="dropdown">
-          <button class="btn text-muted p-0" type="button" id="orederStatistics" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="bx bx-dots-vertical-rounded bx-lg"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orederStatistics">
-            <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-            <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-            <a class="dropdown-item" href="javascript:void(0);">Share</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-6">
-          <div class="d-flex flex-column align-items-center gap-1">
-            <h3 class="mb-1">8,258</h3>
-            <small>Total Orders</small>
-          </div>
-          <div id="orderStatisticsChart"></div>
-        </div>
-        <ul class="p-0 m-0">
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-primary"><i class='bx bx-mobile-alt'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Electronic</h6>
-                <small>Mobile, Earbuds, TV</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">82.5k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-success"><i class='bx bx-closet'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Fashion</h6>
-                <small>T-shirt, Jeans, Shoes</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">23.8k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-5">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-info"><i class='bx bx-home-alt'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Decor</h6>
-                <small>Fine Art, Dining</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">849k</h6>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center">
-            <div class="avatar flex-shrink-0 me-3">
-              <span class="avatar-initial rounded bg-label-secondary"><i class='bx bx-football'></i></span>
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <h6 class="mb-0">Sports</h6>
-                <small>Football, Cricket Kit</small>
-              </div>
-              <div class="user-progress">
-                <h6 class="mb-0">99</h6>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <!--/ Order Statistics -->
-
-  <!-- Expense Overview -->
-  <div class="col-md-6 col-lg-4 order-1 mb-6">
-    <div class="card h-100">
-      <div class="card-header nav-align-top">
-        <ul class="nav nav-pills" role="tablist">
-          <li class="nav-item">
-            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-tabs-line-card-income" aria-controls="navs-tabs-line-card-income" aria-selected="true">Income</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" role="tab">Expenses</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" role="tab">Profit</button>
-          </li>
-        </ul>
-      </div>
-      <div class="card-body">
-        <div class="tab-content p-0">
-          <div class="tab-pane fade show active" id="navs-tabs-line-card-income" role="tabpanel">
-            <div class="d-flex mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User">
-              </div>
-              <div>
-                <p class="mb-0">Total Balance</p>
-                <div class="d-flex align-items-center">
-                  <h6 class="mb-0 me-1">$459.10</h6>
-                  <small class="text-success fw-medium">
-                    <i class='bx bx-chevron-up bx-lg'></i>
-                    42.9%
-                  </small>
-                </div>
-              </div>
-            </div>
-            <div id="incomeChart"></div>
-            <div class="d-flex align-items-center justify-content-center mt-6 gap-3">
-              <div class="flex-shrink-0">
-                <div id="expensesOfWeek"></div>
-              </div>
-              <div>
-                <h6 class="mb-0">Income this week</h6>
-                <small>$39k less than last week</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--/ Expense Overview -->
-
-  <!-- Transactions -->
-  <div class="col-md-6 col-lg-4 order-2 mb-6">
-    <div class="card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title m-0 me-2">Transactions</h5>
-        <div class="dropdown">
-          <button class="btn text-muted p-0" type="button" id="transactionID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="bx bx-dots-vertical-rounded bx-lg"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-            <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-            <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-            <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body pt-4">
-        <ul class="p-0 m-0">
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/paypal.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Paypal</small>
-                <h6 class="fw-normal mb-0">Send money</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+82.6</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Wallet</small>
-                <h6 class="fw-normal mb-0">Mac'D</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+270.69</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/chart.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Transfer</small>
-                <h6 class="fw-normal mb-0">Refund</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+637.91</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/cc-primary.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Credit Card</small>
-                <h6 class="fw-normal mb-0">Ordered Food</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">-838.71</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center mb-6">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/wallet.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Wallet</small>
-                <h6 class="fw-normal mb-0">Starbucks</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">+203.33</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-          <li class="d-flex align-items-center">
-            <div class="avatar flex-shrink-0 me-3">
-              <img src="{% static 'img/icons/unicons/cc-warning.png' %}" alt="User" class="rounded">
-            </div>
-            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-              <div class="me-2">
-                <small class="d-block">Mastercard</small>
-                <h6 class="fw-normal mb-0">Ordered Food</h6>
-              </div>
-              <div class="user-progress d-flex align-items-center gap-2">
-                <h6 class="fw-normal mb-0">-92.45</h6> <span class="text-muted">USD</span>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <!--/ Transactions -->
-</div> {% endcomment %}
 {% endblock %}

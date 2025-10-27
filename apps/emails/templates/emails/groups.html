@@ -1,92 +1,416 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}Email Groups{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-outline:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-button-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .shadcn-button-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) * 1.5);
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .shadcn-table th {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--accent));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(38 92% 50%);
+    color: white;
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-badge-info {
+    background: hsl(199.4 89.4% 48.4%);
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: hsl(var(--muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Header -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Email Groups</h4>
-                    <a href="{% url 'emails:create_group' %}" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Create Group
-                    </a>
-                </div>
-            </div>
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-users me-3"></i>{% trans "Email Groups"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Organize customers into groups for efficient bulk messaging"%}</p>
         </div>
+        <div class="flex gap-2">
+          <a href="{% url 'emails:create_group' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+            <i class="fa-solid fa-plus me-2"></i>{% trans "Create Group"%}
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Groups List -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    {% if groups %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th><i class="bx bx-group me-1"></i>Group Name</th>
-                                        <th><i class="bx bx-file-text me-1"></i>Description</th>
-                                        <th><i class="bx bx-user me-1"></i>Customers</th>
-                                        <th><i class="bx bx-time me-1"></i>Created</th>
-                                        <th class="text-center"><i class="bx bx-cog me-1"></i>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for group in groups %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ group.name }}</strong>
-                                        </td>
-                                        <td>{{ group.description|truncatechars:50 }}</td>
-                                        <td>
-                                            <span class="badge bg-label-primary">{{ group.customer_count }}</span>
-                                        </td>
-                                        <td>{{ group.created_at|date:"M d, Y" }}</td>
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a class="dropdown-item" href="{% url 'emails:edit_group' group.id %}">
-                                                            <i class="bx bx-edit-alt me-2"></i>Edit Group
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger" href="{% url 'emails:delete_group' group.id %}">
-                                                            <i class="bx bx-trash me-2"></i>Delete Group
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="bx bx-group bx-lg text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                            </div>
-                            <h5 class="text-muted mb-3">No groups created yet</h5>
-                            <p class="text-muted mb-4">Organize customers into groups for efficient bulk messaging!</p>
-                            <a href="{% url 'emails:create_group' %}" class="btn btn-primary">
-                                <i class="bx bx-plus me-2"></i>Create Your First Group
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-list text-primary me-2"></i>{% trans "Groups"%} ({{ groups|length }} {% trans "total"%})
+            </h3>
+            <p class="shadcn-card-description">{% trans "All email groups available in the system"%}</p>
+          </div>
         </div>
+      </div>
+      <div class="shadcn-card-content">
+        {% if groups %}
+          <div class="overflow-x-auto">
+            <table class="shadcn-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-users me-1"></i>{% trans "Group Name"%}</th>
+                  <th><i class="fa-solid fa-file-text me-1"></i>{% trans "Description"%}</th>
+                  <th><i class="fa-solid fa-user me-1"></i>{% trans "Customers"%}</th>
+                  <th><i class="fa-solid fa-clock me-1"></i>{% trans "Created"%}</th>
+                  <th class="text-center"><i class="fa-solid fa-cog me-1"></i>{% trans "Actions"%}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for group in groups %}
+                <tr>
+                  <td>
+                    <strong>{{ group.name }}</strong>
+                  </td>
+                  <td class="text-muted-foreground">{{ group.description|truncatechars:50 }}</td>
+                  <td>
+                    <span class="shadcn-badge shadcn-badge-primary">{{ group.customer_count }}</span>
+                  </td>
+                  <td class="text-muted-foreground">{{ group.created_at|date:"M d, Y" }}</td>
+                  <td class="text-center">
+                    <div class="dropdown">
+                      <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" href="{% url 'emails:edit_group' group.id %}">
+                            <i class="fa-solid fa-edit me-2"></i>{% trans "Edit Group"%}
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item text-danger" href="{% url 'emails:delete_group' group.id %}">
+                            <i class="fa-solid fa-trash me-2"></i>{% trans "Delete Group"%}
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <h4 class="font-semibold text-lg mb-2 text-muted-foreground">{% trans "No groups created yet"%}</h4>
+            <p class="text-muted-foreground mb-6">{% trans "Organize customers into groups for efficient bulk messaging!"%}</p>
+            <div class="flex gap-2 justify-center">
+              <a href="{% url 'emails:create_group' %}" class="shadcn-button shadcn-button-primary shadcn-button-md">
+                <i class="fa-solid fa-plus me-2"></i>{% trans "Create Your First Group"%}
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
+
+  </div>
 </div>
+
 {% endblock %}

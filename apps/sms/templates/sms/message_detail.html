@@ -1,235 +1,599 @@
 {% extends layout_path %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}SMS Message Details{% endblock %}
 
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dashboard-container {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-button-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+    border-color: hsl(142.1 76.2% 36.3%);
+  }
+
+  .shadcn-button-success:hover {
+    background: hsl(142.1 76.2% 36.3% / 0.9);
+    border-color: hsl(142.1 76.2% 36.3% / 0.9);
+  }
+
+  .shadcn-button-outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .shadcn-button-outline:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--ring));
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142.1 76.2% 36.3%);
+    color: white;
+  }
+
+  .shadcn-badge-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-badge-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(38 92% 50%);
+    color: white;
+  }
+
+  .shadcn-badge-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-badge-info {
+    background: hsl(199.4 89.4% 48.4%);
+    color: white;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail-section {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .detail-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .detail-row {
+    display: flex;
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    min-width: 150px;
+    flex-shrink: 0;
+  }
+
+  .detail-value {
+    color: hsl(var(--muted-foreground));
+    flex: 1;
+  }
+
+  .message-content {
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-success { color: hsl(142.1 76.2% 36.3%); }
+  .text-warning { color: hsl(38 92% 50%); }
+  .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .text-danger { color: hsl(var(--destructive)); }
+  .w-full { width: 100%; }
+</style>
+{% endblock vendor_css %}
+
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Header -->
+
+<div class="dashboard-container">
+  <div class="container-xxl">
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-message me-3"></i>{% trans "SMS Message Details"%}
+          </h1>
+          <p class="hero-subtitle">{% trans "Detailed information about this SMS message"%}</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-outline">
+            <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Messages"%}
+          </a>
+          {% if message.status == 'failed' %}
+          <a href="{% url 'sms:resend_message' message.id %}" class="shadcn-button shadcn-button-success">
+            <i class="fa-solid fa-redo me-2"></i>{% trans "Resend Message"%}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">SMS Message Details</h4>
-                    <a href="{% url 'sms:sms_messages' %}" class="btn btn-outline-secondary">
-                        <i class="bx bx-arrow-back"></i> Back to Messages
-                    </a>
+      <!-- Main Content -->
+      <div class="col-lg-8">
+        <!-- Message Information -->
+        <div class="shadcn-card">
+          <div class="shadcn-card-header">
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-info-circle text-primary me-2"></i>{% trans "Message Information"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Basic details about this SMS message"%}</p>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-user me-2 text-primary"></i>{% trans "Recipient"%}
                 </div>
+                <div class="detail-value">
+                  <strong>{{ message.recipient_name }}</strong>
+                  {% if message.customer %}
+                    <br><small class="text-muted-foreground">{% trans "Customer ID"%}: {{ message.customer.customer_id }}</small>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-phone me-2 text-primary"></i>{% trans "Phone Number"%}
+                </div>
+                <div class="detail-value">{{ message.recipient_phone }}</div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-tag me-2 text-primary"></i>{% trans "Subject"%}
+                </div>
+                <div class="detail-value">{{ message.subject|default:"No subject" }}</div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-layer-group me-2 text-primary"></i>{% trans "Message Type"%}
+                </div>
+                <div class="detail-value">
+                  <span class="shadcn-badge shadcn-badge-secondary">
+                    {{ message.get_message_type_display }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-comment me-2 text-primary"></i>{% trans "Message Content"%}
+                </div>
+                <div class="detail-value">
+                  <div class="message-content">{{ message.message }}</div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- Template Information -->
+        {% if message.template %}
+        <div class="shadcn-card">
+          <div class="shadcn-card-header">
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-file-text text-primary me-2"></i>{% trans "Template Information"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Template used for this message"%}</p>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-file me-2 text-primary"></i>{% trans "Template Name"%}
+                </div>
+                <div class="detail-value">{{ message.template.name }}</div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-layer-group me-2 text-primary"></i>{% trans "Template Type"%}
+                </div>
+                <div class="detail-value">
+                  <span class="shadcn-badge shadcn-badge-secondary">
+                    {{ message.template.get_template_type_display }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <!-- Status Information -->
+        <div class="shadcn-card">
+          <div class="shadcn-card-header">
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-check-circle text-primary me-2"></i>{% trans "Status Information"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Current status and delivery information"%}</p>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-flag me-2 text-primary"></i>{% trans "Status"%}
+                </div>
+                <div class="detail-value">
+                  {% if message.status == 'sent' %}
+                    <span class="shadcn-badge shadcn-badge-success">{% trans "Sent"%}</span>
+                  {% elif message.status == 'delivered' %}
+                    <span class="shadcn-badge shadcn-badge-primary">{% trans "Delivered"%}</span>
+                  {% elif message.status == 'failed' %}
+                    <span class="shadcn-badge shadcn-badge-danger">{% trans "Failed"%}</span>
+                  {% elif message.status == 'pending' %}
+                    <span class="shadcn-badge shadcn-badge-warning">{% trans "Pending"%}</span>
+                  {% else %}
+                    <span class="shadcn-badge shadcn-badge-info">{{ message.status|title }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if message.twilio_status %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-cloud me-2 text-primary"></i>{% trans "Twilio Status"%}
+                </div>
+                <div class="detail-value">
+                  <span class="shadcn-badge shadcn-badge-info">{{ message.twilio_status }}</span>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if message.twilio_sid %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-id-card me-2 text-primary"></i>{% trans "Twilio SID"%}
+                </div>
+                <div class="detail-value">
+                  <small class="text-muted-foreground font-mono">{{ message.twilio_sid }}</small>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if message.error_message %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-exclamation-triangle me-2 text-danger"></i>{% trans "Error Message"%}
+                </div>
+                <div class="detail-value">
+                  <small class="text-danger">{{ message.error_message }}</small>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div class="shadcn-card">
+          <div class="shadcn-card-header">
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-clock text-primary me-2"></i>{% trans "Timestamps"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Important dates and times"%}</p>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-plus me-2 text-primary"></i>{% trans "Created"%}
+                </div>
+                <div class="detail-value">
+                  <small>{{ message.created_at|date:"M d, Y H:i" }}</small>
+                </div>
+              </div>
+
+              {% if message.sent_at %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-paper-plane me-2 text-primary"></i>{% trans "Sent"%}
+                </div>
+                <div class="detail-value">
+                  <small>{{ message.sent_at|date:"M d, Y H:i" }}</small>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if message.delivered_at %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-check me-2 text-primary"></i>{% trans "Delivered"%}
+                </div>
+                <div class="detail-value">
+                  <small>{{ message.delivered_at|date:"M d, Y H:i" }}</small>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if message.sent_by %}
+              <div class="detail-row">
+                <div class="detail-label">
+                  <i class="fa-solid fa-user-circle me-2 text-primary"></i>{% trans "Sent By"%}
+                </div>
+                <div class="detail-value">
+                  <small>{{ message.sent_by.user.username }}</small>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="shadcn-card">
+          <div class="shadcn-card-header">
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-cog text-primary me-2"></i>{% trans "Actions"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Available actions for this message"%}</p>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="flex flex-column gap-2">
+              {% if message.status == 'failed' %}
+              <a href="{% url 'sms:resend_message' message.id %}" class="shadcn-button shadcn-button-success w-full">
+                <i class="fa-solid fa-redo me-2"></i>{% trans "Resend Message"%}
+              </a>
+              {% endif %}
+
+              <a href="{% url 'sms:send_sms' %}" class="shadcn-button shadcn-button-primary w-full">
+                <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Send New SMS"%}
+              </a>
+
+              <a href="{% url 'sms:sms_messages' %}" class="shadcn-button shadcn-button-outline w-full">
+                <i class="fa-solid fa-list me-2"></i>{% trans "View All Messages"%}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Message Details -->
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Message Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <strong>Recipient:</strong>
-                        </div>
-                        <div class="col-sm-9">
-                            {{ message.recipient_name }}
-                            {% if message.customer %}
-                                <br><small class="text-muted">Customer ID: {{ message.customer.customer_id }}</small>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <strong>Phone:</strong>
-                        </div>
-                        <div class="col-sm-9">
-                            {{ message.recipient_phone }}
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <strong>Subject:</strong>
-                        </div>
-                        <div class="col-sm-9">
-                            {{ message.subject|default:"No subject" }}
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <strong>Message Type:</strong>
-                        </div>
-                        <div class="col-sm-9">
-                            <span class="badge bg-label-secondary">
-                                {{ message.get_message_type_display }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <strong>Message:</strong>
-                        </div>
-                        <div class="col-sm-9">
-                            <div class="border rounded p-3 bg-light">
-                                {{ message.message|linebreaks }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <!-- Status Card -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Status Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Status:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            {% if message.status == 'sent' %}
-                                <span class="badge bg-label-success">Sent</span>
-                            {% elif message.status == 'delivered' %}
-                                <span class="badge bg-label-primary">Delivered</span>
-                            {% elif message.status == 'failed' %}
-                                <span class="badge bg-label-danger">Failed</span>
-                            {% elif message.status == 'pending' %}
-                                <span class="badge bg-label-warning">Pending</span>
-                            {% else %}
-                                <span class="badge bg-label-info">{{ message.status|title }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    {% if message.twilio_status %}
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Twilio Status:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <span class="badge bg-label-info">{{ message.twilio_status }}</span>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if message.twilio_sid %}
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Twilio SID:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <small class="text-muted">{{ message.twilio_sid }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if message.error_message %}
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Error:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <small class="text-danger">{{ message.error_message }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Timestamps Card -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Timestamps</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Created:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <small>{{ message.created_at|date:"M d, Y H:i" }}</small>
-                        </div>
-                    </div>
-
-                    {% if message.sent_at %}
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Sent:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <small>{{ message.sent_at|date:"M d, Y H:i" }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if message.delivered_at %}
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            <strong>Delivered:</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <small>{{ message.delivered_at|date:"M d, Y H:i" }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Actions Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Actions</h5>
-                </div>
-                <div class="card-body">
-                    {% if message.status == 'failed' %}
-                        <a href="{% url 'sms:resend_message' message.id %}" class="btn btn-success w-100 mb-2">
-                            <i class="bx bx-refresh"></i> Resend Message
-                        </a>
-                    {% endif %}
-
-                    <a href="{% url 'sms:send_sms' %}" class="btn btn-primary w-100 mb-2">
-                        <i class="bx bx-plus"></i> Send New SMS
-                    </a>
-
-                    <a href="{% url 'sms:sms_messages' %}" class="btn btn-outline-secondary w-100">
-                        <i class="bx bx-list-ul"></i> View All Messages
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Template Information -->
-    {% if message.template %}
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Template Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Template Name:</strong> {{ message.template.name }}
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Template Type:</strong>
-                            <span class="badge bg-label-secondary">
-                                {{ message.template.get_template_type_display }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+  </div>
 </div>
+
 {% endblock %}
