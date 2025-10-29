@@ -813,4 +813,256 @@
     const weeklyExpenses = new ApexCharts(weeklyExpensesEl, weeklyExpensesConfig);
     weeklyExpenses.render();
   }
+
+  // Sales Analytics Chart - Line Chart with Area Fill
+  // --------------------------------------------------------------------
+  const salesChartEl = document.querySelector('#salesChart');
+
+  // Get data from Django backend or use default
+  const salesData =
+    window.dashboardData && window.dashboardData.salesData
+      ? window.dashboardData.salesData
+      : [28, 40, 36, 52, 38, 60, 55, 67, 50, 70, 85, 92];
+
+  const salesChartConfig = {
+    series: [
+      {
+        name: 'Sales',
+        data: salesData
+      }
+    ],
+    chart: {
+      height: 350,
+      type: 'area',
+      toolbar: {
+        show: true,
+        tools: {
+          download: true,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true
+        }
+      },
+      zoom: {
+        enabled: true
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 3
+    },
+    colors: [config.colors.success],
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.7,
+        opacityTo: 0.2,
+        stops: [0, 90, 100]
+      }
+    },
+    grid: {
+      borderColor: borderColor,
+      strokeDashArray: 7,
+      padding: {
+        top: -15,
+        bottom: -10,
+        left: 0,
+        right: 0
+      }
+    },
+    xaxis: {
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      labels: {
+        style: {
+          fontSize: '13px',
+          fontFamily: 'Public Sans',
+          colors: labelColor
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          fontSize: '13px',
+          fontFamily: 'Public Sans',
+          colors: labelColor
+        },
+        formatter: function (val) {
+          return val.toFixed(0);
+        }
+      }
+    },
+    tooltip: {
+      enabled: true,
+      theme: 'light',
+      y: {
+        formatter: function (val) {
+          return val + ' orders';
+        }
+      }
+    },
+    markers: {
+      size: 5,
+      colors: ['#ffffff'],
+      strokeColors: config.colors.success,
+      strokeWidth: 3,
+      hover: {
+        size: 7
+      }
+    }
+  };
+  if (typeof salesChartEl !== undefined && salesChartEl !== null) {
+    const salesChart = new ApexCharts(salesChartEl, salesChartConfig);
+    salesChart.render();
+  }
+
+  // Inventory Analytics Chart - Bar Chart
+  // --------------------------------------------------------------------
+  const inventoryChartEl = document.querySelector('#inventoryChart');
+
+  // Get data from Django backend or use default
+  const inventoryData =
+    window.dashboardData && window.dashboardData.inventoryData
+      ? window.dashboardData.inventoryData
+      : {
+          in_stock: [44, 55, 57, 56, 61, 58, 63, 60, 66, 71, 68, 75],
+          low_stock: [13, 23, 20, 8, 13, 27, 15, 22, 18, 12, 19, 15],
+          out_of_stock: [11, 17, 15, 15, 21, 14, 13, 15, 19, 17, 13, 10]
+        };
+
+  const inventoryChartConfig = {
+    series: [
+      {
+        name: 'In Stock',
+        data: inventoryData.in_stock
+      },
+      {
+        name: 'Low Stock',
+        data: inventoryData.low_stock
+      },
+      {
+        name: 'Out of Stock',
+        data: inventoryData.out_of_stock
+      }
+    ],
+    chart: {
+      type: 'bar',
+      height: 350,
+      stacked: false,
+      toolbar: {
+        show: true,
+        tools: {
+          download: true,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true
+        }
+      }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        borderRadius: 8,
+        borderRadiusApplication: 'end'
+      }
+    },
+    colors: [config.colors.success, config.colors.warning, config.colors.danger],
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent']
+    },
+    legend: {
+      show: true,
+      position: 'top',
+      horizontalAlign: 'left',
+      fontSize: '13px',
+      fontFamily: 'Public Sans',
+      fontWeight: 400,
+      labels: {
+        colors: legendColor,
+        useSeriesColors: false
+      },
+      markers: {
+        width: 12,
+        height: 12,
+        radius: 12,
+        offsetX: -5
+      },
+      itemMargin: {
+        horizontal: 10
+      }
+    },
+    grid: {
+      borderColor: borderColor,
+      strokeDashArray: 7,
+      padding: {
+        top: -15,
+        bottom: -10,
+        left: 0,
+        right: 0
+      }
+    },
+    xaxis: {
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      labels: {
+        style: {
+          fontSize: '13px',
+          fontFamily: 'Public Sans',
+          colors: labelColor
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          fontSize: '13px',
+          fontFamily: 'Public Sans',
+          colors: labelColor
+        },
+        formatter: function (val) {
+          return val.toFixed(0);
+        }
+      }
+    },
+    tooltip: {
+      enabled: true,
+      theme: 'light',
+      y: {
+        formatter: function (val) {
+          return val + ' products';
+        }
+      }
+    }
+  };
+  if (typeof inventoryChartEl !== undefined && inventoryChartEl !== null) {
+    const inventoryChart = new ApexCharts(inventoryChartEl, inventoryChartConfig);
+    inventoryChart.render();
+  }
 })();

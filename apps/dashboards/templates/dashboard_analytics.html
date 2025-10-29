@@ -3,6 +3,7 @@
 {% load static %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load humanize %}
 {% block title %}Dashboard - Admin{% endblock %}
 
 {% block vendor_css %}
@@ -364,7 +365,10 @@
   .text-primary { color: hsl(var(--primary)); }
   .text-success { color: hsl(142.1 76.2% 36.3%); }
   .text-warning { color: hsl(38 92% 50%); }
+  .text-danger { color: hsl(0 84.2% 60.2%); }
   .text-info { color: hsl(199.4 89.4% 48.4%); }
+  .bg-info { background-color: hsl(199.4 89.4% 48.4%); }
+  .bg-gray-200 { background-color: #e5e7eb; }
 </style>
 {% endblock vendor_css %}
 
@@ -375,6 +379,13 @@
 
 {% block page_js %}
 {{ block.super }}
+<script>
+  // Pass data from Django to JavaScript
+  window.dashboardData = {
+    salesData: {{ sales_data|safe }},
+    inventoryData: {{ inventory_data|safe }}
+  };
+</script>
 <script src="{% static 'js/dashboards-analytics.js' %}"></script>
 {% endblock page_js %}
 
@@ -454,6 +465,61 @@
       </div>
     </div>
 
+    <!-- Financial Analytics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <!-- Total Revenue Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-primary/10 text-primary">
+          <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+        <div class="stat-number">{{ total_revenue|floatformat:0|intcomma }} FCFA</div>
+        <div class="stat-label">{% trans "Total Revenue"%}</div>
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span>{{ total_invoices }} {% trans "Invoices"%}</span>
+        </div>
+      </div>
+
+      <!-- Amount Paid Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-success/10 text-success">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-number text-success">{{ total_paid|floatformat:0|intcomma }} FCFA</div>
+        <div class="stat-label">{% trans "Amount Paid"%}</div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-success"><i class="fa-solid fa-check-circle"></i> {{ completed_count }} {% trans "Completed"%}</span>
+        </div>
+      </div>
+
+      <!-- Pending Payments Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-warning/10 text-warning">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+        <div class="stat-number text-warning">{{ total_pending|floatformat:0|intcomma }} FCFA</div>
+        <div class="stat-label">{% trans "Pending Payments"%}</div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-danger"><i class="fa-solid fa-times-circle"></i> {{ unpaid_count }} {% trans "Unpaid"%}</span>
+          <span class="text-warning"><i class="fa-solid fa-hourglass-half"></i> {{ payment_ongoing_count }} {% trans "Ongoing"%}</span>
+        </div>
+      </div>
+
+      <!-- Payment Completion Rate Card -->
+      <div class="stat-card">
+        <div class="stat-icon bg-info/10 text-info">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <div class="stat-number text-info">{{ completion_rate }}%</div>
+        <div class="stat-label">{% trans "Completion Rate"%}</div>
+        <div class="text-sm text-muted-foreground">
+          <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div class="bg-info h-2 rounded-full" style="width: {{ completion_rate }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Communication Systems -->
     <div class="grid grid-cols-1 lg:grid-cols-2 mb-8">
       <!-- SMS Management -->
@@ -495,6 +561,43 @@
           <a href="{% url 'emails:send_email' %}" class="shadcn-button shadcn-button-secondary shadcn-button-sm">
             <i class="fa-solid fa-paper-plane me-1"></i>{% trans "Send Email"%}
           </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 mb-8">
+      <!-- Sales Analytics Chart -->
+      <div class="shadcn-card">
+        <div class="shadcn-card-header">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="shadcn-card-title">
+                <i class="fa-solid fa-chart-line text-success me-2"></i>{% trans "Sales Analytics"%}
+              </h3>
+              <p class="shadcn-card-description">{% trans "Monthly sales performance overview"%}</p>
+            </div>
+          </div>
+        </div>
+        <div class="shadcn-card-content">
+          <div id="salesChart"></div>
+        </div>
+      </div>
+
+      <!-- Inventory Analytics Chart -->
+      <div class="shadcn-card">
+        <div class="shadcn-card-header">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="shadcn-card-title">
+                <i class="fa-solid fa-box text-info me-2"></i>{% trans "Inventory Analytics"%}
+              </h3>
+              <p class="shadcn-card-description">{% trans "Stock levels and product distribution"%}</p>
+            </div>
+          </div>
+        </div>
+        <div class="shadcn-card-content">
+          <div id="inventoryChart"></div>
         </div>
       </div>
     </div>
