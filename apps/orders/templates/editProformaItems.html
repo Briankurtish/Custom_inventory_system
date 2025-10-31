@@ -1,0 +1,256 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Edit Proforma Items" %}{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-button-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-button-danger:hover {
+    background: hsl(var(--destructive) / 0.9);
+  }
+
+  .shadcn-button-info {
+    background: hsl(199 89% 48%);
+    color: white;
+  }
+
+  .shadcn-button-info:hover {
+    background: hsl(199 89% 48% / 0.9);
+  }
+
+  .shadcn-button-success {
+    background: hsl(142 76% 36%);
+    color: white;
+  }
+
+  .shadcn-button-success:hover {
+    background: hsl(142 76% 36% / 0.9);
+  }
+
+  .shadcn-button-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: auto;
+  }
+
+  .table-responsive {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  .shadcn-table thead th {
+    background: hsl(var(--muted));
+    padding: 0.75rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table tbody td {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .shadcn-table tfoot td {
+    padding: 0.75rem;
+    font-weight: 600;
+    border-top: 2px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl">
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <h3 class="shadcn-card-title">
+          <i class="fa-solid fa-edit text-primary me-2"></i>{% trans "Edit Items for Proforma" %}: {{ proforma.proforma_id }}
+        </h3>
+      </div>
+      <div class="shadcn-card-content">
+        <form method="post" class="mb-4">
+          {% csrf_token %}
+          {{ item_form|crispy }}
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" name="add_item" class="shadcn-button shadcn-button-info">
+              <i class="fa-solid fa-plus me-1"></i>{% trans "Add Item" %}
+            </button>
+          </div>
+        </form>
+
+        <h5 class="mb-3">
+          <i class="fa-solid fa-list me-2"></i>{% trans "Proforma Items" %}
+        </h5>
+        {% if items_list %}
+        <div class="table-responsive" style="overflow-x: visible;">
+          <table class="shadcn-table" style="width: 100%; table-layout: auto;">
+            <thead>
+                <tr>
+                    <th>{% trans "No" %}</th>
+                    <th>{% trans "Product Code" %}</th>
+                    <th>{% trans "Generic Name" %}</th>
+                    <th>{% trans "Brand Name" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th>{% trans "Unit Price" %}</th>
+                    <th>{% trans "Total Price" %}</th>
+                    <th>{% trans "Reason" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.stock.product.product_code }}</td>
+                    <td>{{ item.stock.product.generic_name_dosage }}</td>
+                    <td>{{ item.stock.product.brand_name.brand_name|default:"-" }}</td>
+                    <td>{{ item.quantity|intcomma }}</td>
+                    <td>{{ item.price|floatformat:2|intcomma }} FCFA</td>
+                    <td>{{ item.total|floatformat:2|intcomma }} FCFA</td>
+                    <td>{{ item.reason|default:"-" }}</td>
+                    <td>
+                      <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="remove_item" value="{{ item.id }}">
+                        <button type="submit" class="shadcn-button shadcn-button-danger shadcn-button-sm">
+                          <i class="fa-solid fa-trash"></i> {% trans "Remove" %}
+                        </button>
+                      </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" class="text-end"><strong>{% trans "Subtotal" %}:</strong></td>
+                <td><strong>{{ subtotal|floatformat:2|intcomma }} FCFA</strong></td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fa-solid fa-inbox fa-3x mb-3"></i>
+            <p>{% trans "No items in this proforma. Please add items above." %}</p>
+          </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-4">
+          <form method="post" id="proformaForm" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" name="update_proforma" class="shadcn-button shadcn-button-success">
+              <i class="fa-solid fa-save me-1"></i>{% trans "Save Changes" %}
+            </button>
+          </form>
+          <a href="{% url 'proforma_details' proforma.id %}" class="shadcn-button shadcn-button-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back to Details" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  $(document).ready(function () {
+    $("#id_stock").select2({ placeholder: "Search for a Product", allowClear: true, width: "100%" });
+  });
+</script>
+{% endblock %}

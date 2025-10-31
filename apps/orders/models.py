@@ -705,6 +705,192 @@ class InvoiceAuditLog(models.Model):
         return f"{self.user} {self.get_action_display()} {self.generic_name} on {self.timestamp}"
 
 
+class Proforma(models.Model):
+    """
+    Proforma Invoice - A draft order that can be promoted to an actual PurchaseOrder.
+    It doesn't count as an actual order until promoted.
+    """
+    PAYMENT_MODES = [
+        ('Cash', 'Cash'),
+        ('Mobile Money', 'Mobile Money'),
+        ('Bank Deposit', 'Bank Deposit'),
+        ('Check', 'Check'),
+    ]
+
+    TAX_RATE_CHOICES = [
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("2.20"), "2.20%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("5.50"), "5.50%"),
+        (Decimal("0.0"), "0.0%"),
+    ]
+
+    PRECOMPTE_CHOICES = [
+        (Decimal("2.0"), "2.0%"),
+        (Decimal("5.0"), "5.0%"),
+        (Decimal("0.0"), "0.0%"),
+    ]
+
+    TVA_CHOICES = [
+        (Decimal("19.25"), "19.25%"),
+        (Decimal("0.0"), "0.0%"),
+    ]
+
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    sales_rep = models.ForeignKey(
+        Worker,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sales_rep_proformas',
+    )
+    payment_method = models.CharField(
+        max_length=50, choices=[('Cash', 'Cash'), ('Credit', 'Credit')], default='Credit'
+    )
+    payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODES, null=True, blank=True)
+    created_at = models.DateTimeField(null=True)
+    created_by = models.ForeignKey(
+        Worker, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Worker who created this proforma", related_name='created_proformas'
+    )
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    grand_total = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0.00,
+        help_text="Total amount of the proforma"
+    )
+    notes = models.TextField(
+        null=True, blank=True,
+        help_text="Optional notes for the proforma"
+    )
+    proforma_id = models.CharField(
+        max_length=50, unique=True, editable=False, null=True, blank=True,
+        help_text="Unique identifier for the proforma"
+    )
+
+    # Reference to the order if this proforma was promoted
+    promoted_to_order = models.ForeignKey(
+        PurchaseOrder, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='proforma_source',
+        help_text="The order this proforma was promoted to"
+    )
+    is_promoted = models.BooleanField(default=False, help_text="Whether this proforma has been promoted to an order")
+
+    # Store the related payment account based on the mode of payment
+    momo_account = models.ForeignKey(
+        MomoInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name="proforma_momo_payments"
+    )
+    check_account = models.ForeignKey(
+        Check, on_delete=models.SET_NULL, null=True, blank=True, related_name="proforma_check_payments"
+    )
+    bank_deposit_account = models.ForeignKey(
+        BankDeposit, on_delete=models.SET_NULL, null=True, blank=True, related_name="proforma_deposit_payments"
+    )
+
+    tax_rate = models.DecimalField(max_digits=12, decimal_places=2, null=True, choices=TAX_RATE_CHOICES, verbose_name="Tax (taux)", default=0.0)
+    precompte = models.DecimalField(max_digits=12, decimal_places=2, null=True, choices=PRECOMPTE_CHOICES, verbose_name="PreCompte", default=0.0)
+    tva = models.DecimalField(max_digits=12, decimal_places=2, null=True, choices=TVA_CHOICES, verbose_name="TVA", default=0.0)
+    is_special_customer = models.BooleanField(null=True, default=False, verbose_name="Is a Special Customer")
+
+    def save(self, *args, **kwargs):
+        if not self.proforma_id:
+            # Use the date from created_at or current date
+            order_date = self.created_at if self.created_at else timezone.now()
+            date_part = order_date.strftime("%Y%m%d")
+
+            # Extract REG from branch ID
+            branch_id_parts = self.branch.branch_id.split("-")
+            reg_part = branch_id_parts[0] if branch_id_parts else "UNKNOWN"
+
+            # Base prefix
+            base_prefix = f"PROF-{reg_part}-{date_part}-"
+
+            # Find the highest existing sequence number
+            existing_ids = Proforma.objects.filter(
+                proforma_id__startswith=f"PROF-{reg_part}-"
+            ).values_list('proforma_id', flat=True)
+
+            sequences = []
+            for prof_id in existing_ids:
+                try:
+                    seq_part = prof_id.split("-")[-1]
+                    if seq_part.isdigit():
+                        sequences.append(int(seq_part))
+                except (IndexError, ValueError):
+                    continue
+
+            sequence = max(sequences) + 1 if sequences else 1
+            self.proforma_id = f"{base_prefix}{sequence:05d}"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.proforma_id} - {self.branch.branch_name} - {self.customer.customer_name}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ProformaItem(models.Model):
+    """Items in a Proforma"""
+    proforma = models.ForeignKey(
+        Proforma, related_name="items", on_delete=models.CASCADE
+    )
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    temp_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    reason = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        default="No Note",
+        help_text="Reason for price change if applicable"
+    )
+
+    def __str__(self):
+        return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"
+
+    def get_effective_price(self):
+        """Returns the temporary price if set, otherwise the stock product price."""
+        return self.temp_price if self.temp_price else self.stock.product.unit_price
+
+    def get_unit_price(self):
+        """Returns the unit price of the associated product."""
+        return self.stock.product.unit_price
+
+    def get_total_price(self):
+        """Returns the total price for the quantity of this item."""
+        return self.get_effective_price() * self.quantity
+
+    class Meta:
+        ordering = ['id']
+
+
+class ProformaAuditLog(models.Model):
+    """Audit log for tracking actions on Proforma"""
+    ACTION_CHOICES = [
+        ("create", "Create"),
+        ("update", "Update"),
+        ("promote", "Promote to Order"),
+        ("delete", "Delete"),
+        ("edit_items", "Edit Items"),
+    ]
+
+    user = models.ForeignKey(
+        'workers.Worker', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='proforma_log_created'
+    )
+    proforma = models.CharField(max_length=255, null=True, blank=True)
+    branch = models.CharField(max_length=255, null=True, blank=True)
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} {self.get_action_display()} {self.proforma} on {self.timestamp}"
+
+    class Meta:
+        ordering = ['-timestamp']
+
+
 
 class PurchaseOrderItem(models.Model):
     purchase_order = models.ForeignKey(

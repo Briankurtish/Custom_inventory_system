@@ -18,6 +18,9 @@ urlpatterns = [
         "sample-order-logs/", SampleOrderAuditLogView, name="sample-order-logs",
     ),
     path(
+        "proforma-logs/", ProformaAuditLogView, name="proforma-logs",
+    ),
+    path(
         "purchase-order/<str:purchase_order_id>", view_purchase_order, name="purchase-order",
     ),
     path(
@@ -118,8 +121,6 @@ urlpatterns = [
     path("edit-deposit/<int:pk>/", edit_deposit_details_view, name="edit-deposit"),
     path("delete-deposit/<int:pk>/", delete_deposit_details_view, name="delete-deposit"),
     path("invoice/<int:invoice_id>/", invoice_doc_view, name="invoice-doc"),
-    path("proforma/<int:invoice_id>/", proforma_doc_view, name="proforma-doc"),
-
     path('receipt/<str:receipt_id>/', receipt_doc_view, name='receipt_doc'),
     path('payment/<int:payment_id>/receipt/', payment_receipt_view, name='payment_receipt'),  # ✅ Find receipt
 
@@ -154,5 +155,19 @@ urlpatterns = [
     path('edit-sickness-prices/<int:order_id>/', edit_sickness_prices, name='edit_sickness_prices'),
     path('approve-sickness-order/<int:order_id>/', approve_sickness_order, name='approve_sickness_order'),
     path('reject-sickness-order/<int:order_id>/', reject_sickness_order, name='reject_sickness_order'),
+
+    # Proforma URLs - Must come before invoice proforma-doc to avoid conflicts
+    path('proformas/', proforma_list, name="proformas"),
+    path('create-proforma/', create_proforma, name="create_proforma"),
+    path('add-proforma-items/', add_proforma_items, name="add_proforma_items"),
+    path('proforma/<int:proforma_id>/', proforma_details, name="proforma_details"),
+    path('proforma/<int:proforma_id>/edit/', edit_proforma, name="edit_proforma"),
+    path('proforma/<int:proforma_id>/edit-items/', edit_proforma_items, name="edit_proforma_items"),
+    path('proforma/<int:proforma_id>/promote/', promote_proforma_to_order, name="promote_proforma_to_order"),
+    path('proforma/<int:proforma_id>/delete/', delete_proforma, name="delete_proforma"),
+    path('proforma/<int:proforma_id>/document/', proforma_document_view, name="proforma_document"),
+
+    # Invoice proforma document (must come after proforma details routes)
+    path("invoice-proforma/<int:invoice_id>/", proforma_doc_view, name="proforma-doc"),
 
 ]

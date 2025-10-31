@@ -1,0 +1,396 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Proforma List" %}{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: auto;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    overflow-y: visible !important;
+  }
+
+  @media (min-width: 768px) {
+    .table-responsive {
+      overflow-x: visible;
+    }
+  }
+
+  .dropdown-menu {
+    position: absolute !important;
+    z-index: 1000;
+  }
+
+  .shadcn-table thead th {
+    background: hsl(var(--muted));
+    padding: 0.75rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table tbody td {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(142 76% 36% / 0.1);
+    color: hsl(142 76% 36%);
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(38 92% 50% / 0.1);
+    color: hsl(38 92% 50%);
+  }
+
+  .form-control-sm, .form-select-sm {
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .form-control-sm:focus, .form-select-sm:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+  {% if role_privileges %}
+      {% for privilege in role_privileges %}
+          {% if privilege.name == 'Create Proformas' %}
+            <a href="{% url 'create_proforma' %}" class="shadcn-button shadcn-button-primary">
+              <span class="fa-solid fa-plus me-2"></span>{% trans "Create Proforma" %}
+            </a>
+          {% endif %}
+      {% endfor %}
+  {% endif %}
+
+  {% if user.is_superuser or user.worker_profile.role == "Sales Rep" or user.worker_profile.role == "Accountant" %}
+    <a href="{% url 'create_proforma' %}" class="shadcn-button shadcn-button-primary">
+      <span class="fa-solid fa-plus me-2"></span>{% trans "Create Proforma" %}
+    </a>
+  {% endif %}
+</div>
+
+<div class="shadcn-card">
+  <div class="shadcn-card-header">
+    <h3 class="shadcn-card-title">
+      <i class="fa-solid fa-file-invoice text-primary me-2"></i>{% trans "Proforma List" %}
+    </h3>
+  </div>
+  <div class="shadcn-card-content">
+    <form method="GET" class="row g-2 align-items-center mb-4">
+      <div class="col-auto">
+        <label for="search_query" class="form-label">{% trans "Search" %}</label>
+        <input type="text" id="search_query" name="search_query" class="form-control form-control-sm" placeholder="{% trans 'Search proformas' %}" value="{{ search_query }}">
+      </div>
+
+      <div class="col-auto">
+        <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+        <input type="date" id="start_date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+      </div>
+
+      <div class="col-auto">
+        <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+        <input type="date" id="end_date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+      </div>
+
+      <div class="col-auto">
+        <label for="branch" class="form-label">{% trans "Branch" %}</label>
+        <select id="branch" name="branch" class="form-select form-select-sm">
+          <option value="">{% trans "All Branches" %}</option>
+          {% for b in branches %}
+            <option value="{{ b.id }}" {% if branch_id|slugify == b.id|slugify %}selected{% endif %}>
+              {{ b.branch_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label for="month" class="form-label">{% trans "Month" %}</label>
+        <select id="month" name="month" class="form-select form-select-sm">
+          <option value="">{% trans "All Months" %}</option>
+          {% for month in months %}
+            <option value="{{ month.id }}" {% if selected_month == month.id|stringformat:"s" %}selected{% endif %}>
+              {{ month.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label for="sales_rep" class="form-label">{% trans "Sales Rep" %}</label>
+        <select id="sales_rep" name="sales_rep" class="form-select form-select-sm">
+          <option value="">{% trans "All Sales Reps" %}</option>
+          {% for rep in sales_reps %}
+            <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == sales_rep_id %}selected{% endif %}>
+                {{ rep.user.first_name }} {{ rep.user.last_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label for="created_by" class="form-label">{% trans "Created By" %}</label>
+        <select id="created_by" name="created_by" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for worker in workers %}
+              <option value="{{ worker.id }}" {% if created_by_id == worker.id|stringformat:"s" %}selected{% endif %}>
+                  {{ worker.user.first_name }} {{ worker.user.last_name }}
+              </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label for="is_promoted" class="form-label">{% trans "Status" %}</label>
+        <select id="is_promoted" name="is_promoted" class="form-select form-select-sm">
+          <option value="">{% trans "All" %}</option>
+          <option value="false" {% if is_promoted == "false" %}selected{% endif %}>{% trans "Active" %}</option>
+          <option value="true" {% if is_promoted == "true" %}selected{% endif %}>{% trans "Promoted" %}</option>
+        </select>
+      </div>
+
+      <div class="col-auto d-flex align-items-end">
+        <button type="submit" class="shadcn-button shadcn-button-primary">
+          <i class="fa-solid fa-filter me-1"></i>{% trans "Filter" %}
+        </button>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="shadcn-table" style="width: 100%; table-layout: auto;">
+        <thead>
+          <tr>
+            <th>{% trans "No" %}</th>
+            <th>{% trans "Proforma ID" %}</th>
+            <th>{% trans "Branch" %}</th>
+            <th>{% trans "Customer" %}</th>
+            <th>{% trans "Sales Rep" %}</th>
+            <th>{% trans "Created By" %}</th>
+            <th>{% trans "Created At" %}</th>
+            <th>{% trans "Grand Total" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th>{% trans "Actions" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for proforma in proformas %}
+          <tr>
+            <td><span>{{ forloop.counter0|add:proformas.start_index }}</span></td>
+            <td>
+              <strong>{{ proforma.proforma_id }}</strong>
+            </td>
+            <td>{{ proforma.branch.branch_name }}</td>
+            <td>{{ proforma.customer.customer_name }}</td>
+            <td>
+              {% if proforma.sales_rep %}
+                <span>{{ proforma.sales_rep.user.first_name }} {{ proforma.sales_rep.user.last_name }}</span>
+              {% else %}
+                <span>-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if proforma.created_by %}
+                <span>{{ proforma.created_by.user.first_name }} {{ proforma.created_by.user.last_name }}</span>
+              {% else %}
+                <span>-</span>
+              {% endif %}
+            </td>
+            <td>{{ proforma.created_at|date:"d-m-Y" }}</td>
+            <td>{{ proforma.grand_total|floatformat:0|intcomma }} FCFA</td>
+            <td>
+                {% if proforma.is_promoted %}
+                  <span class="shadcn-badge shadcn-badge-success">{% trans "Promoted" %}</span>
+                  {% if proforma.promoted_to_order %}
+                    <br><small><a href="{% url 'order_details' proforma.promoted_to_order.id %}" class="text-primary">{% trans "View Order" %}</a></small>
+                  {% endif %}
+                {% else %}
+                  <span class="shadcn-badge shadcn-badge-warning">{% trans "Active" %}</span>
+                {% endif %}
+            </td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-link" data-bs-toggle="dropdown">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                   <a class="dropdown-item" href="{% url 'proforma_details' proforma.id %}">
+                    <i class="fa-solid fa-folder-open me-1"></i> {% trans "View" %}
+                  </a>
+                  {% if not proforma.is_promoted %}
+                    <a class="dropdown-item" href="{% url 'edit_proforma' proforma.id %}">
+                      <i class="fa-solid fa-edit me-1"></i> {% trans "Edit" %}
+                    </a>
+                    <a class="dropdown-item" href="{% url 'promote_proforma_to_order' proforma.id %}">
+                      <i class="fa-solid fa-arrow-up me-1"></i> {% trans "Promote to Order" %}
+                    </a>
+                    <a class="dropdown-item text-danger" href="{% url 'delete_proforma' proforma.id %}">
+                      <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center py-4 text-muted">{% trans "No Proformas available" %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if proformas.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ proformas.previous_page_number }}{% if search_query %}&search_query={{ search_query }}{% endif %}" aria-label="Previous">
+              <span aria-hidden="true">«</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in proformas.paginator.page_range %}
+          <li class="page-item {% if proformas.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if search_query %}&search_query={{ search_query }}{% endif %}">{{ num }}</a>
+          </li>
+          {% endfor %}
+
+          {% if proformas.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ proformas.next_page_number }}{% if search_query %}&search_query={{ search_query }}{% endif %}" aria-label="Next">
+              <span aria-hidden="true">»</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+{% if user.is_superuser %}
+<hr class="my-4">
+<div class="text-center">
+  <a href="{% url 'proforma-logs' %}" class="shadcn-button shadcn-button-secondary">
+    <i class="fa-solid fa-history me-1"></i>{% trans "See Logs" %}
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

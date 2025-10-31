@@ -5,10 +5,10 @@ from apps.genericName.models import GenericName
 from web_project import TemplateLayout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, SampleOrder, SampleOrderAuditLog, SampleOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt
+from .models import Bank, BankDeposit, Check, InvoiceAuditLog, InvoiceDocument, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderAuditLog, PurchaseOrderDocument, PurchaseOrderItem, ReturnInvoice, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPaymentSchedule, ReturnPurchaseOrderDocument, ReturnReceipt, SampleOrder, SampleOrderAuditLog, SampleOrderItem, TemporaryStock, InvoiceOrderItem, Invoice, InvoicePayment, Receipt, Proforma, ProformaItem, ProformaAuditLog
 from apps.stock.models import Stock, DamagedProduct
 from django.contrib import messages
-from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm, SicknessForm, SicknessItemForm, SicknessOrderForm
+from .forms import BankDepositForm, BankForm, CheckForm, InvoicerDocumentForm, MomoInfoForm, PaymentScheduleForm, PurchaseOrderDocumentForm, PurchaseOrderForm, PurchaseOrderItemForm, InvoicePaymentForm, PurchaseOrderTaxForm, ReturnInvoiceDocumentForm, ReturnInvoicePaymentForm, ReturnOrderItemForm, ReturnPurchaseOrderDocumentForm, SampleOrderForm, SampleOrderItemForm, SicknessForm, SicknessItemForm, SicknessOrderForm, ProformaForm, ProformaItemForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction  # For atomic operations
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
@@ -804,6 +804,25 @@ def InvoiceAuditLogView(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, "invoice_logs.html", context)
+
+
+@login_required
+def ProformaAuditLogView(request):
+    logs = ProformaAuditLog.objects.all().order_by('-timestamp')
+    paginator = Paginator(logs, 100)  # Paginate logs with 100 logs per page
+    page_number = request.GET.get("page")  # Get the current page number from the request
+    paginated_logs = paginator.get_page(page_number)  # Get the page object
+    offset = (paginated_logs.number - 1) * paginator.per_page
+    # Create a context dictionary for the view
+    view_context = {
+        "logs": paginated_logs,
+        "offset": offset,
+    }
+
+    # Initialize the template layout and merge the view context
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, "proforma_logs.html", context)
 
 
 from django.db.models import Q, Case, When, Value
@@ -5250,3 +5269,654 @@ def create_sample_order(request):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'createPurchaseOrder.html', context)
+
+
+# ==================== PROFORMA VIEWS ====================
+
+def log_proforma_action(user, proforma, action, details=None):
+    """Helper function to log proforma actions"""
+    try:
+        worker = user.worker_profile
+        ProformaAuditLog.objects.create(
+            user=worker,
+            proforma=proforma.proforma_id if proforma else None,
+            branch=proforma.branch.branch_name if proforma else None,
+            action=action,
+            details=details or ""
+        )
+    except Exception:
+        pass  # Fail silently if logging fails
+
+
+@login_required
+def proforma_list(request):
+    """List all proformas with filtering"""
+    search_query = request.GET.get("search_query", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    branch_id = request.GET.get("branch")
+    selected_month = request.GET.get("month")
+    sales_rep_id = request.GET.get("sales_rep")
+    created_by_id = request.GET.get("created_by")
+    is_promoted = request.GET.get("is_promoted")
+
+    branches = Branch.objects.all()
+    sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
+    workers = Worker.objects.filter(
+        Q(created_proformas__isnull=False)
+    ).distinct().order_by("user__first_name", "user__last_name")
+
+    months = [
+        {"id": "1", "name": "January"}, {"id": "2", "name": "February"}, {"id": "3", "name": "March"},
+        {"id": "4", "name": "April"}, {"id": "5", "name": "May"}, {"id": "6", "name": "June"},
+        {"id": "7", "name": "July"}, {"id": "8", "name": "August"}, {"id": "9", "name": "September"},
+        {"id": "10", "name": "October"}, {"id": "11", "name": "November"}, {"id": "12", "name": "December"},
+    ]
+
+    user = request.user
+    is_accountant_or_superuser = user.is_superuser or (hasattr(user, 'worker_profile') and user.worker_profile.role == "Accountant")
+
+    # Fetch proformas based on the user's role
+    if is_accountant_or_superuser:
+        proformas = Proforma.objects.all()
+    else:
+        user_branch = user.worker_profile.branch
+        proformas = Proforma.objects.filter(branch=user_branch)
+
+    # Apply filters
+    if start_date and end_date:
+        proformas = proformas.filter(created_at__date__range=[start_date, end_date])
+
+    if branch_id:
+        proformas = proformas.filter(branch__id=branch_id)
+
+    if selected_month:
+        proformas = proformas.filter(created_at__month=selected_month)
+
+    if sales_rep_id:
+        proformas = proformas.filter(sales_rep__id=sales_rep_id)
+
+    if created_by_id:
+        proformas = proformas.filter(created_by__id=created_by_id)
+
+    if is_promoted is not None:
+        proformas = proformas.filter(is_promoted=is_promoted == "true")
+
+    if search_query:
+        proformas = proformas.filter(
+            Q(proforma_id__icontains=search_query) |
+            Q(branch__branch_id__icontains=search_query) |
+            Q(customer__customer_name__icontains=search_query) |
+            Q(customer__customer_id__icontains=search_query) |
+            Q(sales_rep__user__first_name__icontains=search_query) |
+            Q(sales_rep__user__last_name__icontains=search_query)
+        )
+
+    # Order by created_at descending
+    proformas = proformas.order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(proformas, 25)
+    page = request.GET.get('page', 1)
+    try:
+        proformas_page = paginator.page(page)
+    except PageNotAnInteger:
+        proformas_page = paginator.page(1)
+    except EmptyPage:
+        proformas_page = paginator.page(paginator.num_pages)
+
+    view_context = {
+        "proformas": proformas_page,
+        "branches": branches,
+        "sales_reps": sales_reps,
+        "workers": workers,
+        "months": months,
+        "search_query": search_query,
+        "start_date": start_date,
+        "end_date": end_date,
+        "branch_id": branch_id,
+        "selected_month": selected_month,
+        "sales_rep_id": sales_rep_id,
+        "created_by_id": created_by_id,
+        "is_promoted": is_promoted,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "proformaList.html", context)
+
+
+@login_required
+def create_proforma(request):
+    """Create a new proforma"""
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None
+    else:
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch
+
+    if request.method == 'POST':
+        form = ProformaForm(request.POST, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            created_at = form.cleaned_data["created_at"]
+            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Save form data to session (similar to purchase order flow)
+            request.session["proforma_details"] = {
+                "created_at": created_at_str,
+                "branch": form.cleaned_data["branch"].id if user_is_superuser else user_branch.id,
+                "customer": form.cleaned_data["customer"].id,
+                "sales_rep": form.cleaned_data["sales_rep"].id if form.cleaned_data["sales_rep"] else None,
+                "payment_method": form.cleaned_data["payment_method"],
+                "payment_mode": form.cleaned_data["payment_mode"],
+                "momo_account_details": form.cleaned_data["momo_account_details"].id if form.cleaned_data.get("momo_account_details") else None,
+                "check_account_details": form.cleaned_data["check_account_details"].id if form.cleaned_data.get("check_account_details") else None,
+                "bank_deposit_account_details": form.cleaned_data["bank_deposit_account_details"].id if form.cleaned_data.get("bank_deposit_account_details") else None,
+                "tax_rate": str(form.cleaned_data["tax_rate"]),
+                "precompte": str(form.cleaned_data["precompte"]),
+                "tva": str(form.cleaned_data["tva"]),
+                "is_special_customer": form.cleaned_data["is_special_customer"],
+                "notes": form.cleaned_data.get("notes", ""),
+            }
+
+            # Redirect to add items page
+            return redirect("add_proforma_items")
+        else:
+            messages.error(request, _("Invalid form submission. Please correct the errors."))
+    else:
+        form = ProformaForm(user_is_superuser=user_is_superuser, user_branch=user_branch)
+
+    view_context = {'form': form}
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'createProforma.html', context)
+
+
+@login_required
+def add_proforma_items(request):
+    """Add items to a proforma (similar to add_order_items)"""
+    user_branch = request.user.worker_profile.branch
+
+    # Retrieve proforma details from session
+    proforma_details = request.session.get("proforma_details", {})
+    if not proforma_details:
+        messages.error(request, _("Please create a proforma first."))
+        return redirect("create_proforma")
+
+    selected_branch_id = proforma_details.get("branch")
+    selected_branch = get_object_or_404(Branch, id=selected_branch_id) if selected_branch_id else user_branch
+
+    # Initialize session data if it doesn't exist
+    if "proforma_items" not in request.session:
+        request.session["proforma_items"] = []
+
+    item_form = ProformaItemForm(user_branch=selected_branch)
+    stocks = Stock.objects.select_related('product').filter(branch=selected_branch)
+
+    if request.method == "POST":
+        if "add_item" in request.POST:
+            item_form = ProformaItemForm(request.POST, user_branch=selected_branch)
+            if item_form.is_valid():
+                stock = item_form.cleaned_data["stock"]
+                quantity = item_form.cleaned_data["quantity"]
+                temp_price = item_form.cleaned_data.get("temp_price")
+                reason = item_form.cleaned_data.get("reason", "")
+
+                # Add item to session
+                item_data = {
+                    "stock_id": stock.id,
+                    "quantity": quantity,
+                    "temp_price": str(temp_price) if temp_price else None,
+                    "reason": reason,
+                }
+                request.session["proforma_items"].append(item_data)
+                request.session.modified = True
+                messages.success(request, _("Item added successfully."))
+                return redirect("add_proforma_items")
+
+        elif "remove_item" in request.POST:
+            item_index = int(request.POST.get("remove_item"))
+            if 0 <= item_index < len(request.session["proforma_items"]):
+                request.session["proforma_items"].pop(item_index)
+                request.session.modified = True
+                messages.success(request, _("Item removed successfully."))
+            return redirect("add_proforma_items")
+
+        elif "save_proforma" in request.POST:
+            # Create the proforma with items
+            if not request.session.get("proforma_items"):
+                messages.error(request, _("Please add at least one item to the proforma."))
+                return redirect("add_proforma_items")
+
+            try:
+                with transaction.atomic():
+                    # Get proforma details from session
+                    proforma_details = request.session.get("proforma_details", {})
+
+                    # Parse datetime from session
+                    created_at_dt = timezone.make_aware(
+                        datetime.strptime(proforma_details["created_at"], '%Y-%m-%d %H:%M:%S')
+                    ) if proforma_details.get("created_at") else timezone.now()
+
+                    # Create proforma
+                    proforma = Proforma.objects.create(
+                        created_at=created_at_dt,
+                        branch_id=proforma_details["branch"],
+                        customer_id=proforma_details["customer"],
+                        sales_rep_id=proforma_details.get("sales_rep"),
+                        payment_method=proforma_details["payment_method"],
+                        payment_mode=proforma_details.get("payment_mode"),
+                        momo_account_id=proforma_details.get("momo_account_details"),
+                        check_account_id=proforma_details.get("check_account_details"),
+                        bank_deposit_account_id=proforma_details.get("bank_deposit_account_details"),
+                        tax_rate=Decimal(proforma_details["tax_rate"]),
+                        precompte=Decimal(proforma_details["precompte"]),
+                        tva=Decimal(proforma_details["tva"]),
+                        is_special_customer=proforma_details.get("is_special_customer", False),
+                        notes=proforma_details.get("notes", ""),
+                        created_by=request.user.worker_profile,
+                    )
+
+                    # Calculate grand total
+                    grand_total = Decimal('0.00')
+
+                    # Add items
+                    for item_data in request.session["proforma_items"]:
+                        stock = Stock.objects.get(id=item_data["stock_id"])
+                        quantity = int(item_data["quantity"])
+                        temp_price = Decimal(item_data["temp_price"]) if item_data.get("temp_price") else None
+
+                        price = temp_price if temp_price else stock.product.unit_price
+                        item_total = price * quantity
+                        grand_total += item_total
+
+                        ProformaItem.objects.create(
+                            proforma=proforma,
+                            stock=stock,
+                            quantity=quantity,
+                            temp_price=temp_price,
+                            reason=item_data.get("reason", ""),
+                        )
+
+                    # Update grand total
+                    proforma.grand_total = grand_total
+                    proforma.save()
+
+                    # Log action
+                    log_proforma_action(request.user, proforma, "create", f"Proforma created with {len(request.session['proforma_items'])} items")
+
+                    # Clear session
+                    request.session.pop("proforma_details", None)
+                    request.session.pop("proforma_items", None)
+
+                    messages.success(request, _("Proforma created successfully!"))
+                    return redirect("proforma_details", proforma_id=proforma.id)
+
+            except Exception as e:
+                messages.error(request, _(f"Error creating proforma: {str(e)}"))
+                return redirect("add_proforma_items")
+
+    # Build items list for display
+    items_list = []
+    subtotal = Decimal('0.00')
+    for item_data in request.session.get("proforma_items", []):
+        try:
+            stock = Stock.objects.get(id=item_data["stock_id"])
+            temp_price = Decimal(item_data["temp_price"]) if item_data.get("temp_price") else None
+            price = temp_price if temp_price else stock.product.unit_price
+            quantity = int(item_data["quantity"])
+            item_total = price * quantity
+            subtotal += item_total
+
+            items_list.append({
+                "stock": stock,
+                "quantity": quantity,
+                "price": price,
+                "total": item_total,
+                "reason": item_data.get("reason", ""),
+            })
+        except Stock.DoesNotExist:
+            continue
+
+    view_context = {
+        "item_form": item_form,
+        "stocks": stocks,
+        "items_list": items_list,
+        "proforma_details": proforma_details,
+        "subtotal": subtotal,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "addProformaItems.html", context)
+
+
+@login_required
+def proforma_details(request, proforma_id):
+    """View proforma details"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+    items = proforma.items.all()
+
+    # Calculate totals
+    subtotal = sum(item.get_total_price() for item in items)
+    tax_amount = (subtotal * proforma.tax_rate) / Decimal('100') if proforma.tax_rate else Decimal('0')
+    tva_amount = (subtotal * proforma.tva) / Decimal('100') if proforma.tva else Decimal('0')
+    precompte_amount = (subtotal * proforma.precompte) / Decimal('100') if proforma.precompte else Decimal('0')
+
+    if proforma.is_special_customer:
+        total_with_taxes = (subtotal + tva_amount + precompte_amount) - tax_amount
+    else:
+        total_with_taxes = (subtotal + tva_amount + precompte_amount) - tax_amount
+
+    view_context = {
+        "proforma": proforma,
+        "items": items,
+        "subtotal": subtotal,
+        "tax_amount": tax_amount,
+        "tva_amount": tva_amount,
+        "precompte_amount": precompte_amount,
+        "total_with_taxes": total_with_taxes,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "proformaDetails.html", context)
+
+
+@login_required
+def proforma_document_view(request, proforma_id):
+    """Generate proforma invoice document for a Proforma"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+    items = proforma.items.all()
+
+    # Calculate totals
+    subtotal = sum(item.get_total_price() for item in items)
+    tax_amount = (subtotal * proforma.tax_rate) / Decimal('100') if proforma.tax_rate else Decimal('0')
+    tva_amount = (subtotal * proforma.tva) / Decimal('100') if proforma.tva else Decimal('0')
+    precompte_amount = (subtotal * proforma.precompte) / Decimal('100') if proforma.precompte else Decimal('0')
+
+    if proforma.is_special_customer:
+        new_total = (subtotal + tva_amount + precompte_amount) - tax_amount
+    else:
+        new_total = (subtotal + tva_amount + precompte_amount) - tax_amount
+
+    # Get payment mode details
+    payment_mode_details = None
+    if proforma.payment_mode == "Mobile Money":
+        payment_mode_details = proforma.momo_account
+    elif proforma.payment_mode == "Check":
+        payment_mode_details = proforma.check_account
+    elif proforma.payment_mode == "Bank Deposit":
+        payment_mode_details = proforma.bank_deposit_account
+
+    # Calculate grand total (same as proforma.grand_total)
+    grand_total = proforma.grand_total
+
+    # Convert total to words
+    new_total_words = num2words(float(new_total), lang='en').capitalize()
+
+    view_context = {
+        "proforma": proforma,
+        "invoice": None,  # Template expects invoice but we're using proforma
+        "purchase_order": None,  # Not applicable for proforma
+        "items": items,
+        "subtotal": subtotal,
+        "tax_amount": tax_amount,
+        "tva_amount": tva_amount,
+        "precompte_amount": precompte_amount,
+        "grand_total": grand_total,
+        "new_total": new_total,
+        "new_total_words": new_total_words,
+        "payment_mode_details": payment_mode_details,
+        "payment_schedules": [],  # No payment schedules for proforma
+        "return_payment_schedules": [],  # Not applicable
+        "is_special_customer": proforma.is_special_customer,
+        "is_return_invoice": False,  # Not applicable
+        "tax_rate": proforma.tax_rate or Decimal('0'),
+        "precompte": proforma.precompte or Decimal('0'),
+        "tva": proforma.tva or Decimal('0'),
+        "is_proforma": True,  # Flag to indicate this is a proforma, not invoice
+    }
+
+    # Use the same template as invoice proforma
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "proforma_invoice.html", context)
+
+
+@login_required
+def edit_proforma(request, proforma_id):
+    """Edit an existing proforma"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+
+    if proforma.is_promoted:
+        messages.error(request, _("Cannot edit a proforma that has been promoted to an order."))
+        return redirect("proforma_details", proforma_id=proforma.id)
+
+    if request.user.is_superuser:
+        user_is_superuser = True
+        user_branch = None
+    else:
+        user_is_superuser = False
+        user_branch = request.user.worker_profile.branch
+
+    if request.method == 'POST':
+        form = ProformaForm(request.POST, instance=proforma, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        if form.is_valid():
+            # Update payment accounts
+            proforma.momo_account = form.cleaned_data.get("momo_account_details")
+            proforma.check_account = form.cleaned_data.get("check_account_details")
+            proforma.bank_deposit_account = form.cleaned_data.get("bank_deposit_account_details")
+
+            form.save()
+
+            log_proforma_action(request.user, proforma, "update", "Proforma details updated")
+            messages.success(request, _("Proforma details updated! You can now edit items."))
+            # Redirect to edit items page
+            return redirect("edit_proforma_items", proforma_id=proforma.id)
+    else:
+        form = ProformaForm(instance=proforma, user_is_superuser=user_is_superuser, user_branch=user_branch)
+        # Set initial values for payment accounts
+        form.fields['momo_account_details'].initial = proforma.momo_account
+        form.fields['check_account_details'].initial = proforma.check_account
+        form.fields['bank_deposit_account_details'].initial = proforma.bank_deposit_account
+
+    view_context = {
+        'form': form,
+        'proforma': proforma,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'editProforma.html', context)
+
+
+@login_required
+def edit_proforma_items(request, proforma_id):
+    """Edit items of an existing proforma"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+
+    if proforma.is_promoted:
+        messages.error(request, _("Cannot edit items of a proforma that has been promoted to an order."))
+        return redirect("proforma_details", proforma_id=proforma.id)
+
+    user_branch = request.user.worker_profile.branch
+    selected_branch = proforma.branch
+
+    item_form = ProformaItemForm(user_branch=selected_branch)
+    stocks = Stock.objects.select_related('product').filter(branch=selected_branch)
+
+    if request.method == "POST":
+        if "add_item" in request.POST:
+            item_form = ProformaItemForm(request.POST, user_branch=selected_branch)
+            if item_form.is_valid():
+                stock = item_form.cleaned_data["stock"]
+                quantity = item_form.cleaned_data["quantity"]
+                temp_price = item_form.cleaned_data.get("temp_price")
+                reason = item_form.cleaned_data.get("reason", "")
+
+                # Add new item to proforma
+                ProformaItem.objects.create(
+                    proforma=proforma,
+                    stock=stock,
+                    quantity=quantity,
+                    temp_price=temp_price,
+                    reason=reason,
+                )
+
+                messages.success(request, _("Item added successfully."))
+                return redirect("edit_proforma_items", proforma_id=proforma.id)
+
+        elif "remove_item" in request.POST:
+            item_id = int(request.POST.get("remove_item"))
+            try:
+                item = ProformaItem.objects.get(id=item_id, proforma=proforma)
+                item.delete()
+                messages.success(request, _("Item removed successfully."))
+            except ProformaItem.DoesNotExist:
+                messages.error(request, _("Item not found."))
+            return redirect("edit_proforma_items", proforma_id=proforma.id)
+
+        elif "update_proforma" in request.POST:
+            # Recalculate grand total
+            items = proforma.items.all()
+            grand_total = Decimal('0.00')
+            for item in items:
+                price = item.get_effective_price()
+                item_total = price * item.quantity
+                grand_total += item_total
+
+            proforma.grand_total = grand_total
+            proforma.save()
+
+            log_proforma_action(request.user, proforma, "update", "Proforma items updated")
+            messages.success(request, _("Proforma items updated successfully!"))
+            return redirect("proforma_details", proforma_id=proforma.id)
+
+    # Build items list for display
+    items_list = []
+    subtotal = Decimal('0.00')
+    for item in proforma.items.all():
+        price = item.get_effective_price()
+        item_total = price * item.quantity
+        subtotal += item_total
+
+        items_list.append({
+            "id": item.id,
+            "stock": item.stock,
+            "quantity": item.quantity,
+            "price": price,
+            "total": item_total,
+            "reason": item.reason,
+        })
+
+    view_context = {
+        "proforma": proforma,
+        "item_form": item_form,
+        "stocks": stocks,
+        "items_list": items_list,
+        "subtotal": subtotal,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, "editProformaItems.html", context)
+
+
+@login_required
+def promote_proforma_to_order(request, proforma_id):
+    """Promote a proforma to an actual purchase order"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+
+    if proforma.is_promoted:
+        messages.error(request, _("This proforma has already been promoted to an order."))
+        return redirect("proforma_details", proforma_id=proforma.id)
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Create PurchaseOrder from Proforma
+                purchase_order = PurchaseOrder.objects.create(
+                    order_type='Purchase Order',
+                    created_at=proforma.created_at,
+                    branch=proforma.branch,
+                    customer=proforma.customer,
+                    sales_rep=proforma.sales_rep,
+                    payment_method=proforma.payment_method,
+                    payment_mode=proforma.payment_mode,
+                    momo_account=proforma.momo_account,
+                    check_account=proforma.check_account,
+                    bank_deposit_account=proforma.bank_deposit_account,
+                    tax_rate=proforma.tax_rate,
+                    precompte=proforma.precompte,
+                    tva=proforma.tva,
+                    is_special_customer=proforma.is_special_customer,
+                    status='Pending',
+                    grand_total=proforma.grand_total,
+                    created_by=request.user.worker_profile,
+                )
+
+                # Copy items
+                for proforma_item in proforma.items.all():
+                    PurchaseOrderItem.objects.create(
+                        purchase_order=purchase_order,
+                        stock=proforma_item.stock,
+                        quantity=proforma_item.quantity,
+                        temp_price=proforma_item.temp_price,
+                        reason=proforma_item.reason,
+                    )
+
+                # Mark proforma as promoted
+                proforma.is_promoted = True
+                proforma.promoted_to_order = purchase_order
+                proforma.save()
+
+                # Log actions
+                log_proforma_action(request.user, proforma, "promote", f"Promoted to order {purchase_order.purchase_order_id}")
+
+                PurchaseOrderAuditLog.objects.create(
+                    user=request.user.worker_profile,
+                    order=purchase_order.purchase_order_id,
+                    branch=purchase_order.branch.branch_name,
+                    action="create",
+                    details=f"Created from proforma {proforma.proforma_id}"
+                )
+
+                messages.success(request, _("Proforma promoted to order successfully!"))
+
+                # Redirect to payment schedule creation if credit
+                if purchase_order.payment_method == 'Credit':
+                    # Store order ID in session for payment schedule creation (matching existing flow)
+                    request.session['latest_purchase_order_id'] = purchase_order.id
+                    return redirect("create_payment_schedule")
+                else:
+                    return redirect("order_details", order_id=purchase_order.id)
+
+        except Exception as e:
+            messages.error(request, _(f"Error promoting proforma: {str(e)}"))
+            return redirect("proforma_details", proforma_id=proforma.id)
+
+    view_context = {
+        'proforma': proforma,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'promoteProforma.html', context)
+
+
+@login_required
+def delete_proforma(request, proforma_id):
+    """Delete a proforma"""
+    proforma = get_object_or_404(Proforma, id=proforma_id)
+
+    if proforma.is_promoted:
+        messages.error(request, _("Cannot delete a proforma that has been promoted to an order."))
+        return redirect("proforma_details", proforma_id=proforma.id)
+
+    if request.method == 'POST':
+        proforma_id_str = proforma.proforma_id
+        proforma.delete()
+        log_proforma_action(request.user, None, "delete", f"Deleted proforma {proforma_id_str}")
+        messages.success(request, _("Proforma deleted successfully!"))
+        return redirect("proformas")
+
+    view_context = {
+        'proforma': proforma,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'deleteProforma.html', context)

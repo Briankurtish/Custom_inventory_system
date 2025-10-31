@@ -8,13 +8,13 @@
     <title>Proforma Invoice - {{ invoice.invoice_id }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
+
         * {
         margin: 0;
         padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 16px;
@@ -23,7 +23,7 @@
             background: #f8fafc;
             padding: 20px;
         }
-        
+
         .proforma-container {
             max-width: 1000px;
             margin: 0 auto;
@@ -32,55 +32,55 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
-        
+
         .proforma-header {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
             padding: 20px;
             position: relative;
         }
-        
+
         .header-main {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
         }
-        
+
         .company-logo {
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 10px;
         }
-        
+
         .company-details {
             flex: 1;
         }
-        
+
         .company-address {
             font-size: 14px;
             opacity: 0.9;
             line-height: 1.5;
         }
-        
+
         .proforma-title {
             text-align: right;
             flex: 1;
         }
-        
+
         .proforma-title h1 {
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .proforma-title .subtitle {
             font-size: 16px;
             opacity: 0.9;
             font-weight: 500;
         }
-        
+
         .proforma-number {
             background: rgba(255, 255, 255, 0.2);
             padding: 10px 15px;
@@ -88,36 +88,36 @@
             margin-top: 15px;
             backdrop-filter: blur(10px);
         }
-        
+
         .proforma-number h2 {
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 5px;
         }
-        
+
         .proforma-number p {
             font-size: 14px;
             opacity: 0.9;
         }
-        
+
         .proforma-body {
             padding: 25px;
         }
-        
+
         .proforma-info {
             {% comment %} display: grid;
             grid-template-columns: 1fr 1fr; {% endcomment %}
             gap: 20px;
             margin-bottom: 25px;
         }
-        
+
         .info-section {
             background: #f8fafc;
             padding: 15px;
             border-radius: 6px;
             border-left: 3px solid #3b82f6;
         }
-        
+
         .info-section h3 {
             color: #1e40af;
             font-size: 16px;
@@ -126,22 +126,22 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .info-section p {
             margin-bottom: 8px;
             font-size: 14px;
             color: #374151;
         }
-        
+
         .info-section strong {
             color: #1f2937;
             font-weight: 600;
         }
-        
+
         .items-section {
             margin-bottom: 25px;
         }
-        
+
         .section-title {
             font-size: 16px;
             font-weight: 600;
@@ -150,7 +150,7 @@
             padding-bottom: 8px;
             border-bottom: 2px solid #e5e7eb;
         }
-        
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -159,12 +159,12 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        
+
         .items-table thead {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
         }
-        
+
         .items-table th {
             padding: 10px 8px;
             text-align: left;
@@ -173,43 +173,43 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-        
+
         .items-table td {
             padding: 10px 8px;
             border-bottom: 1px solid #e5e7eb;
             font-size: 12px;
         }
-        
+
         .items-table tbody tr:hover {
             background: #f8fafc;
         }
-        
+
         .items-table tbody tr:last-child td {
             border-bottom: none;
         }
-        
+
         .text-right {
             text-align: right;
         }
-        
+
         .text-center {
             text-align: center;
         }
-        
+
         .totals-section {
             background: #f8fafc;
             padding: 15px;
             border-radius: 6px;
             margin-top: 20px;
         }
-        
+
         .totals-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .total-row {
             display: flex;
             justify-content: space-between;
@@ -217,21 +217,21 @@
             padding: 8px 0;
             border-bottom: 1px solid #e5e7eb;
         }
-        
+
         .total-row:last-child {
             border-bottom: none;
         }
-        
+
         .total-label {
             font-weight: 500;
             color: #374151;
         }
-        
+
         .total-amount {
             font-weight: 600;
             color: #1f2937;
         }
-        
+
         .grand-total {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
@@ -239,7 +239,7 @@
             border-radius: 6px;
             margin-top: 15px;
         }
-        
+
         .grand-total-row {
             display: flex;
             justify-content: space-between;
@@ -247,7 +247,7 @@
             font-size: 16px;
             font-weight: 700;
         }
-        
+
         .amount-in-words {
             margin-top: 10px;
             padding: 10px;
@@ -256,7 +256,7 @@
             font-style: italic;
             font-size: 12px;
         }
-        
+
         .payment-terms {
             background: #fef3c7;
             border: 1px solid #f59e0b;
@@ -264,45 +264,45 @@
             padding: 15px;
             margin-top: 20px;
         }
-        
+
         .payment-terms h4 {
             color: #92400e;
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
         }
-        
+
         .payment-terms p {
             color: #92400e;
             font-size: 12px;
             margin-bottom: 4px;
         }
-        
+
         .proforma-footer {
             background: #f8fafc;
             padding: 20px 25px;
             border-top: 1px solid #e5e7eb;
         }
-        
+
         .footer-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        
+
         .footer-section h4 {
             color: #1e40af;
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 10px;
         }
-        
+
         .footer-section p {
             font-size: 12px;
             color: #374151;
             margin-bottom: 6px;
         }
-        
+
         .proforma-note {
             background: #ecfdf5;
             border: 1px solid #10b981;
@@ -310,20 +310,20 @@
             padding: 15px;
             margin-top: 15px;
         }
-        
+
         .proforma-note h4 {
             color: #065f46;
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
         }
-        
+
         .proforma-note p {
             color: #065f46;
             font-size: 12px;
             line-height: 1.5;
         }
-        
+
         .print-button {
             position: fixed;
             top: 20px;
@@ -338,24 +338,24 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
             transition: all 0.3s ease;
         }
-        
+
         .print-button:hover {
             background: #1d4ed8;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
         }
-        
+
         @media print {
             .print-button {
                 display: none;
             }
-            
+
             body {
                 padding: 5px !important;
                 font-size: 10px !important;
                 background: white !important;
             }
-            
+
             .proforma-container {
                 max-width: none !important;
                 margin: 0 !important;
@@ -363,75 +363,75 @@
                 border-radius: 0 !important;
                 border: 1px solid #000 !important;
             }
-            
+
             .proforma-header {
                 padding: 8px 12px !important;
                 background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            
+
             .header-main {
                 display: flex !important;
                 justify-content: space-between !important;
                 align-items: center !important;
                 width: 100% !important;
             }
-            
+
             .company-details {
                 flex: 1 !important;
             }
-            
+
             .company-logo {
                 font-size: 16px !important;
                 font-weight: 700 !important;
                 margin-bottom: 4px !important;
             }
-            
+
             .company-address {
                 font-size: 8px !important;
                 line-height: 1.2 !important;
                 opacity: 0.9 !important;
             }
-            
+
             .proforma-title {
                 text-align: right !important;
                 flex: 1 !important;
             }
-            
+
             .proforma-title h1 {
                 font-size: 14px !important;
                 font-weight: 700 !important;
                 margin-bottom: 2px !important;
             }
-            
+
             .proforma-number {
                 background: rgba(255, 255, 255, 0.2) !important;
                 padding: 6px 8px !important;
                 border-radius: 4px !important;
                 margin-top: 8px !important;
             }
-            
+
             .proforma-number h2 {
                 font-size: 10px !important;
                 font-weight: 600 !important;
                 margin-bottom: 2px !important;
             }
-            
+
             .proforma-number p {
                 font-size: 8px !important;
                 opacity: 0.9 !important;
             }
-            
+
             .proforma-body {
                 padding: 8px 12px !important;
             }
-            
+
             .proforma-info {
                 display: block !important;
                 margin-bottom: 8px !important;
             }
-            
+
             .info-section {
                 background: #f8fafc !important;
                 padding: 8px !important;
@@ -439,7 +439,7 @@
                 border-left: 2px solid #3b82f6 !important;
                 margin-bottom: 6px !important;
             }
-            
+
             .info-section h3 {
                 font-size: 9px !important;
                 font-weight: 600 !important;
@@ -448,18 +448,18 @@
                 text-transform: uppercase !important;
                 letter-spacing: 0.3px !important;
             }
-            
+
             .info-section p {
                 font-size: 8px !important;
                 margin-bottom: 2px !important;
                 color: #374151 !important;
             }
-            
+
             .info-section strong {
                 font-weight: 600 !important;
                 color: #1f2937 !important;
             }
-            
+
             .section-title {
                 font-size: 10px !important;
                 font-weight: 600 !important;
@@ -468,7 +468,7 @@
                 padding-bottom: 3px !important;
                 border-bottom: 1px solid #e5e7eb !important;
             }
-            
+
             .items-table {
                 width: 100% !important;
                 border-collapse: collapse !important;
@@ -476,14 +476,14 @@
                 border: 1px solid #000 !important;
                 font-size: 7px !important;
             }
-            
+
             .items-table thead {
                 background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
                 color: white !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            
+
             .items-table th {
                 padding: 4px 3px !important;
                 text-align: left !important;
@@ -493,26 +493,26 @@
                 letter-spacing: 0.2px !important;
                 border: 1px solid #000 !important;
             }
-            
+
             .items-table td {
                 padding: 4px 3px !important;
                 border: 1px solid #000 !important;
                 font-size: 7px !important;
                 vertical-align: top !important;
             }
-            
+
             .items-table tbody tr:nth-child(even) {
                 background: #f8fafc !important;
             }
-            
+
             .text-right {
                 text-align: right !important;
             }
-            
+
             .text-center {
                 text-align: center !important;
             }
-            
+
             .totals-section {
                 background: #f8fafc !important;
                 padding: 8px !important;
@@ -520,14 +520,14 @@
                 margin-top: 8px !important;
                 border: 1px solid #e5e7eb !important;
             }
-            
+
             .totals-grid {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
                 gap: 8px !important;
                 margin-bottom: 8px !important;
             }
-            
+
             .total-row {
                 display: flex !important;
                 justify-content: space-between !important;
@@ -535,23 +535,23 @@
                 padding: 2px 0 !important;
                 border-bottom: 1px solid #e5e7eb !important;
             }
-            
+
             .total-row:last-child {
                 border-bottom: none !important;
             }
-            
+
             .total-label {
                 font-weight: 500 !important;
                 color: #374151 !important;
                 font-size: 8px !important;
             }
-            
+
             .total-amount {
                 font-weight: 600 !important;
                 color: #1f2937 !important;
                 font-size: 8px !important;
             }
-            
+
             .grand-total {
                 background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
                 color: white !important;
@@ -561,7 +561,7 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            
+
             .grand-total-row {
                 display: flex !important;
                 justify-content: space-between !important;
@@ -569,7 +569,7 @@
                 font-size: 10px !important;
                 font-weight: 700 !important;
             }
-            
+
             .amount-in-words {
                 margin-top: 6px !important;
                 padding: 4px !important;
@@ -578,12 +578,12 @@
                 font-style: italic !important;
                 font-size: 7px !important;
             }
-            
+
             /* Hide commented sections in print */
             .info-section:last-child {
                 display: none !important;
             }
-            
+
             .totals-grid > div:first-child .total-row:first-child,
             .totals-grid > div:first-child .total-row:nth-child(2),
             .totals-grid > div:first-child .total-row:nth-child(3),
@@ -592,44 +592,44 @@
             .totals-grid > div:last-child .total-row:nth-child(3) {
                 display: none !important;
             }
-            
+
             .payment-terms,
             .proforma-note,
             .proforma-footer {
                 display: none !important;
             }
-            
+
             /* Ensure colors print correctly */
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
         }
-        
+
         @media (max-width: 768px) {
             .proforma-info {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
-            
+
             .footer-content {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
-            
+
             .totals-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .items-table {
                 font-size: 10px;
             }
-            
+
             .items-table th,
             .items-table td {
                 padding: 8px 4px;
             }
-            
+
             .items-table th {
                 font-size: 10px;
             }
@@ -658,10 +658,15 @@
                     {% comment %} <div class="subtitle">Commercial Document</div> {% endcomment %}
                 </div>
             </div>
-            
+
             <div class="proforma-number">
-                <h2>Proforma Invoice #{{ invoice.invoice_id }}</h2>
-                <p>Date: {{ invoice.created_at|date:"F d, Y" }}</p>
+                {% if is_proforma %}
+                    <h2>Proforma Invoice #{{ proforma.proforma_id }}</h2>
+                    <p>Date: {{ proforma.created_at|date:"F d, Y" }}</p>
+                {% else %}
+                    <h2>Proforma Invoice #{{ invoice.invoice_id }}</h2>
+                    <p>Date: {{ invoice.created_at|date:"F d, Y" }}</p>
+                {% endif %}
             </div>
         </div>
 
@@ -671,12 +676,18 @@
             <div class="proforma-info">
                 <div class="info-section">
                     <h3>Bill To</h3>
-                    <p><strong>Customer:</strong> {{ invoice.customer.customer_name }}</p>
-                    <p><strong>Address:</strong> {{ invoice.customer.postal_code|default:"N/A" }}</p>
-                    <p><strong>Phone:</strong> {{ invoice.customer.telephone|default:"N/A" }}</p>
+                    {% if is_proforma %}
+                        <p><strong>Customer:</strong> {{ proforma.customer.customer_name }}</p>
+                        <p><strong>Address:</strong> {{ proforma.customer.postal_code|default:"N/A" }}</p>
+                        <p><strong>Phone:</strong> {{ proforma.customer.telephone|default:"N/A" }}</p>
+                    {% else %}
+                        <p><strong>Customer:</strong> {{ invoice.customer.customer_name }}</p>
+                        <p><strong>Address:</strong> {{ invoice.customer.postal_code|default:"N/A" }}</p>
+                        <p><strong>Phone:</strong> {{ invoice.customer.telephone|default:"N/A" }}</p>
+                    {% endif %}
                     {% comment %} <p><strong>Email:</strong> {{ invoice.customer.email_address|default:"N/A" }}</p> {% endcomment %}
                 </div>
-                
+
                 {% comment %} <div class="info-section">
                     <h3>Ship To</h3>
                     <p><strong>Branch:</strong> {{ invoice.branch.branch_name }}</p>
@@ -708,13 +719,31 @@
                         <tr>
                             <td>{{ forloop.counter }}</td>
                             <td>{{ item.stock.product.product_code }}</td>
-                            <td>{{ item.stock.product.generic_name_dosage.generic_name }}</td>
+                            <td>
+                                {% if is_proforma %}
+                                    {{ item.stock.product.generic_name_dosage }}
+                                {% else %}
+                                    {{ item.stock.product.generic_name_dosage.generic_name }}
+                                {% endif %}
+                            </td>
                             <td>{{ item.stock.product.brand_name.brand_name|default:"N/A" }}</td>
                             <td>{{ item.stock.product.batch.batch_number|default:"N/A" }}</td>
                             <td>{{ item.stock.product.dosage_form|default:"N/A" }}</td>
                             <td class="text-center">{{ item.quantity }}</td>
-                            <td class="text-right">{{ item.effective_price|floatformat:2|intcomma }} CFA</td>
-                            <td class="text-right">{{ item.total_price|floatformat:2|intcomma }} CFA</td>
+                            <td class="text-right">
+                                {% if is_proforma %}
+                                    {{ item.get_unit_price|floatformat:2|intcomma }} CFA
+                                {% else %}
+                                    {{ item.effective_price|floatformat:2|intcomma }} CFA
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                {% if is_proforma %}
+                                    {{ item.get_total_price|floatformat:2|intcomma }} CFA
+                                {% else %}
+                                    {{ item.total_price|floatformat:2|intcomma }} CFA
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -763,7 +792,7 @@
                         </div> {% endcomment %}
                     </div>
                 </div>
-                
+
                 <div class="grand-total">
                     <div class="grand-total-row">
                         <span>Total Amount:</span>

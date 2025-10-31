@@ -745,6 +745,12 @@
                     {% endif %}
                 </a>
             </li>
+            <li class="shadcn-menu-item {% if 'proformas' == request.resolver_match.url_name or '/proformas/' in request.path %}active{% endif %}">
+                <a href="{% url 'proformas' %}" class="shadcn-menu-link">
+                    <i class="shadcn-menu-icon fa-solid fa-file-invoice"></i>
+                    <div class="shadcn-menu-text">{% trans "Proformas" %}</div>
+                </a>
+            </li>
             <li class="shadcn-menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active{% endif %}">
               <a href="{% url 'sample_orders' %}" class="shadcn-menu-link">
                 <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
@@ -1042,6 +1048,13 @@
           {% if pending_orders_count > 0 %}
           <span class="shadcn-menu-badge warning">{{ pending_orders_count }}</span>
           {% endif %}
+        </a>
+      </li>
+
+      <li class="shadcn-menu-item {% if 'proformas' == request.resolver_match.url_name or '/proformas/' in request.path %}active{% endif %}">
+        <a href="{% url 'proformas' %}" class="shadcn-menu-link">
+          <i class="shadcn-menu-icon fa-solid fa-file-invoice"></i>
+          <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Proformas" %}</div>
         </a>
       </li>
 

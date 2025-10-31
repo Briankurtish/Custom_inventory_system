@@ -565,6 +565,40 @@
       </div>
     </div>
 
+    <!-- Proforma Management -->
+    <div class="shadcn-card mb-8">
+      <div class="shadcn-card-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="shadcn-card-title">
+              <i class="fa-solid fa-file-invoice text-primary me-2"></i>{% trans "Proforma Management"%}
+            </h3>
+            <p class="shadcn-card-description">{% trans "Create and manage draft orders (proforma invoices)"%}</p>
+          </div>
+        </div>
+      </div>
+      <div class="shadcn-card-content">
+        <div class="flex items-center gap-4 mb-4">
+          <div>
+            <div class="text-2xl font-bold text-primary">{{ total_proformas_count }}</div>
+            <div class="text-sm text-muted-foreground">{% trans "Active Proformas"%}</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-success">{{ promoted_proformas_count }}</div>
+            <div class="text-sm text-muted-foreground">{% trans "Promoted to Orders"%}</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'proformas' %}" class="shadcn-button shadcn-button-primary shadcn-button-sm">
+            <i class="fa-solid fa-list me-1"></i>{% trans "View Proformas"%}
+          </a>
+          <a href="{% url 'create_proforma' %}" class="shadcn-button shadcn-button-secondary shadcn-button-sm">
+            <i class="fa-solid fa-plus me-1"></i>{% trans "Create Proforma"%}
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- Analytics Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 mb-8">
       <!-- Sales Analytics Chart -->

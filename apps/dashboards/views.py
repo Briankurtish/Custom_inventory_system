@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Notice
 from .forms import NoticeForm
-from apps.orders.models import PurchaseOrder, Invoice
+from apps.orders.models import PurchaseOrder, Invoice, Proforma
 from apps.stock.models import Stock
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
@@ -214,6 +214,10 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         # Add financial data
         financial_data = self.get_financial_data()
         context.update(financial_data)
+
+        # Add proforma statistics
+        context['total_proformas_count'] = Proforma.objects.filter(is_promoted=False).count()
+        context['promoted_proformas_count'] = Proforma.objects.filter(is_promoted=True).count()
 
         return context
 

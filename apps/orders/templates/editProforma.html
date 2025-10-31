@@ -1,0 +1,125 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Edit Proforma" %}{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-8 offset-xl-2">
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <h3 class="shadcn-card-title">
+          <i class="fa-solid fa-edit text-primary me-2"></i>{% trans "Edit Proforma" %}: {{ proforma.proforma_id }}
+        </h3>
+        <a href="{% url 'proforma_details' proforma.id %}" class="shadcn-button shadcn-button-secondary">
+          <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back" %}
+        </a>
+      </div>
+      <div class="shadcn-card-content">
+        <form method="post">
+          {% csrf_token %}
+          {{form|crispy}}
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="shadcn-button shadcn-button-primary">
+              <i class="fa-solid fa-save me-1"></i>{% trans "Save Changes" %}
+            </button>
+            <a href="{% url 'proforma_details' proforma.id %}" class="shadcn-button shadcn-button-secondary">{% trans "Cancel" %}</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  $(document).ready(function () {
+    $("#id_customer").select2({ placeholder: "Search for a Customer", allowClear: true, width: "100%" });
+    $("#id_sales_rep").select2({ placeholder: "Search for a Sales Rep", allowClear: true, width: "100%" });
+  });
+</script>
+{% endblock %}

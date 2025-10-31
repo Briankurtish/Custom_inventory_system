@@ -196,7 +196,7 @@
             {% endif %}
           </td>
           <td>
-            {% if order.order_type|lower == 'purchase' %}
+            {% if order.order_type|lower == 'purchase order' or order.order_type|lower == 'purchase' %}
               <span class="badge bg-label-primary me-1">{% trans "Purchase Order" %}</span>
             {% elif order.order_type|lower == 'sample' %}
               <span class="badge bg-label-info me-1">{% trans "Sample Order" %}</span>

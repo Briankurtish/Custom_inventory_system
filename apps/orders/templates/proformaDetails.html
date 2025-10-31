@@ -1,0 +1,396 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Proforma Details" %}{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+  }
+
+  .shadcn-button-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .shadcn-button-primary:hover {
+    background: hsl(var(--primary) / 0.9);
+  }
+
+  .shadcn-button-success {
+    background: hsl(var(--success));
+    color: white;
+  }
+
+  .shadcn-button-success:hover {
+    background: hsl(var(--success) / 0.9);
+  }
+
+  .shadcn-button-danger {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .shadcn-button-danger:hover {
+    background: hsl(var(--destructive) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .shadcn-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+
+  .shadcn-badge-success {
+    background: hsl(var(--success) / 0.1);
+    color: hsl(var(--success));
+  }
+
+  .shadcn-badge-warning {
+    background: hsl(var(--warning) / 0.1);
+    color: hsl(var(--warning));
+  }
+
+  .shadcn-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: auto;
+  }
+
+  .table-responsive {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  .shadcn-table thead th {
+    background: hsl(var(--muted));
+    padding: 0.75rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .shadcn-table tbody td {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  .shadcn-table tbody tr:hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .shadcn-table tfoot td {
+    padding: 0.75rem;
+    font-weight: 600;
+    border-top: 2px solid hsl(var(--border));
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-item {
+    padding: 1rem;
+    background: hsl(var(--muted) / 0.2);
+    border-radius: var(--radius);
+    border-left: 4px solid hsl(var(--primary));
+    transition: all 0.2s ease;
+  }
+
+  .info-item:hover {
+    background: hsl(var(--muted) / 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .info-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .info-value {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    word-break: break-word;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'proformas' %}">{% trans "Proformas" %}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Proforma Details" %}</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="mb-4">
+  <a href="{% url 'proformas' %}" class="shadcn-button shadcn-button-secondary">
+    <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back to List" %}
+  </a>
+</div>
+
+  <div class="shadcn-card">
+    <div class="shadcn-card-header">
+      <h3 class="shadcn-card-title">
+        {% trans "Proforma Invoice Details" %}
+        {% if proforma.is_promoted %}
+            <span class="shadcn-badge shadcn-badge-success">{% trans "Promoted" %}</span>
+        {% else %}
+            <span class="shadcn-badge shadcn-badge-warning">{% trans "Draft" %}</span>
+        {% endif %}
+      </h3>
+      {% if proforma.is_promoted and proforma.promoted_to_order %}
+        <div class="mb-3">
+          <a href="{% url 'order_details' proforma.promoted_to_order.id %}" class="shadcn-button shadcn-button-primary">
+            <i class="fa-solid fa-eye me-1"></i>{% trans "View Order" %}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  <div class="shadcn-card-content">
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">{% trans "Proforma ID" %}</div>
+        <div class="info-value">{{ proforma.proforma_id }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Branch" %}</div>
+        <div class="info-value">{{ proforma.branch.branch_name }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Customer" %}</div>
+        <div class="info-value">{{ proforma.customer.customer_name }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Sales Rep" %}</div>
+        <div class="info-value">
+          {% if proforma.sales_rep %}
+            {{ proforma.sales_rep.user.get_full_name }}
+          {% else %}
+            -
+          {% endif %}
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Created By" %}</div>
+        <div class="info-value">
+          {% if proforma.created_by %}
+            {{ proforma.created_by.user.get_full_name }}
+          {% else %}
+            -
+          {% endif %}
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Date Created" %}</div>
+        <div class="info-value">{{ proforma.created_at|date:"M d, Y" }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Payment Method" %}</div>
+        <div class="info-value">{{ proforma.get_payment_method_display }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Payment Mode" %}</div>
+        <div class="info-value">{{ proforma.payment_mode|default:"-" }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">{% trans "Special Customer" %}</div>
+        <div class="info-value">
+          {% if proforma.is_special_customer %}
+            <span class="shadcn-badge shadcn-badge-success">{% trans "Yes" %}</span>
+          {% else %}
+            <span class="text-muted">{% trans "No" %}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if proforma.notes %}
+    <div class="mb-4 p-3" style="background: hsl(var(--muted) / 0.3); border-radius: var(--radius); border-left: 3px solid hsl(var(--primary));">
+      <div class="info-label mb-1">{% trans "Notes" %}</div>
+      <div class="info-value">{{ proforma.notes }}</div>
+    </div>
+    {% endif %}
+
+    <h5 class="mb-3">
+      <i class="fa-solid fa-box me-2"></i>{% trans "Items" %}
+    </h5>
+    <div class="table-responsive" style="overflow-x: visible;">
+      <table class="shadcn-table" style="width: 100%; table-layout: auto;">
+        <thead>
+          <tr>
+            <th>{% trans "No" %}</th>
+            <th>{% trans "Product Code" %}</th>
+            <th>{% trans "Generic Name" %}</th>
+            <th>{% trans "Brand Name" %}</th>
+            <th>{% trans "Quantity" %}</th>
+            <th>{% trans "Unit Price" %}</th>
+            <th>{% trans "Total Price" %}</th>
+            <th>{% trans "Reason" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.stock.product.product_code }}</td>
+            <td>{{ item.stock.product.generic_name_dosage }}</td>
+            <td>{{ item.stock.product.brand_name.brand_name|default:"-" }}</td>
+            <td>{{ item.quantity|intcomma }}</td>
+            <td>{{ item.get_unit_price|floatformat:2|intcomma }} FCFA</td>
+            <td>{{ item.get_total_price|floatformat:2|intcomma }} FCFA</td>
+            <td>{{ item.reason|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="text-end"><strong>{% trans "Subtotal" %}:</strong></td>
+            <td><strong>{{ subtotal|floatformat:2|intcomma }} FCFA</strong></td>
+            <td></td>
+          </tr>
+          {% if tax_amount %}
+          <tr>
+            <td colspan="6" class="text-end">{% trans "Tax" %} ({{ proforma.tax_rate }}%):</td>
+            <td>{{ tax_amount|floatformat:2|intcomma }} FCFA</td>
+            <td></td>
+          </tr>
+          {% endif %}
+          {% if tva_amount %}
+          <tr>
+            <td colspan="6" class="text-end">{% trans "TVA" %} ({{ proforma.tva }}%):</td>
+            <td>{{ tva_amount|floatformat:2|intcomma }} FCFA</td>
+            <td></td>
+          </tr>
+          {% endif %}
+          {% if precompte_amount %}
+          <tr>
+            <td colspan="6" class="text-end">{% trans "Precompte" %} ({{ proforma.precompte }}%):</td>
+            <td>{{ precompte_amount|floatformat:2|intcomma }} FCFA</td>
+            <td></td>
+          </tr>
+          {% endif %}
+          <tr style="background: hsl(var(--primary) / 0.1);">
+            <td colspan="6" class="text-end"><strong>{% trans "Grand Total" %}:</strong></td>
+            <td><strong>{{ proforma.grand_total|floatformat:2|intcomma }} FCFA</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    {% if not proforma.is_promoted %}
+    <div class="d-flex gap-2 mt-4 flex-wrap">
+      <a href="{% url 'edit_proforma' proforma.id %}" class="shadcn-button shadcn-button-primary">
+        <i class="fa-solid fa-edit me-1"></i>{% trans "Edit General Info" %}
+      </a>
+      <a href="{% url 'edit_proforma_items' proforma.id %}" class="shadcn-button shadcn-button-primary">
+        <i class="fa-solid fa-list me-1"></i>{% trans "Edit Items" %}
+      </a>
+      <a href="{% url 'proforma_document' proforma.id %}" target="_blank" class="shadcn-button shadcn-button-secondary">
+        <i class="fa-solid fa-file-pdf me-1"></i>{% trans "Download Proforma Invoice" %}
+      </a>
+      <a href="{% url 'promote_proforma_to_order' proforma.id %}" class="shadcn-button shadcn-button-success">
+        <i class="fa-solid fa-arrow-up me-1"></i>{% trans "Promote to Order" %}
+      </a>
+      <a href="{% url 'delete_proforma' proforma.id %}" class="shadcn-button shadcn-button-danger">
+        <i class="fa-solid fa-trash me-1"></i>{% trans "Delete" %}
+      </a>
+    </div>
+    {% else %}
+    <div class="d-flex gap-2 mt-4">
+      <a href="{% url 'proforma_document' proforma.id %}" target="_blank" class="shadcn-button shadcn-button-primary">
+        <i class="fa-solid fa-file-pdf me-1"></i>{% trans "Download Proforma Invoice" %}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Promote Proforma to Order" %}{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --warning: 38 92% 50%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --success: 142 76% 36%;
+  }
+
+  .shadcn-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .shadcn-card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .shadcn-card-content {
+    padding: 1.5rem;
+  }
+
+  .shadcn-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 0.5rem;
+  }
+
+  .shadcn-alert {
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    border-left: 3px solid;
+  }
+
+  .shadcn-alert-info {
+    background: hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--card-foreground));
+  }
+
+  .shadcn-alert-warning {
+    background: hsl(var(--warning) / 0.1);
+    border-color: hsl(var(--warning));
+    color: hsl(var(--card-foreground));
+  }
+
+  .shadcn-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+  }
+
+  .shadcn-button-success {
+    background: hsl(var(--success));
+    color: white;
+  }
+
+  .shadcn-button-success:hover {
+    background: hsl(var(--success) / 0.9);
+  }
+
+  .shadcn-button-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .shadcn-button-secondary:hover {
+    background: hsl(var(--secondary) / 0.8);
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-item {
+    padding: 0.75rem;
+    background: hsl(var(--muted) / 0.3);
+    border-radius: var(--radius);
+    border-left: 3px solid hsl(var(--primary));
+  }
+
+  .info-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .info-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-8 offset-xl-2">
+    <div class="shadcn-card">
+      <div class="shadcn-card-header">
+        <h3 class="shadcn-card-title">
+          <i class="fa-solid fa-arrow-up text-success me-2"></i>{% trans "Promote Proforma to Order" %}
+        </h3>
+      </div>
+      <div class="shadcn-card-content">
+        <div class="shadcn-alert shadcn-alert-info">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          {% trans "This will convert the proforma into an actual purchase order. After promotion, the proforma cannot be edited." %}
+        </div>
+
+        <div class="shadcn-card" style="background: hsl(var(--muted) / 0.3);">
+          <div class="shadcn-card-header">
+            <h5 class="shadcn-card-title">{% trans "Proforma Summary" %}</h5>
+          </div>
+          <div class="shadcn-card-content">
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">{% trans "Proforma ID" %}</div>
+                <div class="info-value">{{ proforma.proforma_id }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">{% trans "Customer" %}</div>
+                <div class="info-value">{{ proforma.customer.customer_name }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">{% trans "Branch" %}</div>
+                <div class="info-value">{{ proforma.branch.branch_name }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">{% trans "Grand Total" %}</div>
+                <div class="info-value">{{ proforma.grand_total|floatformat:2|intcomma }} FCFA</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">{% trans "Items Count" %}</div>
+                <div class="info-value">{{ proforma.items.count }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">{% trans "Payment Method" %}</div>
+                <div class="info-value">{{ proforma.get_payment_method_display }}</div>
+              </div>
+            </div>
+            {% if proforma.payment_method == 'Credit' %}
+              <div class="shadcn-alert shadcn-alert-warning mt-3">
+                <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                {% trans "Payment method is Credit. You will be prompted to create a payment schedule after promotion." %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <form method="post" onsubmit="return confirm('{% trans "Are you sure you want to promote this proforma to an order?" %}');">
+          {% csrf_token %}
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="shadcn-button shadcn-button-success">
+              <i class="fa-solid fa-arrow-up me-1"></i>{% trans "Promote to Order" %}
+            </button>
+            <a href="{% url 'proforma_details' proforma.id %}" class="shadcn-button shadcn-button-secondary">
+              <i class="fa-solid fa-times me-1"></i>{% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

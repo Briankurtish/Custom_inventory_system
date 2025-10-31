@@ -1,5 +1,5 @@
 from django import forms
-from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem, SampleOrderItem, Sickness, SicknessItem
+from .models import Bank, BankDeposit, Check, InvoiceDocument, InvoiceOrderItem, MomoInfo, PaymentSchedule, PurchaseOrder, PurchaseOrderDocument, PurchaseOrderItem, InvoicePayment, ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnInvoicePayment, ReturnOrderItem, ReturnPurchaseOrderDocument, ReturnPurchaseOrderItem, SampleOrderItem, Sickness, SicknessItem, Proforma, ProformaItem
 from apps.stock.models import Stock
 from apps.branches.models import Branch
 from apps.customers.models import Customer
@@ -693,6 +693,119 @@ class SicknessItemForm(forms.ModelForm):
             'stock': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'reason': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_branch = kwargs.pop('user_branch', None)
+        super().__init__(*args, **kwargs)
+        if user_branch:
+            self.fields['stock'].queryset = Stock.objects.filter(branch=user_branch, total_stock__gt=0)
+        else:
+            self.fields['stock'].queryset = Stock.objects.filter(total_stock__gt=0)
+        self.fields['stock'].label_from_instance = (
+            lambda obj: f"{obj.product.product_code} - {obj.product.generic_name_dosage} - {obj.product.brand_name.brand_name if obj.product.brand_name else ''} - {obj.product.batch.batch_number} ({obj.total_stock} available)"
+        )
+
+
+class ProformaForm(forms.ModelForm):
+    """Form for creating and editing Proforma"""
+    momo_account_details = forms.ModelChoiceField(
+        queryset=MomoInfo.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    check_account_details = forms.ModelChoiceField(
+        queryset=Check.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+    bank_deposit_account_details = forms.ModelChoiceField(
+        queryset=BankDeposit.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control form-control-sm'})
+    )
+
+    class Meta:
+        model = Proforma
+        fields = [
+            'created_at', 'branch', 'customer', 'sales_rep', 'payment_method',
+            'payment_mode', 'momo_account_details', 'check_account_details',
+            'bank_deposit_account_details', 'tax_rate', 'precompte', 'tva',
+            'is_special_customer', 'notes'
+        ]
+        widgets = {
+            'created_at': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
+            'branch': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'customer': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'sales_rep': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'payment_mode': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tax_rate': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'precompte': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'tva': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'is_special_customer': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+        labels = {
+            'created_at': 'Date',
+            'branch': 'Branch',
+            'customer': 'Customer',
+            'sales_rep': 'Sales Representative',
+            'payment_method': 'Payment Method',
+            'payment_mode': 'Payment Mode',
+            'tax_rate': 'Tax Rate',
+            'precompte': 'Precompte',
+            'tva': 'TVA',
+            'is_special_customer': 'Special Customer',
+            'notes': 'Notes',
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_is_superuser = kwargs.pop('user_is_superuser', False)
+        user_branch = kwargs.pop('user_branch', None)
+        super().__init__(*args, **kwargs)
+        if not user_is_superuser and user_branch:
+            self.fields['branch'].queryset = Branch.objects.filter(id=user_branch.id)
+            self.fields['sales_rep'].queryset = Worker.objects.filter(role='Sales Rep')
+            self.fields['customer'].queryset = Customer.objects.filter(branch=user_branch)
+            self.fields['momo_account_details'].queryset = MomoInfo.objects.filter(branch=user_branch)
+            self.fields['check_account_details'].queryset = Check.objects.filter(branch=user_branch)
+            self.fields['bank_deposit_account_details'].queryset = BankDeposit.objects.filter(branch=user_branch)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        payment_mode = cleaned_data.get('payment_mode')
+
+        # Validate payment account details based on payment mode
+        if payment_mode == 'Mobile Money':
+            if not cleaned_data.get('momo_account_details'):
+                raise forms.ValidationError('Mobile Money account details are required for Mobile Money payments.')
+        elif payment_mode == 'Check':
+            if not cleaned_data.get('check_account_details'):
+                raise forms.ValidationError('Check account details are required for Check payments.')
+        elif payment_mode == 'Bank Deposit':
+            if not cleaned_data.get('bank_deposit_account_details'):
+                raise forms.ValidationError('Bank deposit account details are required for Bank Deposit payments.')
+
+        return cleaned_data
+
+
+class ProformaItemForm(forms.ModelForm):
+    """Form for adding items to a Proforma"""
+    class Meta:
+        model = ProformaItem
+        fields = ['stock', 'quantity', 'temp_price', 'reason']
+        widgets = {
+            'stock': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'min': '1'}),
+            'temp_price': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'step': '0.01', 'min': '0'}),
+            'reason': forms.TextInput(attrs={'class': 'form-control form-control-sm', 'placeholder': 'Optional reason for price change'}),
+        }
+        labels = {
+            'stock': 'Product',
+            'quantity': 'Quantity',
+            'temp_price': 'Price Override (Optional)',
+            'reason': 'Reason',
         }
 
     def __init__(self, *args, **kwargs):
