@@ -6,7 +6,7 @@ from apps.branches.models import Branch
 from web_project import TemplateLayout
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import EmployeeIDCounter, Privilege, RolePrivilege, Worker
+from .models import EmployeeIDCounter, Privilege, RolePrivilege, Worker, PrivilegeChangeLog
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import RolePrivilegeForm, SecurityPinForm, UserCreationForm, WorkerForm, WorkerPrivilegeForm, PrivilegeForm, WorkerProfileForm
@@ -172,13 +172,52 @@ def change_worker_role(request, worker_id):
         new_role = request.POST.get('role')
 
         if new_role and new_role != worker.role:
+            # Save old role and privileges before change
+            old_role = worker.role
+            old_privileges = set(worker.privileges.all())
+            
             try:
                 role_privilege = RolePrivilege.objects.get(role=new_role)
                 worker.role = new_role
-                worker.privileges.set(role_privilege.privileges.all())
+                new_role_privileges = role_privilege.privileges.all()
+                worker.privileges.set(new_role_privileges)
                 worker.save()
+                
+                # Log privilege changes due to role change
+                new_privileges_set = set(new_role_privileges)
+                added_privileges = new_privileges_set - old_privileges
+                removed_privileges = old_privileges - new_privileges_set
+                
+                for privilege in added_privileges:
+                    PrivilegeChangeLog.objects.create(
+                        worker=worker,
+                        privilege=privilege,
+                        change_type='added',
+                        changed_by=request.user,
+                        notes=f'Privilege added due to role change from {old_role} to {new_role}'
+                    )
+                
+                for privilege in removed_privileges:
+                    PrivilegeChangeLog.objects.create(
+                        worker=worker,
+                        privilege=privilege,
+                        change_type='removed',
+                        changed_by=request.user,
+                        notes=f'Privilege removed due to role change from {old_role} to {new_role}'
+                    )
+                
                 messages.success(request, "Role updated successfully!")
             except RolePrivilege.DoesNotExist:
+                # Log removal of all privileges
+                for privilege in old_privileges:
+                    PrivilegeChangeLog.objects.create(
+                        worker=worker,
+                        privilege=privilege,
+                        change_type='removed',
+                        changed_by=request.user,
+                        notes=f'Privilege removed due to role change from {old_role} to {new_role} (no privileges defined for this role)'
+                    )
+                
                 worker.role = new_role
                 worker.privileges.clear()
                 worker.save()
@@ -432,8 +471,38 @@ def manage_worker_privileges(request, worker_id):
         # Convert to actual Privilege objects
         selected_privileges = Privilege.objects.filter(id__in=selected_privilege_ids)
 
+        # Get current privileges before update
+        old_privileges = set(worker.privileges.all())
+        
         # Worker should always have role-based privileges
-        worker.privileges.set(role_privileges | selected_privileges)  # Union of both sets
+        new_privileges = role_privileges | selected_privileges
+        worker.privileges.set(new_privileges)  # Union of both sets
+        
+        # Get new privileges after update
+        new_privileges_set = set(worker.privileges.all())
+        
+        # Calculate added and removed privileges
+        added_privileges = new_privileges_set - old_privileges
+        removed_privileges = old_privileges - new_privileges_set
+        
+        # Log the changes
+        for privilege in added_privileges:
+            PrivilegeChangeLog.objects.create(
+                worker=worker,
+                privilege=privilege,
+                change_type='added',
+                changed_by=request.user,
+                notes=f'Privilege added via privilege management interface'
+            )
+        
+        for privilege in removed_privileges:
+            PrivilegeChangeLog.objects.create(
+                worker=worker,
+                privilege=privilege,
+                change_type='removed',
+                changed_by=request.user,
+                notes=f'Privilege removed via privilege management interface'
+            )
 
         messages.success(request, _('Employee Privileges updated successfully!'))
         return redirect('workers')  # Redirect to workers page
@@ -712,6 +781,32 @@ def check_security_pin(request):
 
 #     context = TemplateLayout.init(request, view_context)
 #     return render(request, 'employee_list_report.html', context)
+
+
+@login_required
+def privilege_change_logs(request, worker_id):
+    """
+    View to display privilege change logs for a specific worker.
+    """
+    worker = get_object_or_404(Worker, id=worker_id)
+    
+    # Get all privilege change logs for this worker, ordered by most recent first
+    logs = PrivilegeChangeLog.objects.filter(worker=worker).select_related(
+        'privilege', 'changed_by', 'worker'
+    ).order_by('-changed_at')
+    
+    # Paginate the logs (50 per page)
+    paginator = Paginator(logs, 50)
+    page_number = request.GET.get('page')
+    paginated_logs = paginator.get_page(page_number)
+    
+    view_context = {
+        'worker': worker,
+        'logs': paginated_logs,
+    }
+    
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'privilege_change_logs.html', context)
 
 
 @login_required

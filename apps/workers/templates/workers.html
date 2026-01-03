@@ -147,6 +147,9 @@ th {
           <th>{% trans "Added By" %}</th>
           <th>{% trans "Date Created" %}</th>
           <th>{% trans "Status" %}</th>
+          {% if user.is_superuser %}
+          <th>{% trans "Privilege Logs" %}</th>
+          {% endif %}
           <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
@@ -180,6 +183,13 @@ th {
               <span class="badge bg-danger">{% trans "Inactive" %}</span>
             {% endif %}
           </td>
+          {% if user.is_superuser %}
+          <td>
+            <a href="{% url 'privilege_change_logs' worker.id %}" class="btn btn-sm btn-outline-info">
+              <i class="fa-solid fa-list me-1"></i> {% trans "See logs" %}
+            </a>
+          </td>
+          {% endif %}
           <td>
             <div class="dropdown">
               <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

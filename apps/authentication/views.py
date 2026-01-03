@@ -11,6 +11,10 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, 
 from django.contrib.auth.forms import SetPasswordForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from smtplib import SMTPRecipientsRefused, SMTPException
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LoginView(TemplateView):
@@ -82,6 +86,59 @@ class CustomPasswordResetView(PasswordResetView):
         # Add the layout_path context variable
         context['layout_path'] = TemplateHelper.set_layout("layout_blank.html", {})
         return context
+
+    def form_valid(self, form):
+        """
+        Override form_valid to handle email sending errors gracefully.
+        """
+        try:
+            current_site = get_current_site(self.request)
+            domain = current_site.domain
+            protocol = 'https' if self.request.is_secure() else 'http'
+
+            # Try to send the password reset email
+            form.save(
+                request=self.request,
+                use_https=self.request.is_secure(),
+                domain_override=domain,
+                extra_email_context={
+                    'protocol': protocol,
+                    'domain': domain,
+                },
+            )
+            # If successful, redirect to the done page
+            return super().form_valid(form)
+        except SMTPRecipientsRefused as e:
+            # Log the error for debugging
+            logger.error(f"SMTP Recipients Refused error: {e}")
+            # Show user-friendly error message
+            messages.error(
+                self.request,
+                _("Unable to send password reset email. The email server rejected the request. "
+                  "Please contact the administrator or try again later.")
+            )
+            # Return to the form with errors
+            return self.form_invalid(form)
+        except SMTPException as e:
+            # Log the error for debugging
+            logger.error(f"SMTP error: {e}")
+            # Show user-friendly error message
+            messages.error(
+                self.request,
+                _("Unable to send password reset email due to a server error. "
+                  "Please contact the administrator or try again later.")
+            )
+            # Return to the form with errors
+            return self.form_invalid(form)
+        except Exception as e:
+            # Log any other unexpected errors
+            logger.error(f"Unexpected error sending password reset email: {e}")
+            messages.error(
+                self.request,
+                _("An unexpected error occurred while sending the password reset email. "
+                  "Please contact the administrator.")
+            )
+            return self.form_invalid(form)
 
 class CustomPasswordResetViewDone(PasswordResetDoneView):
     template_name = 'forgot_password.html'

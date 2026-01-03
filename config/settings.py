@@ -267,13 +267,35 @@ MEDIA_URL = '/media/'
 
 
 
+# Email Configuration
+# If you're getting "Client host rejected: Access denied" errors, try:
+# 1. Contact Hostinger support to whitelist your server IP
+# 2. Use port 465 with SSL instead of TLS (set EMAIL_USE_SSL = True, EMAIL_USE_TLS = False)
+# 3. Switch to a more reliable email service (Gmail, SendGrid, Mailgun, etc.)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.hostinger.com'
-EMAIL_PORT = 587 # or 465 for SSL
-EMAIL_USE_TLS = True # or
-EMAIL_HOST_USER = 'info@pharmamgtsystemgc.com' # Your email address
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '') # Your email password
+EMAIL_PORT = 587  # Try 465 for SSL if 587 doesn't work
+EMAIL_USE_TLS = True  # Set to False if using port 465 with SSL
+EMAIL_USE_SSL = False  # Set to True if using port 465
+EMAIL_HOST_USER = 'info@pharmamgtsystemgc.com'  # Your email address
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Your email password
 DEFAULT_FROM_EMAIL = 'info@pharmamgtsystemgc.com'
+
+# Alternative Gmail Configuration (uncomment and configure if needed):
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', '')  # Use App Password, not regular password
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+
+# Alternative SendGrid Configuration (uncomment and configure if needed):
+# EMAIL_HOST = 'smtp.sendgrid.net'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'apikey'
+# EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
+# DEFAULT_FROM_EMAIL = 'info@pharmamgtsystemgc.com'
 
 # Twilio SMS Settings
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')

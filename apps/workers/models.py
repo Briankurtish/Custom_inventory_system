@@ -251,3 +251,62 @@ class RolePrivilege(models.Model):
 
     def __str__(self):
         return f"{self.role}"
+
+
+class PrivilegeChangeLog(models.Model):
+    """
+    Model to track changes made to employee privileges.
+    Records who made changes, when, and what privileges were added/removed.
+    """
+    CHANGE_TYPE_CHOICES = [
+        ('added', 'Added'),
+        ('removed', 'Removed'),
+    ]
+
+    worker = models.ForeignKey(
+        Worker,
+        on_delete=models.CASCADE,
+        related_name='privilege_changes',
+        verbose_name="Employee"
+    )
+    privilege = models.ForeignKey(
+        Privilege,
+        on_delete=models.CASCADE,
+        related_name='change_logs',
+        verbose_name="Privilege"
+    )
+    change_type = models.CharField(
+        max_length=10,
+        choices=CHANGE_TYPE_CHOICES,
+        verbose_name="Change Type"
+    )
+    changed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='privilege_changes_made',
+        verbose_name="Changed By"
+    )
+    changed_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Changed At"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Notes",
+        help_text="Additional notes about this change"
+    )
+
+    class Meta:
+        ordering = ['-changed_at']
+        verbose_name = "Privilege Change Log"
+        verbose_name_plural = "Privilege Change Logs"
+        indexes = [
+            models.Index(fields=['worker', '-changed_at']),
+            models.Index(fields=['changed_by', '-changed_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.worker.employee_id} - {self.privilege.name} - {self.get_change_type_display()} by {self.changed_by.username if self.changed_by else 'System'} on {self.changed_at.strftime('%Y-%m-%d %H:%M')}"

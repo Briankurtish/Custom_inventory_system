@@ -1,0 +1,139 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Privilege Change Logs" %} - {{ worker.user.get_full_name }}
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'workers' %}">{% trans "Workers" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Privilege Change Logs" %}</li>
+  </ol>
+</nav>
+<!-- End Breadcrumbs -->
+
+<!-- Privilege Change Logs Section -->
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow-lg border-0">
+      <div class="card-header">
+        <h5 class="mb-0">
+          {% trans "Privilege Change Logs for" %} <strong>{{ worker.user.get_full_name }}</strong>
+        </h5>
+        <p class="text-muted mb-0">
+          {% trans "Employee ID" %}: <strong>{{ worker.employee_id }}</strong> | 
+          {% trans "Role" %}: <strong>{{ worker.role }}</strong>
+        </p>
+      </div>
+
+      <div class="card-body">
+        {% if logs %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Date & Time" %}</th>
+                  <th>{% trans "Privilege" %}</th>
+                  <th>{% trans "Change Type" %}</th>
+                  <th>{% trans "Changed By" %}</th>
+                  <th>{% trans "Notes" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in logs %}
+                  <tr>
+                    <td>
+                      <span class="text-muted">{{ log.changed_at|date:"Y-m-d H:i:s" }}</span>
+                    </td>
+                    <td>
+                      <strong>{{ log.privilege.name }}</strong>
+                      {% if log.privilege.category %}
+                        <br><small class="text-muted">{{ log.privilege.category }}</small>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if log.change_type == 'added' %}
+                        <span class="badge bg-success">
+                          <i class="fa-solid fa-plus"></i> {% trans "Added" %}
+                        </span>
+                      {% else %}
+                        <span class="badge bg-danger">
+                          <i class="fa-solid fa-minus"></i> {% trans "Removed" %}
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if log.changed_by %}
+                        <strong>{{ log.changed_by.get_full_name|default:log.changed_by.username }}</strong>
+                        <br><small class="text-muted">{{ log.changed_by.username }}</small>
+                      {% else %}
+                        <span class="text-muted">{% trans "System" %}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if log.notes %}
+                        <span class="text-muted">{{ log.notes }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if logs.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+              <ul class="pagination justify-content-center">
+                {% if logs.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1">{% trans "First" %}</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.previous_page_number }}">{% trans "Previous" %}</a>
+                  </li>
+                {% endif %}
+
+                <li class="page-item active">
+                  <span class="page-link">
+                    {% trans "Page" %} {{ logs.number }} {% trans "of" %} {{ logs.paginator.num_pages }}
+                  </span>
+                </li>
+
+                {% if logs.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.next_page_number }}">{% trans "Next" %}</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.paginator.num_pages }}">{% trans "Last" %}</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="alert alert-info text-center">
+            <i class="fa-solid fa-info-circle me-2"></i>
+            {% trans "No privilege changes have been recorded for this employee yet." %}
+          </div>
+        {% endif %}
+
+        <!-- Back Button -->
+        <div class="mt-4">
+          <a href="{% url 'workers' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Workers" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

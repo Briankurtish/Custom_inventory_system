@@ -146,6 +146,7 @@ uritemplate==4.1.1
 uritools==4.0.3
 urllib3==1.26.20
 user-agents==2.2.0
+twilio==9.3.6
 weasyprint==63.1
 webencodings==0.5.1
 Werkzeug==3.1.3

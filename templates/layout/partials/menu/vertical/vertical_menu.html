@@ -458,6 +458,25 @@
     .shadcn-menu.show {
       transform: translateX(0);
     }
+
+    /* Overlay backdrop for mobile menu */
+    .layout-overlay.layout-menu-toggle {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .layout-overlay.layout-menu-toggle.show {
+      opacity: 1;
+      visibility: visible;
+    }
   }
 
   /* Animation for menu items */
@@ -745,12 +764,7 @@
                     {% endif %}
                 </a>
             </li>
-            <li class="shadcn-menu-item {% if 'proformas' == request.resolver_match.url_name or '/proformas/' in request.path %}active{% endif %}">
-                <a href="{% url 'proformas' %}" class="shadcn-menu-link">
-                    <i class="shadcn-menu-icon fa-solid fa-file-invoice"></i>
-                    <div class="shadcn-menu-text">{% trans "Proformas" %}</div>
-                </a>
-            </li>
+            
             <li class="shadcn-menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active{% endif %}">
               <a href="{% url 'sample_orders' %}" class="shadcn-menu-link">
                 <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
@@ -1597,20 +1611,94 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Mobile menu toggle
-  const layoutMenuToggle = document.querySelector('.layout-menu-toggle');
-  const layoutMenu = document.querySelector('.shadcn-menu');
+  const layoutMenu = document.querySelector('#layout-menu.shadcn-menu');
+  const layoutMenuToggles = document.querySelectorAll('.layout-menu-toggle');
+  const layoutOverlay = document.querySelector('.layout-overlay.layout-menu-toggle');
 
-  if (layoutMenuToggle && layoutMenu) {
-    layoutMenuToggle.addEventListener('click', function(e) {
+  // Function to toggle menu
+  function toggleMobileMenu() {
+    if (layoutMenu) {
+      const isOpen = layoutMenu.classList.contains('show');
+      if (isOpen) {
+        layoutMenu.classList.remove('show');
+        if (layoutOverlay) {
+          layoutOverlay.classList.remove('show');
+        }
+      } else {
+        layoutMenu.classList.add('show');
+        if (layoutOverlay) {
+          layoutOverlay.classList.add('show');
+        }
+      }
+    }
+  }
+
+  // Function to close menu
+  function closeMobileMenu() {
+    if (layoutMenu) {
+      layoutMenu.classList.remove('show');
+      if (layoutOverlay) {
+        layoutOverlay.classList.remove('show');
+      }
+    }
+  }
+
+  // Add click handlers to all toggle buttons (navbar burger, menu toggle, overlay)
+  // Use a more specific selector for navbar toggle to avoid conflicts
+  const navbarToggle = document.querySelector('.shadcn-navbar-toggle.layout-menu-toggle');
+  const menuInternalToggle = document.querySelector('.shadcn-menu .layout-menu-toggle');
+  
+  // Handle navbar burger button (primary toggle)
+  if (navbarToggle && layoutMenu) {
+    navbarToggle.addEventListener('click', function(e) {
       e.preventDefault();
-      layoutMenu.classList.toggle('show');
+      e.stopPropagation();
+      // Only toggle on mobile screens (xl breakpoint is 1200px)
+      if (window.innerWidth < 1200) {
+        toggleMobileMenu();
+      }
+    });
+  }
+
+  // Handle menu internal toggle button (if exists)
+  if (menuInternalToggle && layoutMenu) {
+    menuInternalToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // On mobile, this should close the menu
+      if (window.innerWidth < 1200) {
+        closeMobileMenu();
+      }
+    });
+  }
+
+  // Close menu when clicking overlay
+  if (layoutOverlay) {
+    layoutOverlay.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMobileMenu();
     });
   }
 
   // Close mobile menu when clicking outside
   document.addEventListener('click', function(e) {
-    if (layoutMenu && !layoutMenu.contains(e.target) && !layoutMenuToggle.contains(e.target)) {
-      layoutMenu.classList.remove('show');
+    if (layoutMenu && layoutMenu.classList.contains('show') && window.innerWidth < 1200) {
+      // Check if click is outside menu and not on any toggle button
+      const isClickInsideMenu = layoutMenu.contains(e.target);
+      const isClickOnToggle = navbarToggle && navbarToggle.contains(e.target);
+      const isClickOnOverlay = layoutOverlay && layoutOverlay.contains(e.target);
+      
+      if (!isClickInsideMenu && !isClickOnToggle && !isClickOnOverlay) {
+        closeMobileMenu();
+      }
+    }
+  });
+
+  // Handle window resize - close menu if resizing to desktop
+  window.addEventListener('resize', function() {
+    if (window.innerWidth >= 1200 && layoutMenu) {
+      closeMobileMenu();
     }
   });
 
