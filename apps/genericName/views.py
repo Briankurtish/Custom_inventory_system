@@ -118,12 +118,18 @@ def add_generic_name_view(request, pk=None):
             )
             return redirect('add-genericName')  # Redirect to generic name listing page
 
+    # Get distinct existing generic names for autocomplete
+    existing_generic_names = GenericName.objects.values_list(
+        'generic_name', flat=True
+    ).distinct().order_by('generic_name')
+
     # Prepare the context for the template
     view_context = {
         "form": form,
         "generic_name": generic_name,
         "generic_names": paginated_generic_names,  # Pass paginated generic names for the table
         "search_query": search_query,  # Pass the search query to the template
+        "existing_generic_names": existing_generic_names,  # Pass existing names for autocomplete
     }
     context = TemplateLayout.init(request, view_context)
 
@@ -165,10 +171,16 @@ def edit_generic_view(request, pk):
         # Populate the form with existing data for GET requests
         form = GenericNameForm(instance=generic_name)
 
+    # Get distinct existing generic names for autocomplete
+    existing_generic_names = GenericName.objects.values_list(
+        'generic_name', flat=True
+    ).distinct().order_by('generic_name')
+
     view_context = {
         "form": form,
         "generic_names": generic_names,  # Pass the list of generic names to the template
         "is_editing": True,  # Flag to indicate editing mode in the template
+        "existing_generic_names": existing_generic_names,  # Pass existing names for autocomplete
     }
     context = TemplateLayout.init(request, view_context)
 

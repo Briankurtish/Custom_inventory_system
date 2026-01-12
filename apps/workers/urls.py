@@ -26,6 +26,7 @@ urlpatterns = [
     path('change-password/', password_change_view, name='password_change'),
     path('worker/toggle-status/<int:pk>/', toggle_worker_status, name='toggle_worker_status'),
     path('worker/<int:user_id>/change-password/', change_worker_password, name='change-worker-password'),
+    path('worker/<int:user_id>/reset-password/', reset_worker_password, name='reset-worker-password'),
 
     path('online-workers/', OnlineWorkersView, name='online-workers'),
 

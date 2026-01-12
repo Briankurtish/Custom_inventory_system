@@ -20,13 +20,12 @@ class BatchForm(forms.ModelForm):
             'expiry_date': _('Expiration Date'),  # Translatable label
         }
 
-    # Change 'generic_name' to a ModelChoiceField to fetch data from GenericName table
-    generic_name = forms.ModelChoiceField(
-        queryset=GenericName.objects.all(),
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        help_text=_("Select the generic name from the list")
-    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Show all generic name + brand name combinations, ordered alphabetically
+        self.fields['generic_name'].queryset = GenericName.objects.all().order_by('generic_name', 'brand_name')
+        # Display format will use the model's __str__ method: "generic_name - brand_name"
+        self.fields['generic_name'].label_from_instance = lambda obj: f"{obj.generic_name} - {obj.brand_name if obj.brand_name else 'No Brand'}"
 
 
 
@@ -105,6 +104,42 @@ class AddProductForm(forms.ModelForm):
         self.fields['brand_name'].queryset = GenericName.objects.filter(brand_name__in=brand_names)
         self.fields['brand_name'].label_from_instance = lambda obj: obj.brand_name
         self.fields['brand_name'].empty_label = "Select a Brand Name"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        generic_name_dosage = cleaned_data.get('generic_name_dosage')
+        brand_name = cleaned_data.get('brand_name')
+        batch = cleaned_data.get('batch')
+
+        if generic_name_dosage and brand_name and batch:
+            # Check if a product with the same generic name but different brand exists
+            existing_product = Product.objects.filter(
+                generic_name_dosage=generic_name_dosage
+            ).exclude(brand_name=brand_name).first()
+
+            if existing_product:
+                # This will maintain the same product code
+                self.existing_product_code = existing_product.product_code
+                # Add informational message (not an error)
+                from django.contrib import messages
+                # Note: We can't add messages here directly, it will be handled in the view
+
+            # Check if exact same product already exists (same generic name, brand, and batch)
+            duplicate_product = Product.objects.filter(
+                generic_name_dosage=generic_name_dosage,
+                brand_name=brand_name,
+                batch=batch
+            ).first()
+
+            if duplicate_product:
+                raise forms.ValidationError(
+                    _('A product with this generic name, brand name, and batch already exists. '
+                      'Product Code: %(code)s'),
+                    code='duplicate_product',
+                    params={'code': duplicate_product.product_code}
+                )
+
+        return cleaned_data
 
 
 

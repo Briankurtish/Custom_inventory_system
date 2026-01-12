@@ -250,6 +250,14 @@ def add_product_view(request):
     if request.method == "POST":
         form = AddProductForm(request.POST)
         if form.is_valid():
+            # Check if there's an existing product with same generic name but different brand
+            generic_name_dosage = form.cleaned_data.get('generic_name_dosage')
+            brand_name = form.cleaned_data.get('brand_name')
+            
+            existing_product = Product.objects.filter(
+                generic_name_dosage=generic_name_dosage
+            ).exclude(brand_name=brand_name).first()
+            
             product = form.save(commit=False)
             product.unit_price = 0.00  # Default price for new products
 
@@ -271,7 +279,20 @@ def add_product_view(request):
                 details=f"Product '{product.generic_name_dosage}' added by {'admin' if worker is None else worker}."
             )
 
-            messages.success(request, _("Product added successfully!"))
+            # Provide feedback about product code reuse
+            if existing_product:
+                messages.success(
+                    request, 
+                    _("Product added successfully! Product Code '%(code)s' maintained from existing product with same generic name.") 
+                    % {'code': product.product_code}
+                )
+            else:
+                messages.success(
+                    request, 
+                    _("Product added successfully with new Product Code: %(code)s") 
+                    % {'code': product.product_code}
+                )
+            
             return redirect('products')
     else:
         form = AddProductForm()

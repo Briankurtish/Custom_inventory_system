@@ -163,8 +163,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 CSRF_COOKIE_SECURE = True  # Set to True for production with HTTPS
-CSRF_COOKIE_HTTPONLY = True  # Ensures the cookie is accessible only to the server
-CSRF_USE_SESSIONS = True  # Use session-based CSRF tokens
+CSRF_COOKIE_HTTPONLY = False  # Set to False to allow CSRF cookie to be read by JavaScript
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens instead of session-based
+CSRF_COOKIE_SAMESITE = 'Lax'  # Helps prevent CSRF attacks while allowing normal form submissions
 
 
 

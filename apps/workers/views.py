@@ -13,7 +13,7 @@ from .forms import RolePrivilegeForm, SecurityPinForm, UserCreationForm, WorkerF
 from django.utils.translation import gettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import authenticate
 import json
@@ -327,6 +327,37 @@ def change_worker_password(request, user_id):
         form = PasswordChangeForm(user)
 
     view_context = {'form': form, 'worker': user.worker_profile}
+    context = TemplateLayout.init(request, view_context)
+
+    return render(request, 'change_password.html', context)
+
+
+@login_required
+def reset_worker_password(request, user_id):
+    """
+    Reset worker password without requiring old password.
+    Only accessible by superadmin users.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to perform this action.")
+        return redirect('workers')
+    
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Password for {user.get_full_name() or user.username} has been reset successfully!")
+            return redirect('workers')
+    else:
+        form = SetPasswordForm(user)
+
+    view_context = {
+        'form': form, 
+        'worker': user.worker_profile,
+        'is_reset': True  # Flag to indicate this is a reset, not a change
+    }
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'change_password.html', context)

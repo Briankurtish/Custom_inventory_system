@@ -196,7 +196,18 @@ th {
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
               <div class="dropdown-menu">
-                  {% if not worker.user.is_superuser %}
+                  {% if worker.user.is_superuser %}
+                    <!-- Actions for Superadmin Users -->
+                    {% if user.is_superuser %}
+                      <a class="dropdown-item" href="{% url 'reset-worker-password' worker.user.id %}">
+                          <i class="fa-solid fa-key me-1"></i> {% trans "Reset Password" %}
+                      </a>
+                      <a class="dropdown-item" href="{% url 'edit-worker' worker.id %}">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                      </a>
+                    {% endif %}
+                  {% else %}
+                    <!-- Actions for Regular Users -->
                     <a href="{% url 'manage_worker_privileges' worker.id %}" class="dropdown-item">
                       <i class="fa-solid fa-key me-1"></i> {% trans "Manage Privileges" %}
                     </a>

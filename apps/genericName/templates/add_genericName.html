@@ -19,6 +19,13 @@
         <h5 class="mb-0">{% if is_editing %}{% trans "Edit Generic Name" %}{% else %}{% trans "Add Generic Name" %}{% endif %}</h5>
       </div>
       <div class="card-body">
+        {% if not is_editing %}
+        <div class="alert alert-info" role="alert">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          <strong>{% trans "Tip:" %}</strong> {% trans "You can add multiple brand names to the same generic name. Start typing the generic name to see existing options, or enter a new one." %}
+        </div>
+        {% endif %}
+        
         <form method="POST">
           {% csrf_token %}
           {{ form|crispy }}
@@ -143,4 +150,18 @@
 
 {% endif %}
 
+{% endblock %}
+
+{% block page_js %}
+<script>
+  $(document).ready(function() {
+    // Initialize Select2 on the generic_name field for searchable dropdown
+    $("#id_generic_name").select2({
+      placeholder: "Search or enter Generic Name",
+      allowClear: true,
+      width: "100%",
+      tags: true  // Allow creating new entries
+    });
+  });
+</script>
 {% endblock %}

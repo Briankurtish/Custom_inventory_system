@@ -35,8 +35,7 @@ class LoginView(TemplateView):
         """
         Handle form submission on POST request.
         """
-        if request.method == "POST":
-            form = AuthenticationForm(data=request.POST)
+        form = AuthenticationForm(request, data=request.POST)
             if form.is_valid():
                 # Authenticate the user
                 username = form.cleaned_data['username']
@@ -45,15 +44,17 @@ class LoginView(TemplateView):
                 if user is not None:
                     # Log the user in
                     login(request, user)
+                # Force session to be saved
+                request.session.modified = True
+                request.session.save()
                     messages.success(request, _(f'Welcome back, {user.username}!'))
-                    return redirect('index')  # Redirect to homepage after login
+                # Get the next parameter or default to index
+                next_url = request.GET.get('next', 'index')
+                return redirect(next_url)
                 else:
                     messages.error(request, _('Invalid username or password.'))
             else:
                 messages.error(request, _('Please correct the errors below.'))
-
-        else:
-            form = AuthenticationForm()
 
         context = {
             'form': form,
