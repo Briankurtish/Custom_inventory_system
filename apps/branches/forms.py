@@ -5,23 +5,27 @@ from .models import Branch
 class BranchForm(forms.ModelForm):
     class Meta:
         model = Branch
-        fields = ['branch_name', 'address', 'branch_type']  # Added 'branch_type'
+        fields = ['branch_name', 'address', 'branch_type', 'is_active']
         widgets = {
             'branch_name': forms.TextInput(attrs={
-                'class': 'form-control', 
+                'class': 'form-control',
                 'placeholder': _('Enter Branch Name')  # Translatable placeholder
             }),
             'address': forms.Textarea(attrs={
-                'class': 'form-control', 
+                'class': 'form-control',
                 'placeholder': _('Enter Branch Address'),  # Translatable placeholder
                 'rows': 3
             }),
             'branch_type': forms.Select(attrs={
                 'class': 'form-control'
-            }),  # Dropdown for branch type
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
         labels = {
             'branch_name': _('Branch Name'),  # Translatable label
             'address': _('Address'),  # Translatable label
             'branch_type': _('Branch Type'),  # Translatable label
+            'is_active': _('Active Status'),  # Translatable label
         }

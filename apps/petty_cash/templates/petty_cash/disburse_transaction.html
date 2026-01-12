@@ -1,0 +1,70 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Disburse Transaction" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="mb-4">
+          <h3 class="fw-bold">{% trans "Disburse Transaction" %}</h3>
+          <p class="text-muted">{% trans "Confirm cash disbursement" %}</p>
+        </div>
+
+        <div class="alert alert-warning mb-4">
+          <i class="fa-solid fa-exclamation-triangle me-2"></i>
+          {% trans "Please confirm that you have physically disbursed the following amount:" %}
+        </div>
+
+        <div class="p-4 bg-light rounded mb-4">
+          <p class="mb-2"><strong>{% trans "Transaction ID:" %}</strong> {{ transaction.transaction_id }}</p>
+          <p class="mb-2">
+            <strong>{% trans "Recipient:" %}</strong>
+            {% if transaction.recipient %}
+              {{ transaction.recipient.user.get_full_name }}
+            {% elif transaction.recipient_name %}
+              {{ transaction.recipient_name }}
+            {% else %}
+              N/A
+            {% endif %}
+          </p>
+          <p class="mb-2"><strong>{% trans "Channel:" %}</strong> {{ transaction.channel }}</p>
+          <p class="mb-0">
+            <strong>{% trans "Amount:" %}</strong>
+            <span class="text-primary fs-4 fw-bold">{{ transaction.amount|floatformat:2|intcomma }} CFA</span>
+          </p>
+        </div>
+
+        <form method="POST">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="fa-solid fa-check me-2"></i>{% trans "Confirm Disbursement" %}
+            </button>
+            <a href="{% url 'transaction_details' transaction.id %}" class="btn btn-outline-secondary">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

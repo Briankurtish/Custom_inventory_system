@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'apps.oldinvoice',
     'apps.emails',
     'apps.sms',
+    'apps.petty_cash',
     "crispy_forms",
     "crispy_bootstrap5",
     'django.contrib.humanize',

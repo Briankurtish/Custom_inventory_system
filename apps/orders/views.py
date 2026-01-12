@@ -96,7 +96,7 @@ def order_list(request):
     sales_rep_id = request.GET.get("sales_rep")
     created_by_id = request.GET.get("created_by")
 
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
     # Filter workers who have created at least one PurchaseOrder or ReturnPurchaseOrder
     workers = Worker.objects.filter(
@@ -277,7 +277,7 @@ def sample_order_list(request):
     sales_rep_id = request.GET.get("sales_rep")
     created_by_id = request.GET.get("created_by")
 
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
     # Filter workers who have created at least one PurchaseOrder or ReturnPurchaseOrder
     workers = Worker.objects.filter(
@@ -844,7 +844,7 @@ def invoice_list(request):
     sales_rep_id = request.GET.get("sales_rep")
     created_by_id = request.GET.get("created_by")
 
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
     creators = Worker.objects.filter(invoice_created_by_orders__isnull=False).distinct().order_by("user__first_name", "user__last_name")
 
@@ -4094,7 +4094,7 @@ def sales_report(request):
                  f"customer_id: {customer_id}")
 
     # Fetch branches, sales reps, generic names, and customers for the filter form
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.all().order_by('user__first_name')
     generic_names = GenericName.objects.all()
     customers = Customer.objects.all()  # Add customers for filter options
@@ -4462,7 +4462,7 @@ def debt_recovery_report_view(request):
     end_date = request.GET.get('end_date', '').strip()
     customer_id = request.GET.get('customer_id', '').strip()
 
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.all().order_by('user__first_name')
     generic_names = GenericName.objects.all()
     customers = Customer.objects.all()
@@ -4719,8 +4719,8 @@ def sales_agent_performance_report(request):
     start_date = request.GET.get('start_date', '').strip()
     end_date = request.GET.get('end_date', '').strip()
 
-    # Get all branches for the filter dropdown
-    branches = Branch.objects.all()
+    # Get all branches for the filter dropdown (only active)
+    branches = Branch.objects.filter(is_active=True)
 
     # Base queryset for workers
     workers_qs = Worker.objects.select_related('user', 'branch').order_by('user__first_name')
@@ -5069,8 +5069,8 @@ def sickness_list(request):
     if selected_month:
         orders = orders.filter(created_at__month=selected_month)
 
-    # Get all branches for filter dropdown
-    branches = Branch.objects.all()
+    # Get all branches for filter dropdown (only active)
+    branches = Branch.objects.filter(is_active=True)
 
     # Get all sales reps for filter dropdown
     sales_reps = Worker.objects.filter(role='Sales Rep')
@@ -5300,7 +5300,7 @@ def proforma_list(request):
     created_by_id = request.GET.get("created_by")
     is_promoted = request.GET.get("is_promoted")
 
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     sales_reps = Worker.objects.filter(role="Sales Rep").order_by("user__first_name", "user__last_name")
     workers = Worker.objects.filter(
         Q(created_proformas__isnull=False)

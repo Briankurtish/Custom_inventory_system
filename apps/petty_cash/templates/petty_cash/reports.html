@@ -1,0 +1,165 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Petty Cash Reports" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+
+  .stat-card.primary {
+    border-left-color: #3b82f6;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2 class="fw-bold">{% trans "Petty Cash Reports" %}</h2>
+      <p class="text-muted">{% trans "Analytics and insights" %}</p>
+    </div>
+    <div class="col-md-6 text-end">
+      <button class="btn btn-success" onclick="window.print()">
+        <i class="fa-solid fa-print me-2"></i>{% trans "Print Report" %}
+      </button>
+      <a href="{% url 'petty_cash_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-3">{% trans "Filters" %}</h5>
+        <form method="GET" class="row g-3">
+          <div class="col-md-3">{{ form.start_date.label_tag }} {{ form.start_date }}</div>
+          <div class="col-md-3">{{ form.end_date.label_tag }} {{ form.end_date }}</div>
+          <div class="col-md-2">{{ form.branch.label_tag }} {{ form.branch }}</div>
+          <div class="col-md-2">{{ form.channel.label_tag }} {{ form.channel }}</div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">{% trans "Generate" %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="shadcn-card stat-card primary">
+        <h6 class="text-muted mb-2">{% trans "Total Disbursed" %}</h6>
+        <h3 class="fw-bold">{{ total_amount|floatformat:2|intcomma }} CFA</h3>
+        <small class="text-muted">{{ transaction_count }} {% trans "transactions" %}</small>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="shadcn-card">
+        <h6 class="fw-semibold mb-3">{% trans "By Channel" %}</h6>
+        {% for item in by_channel %}
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <div>
+            {% if item.channel == 'Cash' %}
+              <i class="fa-solid fa-money-bill-wave text-success me-2"></i>
+            {% elif item.channel == 'MTN MoMo' %}
+              <i class="fa-solid fa-mobile-screen text-primary me-2"></i>
+            {% elif item.channel == 'Orange Money' %}
+              <i class="fa-solid fa-mobile-alt text-warning me-2"></i>
+            {% endif %}
+            <span class="fw-medium">{{ item.channel }}</span>
+            <small class="text-muted ms-2">({{ item.count }} txns)</small>
+          </div>
+          <strong class="text-primary">{{ item.total|floatformat:2|intcomma }} CFA</strong>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center">{% trans "No data" %}</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Categories -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-3">{% trans "Top Categories" %}</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>{% trans "Category" %}</th>
+                <th class="text-end">{% trans "Amount" %}</th>
+                <th class="text-end">{% trans "Count" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_categories %}
+              <tr>
+                <td>
+                  <span class="badge bg-primary">{{ item.category__name|default:"Uncategorized" }}</span>
+                </td>
+                <td class="text-end">{{ item.total|floatformat:2|intcomma }} CFA</td>
+                <td class="text-end">{{ item.count }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">{% trans "No data" %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-3">{% trans "Top Recipients" %}</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>{% trans "Recipient" %}</th>
+                <th class="text-end">{% trans "Amount" %}</th>
+                <th class="text-end">{% trans "Count" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_recipients %}
+              <tr>
+                <td>
+                  <i class="fa-solid fa-user text-muted me-2"></i>{{ item.recipient|default:"Unknown" }}
+                </td>
+                <td class="text-end">{{ item.total|floatformat:2|intcomma }} CFA</td>
+                <td class="text-end">{{ item.count }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">{% trans "No data" %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

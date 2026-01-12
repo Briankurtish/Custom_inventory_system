@@ -670,8 +670,8 @@ def ManageRequestsView(request):
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
 
-    # Fetch branches and workers who have made stock requests
-    branches = Branch.objects.all()
+    # Fetch branches and workers who have made stock requests (only active)
+    branches = Branch.objects.filter(is_active=True)
     workers = Worker.objects.filter(requested_stock_requests__isnull=False).distinct().order_by("user__first_name", "user__last_name")
 
     # Filter stock requests based on the user's role and privileges
@@ -760,8 +760,8 @@ def ManageAllRequestsView(request):
     # Check if the worker has the 'Request Stock' privilege
     can_request_stock = worker_profile.privileges.filter(name="Request Stock").exists()
 
-    # Fetch branches and workers who have made stock requests
-    branches = Branch.objects.all()
+    # Fetch branches and workers who have made stock requests (only active)
+    branches = Branch.objects.filter(is_active=True)
     workers = Worker.objects.filter(requested_stock_requests__isnull=False).distinct().order_by("user__first_name", "user__last_name")
 
     # Get filter parameters from the request

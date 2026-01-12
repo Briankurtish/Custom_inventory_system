@@ -1,0 +1,102 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Petty Cash Audit Logs" %}{% endblock %}
+
+{% block content %}
+<style>
+    .shadcn-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold">{% trans "Audit Logs" %}</h2>
+            <p class="text-muted">{% trans "Complete transaction history and activity trail" %}</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'petty_cash_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="shadcn-card">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans "Timestamp" %}</th>
+                                <th>{% trans "User" %}</th>
+                                <th>{% trans "Action" %}</th>
+                                <th>{% trans "Branch" %}</th>
+                                <th>{% trans "Details" %}</th>
+                                <th>{% trans "IP Address" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ forloop.counter0|add:logs.start_index }}</td>
+                                <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                                <td>{{ log.user.user.get_full_name|default:"-" }}</td>
+                                <td><span class="badge bg-primary">{{ log.action }}</span></td>
+                                <td>{{ log.branch.branch_name|default:"-" }}</td>
+                                <td>{{ log.details|truncatewords:15 }}</td>
+                                <td><small class="text-muted">{{ log.ip_address|default:"-" }}</small></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    {% trans "No audit logs found" %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if logs.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        {% if logs.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.previous_page_number }}">
+                                    {% trans "Previous" %}
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if logs.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.next_page_number }}">
+                                    {% trans "Next" %}
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

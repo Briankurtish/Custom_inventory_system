@@ -76,7 +76,7 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
-    
+
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -103,9 +103,48 @@
     <!-- beautify ignore:end -->
 
     <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container">
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container" style="z-index: 9999;">
       {% for message in messages %}
-      <div class="toast align-items-center text-bg-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
+      {% if message.tags == 'error' %}
+        {% with toast_class='danger' %}
+      <div class="toast align-items-center text-bg-{{ toast_class }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>{{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+        {% endwith %}
+      {% elif message.tags == 'warning' %}
+      <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>{{ message }}
+          </div>
+          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+      {% elif message.tags == 'success' %}
+      <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+      {% elif message.tags == 'info' %}
+      <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fa-solid fa-circle-info me-2"></i>{{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+      {% else %}
+      <div class="toast align-items-center text-bg-secondary border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
           <div class="toast-body">
             {{ message }}
@@ -113,6 +152,7 @@
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
 
@@ -120,7 +160,7 @@
       document.addEventListener('DOMContentLoaded', () => {
         const toastElements = document.querySelectorAll('.toast');
         toastElements.forEach(toastElement => {
-          const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+          const toast = new bootstrap.Toast(toastElement, { delay: 6000 });
           toast.show();
         });
       });

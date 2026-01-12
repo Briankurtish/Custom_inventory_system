@@ -56,7 +56,7 @@ def add_salesRep_view(request, pk=None):
         if form.is_valid():
             form.save()  # Save the product (create or update based on `pk`)
             return redirect('sales-rep')  # Redirect to the product list after saving
-    branch = Branch.objects.all()
+    branch = Branch.objects.filter(is_active=True)
     view_context = {
         "form": form,
         "salesRep": salesRep,
@@ -80,7 +80,7 @@ def update_salesRep_view(request, pk):
         form = SalesAgentForm(instance=salesRep)
 
     salesRep = SalesAgent.objects.all()
-    branch = Branch.objects.all()  # For display in the list
+    branch = Branch.objects.filter(is_active=True)  # For display in the list
 
     view_context = {
         "form": form,

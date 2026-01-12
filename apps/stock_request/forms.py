@@ -21,7 +21,7 @@ class StockRequestForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
     branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Branch",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -69,12 +69,12 @@ class StockTransferForm(forms.Form):
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
     )
     source_branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Source Branch",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     destination_branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Destination Branch",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -88,7 +88,7 @@ class StockTransferForm(forms.Form):
         label="Quantity",
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
-    
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)

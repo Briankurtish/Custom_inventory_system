@@ -22,8 +22,8 @@ Refer to tables/urls.py file for more pages.
 
 @login_required
 def ManageCustomerView(request):
-    # Get all branches for the filter dropdown
-    branches = Branch.objects.all()
+    # Get all branches for the filter dropdown (only active)
+    branches = Branch.objects.filter(is_active=True)
 
     # Get the worker profile
     worker = request.user.worker_profile

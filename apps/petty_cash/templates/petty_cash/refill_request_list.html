@@ -1,0 +1,156 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Refill Requests" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2 class="fw-bold">{% trans "Refill Requests" %}</h2>
+      <p class="text-muted">{% trans "Manage petty cash replenishment requests" %}</p>
+    </div>
+    <div class="col-md-6 text-end">
+      <a href="{% url 'create_refill_request' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-2"></i>{% trans "New Refill Request" %}
+      </a>
+      <a href="{% url 'petty_cash_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back" %}
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>{% trans "Refill ID" %}</th>
+                <th>{% trans "Branch" %}</th>
+                <th>{% trans "Source" %}</th>
+                <th class="text-end">{% trans "Requested Amount" %}</th>
+                <th>{% trans "Requested By" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Actions" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for request in refill_requests %}
+              <tr>
+                <td>{{ forloop.counter0|add:refill_requests.start_index }}</td>
+                <td><strong>{{ request.refill_id }}</strong></td>
+                <td>{{ request.branch.branch_name }}</td>
+                <td>
+                  {% if request.source_type == 'Branch Transfer' %}
+                    <span class="badge bg-info">
+                      <i class="fa-solid fa-exchange-alt me-1"></i>{{ request.source_branch.branch_name }}
+                    </span>
+                  {% else %}
+                    <span class="badge bg-primary">
+                      <i class="fa-solid fa-building-columns me-1"></i>{% trans "Central Finance" %}
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="text-end">{{ request.requested_amount|floatformat:2|intcomma }} CFA</td>
+                <td>{{ request.requested_by.user.get_full_name }}</td>
+                <td>
+                  {% if request.status == 'Pending' %}
+                  <span class="badge bg-warning">{{ request.status }}</span>
+                  {% elif request.status == 'Approved' %}
+                  <span class="badge bg-success">{{ request.status }}</span>
+                  {% elif request.status == 'Completed' %}
+                  <span class="badge bg-info">{{ request.status }}</span>
+                  {% else %}
+                  <span class="badge bg-danger">{{ request.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="dropdown">
+                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                      {% if request.status == 'Pending' %}
+                        <a class="dropdown-item" href="{% url 'edit_refill_request' request.id %}">
+                          <i class="fa-solid fa-pen-to-square me-1"></i> {% trans "Edit" %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'approve_refill_request' request.id %}">
+                          <i class="fa-solid fa-check me-1"></i> {% trans "Process" %}
+                        </a>
+                        <a class="dropdown-item text-danger" href="{% url 'delete_refill_request' request.id %}">
+                          <i class="fa-solid fa-trash me-1"></i> {% trans "Delete" %}
+                        </a>
+                      {% elif request.status == 'Approved' %}
+                        <a class="dropdown-item" href="{% url 'approve_refill_request' request.id %}">
+                          <i class="fa-solid fa-check-double me-1"></i> {% trans "Complete" %}
+                        </a>
+                      {% else %}
+                        <span class="dropdown-item text-muted disabled">{% trans "No actions" %}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="9" class="text-center text-muted py-4">{% trans "No refill requests found" %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if refill_requests.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-3">
+          <ul class="pagination justify-content-center">
+            {% if refill_requests.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ refill_requests.previous_page_number }}">{% trans "Previous" %}</a>
+            </li>
+            {% endif %}
+            <li class="page-item active">
+              <span class="page-link"
+                >Page {{ refill_requests.number }} of {{ refill_requests.paginator.num_pages }}</span
+              >
+            </li>
+            {% if refill_requests.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ refill_requests.next_page_number }}">{% trans "Next" %}</a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- See Logs Link -->
+  {% if user.is_superuser %}
+  <div class="row mt-3">
+    <div class="col-12">
+      <a href="{% url 'refill_request_logs' %}" class="text-primary">
+        <i class="fa-solid fa-clock-rotate-left me-1"></i>{% trans "See Logs" %}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

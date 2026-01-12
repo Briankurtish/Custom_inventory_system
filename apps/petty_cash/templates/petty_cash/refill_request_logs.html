@@ -1,0 +1,223 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Refill Request Logs" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  @media (min-width: 768px) {
+    .table-responsive {
+      overflow-x: visible;
+    }
+  }
+
+  .table thead th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 1rem;
+  }
+
+  .table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+
+  .badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .action-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .action-create {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .action-edit {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .action-delete {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .action-approve {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .action-reject {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .action-complete {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .pagination {
+    margin-top: 1.5rem;
+  }
+
+  .pagination .page-link {
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border-color: #8b5cf6;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">{% trans "Refill Request Logs" %}</h3>
+      <p class="text-muted mb-0">{% trans "Audit trail for all refill request activities" %}</p>
+    </div>
+    <a href="{% url 'refill_request_list' %}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back to Refills" %}
+    </a>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="shadcn-card">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "No" %}</th>
+            <th>{% trans "Action" %}</th>
+            <th>{% trans "Refill ID" %}</th>
+            <th>{% trans "Branch" %}</th>
+            <th>{% trans "User" %}</th>
+            <th>{% trans "Details" %}</th>
+            <th>{% trans "Timestamp" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ offset|add:forloop.counter }}</td>
+            <td>
+              {% if "Create" in log.action %}
+                <span class="action-badge action-create">{{ log.action }}</span>
+              {% elif "Edit" in log.action %}
+                <span class="action-badge action-edit">{{ log.action }}</span>
+              {% elif "Delete" in log.action %}
+                <span class="action-badge action-delete">{{ log.action }}</span>
+              {% elif "Approve" in log.action %}
+                <span class="action-badge action-approve">{{ log.action }}</span>
+              {% elif "Reject" in log.action %}
+                <span class="action-badge action-reject">{{ log.action }}</span>
+              {% elif "Complete" in log.action %}
+                <span class="action-badge action-complete">{{ log.action }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ log.action }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if log.refill_request %}
+                <strong>{{ log.refill_request.refill_id }}</strong>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>{{ log.branch.branch_name }}</td>
+            <td>
+              {% if log.user %}
+                {{ log.user.user.get_full_name }}
+              {% else %}
+                <span class="text-muted">{% trans "System" %}</span>
+              {% endif %}
+            </td>
+            <td>
+              <small>{{ log.details }}</small>
+            </td>
+            <td>
+              <small>{{ log.timestamp|date:"M d, Y" }}</small>
+              <br />
+              <small class="text-muted">{{ log.timestamp|date:"H:i" }}</small>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="fa-solid fa-inbox fa-2x mb-3 d-block"></i>
+              {% trans "No logs found" %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if logs.has_other_pages %}
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        {% if logs.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        {% endif %}
+
+        {% for num in logs.paginator.page_range %}
+          {% if logs.number == num %}
+          <li class="page-item active">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+          {% elif num > logs.number|add:-3 and num < logs.number|add:3 %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if logs.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

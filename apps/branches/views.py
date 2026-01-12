@@ -22,7 +22,17 @@ Refer to tables/urls.py file for more pages.
 
 @login_required
 def ManageBranchView(request):
-    branch = Branch.objects.all()
+    # Get filter parameter
+    status_filter = request.GET.get('status', 'all')
+
+    # Filter branches based on status
+    if status_filter == 'active':
+        branch = Branch.objects.filter(is_active=True)
+    elif status_filter == 'inactive':
+        branch = Branch.objects.filter(is_active=False)
+    else:
+        branch = Branch.objects.all()
+
     paginator = Paginator(branch, 10)
     page_number = request.GET.get('page')  # Get the current page number from the request
     paginated_branch = paginator.get_page(page_number)  # Get the page object
@@ -30,6 +40,7 @@ def ManageBranchView(request):
     # Create a new context dictionary for this view
     view_context = {
         "branch": paginated_branch,
+        "status_filter": status_filter,
     }
 
     # Initialize the template layout and merge the view context
@@ -219,3 +230,42 @@ def delete_branch_view(request, pk):
     context = TemplateLayout.init(request, view_context)
 
     return render(request, 'deleteBranch.html', context)
+
+
+@login_required
+def toggle_branch_status(request, pk):
+    """
+    Toggles the active status of a branch.
+    """
+    branch = get_object_or_404(Branch, id=pk)
+
+    # Toggle the status
+    branch.is_active = not branch.is_active
+    branch.save()
+
+    # Log the action
+    status_text = "activated" if branch.is_active else "deactivated"
+
+    if request.user.username == "admin":
+        BranchAuditLog.objects.create(
+            user=None,
+            branch_name=branch.branch_name,
+            action="update",
+            details=f"Branch '{branch.branch_name}' {status_text} by admin."
+        )
+    else:
+        try:
+            worker = request.user.worker_profile
+            BranchAuditLog.objects.create(
+                user=worker,
+                branch_name=branch.branch_name,
+                action="update",
+                details=f"Branch '{branch.branch_name}' {status_text} by {worker}."
+            )
+        except Worker.DoesNotExist:
+            pass
+
+    status_message = _("Branch Activated Successfully") if branch.is_active else _("Branch Deactivated Successfully")
+    messages.success(request, status_message)
+
+    return redirect("branches")

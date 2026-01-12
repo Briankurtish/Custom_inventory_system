@@ -1,0 +1,63 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+{% trans "Upload Receipt" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="mb-4">
+          <h3 class="fw-bold">{% trans "Upload Receipt" %}</h3>
+          <p class="text-muted">{{ transaction.transaction_id }}</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.receipt_file.id_for_label }}" class="form-label">
+              {% trans "Receipt File" %} <span class="text-danger">*</span>
+            </label>
+            {{ form.receipt_file }} {% if form.receipt_file.errors %}
+            <div class="text-danger small">{{ form.receipt_file.errors }}</div>
+            {% endif %}
+            <small class="text-muted">{% trans "Accepted formats: Images (JPG, PNG) and PDF" %}</small>
+          </div>
+
+          <div class="mb-4">
+            <label for="{{ form.notes.id_for_label }}" class="form-label"> {% trans "Notes" %} </label>
+            {{ form.notes }} {% if form.notes.errors %}
+            <div class="text-danger small">{{ form.notes.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-upload me-2"></i>{% trans "Upload" %}
+            </button>
+            <a href="{% url 'transaction_details' transaction.id %}" class="btn btn-outline-secondary">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

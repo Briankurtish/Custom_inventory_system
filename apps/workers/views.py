@@ -74,7 +74,7 @@ def ManageWorkerView(request):
         workers = workers.filter(is_active=False)
 
     # Fetch choices for dropdowns
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     roles = Worker.ROLE_CHOICES
     departments = Worker.DEPARTMENT_CHOICES
     companies = Worker.COMPANY
@@ -175,19 +175,19 @@ def change_worker_role(request, worker_id):
             # Save old role and privileges before change
             old_role = worker.role
             old_privileges = set(worker.privileges.all())
-            
+
             try:
                 role_privilege = RolePrivilege.objects.get(role=new_role)
                 worker.role = new_role
                 new_role_privileges = role_privilege.privileges.all()
                 worker.privileges.set(new_role_privileges)
                 worker.save()
-                
+
                 # Log privilege changes due to role change
                 new_privileges_set = set(new_role_privileges)
                 added_privileges = new_privileges_set - old_privileges
                 removed_privileges = old_privileges - new_privileges_set
-                
+
                 for privilege in added_privileges:
                     PrivilegeChangeLog.objects.create(
                         worker=worker,
@@ -196,7 +196,7 @@ def change_worker_role(request, worker_id):
                         changed_by=request.user,
                         notes=f'Privilege added due to role change from {old_role} to {new_role}'
                     )
-                
+
                 for privilege in removed_privileges:
                     PrivilegeChangeLog.objects.create(
                         worker=worker,
@@ -205,7 +205,7 @@ def change_worker_role(request, worker_id):
                         changed_by=request.user,
                         notes=f'Privilege removed due to role change from {old_role} to {new_role}'
                     )
-                
+
                 messages.success(request, "Role updated successfully!")
             except RolePrivilege.DoesNotExist:
                 # Log removal of all privileges
@@ -217,7 +217,7 @@ def change_worker_role(request, worker_id):
                         changed_by=request.user,
                         notes=f'Privilege removed due to role change from {old_role} to {new_role} (no privileges defined for this role)'
                     )
-                
+
                 worker.role = new_role
                 worker.privileges.clear()
                 worker.save()
@@ -473,18 +473,18 @@ def manage_worker_privileges(request, worker_id):
 
         # Get current privileges before update
         old_privileges = set(worker.privileges.all())
-        
+
         # Worker should always have role-based privileges
         new_privileges = role_privileges | selected_privileges
         worker.privileges.set(new_privileges)  # Union of both sets
-        
+
         # Get new privileges after update
         new_privileges_set = set(worker.privileges.all())
-        
+
         # Calculate added and removed privileges
         added_privileges = new_privileges_set - old_privileges
         removed_privileges = old_privileges - new_privileges_set
-        
+
         # Log the changes
         for privilege in added_privileges:
             PrivilegeChangeLog.objects.create(
@@ -494,7 +494,7 @@ def manage_worker_privileges(request, worker_id):
                 changed_by=request.user,
                 notes=f'Privilege added via privilege management interface'
             )
-        
+
         for privilege in removed_privileges:
             PrivilegeChangeLog.objects.create(
                 worker=worker,
@@ -789,22 +789,22 @@ def privilege_change_logs(request, worker_id):
     View to display privilege change logs for a specific worker.
     """
     worker = get_object_or_404(Worker, id=worker_id)
-    
+
     # Get all privilege change logs for this worker, ordered by most recent first
     logs = PrivilegeChangeLog.objects.filter(worker=worker).select_related(
         'privilege', 'changed_by', 'worker'
     ).order_by('-changed_at')
-    
+
     # Paginate the logs (50 per page)
     paginator = Paginator(logs, 50)
     page_number = request.GET.get('page')
     paginated_logs = paginator.get_page(page_number)
-    
+
     view_context = {
         'worker': worker,
         'logs': paginated_logs,
     }
-    
+
     context = TemplateLayout.init(request, view_context)
     return render(request, 'privilege_change_logs.html', context)
 

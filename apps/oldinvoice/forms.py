@@ -47,7 +47,7 @@ class OldInvoiceOrderForm(forms.ModelForm):
 
         # Filter sales reps based on the user's branch
         self.fields['sales_rep'].queryset = Worker.objects.all()
-        self.fields['branch'].queryset = Branch.objects.all()
+        self.fields['branch'].queryset = Branch.objects.filter(is_active=True)
         # Set the customer queryset to all customers
         self.fields['customer'].queryset = Customer.objects.all()
 

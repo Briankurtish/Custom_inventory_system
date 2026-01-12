@@ -33,6 +33,11 @@ class Branch(models.Model):
         related_name='branch_created'
     )
 
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Indicates whether this branch is active for use"
+    )
+
 
 
     def save(self, *args, **kwargs):

@@ -63,8 +63,8 @@ def invoice_list(request):
     branch_id = request.GET.get("branch")
     selected_month = request.GET.get("month")  # Get selected month from request
 
-    # Fetch all branches for dropdown
-    branches = Branch.objects.all()
+    # Fetch all branches for dropdown (only active)
+    branches = Branch.objects.filter(is_active=True)
 
     if request.user.is_superuser:
         old_invoice = OldInvoiceOrder.objects.all()

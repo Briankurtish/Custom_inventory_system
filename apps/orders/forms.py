@@ -525,7 +525,7 @@ class BankForm(forms.ModelForm):
 
 class MomoInfoForm(forms.ModelForm):
     branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Branch",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -682,7 +682,7 @@ class SicknessForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['employee'].queryset = Worker.objects.all().order_by("user__first_name")
-        self.fields['branch'].queryset = Branch.objects.all()
+        self.fields['branch'].queryset = Branch.objects.filter(is_active=True)
 
 
 class SicknessItemForm(forms.ModelForm):

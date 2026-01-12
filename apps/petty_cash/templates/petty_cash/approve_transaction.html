@@ -1,0 +1,108 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Approve Transaction" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="mb-4">
+          <h3 class="fw-bold">{% trans "Approve/Reject Transaction" %}</h3>
+          <p class="text-muted">{{ transaction.transaction_id }}</p>
+        </div>
+
+        <!-- Transaction Summary -->
+        <div class="alert alert-info mb-4">
+          <h6 class="fw-semibold">{% trans "Transaction Summary" %}</h6>
+          <p class="mb-1">
+            <strong>{% trans "Recipient:" %}</strong>
+            {% if transaction.recipient %}
+              {{ transaction.recipient.user.get_full_name }}
+            {% elif transaction.recipient_name %}
+              {{ transaction.recipient_name }}
+            {% else %}
+              N/A
+            {% endif %}
+          </p>
+          <p class="mb-1"><strong>{% trans "Amount:" %}</strong> {{ transaction.amount|floatformat:2|intcomma }} CFA</p>
+          <p class="mb-1"><strong>{% trans "Channel:" %}</strong> {{ transaction.channel }}</p>
+          <p class="mb-1"><strong>{% trans "Category:" %}</strong> {{ transaction.get_category_display }}</p>
+          <p class="mb-0"><strong>{% trans "Description:" %}</strong> {{ transaction.description }}</p>
+          {% if transaction.requires_override %}
+          <div class="mt-2 p-2 bg-warning bg-opacity-10 rounded">
+            <small
+              ><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> {% trans "This transaction exceeds the
+              daily limit." %}</small
+            >
+            {% if transaction.override_reason %}
+            <p class="mb-0 mt-1"><strong>{% trans "Override Reason:" %}</strong> {{ transaction.override_reason }}</p>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <form method="POST">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{% trans "Decision" %} <span class="text-danger">*</span></label>
+            {{ form.action }} {% if form.action.errors %}
+            <div class="text-danger small">{{ form.action.errors }}</div>
+            {% endif %}
+          </div>
+
+          {% if transaction.requires_override %}
+          <div class="mb-3">
+            <div class="form-check">
+              {{ form.override_approval }}
+              <label class="form-check-label" for="{{ form.override_approval.id_for_label }}">
+                {{ form.override_approval.label }}
+              </label>
+            </div>
+            <small class="text-muted"
+              >{% trans "Check this box to approve the transaction despite it exceeding the daily limit." %}</small
+            >
+          </div>
+          {% endif %}
+
+          <div class="mb-4">
+            <label for="{{ form.rejection_reason.id_for_label }}" class="form-label">
+              {% trans "Rejection Reason" %}
+            </label>
+            {{ form.rejection_reason }} {% if form.rejection_reason.errors %}
+            <div class="text-danger small">{{ form.rejection_reason.errors }}</div>
+            {% endif %}
+            <small class="text-muted">{% trans "Required if rejecting the transaction" %}</small>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-check me-2"></i>{% trans "Submit Decision" %}
+            </button>
+            <a href="{% url 'transaction_details' transaction.id %}" class="btn btn-outline-secondary">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

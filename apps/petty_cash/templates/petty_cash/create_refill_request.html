@@ -1,0 +1,132 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+{% trans "New Refill Request" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="mb-4">
+          <h3 class="fw-bold">{% trans "New Refill Request" %}</h3>
+          <p class="text-muted">{% trans "Request petty cash replenishment" %}</p>
+        </div>
+
+        <form method="POST" id="refillRequestForm">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.branch.id_for_label }}" class="form-label">
+              {{ form.branch.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.branch }}
+            {% if form.branch.errors %}
+              <div class="text-danger small">{{ form.branch.errors }}</div>
+            {% endif %}
+            <small class="text-muted d-block mt-1">{% trans "Branch that needs the refill" %}</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.source_type.id_for_label }}" class="form-label">
+              {{ form.source_type.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.source_type }}
+            {% if form.source_type.errors %}
+              <div class="text-danger small">{{ form.source_type.errors }}</div>
+            {% endif %}
+            <small class="text-muted d-block mt-1">{% trans "Where will the funds come from?" %}</small>
+          </div>
+
+          <div class="mb-3" id="sourceBranchField" style="display: none;">
+            <label for="{{ form.source_branch.id_for_label }}" class="form-label">
+              {{ form.source_branch.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.source_branch }}
+            {% if form.source_branch.errors %}
+              <div class="text-danger small">{{ form.source_branch.errors }}</div>
+            {% endif %}
+            <small class="text-muted d-block mt-1">{% trans "Which branch will provide the funds?" %}</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.requested_amount.id_for_label }}" class="form-label">
+              {{ form.requested_amount.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.requested_amount }}
+            {% if form.requested_amount.errors %}
+              <div class="text-danger small">{{ form.requested_amount.errors }}</div>
+            {% endif %}
+            <small class="text-muted d-block mt-1">{% trans "Total amount needed (will be distributed across channels during completion)" %}</small>
+          </div>
+
+          <div class="mb-4">
+            <label for="{{ form.justification.id_for_label }}" class="form-label">
+              {{ form.justification.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.justification }}
+            {% if form.justification.errors %}
+              <div class="text-danger small">{{ form.justification.errors }}</div>
+            {% endif %}
+            <small class="text-muted d-block mt-1">{% trans "Explain why this refill is needed" %}</small>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              {% if is_editing %}
+                <i class="fa-solid fa-save me-2"></i>{% trans "Update Request" %}
+              {% else %}
+                <i class="fa-solid fa-check me-2"></i>{% trans "Submit Request" %}
+              {% endif %}
+            </button>
+            <a href="{% url 'refill_request_list' %}" class="btn btn-outline-secondary">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sourceTypeField = document.getElementById('{{ form.source_type.id_for_label }}');
+  const sourceBranchField = document.getElementById('sourceBranchField');
+  const sourceBranchSelect = document.getElementById('{{ form.source_branch.id_for_label }}');
+
+  // Show/hide source branch based on source type
+  function toggleSourceBranch() {
+    const selectedValue = sourceTypeField.value;
+    if (selectedValue === 'Branch Transfer') {
+      sourceBranchField.style.display = 'block';
+      sourceBranchSelect.required = true;
+    } else {
+      sourceBranchField.style.display = 'none';
+      sourceBranchSelect.required = false;
+      sourceBranchSelect.value = ''; // Clear selection
+    }
+  }
+
+  // Initialize on page load
+  toggleSourceBranch();
+
+  // Update when source type changes
+  sourceTypeField.addEventListener('change', toggleSourceBranch);
+});
+</script>
+{% endblock %}

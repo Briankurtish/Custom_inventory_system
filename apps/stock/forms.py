@@ -37,7 +37,7 @@ class BeginningInventoryForm(forms.Form):
         required=True
     )
     branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Branch",
         required=True
     )
@@ -59,7 +59,7 @@ class StockUpdateForm(forms.Form):
         label="Batch Number"
     )
     branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         label="Branch"
     )
     quantity = forms.IntegerField(

@@ -1,0 +1,384 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+{% trans "Petty Cash Settings" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control,
+  .form-select {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    transition: all 0.15s ease;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    outline: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: none;
+    padding: 0.625rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    border: none;
+    padding: 0.625rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  .alert {
+    border-radius: 6px;
+    border: none;
+    padding: 1rem;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <div class="mb-4">
+          <h3 class="fw-bold">{% trans "Petty Cash Settings" %}</h3>
+          <p class="text-muted">{% trans "Configure petty cash limits and thresholds" %}</p>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+              <i class="fa-solid fa-gear me-2"></i>{% trans "General Settings" %}
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab">
+              <i class="fa-solid fa-tags me-2"></i>{% trans "Manage Categories" %}
+            </button>
+          </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="settingsTabsContent">
+          <!-- General Settings Tab -->
+          <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <form method="POST">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.branch.id_for_label }}" class="form-label">
+              {% trans "Branch" %} <span class="text-danger">*</span>
+            </label>
+            {{ form.branch }}
+            {% if form.branch.errors %}
+              <div class="text-danger mt-1">{{ form.branch.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <h5 class="fw-bold mt-4 mb-3">{% trans "Daily Limits" %}</h5>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.daily_cash_limit.id_for_label }}" class="form-label">
+                {{ form.daily_cash_limit.label }}
+              </label>
+              {{ form.daily_cash_limit }}
+              {% if form.daily_cash_limit.errors %}
+                <div class="text-danger mt-1">{{ form.daily_cash_limit.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.daily_momo_limit.id_for_label }}" class="form-label">
+                {{ form.daily_momo_limit.label }}
+              </label>
+              {{ form.daily_momo_limit }}
+              {% if form.daily_momo_limit.errors %}
+                <div class="text-danger mt-1">{{ form.daily_momo_limit.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.daily_orange_limit.id_for_label }}" class="form-label">
+                {{ form.daily_orange_limit.label }}
+              </label>
+              {{ form.daily_orange_limit }}
+              {% if form.daily_orange_limit.errors %}
+                <div class="text-danger mt-1">{{ form.daily_orange_limit.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <h5 class="fw-bold mt-4 mb-3">{% trans "Refill Alert Thresholds" %}</h5>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.cash_refill_threshold.id_for_label }}" class="form-label">
+                {{ form.cash_refill_threshold.label }}
+              </label>
+              {{ form.cash_refill_threshold }}
+              {% if form.cash_refill_threshold.errors %}
+                <div class="text-danger mt-1">{{ form.cash_refill_threshold.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.momo_refill_threshold.id_for_label }}" class="form-label">
+                {{ form.momo_refill_threshold.label }}
+              </label>
+              {{ form.momo_refill_threshold }}
+              {% if form.momo_refill_threshold.errors %}
+                <div class="text-danger mt-1">{{ form.momo_refill_threshold.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="{{ form.orange_refill_threshold.id_for_label }}" class="form-label">
+                {{ form.orange_refill_threshold.label }}
+              </label>
+              {{ form.orange_refill_threshold }}
+              {% if form.orange_refill_threshold.errors %}
+                <div class="text-danger mt-1">{{ form.orange_refill_threshold.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <h5 class="fw-bold mt-4 mb-3">{% trans "Other Settings" %}</h5>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.receipt_required_threshold.id_for_label }}" class="form-label">
+                {{ form.receipt_required_threshold.label }}
+              </label>
+              {{ form.receipt_required_threshold }}
+              {% if form.receipt_required_threshold.errors %}
+                <div class="text-danger mt-1">{{ form.receipt_required_threshold.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label d-block">
+                {{ form.requires_override_approval.label }}
+              </label>
+              <div class="form-check form-switch">
+                {{ form.requires_override_approval }}
+              </div>
+              {% if form.requires_override_approval.errors %}
+                <div class="text-danger mt-1">{{ form.requires_override_approval.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% url 'petty_cash_dashboard' %}" class="btn btn-secondary">
+              <i class="fa-solid fa-xmark me-2"></i>{% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-save me-2"></i>{% trans "Save Settings" %}
+            </button>
+          </div>
+        </form>
+          </div>
+
+          <!-- Manage Categories Tab -->
+          <div class="tab-pane fade" id="categories" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="fw-bold mb-0">{% trans "Transaction Categories" %}</h5>
+              <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <i class="fa-solid fa-plus me-2"></i>{% trans "Add Category" %}
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>{% trans "Category Name" %}</th>
+                    <th>{% trans "Usage Count" %}</th>
+                    <th class="text-end">{% trans "Actions" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for category in categories %}
+                  <tr>
+                    <td>
+                      <span class="badge bg-primary">{{ category.name }}</span>
+                      {% if not category.is_active %}
+                      <span class="badge bg-secondary ms-1">Inactive</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ category.usage_count }}</td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-primary"
+                              data-bs-toggle="modal"
+                              data-bs-target="#editCategoryModal"
+                              data-category-id="{{ category.id }}"
+                              data-category-name="{{ category.name }}">
+                        <i class="fa-solid fa-edit"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-danger"
+                              data-bs-toggle="modal"
+                              data-bs-target="#deleteCategoryModal"
+                              data-category-id="{{ category.id }}"
+                              data-category-name="{{ category.name }}">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="3" class="text-center text-muted">{% trans "No categories added yet" %}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Add New Category" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'add_petty_cash_category' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">{% trans "Category Name" %} <span class="text-danger">*</span></label>
+            <input type="text" name="category_name" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Add Category" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Edit Category" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'edit_petty_cash_category' %}">
+        {% csrf_token %}
+        <input type="hidden" name="category_id" id="edit_category_id">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">{% trans "Category Name" %} <span class="text-danger">*</span></label>
+            <input type="text" name="new_category" id="edit_category_name" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Update Category" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Delete Category" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'delete_petty_cash_category' %}">
+        {% csrf_token %}
+        <input type="hidden" name="category_id" id="delete_category_id">
+        <div class="modal-body">
+          <p>{% trans "Are you sure you want to deactivate this category?" %}</p>
+          <p><strong id="delete_category_display"></strong></p>
+          <div class="alert alert-warning">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {% trans "This will deactivate the category. Existing transactions will keep their category value." %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-danger">{% trans "Deactivate Category" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Handle Edit Category Modal
+document.querySelectorAll('[data-bs-target="#editCategoryModal"]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const categoryId = this.getAttribute('data-category-id');
+    const categoryName = this.getAttribute('data-category-name');
+    document.getElementById('edit_category_id').value = categoryId;
+    document.getElementById('edit_category_name').value = categoryName;
+  });
+});
+
+// Handle Delete Category Modal
+document.querySelectorAll('[data-bs-target="#deleteCategoryModal"]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const categoryId = this.getAttribute('data-category-id');
+    const categoryName = this.getAttribute('data-category-name');
+    document.getElementById('delete_category_id').value = categoryId;
+    document.getElementById('delete_category_display').textContent = categoryName;
+  });
+});
+</script>
+{% endblock %}

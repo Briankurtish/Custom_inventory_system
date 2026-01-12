@@ -60,7 +60,7 @@ class UserCreationForm(forms.ModelForm):
         label= _("Confirm Password")
     )
     branch = forms.ModelChoiceField(
-        queryset=Branch.objects.all(),
+        queryset=Branch.objects.filter(is_active=True),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         label= _("Branch"),

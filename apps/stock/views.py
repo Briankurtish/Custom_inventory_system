@@ -57,7 +57,7 @@ def ManageStockView(request):
     view_context = {
         "stocks": paginated_stocks,
         "offset": offset,
-        'branches': Branch.objects.all(),
+        'branches': Branch.objects.filter(is_active=True),
     }
 
     # Initialize the template layout and merge the view context
@@ -986,7 +986,7 @@ def get_stock_data(request):
 
 @login_required
 def get_branches(request):
-    branches = Branch.objects.all()
+    branches = Branch.objects.filter(is_active=True)
     branch_data = [
         {"id": branch.id, "name": branch.branch_name}
         for branch in branches
@@ -995,8 +995,8 @@ def get_branches(request):
 
 @login_required
 def track_stocks(request):
-    # Get all branches for the filter dropdown
-    branches = Branch.objects.all()
+    # Get all branches for the filter dropdown (only active)
+    branches = Branch.objects.filter(is_active=True)
 
     # Get filter and search query from request
     branch_filter = request.GET.get('branch_filter', '').strip()
@@ -1145,7 +1145,7 @@ def inventory_register(request):
         'current_date_time': timezone.now(),
         'branch_id': branch_id,
         'branch': branch,
-        'branches': Branch.objects.all(),
+        'branches': Branch.objects.filter(is_active=True),
         'brand_name': brand_name,
         'generic_name_dosage': generic_name_dosage,
         'dosage_form': dosage_form,
@@ -1195,8 +1195,8 @@ def damaged_products_view(request):
     # Get all products and branches for the form
     products = Product.objects.select_related('generic_name_dosage', 'brand_name', 'batch').all()
 
-    # Fetch all branches and order them by name
-    branches = Branch.objects.all().order_by('branch_name')
+    # Fetch all branches and order them by name (only active)
+    branches = Branch.objects.filter(is_active=True).order_by('branch_name')
 
     # Debug print to check if branches are being fetched
     print(f"Number of branches fetched: {branches.count()}")
@@ -1569,12 +1569,12 @@ def stock_daily_sales_view(request):
         total_quantity=Sum('quantity')
     ).order_by('-purchase_order__created_at__date', 'stock__product__generic_name_dosage__generic_name')
 
-    # Branch options based on user permissions
+    # Branch options based on user permissions (only active)
     if request.user.is_superuser:
-        branches = Branch.objects.all()
+        branches = Branch.objects.filter(is_active=True)
     else:
         user_branch = request.user.worker_profile.branch
-        branches = Branch.objects.filter(id=user_branch.id) if user_branch else Branch.objects.none()
+        branches = Branch.objects.filter(id=user_branch.id, is_active=True) if user_branch else Branch.objects.none()
 
     view_context = {
         'sales': sales,

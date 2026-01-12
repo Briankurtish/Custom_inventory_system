@@ -1,0 +1,476 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Transaction Details" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-item label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-item div {
+    font-size: 1rem;
+    color: #1f2937;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2 class="fw-bold">{% trans "Transaction Details" %}</h2>
+      <p class="text-muted">{{ transaction.transaction_id }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+      <a href="{% url 'upload_receipt' transaction.id %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-upload me-2"></i>{% trans "Upload Receipt" %}
+      </a>
+      <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-2"></i>{% trans "Back" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Status Alert -->
+  <div class="row mb-4">
+    <div class="col-12">
+      {% if transaction.status == 'Pending' %}
+      <div class="alert alert-warning">
+        <i class="fa-solid fa-clock me-2"></i>
+        {% trans "This transaction is pending approval." %}
+      </div>
+      {% elif transaction.status == 'Approved' %}
+      <div class="alert alert-success">
+        <i class="fa-solid fa-check me-2"></i>
+        {% trans "This transaction has been approved and is ready for disbursement." %}
+      </div>
+      {% elif transaction.status == 'Disbursed' %}
+      <div class="alert alert-info">
+        <i class="fa-solid fa-check-double me-2"></i>
+        {% trans "This transaction has been disbursed." %}
+      </div>
+      {% elif transaction.status == 'Rejected' %}
+      <div class="alert alert-danger">
+        <i class="fa-solid fa-times me-2"></i>
+        {% trans "This transaction was rejected." %}
+        {% if transaction.rejection_reason %}
+        <br /><strong>{% trans "Reason:" %}</strong> {{ transaction.rejection_reason }}
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if transaction.requires_override %}
+      <div class="alert alert-warning">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+        {% trans "This transaction exceeds the daily limit and requires override approval." %}
+        {% if transaction.override_approved %}
+        <span class="badge bg-success ms-2">{% trans "Override Approved" %}</span>
+        {% else %}
+        <span class="badge bg-danger ms-2">{% trans "Override Pending" %}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if receipt_required and receipts.count == 0 %}
+      <div class="alert alert-warning">
+        <i class="fa-solid fa-receipt me-2"></i>
+        {% trans "Receipt is required for this transaction amount." %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Transaction Info -->
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-4">{% trans "Transaction Information" %}</h5>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>{% trans "Transaction ID" %}</label>
+            <div><strong>{{ transaction.transaction_id }}</strong></div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Branch" %}</label>
+            <div>{{ transaction.branch.branch_name }}</div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Transaction Type" %}</label>
+            <div>{{ transaction.get_transaction_type_display }}</div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Payment Channel" %}</label>
+            <div>
+              {% if transaction.channel == 'Cash' %}
+              <i class="fa-solid fa-money-bill-wave text-success me-1"></i>
+              {% elif transaction.channel == 'MTN MoMo' %}
+              <i class="fa-solid fa-mobile-screen text-primary me-1"></i>
+              {% elif transaction.channel == 'Orange Money' %}
+              <i class="fa-solid fa-mobile-alt text-warning me-1"></i>
+              {% endif %} {{ transaction.channel }}
+            </div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Category" %}</label>
+            <div><span class="badge bg-secondary">{{ transaction.get_category_display }}</span></div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Amount" %}</label>
+            <div class="fs-5 fw-bold text-primary">{{ transaction.amount|floatformat:2|intcomma }} CFA</div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Recipient Name" %}</label>
+            <div>
+              {% if transaction.recipient %}
+                {{ transaction.recipient.user.get_full_name }}
+              {% elif transaction.recipient_name %}
+                {{ transaction.recipient_name }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <label>{% trans "Recipient Phone" %}</label>
+            <div>
+              {% if transaction.recipient_phone %}
+                {{ transaction.recipient_phone }}
+              {% elif transaction.recipient %}
+                {{ transaction.recipient.phone_number|default:"-" }}
+              {% else %}
+                -
+              {% endif %}
+            </div>
+          </div>
+          <div class="info-item col-span-full">
+            <label>{% trans "Description" %}</label>
+            <div>{{ transaction.description }}</div>
+          </div>
+          {% if transaction.override_reason %}
+          <div class="info-item col-span-full">
+            <label>{% trans "Override Reason" %}</label>
+            <div class="text-warning">{{ transaction.override_reason }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Trail -->
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-4">{% trans "Audit Trail" %}</h5>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>{% trans "Requested By" %}</label>
+            <div>{{ transaction.requested_by.user.get_full_name }}</div>
+            <small class="text-muted">{{ transaction.requested_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% if transaction.approved_by %}
+          <div class="info-item">
+            <label>{% trans "Approved By" %}</label>
+            <div>{{ transaction.approved_by.user.get_full_name }}</div>
+            <small class="text-muted">{{ transaction.approved_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% endif %}
+          {% if transaction.disbursed_by %}
+          <div class="info-item">
+            <label>{% trans "Disbursed By" %}</label>
+            <div>{{ transaction.disbursed_by.user.get_full_name }}</div>
+            <small class="text-muted">{{ transaction.disbursed_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4 pt-3 border-top d-flex gap-2 flex-wrap">
+          {% if transaction.status == 'Disbursed' %}
+          <a href="{% url 'download_petty_cash_receipt' transaction.id %}" target="_blank" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf me-2"></i>{% trans "Download Receipt" %}
+          </a>
+          {% endif %}
+
+          {% if transaction.status == 'Pending' %}
+          {% if transaction.requires_override %}
+          <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#approveOverrideModal">
+            <i class="fa-solid fa-check-double me-2"></i>{% trans "Approve with Override" %}
+          </button>
+          {% else %}
+          <button type="button" class="btn btn-success" onclick="approveTransaction({{ transaction.id }}, false)">
+            <i class="fa-solid fa-check me-2"></i>{% trans "Approve" %}
+          </button>
+          {% endif %}
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declineModal">
+            <i class="fa-solid fa-times me-2"></i>{% trans "Decline" %}
+          </button>
+          {% endif %}
+
+          {% if transaction.status == 'Approved' %}
+          <button type="button" class="btn btn-primary" onclick="disburseTransaction({{ transaction.id }})">
+            <i class="fa-solid fa-money-bill-transfer me-2"></i>{% trans "Disburse" %}
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipts -->
+  {% if receipts %}
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-4">{% trans "Receipts" %}</h5>
+        <div class="row">
+          {% for receipt in receipts %}
+          <div class="col-md-4 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <p class="mb-2">
+                  <strong>{% trans "Uploaded by:" %}</strong> {{ receipt.uploaded_by.user.get_full_name }}
+                </p>
+                <p class="mb-2"><strong>{% trans "Date:" %}</strong> {{ receipt.uploaded_at|date:"M d, Y H:i" }}</p>
+                {% if receipt.notes %}
+                <p class="mb-2"><strong>{% trans "Notes:" %}</strong> {{ receipt.notes }}</p>
+                {% endif %}
+                <a href="{{ receipt.receipt_file.url }}" target="_blank" class="btn btn-sm btn-primary">
+                  <i class="fa-solid fa-download me-1"></i>{% trans "View/Download" %}
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Audit Logs -->
+  {% if audit_logs %}
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <h5 class="fw-semibold mb-4">{% trans "Recent Activity" %}</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>{% trans "Action" %}</th>
+                <th>{% trans "User" %}</th>
+                <th>{% trans "Details" %}</th>
+                <th>{% trans "Timestamp" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in audit_logs %}
+              <tr>
+                <td><span class="badge bg-primary">{{ log.action }}</span></td>
+                <td>{{ log.user.user.get_full_name|default:"-" }}</td>
+                <td>{{ log.details }}</td>
+                <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Approve with Override Modal -->
+<div class="modal fade" id="approveOverrideModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-exclamation-triangle me-2"></i>{% trans "Override Approval Required" %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning mb-3">
+          <strong>{% trans "Warning:" %}</strong> {% trans "This transaction exceeds the daily limit and requires override approval." %}
+        </div>
+        <div class="mb-3">
+          <p><strong>{% trans "Override Reason Provided:" %}</strong></p>
+          <p class="border p-2 bg-light rounded">{{ transaction.override_reason }}</p>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="confirmOverrideApproval" required>
+          <label class="form-check-label" for="confirmOverrideApproval">
+            {% trans "I confirm that I have reviewed the override reason and approve this transaction" %}
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+        <button type="button" class="btn btn-warning" id="confirmOverrideBtn">
+          <i class="fa-solid fa-check-double me-2"></i>{% trans "Approve with Override" %}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Decline Transaction Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">{% trans "Decline Transaction" %}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="declineForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">{% trans "Reason for Declining" %} <span class="text-danger">*</span></label>
+            <textarea name="rejection_reason" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="alert alert-warning">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {% trans "This action cannot be undone." %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-danger">{% trans "Decline Transaction" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Approve transaction directly
+function approveTransaction(transactionId, requiresOverride) {
+  if (confirm('{% trans "Are you sure you want to approve this transaction?" %}')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "approve_transaction" transaction.id %}';
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'approve';
+    form.appendChild(actionInput);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+// Handle override approval confirmation
+document.addEventListener('DOMContentLoaded', function() {
+  const confirmOverrideBtn = document.getElementById('confirmOverrideBtn');
+  if (confirmOverrideBtn) {
+    confirmOverrideBtn.addEventListener('click', function() {
+      const checkbox = document.getElementById('confirmOverrideApproval');
+      if (!checkbox.checked) {
+        alert('{% trans "Please confirm that you have reviewed the override reason" %}');
+        return;
+      }
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '{% url "approve_transaction" transaction.id %}';
+
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfmiddlewaretoken';
+      csrfInput.value = csrfToken;
+      form.appendChild(csrfInput);
+
+      const actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = 'approve';
+      form.appendChild(actionInput);
+
+      const overrideInput = document.createElement('input');
+      overrideInput.type = 'hidden';
+      overrideInput.name = 'override_approval';
+      overrideInput.value = 'true';
+      form.appendChild(overrideInput);
+
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+});
+
+// Disburse transaction directly
+function disburseTransaction(transactionId) {
+  if (confirm('{% trans "Are you sure you want to disburse this transaction?" %}')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "disburse_transaction" transaction.id %}';
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+// Handle decline form submission
+document.getElementById('declineForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  formData.append('action', 'reject');
+
+  fetch('{% url "approve_transaction" transaction.id %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    }
+  }).then(response => {
+    if (response.ok) {
+      window.location.reload();
+    }
+  });
+});
+</script>
+{% endblock %}

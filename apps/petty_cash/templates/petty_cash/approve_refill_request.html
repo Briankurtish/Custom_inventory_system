@@ -1,0 +1,596 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}
+{% trans "Process Refill Request" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .shadcn-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control,
+  .form-select {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    transition: all 0.15s ease;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    outline: none;
+  }
+
+  .alert {
+    border-radius: 6px;
+    border: none;
+    padding: 1.25rem;
+  }
+
+  .alert-info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .info-item {
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 6px;
+  }
+
+  .info-item label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .info-item .value {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1rem;
+  }
+
+  /* Action Cards */
+  .action-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .action-card {
+    position: relative;
+    padding: 1.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: white;
+  }
+
+  .action-card:hover {
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .action-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .action-card.selected {
+    border-width: 2px;
+  }
+
+  .action-card.approve.selected {
+    border-color: #10b981;
+    background: #ecfdf5;
+  }
+
+  .action-card.reject.selected {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .action-card.complete.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  .action-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .action-card.approve .icon {
+    color: #10b981;
+  }
+
+  .action-card.reject .icon {
+    color: #ef4444;
+  }
+
+  .action-card.complete .icon {
+    color: #3b82f6;
+  }
+
+  .action-card .title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .action-card .description {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .action-card .checkmark {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .action-card.selected .checkmark {
+    border-color: currentColor;
+    background: currentColor;
+  }
+
+  .action-card.approve.selected .checkmark {
+    color: #10b981;
+  }
+
+  .action-card.reject.selected .checkmark {
+    color: #ef4444;
+  }
+
+  .action-card.complete.selected .checkmark {
+    color: #3b82f6;
+  }
+
+  .action-card .checkmark i {
+    color: white;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .action-card.selected .checkmark i {
+    opacity: 1;
+  }
+
+  .rejection-section,
+  .completion-section {
+    display: none;
+    animation: slideDown 0.3s ease;
+  }
+
+  .rejection-section.show,
+  .completion-section.show {
+    display: block;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .channel-input {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    border-left: 3px solid #8b5cf6;
+  }
+
+  .channel-input label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .channel-input input {
+    width: 100%;
+  }
+
+  .total-badge {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.15s ease;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  }
+
+  .btn-cancel {
+    border: 1px solid #d1d5db;
+    color: #6b7280;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    background: white;
+  }
+
+  .btn-cancel:hover {
+    background: #f9fafb;
+  }
+
+  @media (max-width: 768px) {
+    .action-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="shadcn-card">
+        <!-- Header -->
+        <div class="mb-4">
+          <h3 class="fw-bold mb-2">{% trans "Process Refill Request" %}</h3>
+          <p class="text-muted mb-0">{{ refill_request.refill_id }}</p>
+        </div>
+
+        <!-- Request Details -->
+        <div class="mb-4">
+          <h6 class="fw-semibold mb-3">{% trans "Request Details" %}</h6>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>{% trans "Branch" %}</label>
+              <div class="value">{{ refill_request.branch.branch_name }}</div>
+            </div>
+            <div class="info-item">
+              <label>{% trans "Source of Funds" %}</label>
+              <div class="value">
+                {{ refill_request.source_type }}
+                {% if refill_request.source_type == 'Branch Transfer' and refill_request.source_branch %}
+                  <span class="badge bg-info ms-2">{{ refill_request.source_branch.branch_name }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>{% trans "Requested Amount" %}</label>
+              <div class="value">{{ refill_request.requested_amount|floatformat:2|intcomma }} CFA</div>
+            </div>
+            <div class="info-item">
+              <label>{% trans "Requested By" %}</label>
+              <div class="value">{{ refill_request.requested_by.user.get_full_name }}</div>
+            </div>
+          </div>
+          <div class="info-item mt-3">
+            <label>{% trans "Justification" %}</label>
+            <div class="value">{{ refill_request.justification }}</div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" id="refillForm">
+          {% csrf_token %}
+
+          <!-- Action Selection -->
+          <div class="mb-4">
+            <h6 class="fw-semibold mb-3">{% trans "Select Action" %} <span class="text-danger">*</span></h6>
+            <div class="alert alert-info mb-3">
+              <i class="fa-solid fa-info-circle me-2"></i>
+              <strong>{% trans "Note:" %}</strong>
+              {% trans "Select 'Mark as Completed' to approve AND update the balance immediately, or 'Approve' to approve for later completion." %}
+            </div>
+            <div class="action-cards">
+              {% for radio in form.action %}
+                <label class="action-card {% if 'approve' in radio.choice_label|lower %}approve{% elif 'reject' in radio.choice_label|lower %}reject{% else %}complete{% endif %}" for="{{ radio.id_for_label }}">
+                  {{ radio.tag }}
+                  <div class="checkmark">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <div class="icon">
+                    {% if 'approve' in radio.choice_label|lower %}
+                      <i class="fa-solid fa-circle-check"></i>
+                    {% elif 'reject' in radio.choice_label|lower %}
+                      <i class="fa-solid fa-circle-xmark"></i>
+                    {% else %}
+                      <i class="fa-solid fa-flag-checkered"></i>
+                    {% endif %}
+                  </div>
+                  <div class="title">{{ radio.choice_label }}</div>
+                  <div class="description">
+                    {% if 'approve' in radio.choice_label|lower %}
+                      {% trans "Approve for later completion" %}
+                    {% elif 'reject' in radio.choice_label|lower %}
+                      {% trans "Decline this request" %}
+                    {% else %}
+                      {% trans "Complete & update balance" %}
+                    {% endif %}
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.action.errors %}
+              <div class="alert alert-danger mt-2">
+                <i class="fa-solid fa-exclamation-circle me-2"></i>{{ form.action.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Rejection Reason (conditionally shown) -->
+          <div class="rejection-section mb-4" id="rejectionSection">
+            <div class="alert alert-warning mb-3">
+              <i class="fa-solid fa-exclamation-triangle me-2"></i>
+              {% trans "Please provide a reason for rejecting this request" %}
+            </div>
+            <label for="{{ form.rejection_reason.id_for_label }}" class="form-label fw-semibold">
+              {% trans "Rejection Reason" %} <span class="text-danger">*</span>
+            </label>
+            {{ form.rejection_reason }}
+            {% if form.rejection_reason.errors %}
+              <div class="alert alert-danger mt-2">
+                <i class="fa-solid fa-exclamation-circle me-2"></i>{{ form.rejection_reason.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Channel Distribution (conditionally shown for completion) -->
+          <div class="completion-section mb-4" id="completionSection">
+            <div class="alert alert-info mb-3">
+              <i class="fa-solid fa-info-circle me-2"></i>
+              <strong>{% trans "Channel Distribution" %}</strong><br>
+              {% trans "Distribute the refill amount across payment channels. The total must equal the requested amount." %}
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div class="channel-input">
+                  <label for="{{ completion_form.cash_amount.id_for_label }}">
+                    <i class="fa-solid fa-money-bill-wave text-success me-2"></i>{% trans "Cash Amount" %}
+                  </label>
+                  {{ completion_form.cash_amount }}
+                  {% if completion_form.cash_amount.errors %}
+                    <div class="text-danger small mt-1">{{ completion_form.cash_amount.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="channel-input">
+                  <label for="{{ completion_form.momo_amount.id_for_label }}">
+                    <i class="fa-solid fa-mobile-screen text-primary me-2"></i>{% trans "MTN MoMo Amount" %}
+                  </label>
+                  {{ completion_form.momo_amount }}
+                  {% if completion_form.momo_amount.errors %}
+                    <div class="text-danger small mt-1">{{ completion_form.momo_amount.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="channel-input">
+                  <label for="{{ completion_form.orange_amount.id_for_label }}">
+                    <i class="fa-solid fa-mobile-alt text-warning me-2"></i>{% trans "Orange Money Amount" %}
+                  </label>
+                  {{ completion_form.orange_amount }}
+                  {% if completion_form.orange_amount.errors %}
+                    <div class="text-danger small mt-1">{{ completion_form.orange_amount.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="total-badge">
+                  <small class="d-block opacity-75">{% trans "Requested Amount" %}</small>
+                  <span id="requestedAmount">{{ refill_request.requested_amount|floatformat:2|intcomma }}</span> CFA
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="total-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                  <small class="d-block opacity-75">{% trans "Total Distributed" %}</small>
+                  <span id="totalDistributed">0.00</span> CFA
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-warning mt-3" id="mismatchAlert" style="display: none;">
+              <i class="fa-solid fa-exclamation-triangle me-2"></i>
+              {% trans "Total distributed amount does not match the requested amount!" %}
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+            <a href="{% url 'refill_request_list' %}" class="btn btn-cancel">
+              <i class="fa-solid fa-times me-2"></i>{% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-submit">
+              <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Submit" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const actionCards = document.querySelectorAll('.action-card');
+  const rejectionSection = document.getElementById('rejectionSection');
+  const completionSection = document.getElementById('completionSection');
+  const form = document.getElementById('refillForm');
+
+  const cashInput = document.getElementById('{{ completion_form.cash_amount.id_for_label }}');
+  const momoInput = document.getElementById('{{ completion_form.momo_amount.id_for_label }}');
+  const orangeInput = document.getElementById('{{ completion_form.orange_amount.id_for_label }}');
+  const totalDistributed = document.getElementById('totalDistributed');
+  const mismatchAlert = document.getElementById('mismatchAlert');
+  const requestedAmount = {{ refill_request.requested_amount }};
+
+  // Calculate total distributed
+  function calculateTotal() {
+    const cash = parseFloat(cashInput.value) || 0;
+    const momo = parseFloat(momoInput.value) || 0;
+    const orange = parseFloat(orangeInput.value) || 0;
+    const total = cash + momo + orange;
+
+    totalDistributed.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Show/hide mismatch alert
+    if (Math.abs(total - requestedAmount) > 0.01 && total > 0) {
+      mismatchAlert.style.display = 'block';
+    } else {
+      mismatchAlert.style.display = 'none';
+    }
+  }
+
+  // Add event listeners for channel inputs
+  if (cashInput) cashInput.addEventListener('input', calculateTotal);
+  if (momoInput) momoInput.addEventListener('input', calculateTotal);
+  if (orangeInput) orangeInput.addEventListener('input', calculateTotal);
+
+  // Handle action card clicks
+  actionCards.forEach(card => {
+    const radio = card.querySelector('input[type="radio"]');
+
+    card.addEventListener('click', function() {
+      // Remove selected class from all cards
+      actionCards.forEach(c => c.classList.remove('selected'));
+
+      // Add selected class to clicked card
+      card.classList.add('selected');
+
+      // Check the radio button
+      radio.checked = true;
+
+      // Show/hide sections based on selection
+      if (radio.value === 'reject') {
+        rejectionSection.classList.add('show');
+        completionSection.classList.remove('show');
+      } else if (radio.value === 'complete') {
+        completionSection.classList.add('show');
+        rejectionSection.classList.remove('show');
+      } else {
+        rejectionSection.classList.remove('show');
+        completionSection.classList.remove('show');
+      }
+    });
+
+    // Check if radio is already selected (form resubmit with errors)
+    if (radio.checked) {
+      card.classList.add('selected');
+      if (radio.value === 'reject') {
+        rejectionSection.classList.add('show');
+      } else if (radio.value === 'complete') {
+        completionSection.classList.add('show');
+        calculateTotal();
+      }
+    }
+  });
+
+  // Form validation
+  form.addEventListener('submit', function(e) {
+    const selectedAction = document.querySelector('input[name="action"]:checked');
+
+    if (!selectedAction) {
+      e.preventDefault();
+      alert('{% trans "Please select an action" %}');
+      return false;
+    }
+
+    if (selectedAction.value === 'reject') {
+      const rejectionReason = document.querySelector('textarea[name="rejection_reason"]');
+      if (!rejectionReason.value.trim()) {
+        e.preventDefault();
+        alert('{% trans "Please provide a rejection reason" %}');
+        rejectionReason.focus();
+        return false;
+      }
+    }
+
+    if (selectedAction.value === 'complete') {
+      const cash = parseFloat(cashInput.value) || 0;
+      const momo = parseFloat(momoInput.value) || 0;
+      const orange = parseFloat(orangeInput.value) || 0;
+      const total = cash + momo + orange;
+
+      if (total === 0) {
+        e.preventDefault();
+        alert('{% trans "Please distribute the amount across at least one channel" %}');
+        cashInput.focus();
+        return false;
+      }
+
+      if (Math.abs(total - requestedAmount) > 0.01) {
+        e.preventDefault();
+        alert('{% trans "Total distributed amount must equal the requested amount" %}');
+        return false;
+      }
+    }
+  });
+});
+</script>
+{% endblock %}
