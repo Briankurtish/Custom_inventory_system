@@ -10,3 +10,11 @@ def multiply(value, arg):
         return Decimal(str(value)) * Decimal(str(arg))
     except (ValueError, TypeError):
         return ''
+
+@register.filter
+def dict_get(dictionary, key):
+    """Get value from dictionary by key"""
+    try:
+        return dictionary.get(key, '')
+    except (AttributeError, TypeError):
+        return ''

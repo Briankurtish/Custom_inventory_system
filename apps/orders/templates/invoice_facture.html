@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load order_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +39,7 @@
             color: #1a1a1a;
             padding: 0;
             position: relative;
-            border-top: 8px solid #c41e3a;
+            border-top: 8px solid {% if is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
         }
 
         .header-main {
@@ -309,7 +310,7 @@
         }
 
         .items-table-new thead {
-            background: #c41e3a;
+            background: {% if is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
             color: white;
         }
 
@@ -364,7 +365,7 @@
             padding-left: 25px;
         }
 
-        /* Grand Total - Green Background */
+        /* Grand Total - Conditional Background */
         .grand-total-wrapper {
             width: 100%;
             margin-bottom: 6px;
@@ -373,7 +374,7 @@
         .grand-total-new {
             width: 50%;
             margin-left: auto;
-            background: #4caf50;
+            background: #e8e8e8;
             border-collapse: collapse;
         }
 
@@ -381,7 +382,7 @@
             padding: 8px 12px;
             font-size: 11px;
             font-weight: 700;
-            color: white;
+            color: #1a1a1a;
             text-align: right;
         }
 
@@ -437,9 +438,9 @@
             display: none;
         }
 
-        /* Footer - Red Background */
+        /* Footer - Red/Purple Background */
         .footer-new {
-            background: #c41e3a;
+            background: {% if is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
             color: white;
             padding: 8px 20px;
             text-align: center;
@@ -498,7 +499,7 @@
         }
 
         .total {
-            color: #059669;
+            color: #e8e8e8;
             font-weight: 700;
         font-size: 15px;
       }
@@ -732,7 +733,7 @@
             .invoice-header {
                 padding: 5px 10px !important;
                 background: #e8e8e8 !important;
-                border-top: 4px solid #c41e3a !important;
+                border-top: 4px solid {% if is_special_customer %}#c41e3a{% else %}#6f42c1{% endif %} !important;
             }
 
             .header-main {
@@ -847,9 +848,14 @@
                 margin-bottom: 3px !important;
             }
 
+            .grand-total-new {
+                background: #e8e8e8 !important;
+            }
+
             .grand-total-new td {
                 padding: 4px 8px !important;
                 font-size: 9px !important;
+                color: #1a1a1a !important;
             }
 
             .amount-words-new {
@@ -1219,7 +1225,13 @@
                             <div class="invoice-meta-label">INVOICE NO</div>
                             <div class="invoice-meta-value">{% if is_return_invoice %}{{ invoice.return_invoice_id }}{% else %}{{ invoice.invoice_id }}{% endif %}</div>
                             <div class="invoice-meta-label">PO No</div>
-                            <div class="invoice-meta-value">{{ invoice.purchase_order.po_number }}</div>
+                            <div class="invoice-meta-value">
+                                {% if is_special_customer %}
+                                    {% if custom_po_number %}{{ custom_po_number }}{% endif %}
+                                {% else %}
+                                    {% if purchase_order %}{{ purchase_order.purchase_order_id }}{% elif return_purchase_order %}{{ return_purchase_order.return_purchase_order_id }}{% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1291,8 +1303,8 @@
                 <tbody>
                     {% for item in items %}
                     <tr>
-                        <td style="text-align: center;">{{ forloop.counter }}SN</td>
-                        <td style="text-align: left;">{{ item.stock.product.product_code }}</td>
+                        <td style="text-align: center;">{{ forloop.counter }}</td>
+                        <td style="text-align: left;">{{ item_references|dict_get:item.id|default:item.stock.product.product_code }}</td>
                         <td style="text-align: left;">{{ item.stock.product.generic_name_dosage }}</td>
                         <td style="text-align: center;">{{ item.quantity|intcomma }}</td>
                         <td style="text-align: right;">{{ item.temp_price|floatformat:0|intcomma }}</td>

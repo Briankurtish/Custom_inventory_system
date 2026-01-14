@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bon de Livraison - {{ order.purchase_order_id }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bordereau de Livraison - {{ order.purchase_order_id }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         * {
         margin: 0;
@@ -17,465 +17,307 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #1a1a1a;
             background: #f8fafc;
             padding: 20px;
         }
 
-        .po-container {
-            max-width: 900px;
+        .delivery-container {
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            border: 1px solid #e2e8f0;
         }
 
-        .po-header {
-            background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
-            color: white;
-            padding: 20px;
+        .delivery-header {
+            background: #e8e8e8;
+            color: #1a1a1a;
+            padding: 0;
             position: relative;
+            border-top: 8px solid {% if order.is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
         }
 
         .header-main {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
+            padding: 12px 20px;
+        }
+
+        .company-info-left {
+            flex: 1;
+        }
+
+        .company-info-left .company-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+            letter-spacing: 0px;
+            line-height: 1.2;
+        }
+
+        .company-info-left .company-address,
+        .company-info-left .company-contact {
+            font-size: 10px;
+            color: #1a1a1a;
+            line-height: 1.6;
+            margin-bottom: 2px;
+            font-weight: 400;
+        }
+
+        .company-info-left .company-contact {
+            margin-top: 6px;
+        }
+
+        .company-info-left .company-reg {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-top: 6px;
+            line-height: 1.5;
         }
 
         .company-logo {
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 140px;
+            height: 100px;
+            border-radius: 0;
+            padding: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            position: relative;
         }
 
         .company-logo img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: contain;
-            transform: scale(1.3);
         }
 
-        .company-name-header {
-            text-align: center;
-            flex: 1;
-            margin: 0 20px;
-        }
-
-        .company-name-header .company-title {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 0;
-            letter-spacing: -1px;
-            line-height: 1.1;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .document-type {
-            font-size: 24px;
-            font-weight: 700;
-            color:rgb(0, 0, 0);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            margin-top: 8px;
-            letter-spacing: 1px;
-        }
-
-        .po-details-header {
+        .company-logo .tagline {
+            font-size: 7px;
+            color: #1a1a1a;
             text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            flex-shrink: 0;
-        }
-
-        .po-details-header .po-label {
-            font-size: 12px;
-            font-weight: 500;
-            opacity: 0.9;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .po-details-header .po-number {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 16px;
-            border-radius: 8px;
+            margin-top: 4px;
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
             font-weight: 600;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            line-height: 1.2;
         }
 
-        .po-content {
-            padding: 25px;
+        .delivery-content {
+            padding: 12px 20px 15px 20px;
         }
 
-        .company-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f1f5f9;
-        }
-
-        .company-info h3 {
-            color: #667eea;
-            font-size: 16px;
-            font-weight: 600;
+        .info-section {
             margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .company-info p {
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-left {
+            flex: 0 0 45%;
+            padding-right: 20px;
+        }
+
+        .info-left h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a1a;
             margin-bottom: 4px;
-            color: #64748b;
-        font-size: 13px;
-      }
-
-        .company-info .company-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 6px;
+            text-transform: none;
+            letter-spacing: 0;
+            line-height: 1.2;
         }
 
-        .po-details {
+        .info-left .company-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        .info-left .company-details {
+            font-size: 10px;
+            color: #1a1a1a;
+            line-height: 1.8;
+            margin-bottom: 1px;
+        }
+
+        .info-right {
+            flex: 0 0 50%;
             text-align: right;
         }
 
-        .po-details .date {
-            font-size: 16px;
-            color: #64748b;
-            margin-bottom: 8px;
-        }
-
-        .po-details .order-type {
-            font-size: 18px;
-            font-weight: 700;
-            color: #667eea;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .customer-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #667eea;
-        }
-
-        .customer-section h3 {
-            color: #667eea;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .customer-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .customer-field {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .customer-field label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0;
-        }
-
-        .customer-field .value {
-            font-size: 14px;
-            font-weight: 500;
-            color: #1e293b;
-        }
-
-                .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e2e8f0;
-            font-size: 11px;
-        }
-
-        .items-table th {
-            background: #f1f5f9;
-            padding: 8px 6px;
+        .delivery-meta {
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 10px 25px;
             text-align: left;
-            font-weight: 700;
-            color: #374151;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid #e2e8f0;
+            justify-content: flex-end;
+        }
+
+        .delivery-meta-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-align: right;
             white-space: nowrap;
         }
 
-        .items-table td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-            font-size: 10px;
-        }
-
-        .items-table tr:nth-child(even) {
-            background: #f8fafc;
-        }
-
-        .items-table tr:hover {
-            background: #f1f5f9;
-        }
-
-        .quantity, .price, .total {
-            text-align: right;
-            font-weight: 600;
-            font-size: 10px;
-        }
-
-        .total {
-            color: #059669;
-            font-weight: 700;
+        .delivery-meta-value {
             font-size: 11px;
-        }
-
-        /* Optimize table columns for better fit */
-        .items-table th:nth-child(1), .items-table td:nth-child(1) { width: 30px; } /* # */
-        .items-table th:nth-child(2), .items-table td:nth-child(2) { width: 80px; } /* Product ID */
-        .items-table th:nth-child(3), .items-table td:nth-child(3) { width: 120px; } /* Generic Name */
-        .items-table th:nth-child(4), .items-table td:nth-child(4) { width: 100px; } /* Brand Name */
-        .items-table th:nth-child(5), .items-table td:nth-child(5) { width: 70px; } /* Batch */
-        .items-table th:nth-child(6), .items-table td:nth-child(6) { width: 80px; } /* Dosage Form */
-        .items-table th:nth-child(7), .items-table td:nth-child(7) { width: 70px; } /* Mfg Date */
-        .items-table th:nth-child(8), .items-table td:nth-child(8) { width: 70px; } /* Exp Date */
-        .items-table th:nth-child(9), .items-table td:nth-child(9) { width: 50px; } /* Qty */
-        .items-table th:nth-child(10), .items-table td:nth-child(10) { width: 80px; } /* Unit Price */
-        .items-table th:nth-child(11), .items-table td:nth-child(11) { width: 80px; } /* Total */
-
-        .payment-schedule {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f59e0b;
-        }
-
-        .payment-schedule h3 {
-            color: #f59e0b;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .payment-schedule table {
-        width: 100%;
-        border-collapse: collapse;
-        }
-
-        .payment-schedule th {
-            background: #fef3c7;
-            padding: 12px;
-        text-align: left;
-            font-weight: 600;
-            color: #92400e;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .payment-schedule td {
-            padding: 12px;
-            border-bottom: 1px solid #fde68a;
-            font-size: 12px;
-        }
-
-                .totals-section {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #059669;
-        }
-
-        .totals-section h3 {
-            color: #059669;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .totals-inline {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .totals-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-        }
-
-        .totals-item .label {
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .totals-item .value {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .grand-total-inline {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
             font-weight: 700;
-            font-size: 14px;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
-        }
-
-        .signatures-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-        margin-bottom: 20px;
-            border-left: 4px solid #8b5cf6;
-        }
-
-        .signatures-section h3 {
-            color: #8b5cf6;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .signature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .signature-item {
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .signature-item h4 {
-            color: #374151;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
+            color: #1a1a1a;
             text-align: left;
+        }
+
+        .object-section {
+            margin-top: 0px;
+            margin-bottom: 10px;
+            padding: 0;
+        }
+
+        .object-section .object-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+
+        /* Document Title */
+        .document-type-label {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 8px 0 3px 0;
+            background: #e8e8e8;
+            padding: 8px 20px;
+            border-radius: 3px;
+        }
+
+        .delivery-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 3px 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Items Table */
+        .items-table-delivery {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            border: 1px solid #1a1a1a;
+        }
+
+        .items-table-delivery thead {
+            background: {% if order.is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
+            color: white;
+        }
+
+        .items-table-delivery th {
+            padding: 6px 4px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border: 1px solid #1a1a1a;
+        }
+
+        .items-table-delivery tbody tr {
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .items-table-delivery td {
+            padding: 6px 4px;
+            border: 1px solid #1a1a1a;
+            color: #1a1a1a;
+            font-size: 10px;
+        }
+
+        /* Signature Section */
+        .signature-section {
+            margin-top: 60px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 20px;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
         }
 
         .signature-line {
-            width: 100%;
-            height: 2px;
-            background: #d1d5db;
-            margin: 12px 0;
+            border-top: 2px solid #1a1a1a;
+            margin-top: 80px;
+            padding-top: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #1a1a1a;
         }
 
-        .signature-label {
-            font-size: 11px;
-            color: #6b7280;
-            text-align: left;
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-
-        .footer {
-            background: #1e293b;
+        /* Footer */
+        .footer-delivery {
+            background: {% if order.is_special_customer %}#c41e3a{% else %}#667eea{% endif %};
             color: white;
-            padding: 20px;
-        text-align: center;
-            border-radius: 0 0 16px 16px;
-      }
-
-        .footer-content {
-        display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
         }
 
-        .footer-item {
-        display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #cbd5e1;
-        }
-
-        .footer-divider {
-            width: 1px;
-            height: 20px;
-            background: #475569;
-        }
-
+        /* Print Button */
         .print-button {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #667eea;
             color: white;
+            padding: 12px 24px;
             border: none;
-            padding: 14px 28px;
-            border-radius: 12px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
-            font-size: 14px;
+            z-index: 1000;
         }
 
         .print-button:hover {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            background: #5568d3;
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         }
 
         @media print {
@@ -484,20 +326,22 @@
             }
 
             body {
-                padding: 5px !important;
+                padding: 0 !important;
                 font-size: 10px !important;
+                margin: 0 !important;
             }
 
-            .po-container {
+            .delivery-container {
                 max-width: none !important;
                 margin: 0 !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
             }
 
-            .po-header {
-                padding: 8px 12px !important;
-                background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%) !important;
+            .delivery-header {
+                padding: 5px 10px !important;
+                background: #e8e8e8 !important;
+                border-top: 4px solid {% if order.is_special_customer %}#c41e3a{% else %}#667eea{% endif %} !important;
             }
 
             .header-main {
@@ -505,485 +349,234 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 width: 100% !important;
-                flex-direction: row !important;
             }
 
             .company-logo {
-                width: 80px !important;
-                height: 80px !important;
-                padding: 8px !important;
+                width: 90px !important;
+                height: 65px !important;
+                padding: 4px !important;
                 flex-shrink: 0 !important;
             }
 
-            .company-name-header {
-                text-align: center !important;
-                flex: 1 !important;
-                margin: 0 10px !important;
-            }
-
-            .company-name-header .company-title {
-                font-size: 14px !important;
-                margin-bottom: 0 !important;
-            }
-
-            .document-type {
+            .company-info-left .company-title {
                 font-size: 12px !important;
+                margin-bottom: 1px !important;
+            }
+
+            .company-info-left .company-address,
+            .company-info-left .company-contact {
+                font-size: 7px !important;
+                margin-bottom: 1px !important;
+                line-height: 1.3 !important;
+            }
+
+            .company-info-left .company-reg {
+                font-size: 8px !important;
                 margin-top: 2px !important;
             }
 
-            .po-details-header {
-                text-align: right !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: flex-end !important;
-                flex-shrink: 0 !important;
+            .delivery-content {
+                padding: 5px 10px 8px 10px !important;
             }
 
-            .po-details-header .po-label {
-                font-size: 7px !important;
-                margin-bottom: 2px !important;
-            }
-
-            .po-details-header .po-number {
-                font-size: 9px !important;
-                padding: 3px 6px !important;
-            }
-
-            .po-content {
-                padding: 8px 12px !important;
-            }
-
-            .company-section {
-                margin-bottom: 8px !important;
-                padding-bottom: 6px !important;
-                gap: 15px !important;
-            }
-
-            .company-info h3 {
-                font-size: 10px !important;
+            .info-section {
                 margin-bottom: 4px !important;
             }
 
-            .company-info .company-name {
-                font-size: 12px !important;
-                margin-bottom: 3px !important;
+            .info-header {
+                margin-bottom: 4px !important;
+                padding-bottom: 4px !important;
             }
 
-            .company-info p {
-                font-size: 9px !important;
+            .info-left h3 {
                 margin-bottom: 2px !important;
             }
 
-            .po-details .date {
-                font-size: 10px !important;
+            .object-section {
                 margin-bottom: 4px !important;
             }
 
-            .po-details .order-type {
-                font-size: 12px !important;
+            .document-type-label {
+                margin: 4px 0 2px 0 !important;
+                font-size: 11px !important;
+                padding: 6px 15px !important;
             }
 
-            .customer-section {
-                margin-bottom: 8px !important;
-                padding: 8px !important;
+            .delivery-title {
+                margin: 2px 0 3px 0 !important;
+                font-size: 14px !important;
             }
 
-            .customer-section h3 {
-                font-size: 10px !important;
-                margin-bottom: 6px !important;
-            }
-
-            .customer-grid {
-                gap: 10px !important;
-            }
-
-            .customer-field label {
-                font-size: 8px !important;
-            }
-
-            .customer-field .value {
-                font-size: 9px !important;
-            }
-
-            .items-table {
-                margin-bottom: 8px !important;
-                font-size: 8px !important;
-            }
-
-            .items-table th {
-                padding: 4px 3px !important;
-                font-size: 7px !important;
-            }
-
-            .items-table td {
+            .items-table-delivery th {
                 padding: 3px 2px !important;
-                font-size: 7px !important;
-            }
-
-            .quantity, .price, .total {
                 font-size: 8px !important;
             }
 
-            .payment-schedule,
-            .totals-section,
-            .signatures-section {
-                margin-bottom: 8px !important;
-                padding: 8px !important;
-            }
-
-            .payment-schedule h3,
-            .totals-section h3,
-            .signatures-section h3 {
-                font-size: 10px !important;
-                margin-bottom: 6px !important;
-            }
-
-            .payment-schedule table th {
-                padding: 4px !important;
+            .items-table-delivery td {
+                padding: 3px 2px !important;
                 font-size: 8px !important;
             }
 
-            .payment-schedule table td {
-                padding: 3px !important;
-                font-size: 7px !important;
-            }
-
-            .totals-inline {
-                gap: 8px !important;
-            }
-
-            .totals-item {
-                font-size: 8px !important;
-            }
-
-            .grand-total-inline {
-                font-size: 10px !important;
-                padding: 4px 8px !important;
-            }
-
-            .signature-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
-            }
-
-            .signature-item {
-                background: white !important;
-                padding: 6px !important;
-                border-radius: 4px !important;
-                border: 1px solid #e2e8f0 !important;
-            }
-
-            .signature-item h4 {
-                font-size: 8px !important;
-                margin-bottom: 4px !important;
-                text-align: left !important;
+            .signature-section {
+                margin-top: 30px !important;
+                margin-bottom: 15px !important;
+                padding: 0 10px !important;
             }
 
             .signature-line {
-                height: 1px !important;
-                margin: 6px 0 !important;
-            }
-
-            .signature-label {
-                font-size: 7px !important;
-                margin-top: 4px !important;
-                margin-bottom: 4px !important;
-                text-align: left !important;
-            }
-
-            .footer {
-                padding: 8px !important;
-            }
-
-            .footer-item {
+                margin-top: 50px !important;
+                padding-top: 4px !important;
                 font-size: 8px !important;
             }
 
-            /* Hide URL and page info that browsers add when printing */
-            @page {
-                margin: 0.5in !important;
-                @bottom-left {
-                    content: none !important;
-                }
-                @bottom-right {
-                    content: none !important;
-                }
-                @bottom-center {
-                    content: none !important;
-                }
+            .footer-delivery {
+                padding: 5px 10px !important;
+                font-size: 8px !important;
             }
 
-            /* Hide any browser-generated content */
-            body::after,
-            body::before {
-                display: none !important;
-            }
-
-            /* Ensure no URL appears at bottom */
-            a[href]:after {
-                content: none !important;
-            }
-
-            /* Hide any potential URL display */
-            .url-display,
-            .print-url,
-            .browser-url {
-                display: none !important;
-            }
-
-            /* Hide browser print headers and footers */
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            /* Additional rules to hide browser-generated content */
             * {
                 -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            /* Allow page breaks if absolutely necessary, but try to fit on one page */
-            .po-container {
-                page-break-inside: avoid !important;
+                color-adjust: exact !important;
             }
         }
 
         @media (max-width: 768px) {
-            .company-section {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .totals-grid {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .po-content {
-                padding: 20px;
-            }
-
-            .po-header {
-                padding: 15px 20px;
-            }
-
             .header-main {
                 display: flex !important;
                 justify-content: space-between !important;
                 align-items: center !important;
                 width: 100% !important;
-                flex-direction: row !important;
             }
 
             .company-logo {
-                width: 100px !important;
-                height: 100px !important;
-                padding: 12px !important;
+                width: 120px !important;
+                height: 85px !important;
+                padding: 8px !important;
                 flex-shrink: 0 !important;
             }
 
-            .company-name-header {
-                text-align: center !important;
-                flex: 1 !important;
-                margin: 0 10px !important;
-            }
-
-            .company-name-header .company-title {
-                font-size: 20px !important;
-            }
-
-            .document-type {
+            .company-info-left .company-title {
                 font-size: 16px !important;
-                margin-top: 4px !important;
             }
 
-            .po-details-header {
-                text-align: right !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: flex-end !important;
-                flex-shrink: 0 !important;
+            .company-info-left .company-address,
+            .company-info-left .company-contact {
+                font-size: 9px !important;
             }
 
-            .po-details-header .po-label {
+            .company-info-left .company-reg {
                 font-size: 10px !important;
             }
-
-            .po-details-header .po-number {
-                font-size: 12px !important;
-                padding: 6px 10px !important;
-            }
-
-            .signature-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+      }
     </style>
   </head>
   <body>
-    <button class="print-button" onclick="printBonDeSortie()">
-        🖨️ Print Bon de Livraison
+    <button class="print-button" onclick="window.print()">
+        🖨️ Print Document
     </button>
 
-    <script>
-        function printBonDeSortie() {
-            // Print directly from the current page without opening a new tab
-            window.print();
-        }
-    </script>
-
-    <div class="po-container">
+    <div class="delivery-container">
         <!-- Header -->
-        <div class="po-header">
+        <div class="delivery-header">
             <div class="header-main">
-                <!-- Company Logo -->
+                <!-- Company Info Left -->
+                <div class="company-info-left">
+                    <div class="company-title">GC PHARMA SARL</div>
+                    <div class="company-address">BP 7761 YAOUNDE-CAMEROON</div>
+                    <div class="company-address">CARREFOUR DIDEROT AHALA</div>
+                    <div class="company-contact">TEL:222316754</div>
+                    <div class="company-contact">EMAIL: info@gcpharma.org</div>
+                </div>
+
+                <!-- Company Logo Right -->
                 <div class="company-logo">
                     <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="GC Pharma Logo" />
-                </div>
-
-                <!-- Company Name -->
-                <div class="company-name-header">
-                    <div class="company-title">GC PHARMA</div>
-                    <div class="document-type">BON DE LIVRAISON</div>
-                </div>
-
-                <!-- PO Details -->
-                <div class="po-details-header">
-                    <div class="po-label">Purchase Order Number</div>
-                    <div class="po-number">
-                        {% if order_type == "purchase_order" %}
-                            {{ order.purchase_order_id }}
-                        {% elif order_type == "return_purchase_order" %}
-                            {{ order.return_order_id }}
-                        {% endif %}
-                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Content -->
-        <div class="po-content">
-            <!-- Company & PO Details -->
-            <div class="company-section">
-                <div class="company-info">
-                    <h3>From</h3>
-                    <div class="company-name">Global Distributors</div>
-                    <p>Carrefour Diderot, Ahala, BP 7761 Yaounde, Cameroon</p>
-                    <p>📧 info@gcpharma.org | 📞 222 316 754</p>
-      </div>
-
-                <div class="po-details">
-                    <div class="date">Date: {{ order.created_at|date:"M d, Y" }}</div>
-                    {% comment %} <div class="order-type" style="text-decoration: line-through; color: #dc2626;">
-                        PURCHASE ORDER
-                    </div> {% endcomment %}
-        </div>
-      </div>
-            <p>Object: Medicament</p>
-            <br>
-
-
-            <!-- Customer Information -->
-            <div class="customer-section">
-                <h3>Bill To</h3>
-                <div class="customer-grid">
-                    <div class="customer-field">
-                        <label>Customer ID:</label>
-                        <div class="value">{{ order.customer.customer_id }}</div>
+        <div class="delivery-content">
+            <!-- Info Section -->
+            <div class="info-section">
+                <div class="info-header">
+                    <!-- Bill To Section - Left -->
+                    <div class="info-left">
+                        <h3>BILL TO</h3>
+                        <div class="company-name">{{ order.customer.customer_name }}</div>
+                        <div class="company-details">Tel: {{ order.customer.telephone }}</div>
+                        <div class="company-details">BP: {{ order.customer.postal_code }}</div>
                     </div>
-                    <div class="customer-field">
-                        <label>Customer Name:</label>
-                        <div class="value">{{ order.customer.customer_name }}</div>
-                    </div>
-                    <div class="customer-field">
-                        <label>Address:</label>
-                        <div class="value">{{ order.customer.postal_code }}</div>
-                    </div>
-                    <div class="customer-field">
-                        <label>Telephone:</label>
-                        <div class="value">{{ order.customer.telephone }}</div>
+
+                    <!-- Date and PO Number - Right -->
+                    <div class="info-right">
+                        <div class="delivery-meta">
+                            <div class="delivery-meta-label">Date</div>
+                            <div class="delivery-meta-value">{{ order.created_at|date:"n/j/Y" }}</div>
+                            <div class="delivery-meta-label">PO Number</div>
+                            <div class="delivery-meta-value">{{ order.purchase_order_id }}</div>
+                        </div>
                     </div>
                 </div>
-      </div>
+
+                <!-- Object Section -->
+                <div class="object-section">
+                    <div class="object-label">Object: Medicament</div>
+                </div>
+            </div>
+
+            <!-- Document Type -->
+            <div class="document-type-label">BORDEREAU DE LIVRAISON</div>
+
+            <!-- Custom Document Title -->
+            <div class="delivery-title">{{ custom_title|default:"" }}</div>
 
             <!-- Items Table -->
-            <table class="items-table">
-        <thead>
-          <tr>
+            <table class="items-table-delivery">
+                <thead>
+                    <tr>
                         <th>#</th>
-            <th>Product ID</th>
-                        <th>Generic Name</th>
-                        <th>Brand Name</th>
-                        <th>Batch</th>
-            <th>Dosage Form</th>
-            <th>Exp Date</th>
-                        <th>Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in order_items %}
-          <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.stock.product.product_code }}</td>
-                        <td>{{ item.stock.product.generic_name_dosage }}</td>
-                        <td>{{ item.stock.product.brand_name.brand_name }}</td>
-                        <td>{{ item.stock.product.batch.batch_number }}</td>
-                        <td>{{ item.stock.product.dosage_form }}</td>
-                        <td>{{ item.stock.product.batch.expiry_date }}</td>
-                        <td class="quantity">{{ item.quantity|intcomma }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                        <th>PRODUCT ID</th>
+                        <th>GENERIC NAME</th>
+                        <th>BRAND NAME</th>
+                        <th>BATCH</th>
+                        <th>DOSAGE FORM</th>
+                        <th>EXP DATE</th>
+                        <th>QTY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td style="text-align: center;">{{ forloop.counter }}</td>
+                        <td style="text-align: left;">{{ item.stock.product.product_code }}</td>
+                        <td style="text-align: left;">{{ item.stock.product.generic_name_dosage }}</td>
+                        <td style="text-align: left;">{{ item.stock.product.brand_name.brand_name }}</td>
+                        <td style="text-align: center;">{{ item.stock.product.batch.batch_number }}</td>
+                        <td style="text-align: center;">{{ item.stock.product.dosage_form }}</td>
+                        <td style="text-align: center;">{{ item.stock.product.batch.expiry_date|date:"m/Y" }}</td>
+                        <td style="text-align: center;">{{ item.display_quantity|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-
-
-
-            <!-- Signatures -->
-            <div class="signatures-section">
-                {% comment %} <h3>Authorization & Delivery</h3> {% endcomment %}
-                <div class="signature-grid">
-                    <div class="signature-item">
-                        <h4>Supplier / Prestateur </h4>
-                        <div class="signature-label">Name</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Signature</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Date</div>
-                        <div class="signature-line"></div>
-
+            <!-- Signature Section -->
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line">Supplier / Prestateur</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Aurhorizer / L'Ordonnateur</div>
+                </div>
             </div>
-
-                    <div class="signature-item">
-                        <h4>Aurhorizer / L'Ordonnateur</h4>
-                        <div class="signature-label">Name</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Signature</div>
-                        <div class="signature-line"></div>
-                        <div class="signature-label">Date</div>
-                        <div class="signature-line"></div>
-
-        </div>
-            </div>
-            </div>
-          </div>
+      </div>
 
         <!-- Footer -->
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-item">
-                    <span>NIU:</span>
-                    <strong>M022014416253M</strong>
-            </div>
-                <div class="footer-divider"></div>
-                <div class="footer-item">
-                    <span>Reg No:</span>
-                    <strong>RC/YAO/2020/B/239</strong>
-            </div>
-            </div>
-        </div>
+      <div class="footer-delivery">
+            <span>NIU: M022014416253M,</span>
+            <span style="margin-left: 20px;">Reg No: RC/YAO/2020/B/239</span>
       </div>
+    </div>
   </body>
 </html>

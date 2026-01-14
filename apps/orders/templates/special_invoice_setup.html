@@ -1,0 +1,157 @@
+{% extends layout_path %}
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load order_filters %}
+
+{% block title %}{% trans "Special Customer Invoice Setup" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">{% trans "Dashboard" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'invoices' %}">{% trans "Invoices" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Special Invoice Setup" %}</li>
+  </ol>
+</nav>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-file-invoice me-2"></i>
+            {% trans "Setup Special Customer Invoice" %}
+          </h5>
+          <small class="text-muted">{{ invoice.invoice_id }}</small>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            {% trans "For special customers, you need to provide their custom PO number and product references before downloading the invoice." %}
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- Customer and Invoice Info -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h6 class="text-primary">{% trans "Customer Information" %}</h6>
+                <p class="mb-1"><strong>{% trans "Customer:" %}</strong> {{ invoice.customer.customer_name }}</p>
+                <p class="mb-1"><strong>{% trans "Invoice ID:" %}</strong> {{ invoice.invoice_id }}</p>
+                <p class="mb-1"><strong>{% trans "System PO:" %}</strong> {{ purchase_order.purchase_order_id }}</p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="text-primary">{% trans "Invoice Details" %}</h6>
+                <p class="mb-1"><strong>{% trans "Date:" %}</strong> {{ invoice.created_at|date:"M d, Y" }}</p>
+                <p class="mb-1"><strong>{% trans "Total:" %}</strong> {{ invoice.grand_total|floatformat:0|intcomma }} CFA</p>
+                <p class="mb-1"><strong>{% trans "Status:" %}</strong>
+                  <span class="badge
+                    {% if invoice.status == 'Unpaid' %}bg-label-danger
+                    {% elif invoice.status == 'Payment Ongoing' %}bg-label-warning
+                    {% else %}bg-label-success{% endif %}">
+                    {{ invoice.status }}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Custom PO Number -->
+            <div class="mb-4">
+              <label for="custom_po_number" class="form-label">
+                <i class="fa-solid fa-hashtag me-1"></i>
+                {% trans "Customer's PO Number" %} <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="custom_po_number"
+                name="custom_po_number"
+                value="{{ special_ref.custom_po_number|default:'' }}"
+                placeholder="{% trans 'Enter customer\'s PO number' %}"
+                required
+              />
+              <div class="form-text">{% trans "This will be displayed on the invoice document" %}</div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Item References -->
+            <div class="mb-4">
+              <h6 class="text-primary mb-3">
+                <i class="fa-solid fa-barcode me-2"></i>
+                {% trans "Product References" %}
+              </h6>
+              <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                {% trans "Enter the customer's product codes/references for each item. These will replace the system product codes on the invoice." %}
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 5%;">#</th>
+                      <th style="width: 15%;">{% trans "System Product Code" %}</th>
+                      <th style="width: 30%;">{% trans "Product Name" %}</th>
+                      <th style="width: 10%;">{% trans "Quantity" %}</th>
+                      <th style="width: 40%;">{% trans "Customer's Reference" %} <span class="text-danger">*</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in items %}
+                    <tr>
+                      <td class="text-center">{{ forloop.counter }}</td>
+                      <td><strong>{{ item.stock.product.product_code }}</strong></td>
+                      <td>{{ item.stock.product.generic_name_dosage }}</td>
+                      <td class="text-center">{{ item.quantity|intcomma }}</td>
+                      <td>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="ref_{{ item.id }}"
+                          value="{{ existing_refs|dict_get:item.id|default:'' }}"
+                          placeholder="{% trans 'Enter customer\'s product reference' %}"
+                          required
+                        />
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'invoices' %}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back to List" %}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-save me-1"></i>{% trans "Save & Download Invoice" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  // Add custom filter to handle dict access in template
+  document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus on first input
+    const firstInput = document.querySelector('input[name="custom_po_number"]');
+    if (firstInput) {
+      firstInput.focus();
+    }
+  });
+</script>
+{% endblock %}

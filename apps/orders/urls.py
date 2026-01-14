@@ -30,6 +30,12 @@ urlpatterns = [
         "purchase-order-livraison/<str:purchase_order_id>", view_purchase_order_livraison, name="purchase-order-livraison",
     ),
     path(
+        "bon-de-livraison-setup/<str:purchase_order_id>", bon_de_livraison_setup, name="bon-de-livraison-setup",
+    ),
+    path(
+        "purchase-order-livraison/<str:purchase_order_id>/<int:config_id>", view_purchase_order_livraison, name="purchase-order-livraison-with-config",
+    ),
+    path(
         "picking-list/<str:purchase_order_id>", picking_list_doc_view, name="picking-list",
     ),
     path(
@@ -121,6 +127,7 @@ urlpatterns = [
     path("edit-deposit/<int:pk>/", edit_deposit_details_view, name="edit-deposit"),
     path("delete-deposit/<int:pk>/", delete_deposit_details_view, name="delete-deposit"),
     path("invoice/<int:invoice_id>/", invoice_doc_view, name="invoice-doc"),
+    path("invoice/<int:invoice_id>/special-setup/", special_invoice_setup, name="special-invoice-setup"),
     path('receipt/<str:receipt_id>/', receipt_doc_view, name='receipt_doc'),
     path('payment/<int:payment_id>/receipt/', payment_receipt_view, name='payment_receipt'),  # ✅ Find receipt
 

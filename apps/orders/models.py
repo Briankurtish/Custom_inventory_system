@@ -1601,3 +1601,123 @@ class SicknessItem(models.Model):
 
     def __str__(self):
         return f"{self.stock.product.product_code} - {self.stock.product.brand_name} (x{self.quantity})"
+
+
+class SpecialCustomerInvoiceReference(models.Model):
+    """
+    Store custom PO numbers and product references for special customer invoices.
+    This allows special customers to use their own product codes instead of system codes.
+    """
+    invoice = models.OneToOneField(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name='special_reference',
+        help_text="Associated invoice"
+    )
+    custom_po_number = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Custom PO number for special customer"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='special_invoice_refs_created'
+    )
+
+    def __str__(self):
+        return f"Special Ref for Invoice {self.invoice.invoice_id}"
+
+    class Meta:
+        verbose_name = "Special Customer Invoice Reference"
+        verbose_name_plural = "Special Customer Invoice References"
+
+
+class SpecialCustomerItemReference(models.Model):
+    """
+    Store custom product references for each line item in special customer invoices.
+    """
+    special_invoice_ref = models.ForeignKey(
+        SpecialCustomerInvoiceReference,
+        on_delete=models.CASCADE,
+        related_name='item_references'
+    )
+    purchase_order_item = models.ForeignKey(
+        PurchaseOrderItem,
+        on_delete=models.CASCADE,
+        help_text="Reference to the purchase order item"
+    )
+    custom_reference = models.CharField(
+        max_length=200,
+        help_text="Custom product reference/code for special customer"
+    )
+
+    def __str__(self):
+        return f"{self.custom_reference} - {self.purchase_order_item.stock.product.product_code}"
+
+    class Meta:
+        verbose_name = "Special Customer Item Reference"
+        verbose_name_plural = "Special Customer Item References"
+
+
+class BonDeLivraisonConfig(models.Model):
+    """Model to store Bon de Livraison configuration (full/partial and custom title)"""
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.CASCADE,
+        related_name='livraison_configs'
+    )
+    livraison_type = models.CharField(
+        max_length=20,
+        choices=[('full', 'Full Livraison'), ('partial', 'Partial Livraison')],
+        default='full'
+    )
+    custom_title = models.CharField(
+        max_length=200,
+        default='BORDEREAU DE LIVRAISON',
+        help_text="Custom title for the document"
+    )
+    created_by = models.ForeignKey(
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.livraison_type.title()} - {self.purchase_order.purchase_order_id}"
+
+    class Meta:
+        verbose_name = "Bon de Livraison Config"
+        verbose_name_plural = "Bon de Livraison Configs"
+
+
+class PartialLivraisonItem(models.Model):
+    """Model to store partial quantities for Bon de Livraison"""
+    config = models.ForeignKey(
+        BonDeLivraisonConfig,
+        on_delete=models.CASCADE,
+        related_name='partial_items'
+    )
+    purchase_order_item = models.ForeignKey(
+        PurchaseOrderItem,
+        on_delete=models.CASCADE
+    )
+    quantity = models.IntegerField(
+        default=0,
+        help_text="Quantity for this partial livraison"
+    )
+
+    def __str__(self):
+        return f"{self.purchase_order_item.stock.product.product_code} - Qty: {self.quantity}"
+
+    class Meta:
+        verbose_name = "Partial Livraison Item"
+        verbose_name_plural = "Partial Livraison Items"

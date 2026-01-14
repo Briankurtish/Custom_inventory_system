@@ -45,7 +45,8 @@ from .models import (
     Invoice, InvoiceDocument, InvoiceOrderItem, ReturnInvoice,
     ReturnInvoiceDocument, ReturnInvoiceOrderItem, ReturnItemTemp,
     InvoicePayment, ReturnInvoicePayment, Receipt, ReturnReceipt,
-    ReturnOrderItem, Sickness, SicknessItem
+    ReturnOrderItem, Sickness, SicknessItem, SpecialCustomerInvoiceReference,
+    SpecialCustomerItemReference, BonDeLivraisonConfig, PartialLivraisonItem
 )
 from .forms import (
     PurchaseOrderForm, PurchaseOrderItemForm, SampleOrderForm,
@@ -1382,6 +1383,19 @@ def invoice_doc_view(request, invoice_id):
     new_total_words = num2words(new_total, lang='en').capitalize()# Convert new_total to words
 
 
+    # Get special customer references if applicable
+    custom_po_number = None
+    item_references = {}
+    if purchase_order and purchase_order.is_special_customer:
+        try:
+            special_ref = SpecialCustomerInvoiceReference.objects.get(invoice=invoice)
+            custom_po_number = special_ref.custom_po_number
+            # Build dict of item_id -> custom_reference
+            for item_ref in special_ref.item_references.all():
+                item_references[item_ref.purchase_order_item.id] = item_ref.custom_reference
+        except SpecialCustomerInvoiceReference.DoesNotExist:
+            pass
+
     view_context = {
         "invoice": invoice,
         "purchase_order": purchase_order,
@@ -1402,6 +1416,8 @@ def invoice_doc_view(request, invoice_id):
         "new_total_words": new_total_words,  # Add the total amount in words
         "is_special_customer": purchase_order.is_special_customer if purchase_order else False,
         "is_return_invoice": is_return_invoice,
+        "custom_po_number": custom_po_number,
+        "item_references": item_references,
     }
 
     context = TemplateLayout.init(request, view_context)
@@ -3026,7 +3042,80 @@ def view_purchase_order_sortie(request, purchase_order_id):
 
 
 @login_required
-def view_purchase_order_livraison(request, purchase_order_id):
+@login_required
+def bon_de_livraison_setup(request, purchase_order_id):
+    """Setup view for Bon de Livraison - handles full/partial selection and custom title"""
+    user = request.user
+    worker = user.worker_profile
+
+    is_accountant_or_superuser = user.is_superuser or worker.role == "Accountant"
+
+    # Fetch the purchase order
+    if is_accountant_or_superuser:
+        order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id)
+    else:
+        order = get_object_or_404(PurchaseOrder, purchase_order_id=purchase_order_id, branch=worker.branch)
+
+    # Fetch order items
+    order_items = PurchaseOrderItem.objects.filter(purchase_order=order).select_related('stock__product')
+
+    # Get existing config if any
+    existing_config = BonDeLivraisonConfig.objects.filter(purchase_order=order).first()
+    existing_partial_items = {}
+
+    if existing_config and existing_config.livraison_type == 'partial':
+        for item in existing_config.partial_items.all():
+            existing_partial_items[item.purchase_order_item.id] = item.quantity
+
+    if request.method == 'POST':
+        livraison_type = request.POST.get('livraison_type', 'full')
+        custom_title = request.POST.get('custom_title', 'BORDEREAU DE LIVRAISON').strip()
+
+        if not custom_title:
+            custom_title = 'BORDEREAU DE LIVRAISON'
+
+        # Create or update config
+        config, created = BonDeLivraisonConfig.objects.update_or_create(
+            purchase_order=order,
+            defaults={
+                'livraison_type': livraison_type,
+                'custom_title': custom_title,
+                'created_by': worker
+            }
+        )
+
+        if livraison_type == 'partial':
+            # Clear existing partial items
+            config.partial_items.all().delete()
+
+            # Save partial quantities
+            for item in order_items:
+                qty = request.POST.get(f'qty_{item.id}', '0').strip()
+                try:
+                    qty = int(qty)
+                    if qty > 0:
+                        PartialLivraisonItem.objects.create(
+                            config=config,
+                            purchase_order_item=item,
+                            quantity=qty
+                        )
+                except ValueError:
+                    pass
+
+        messages.success(request, _("Bon de Livraison configuration saved successfully!"))
+        return redirect('purchase-order-livraison-with-config', purchase_order_id=purchase_order_id, config_id=config.id)
+
+    view_context = {
+        'order': order,
+        'order_items': order_items,
+        'existing_config': existing_config,
+        'existing_partial_items': existing_partial_items,
+    }
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'bon_de_livraison_setup.html', context)
+
+
+def view_purchase_order_livraison(request, purchase_order_id, config_id=None):
     user = request.user
     worker = user.worker_profile
 
@@ -3048,6 +3137,23 @@ def view_purchase_order_livraison(request, purchase_order_id):
             order = get_object_or_404(ReturnPurchaseOrder, return_order_id=purchase_order_id, branch=worker.branch)
         order_type = "return_purchase_order"
 
+    # Get custom title and partial quantities if config_id is provided
+    custom_title = 'BORDEREAU DE LIVRAISON'
+    partial_quantities = {}
+    livraison_type = 'full'
+
+    if config_id:
+        try:
+            config = BonDeLivraisonConfig.objects.get(id=config_id, purchase_order=order)
+            custom_title = config.custom_title
+            livraison_type = config.livraison_type
+
+            if livraison_type == 'partial':
+                for partial_item in config.partial_items.all():
+                    partial_quantities[partial_item.purchase_order_item.id] = partial_item.quantity
+        except BonDeLivraisonConfig.DoesNotExist:
+            pass
+
     # Fetch order items based on the order type
     if order_type == "purchase_order":
         order_items = PurchaseOrderItem.objects.filter(purchase_order=order).annotate(
@@ -3068,7 +3174,17 @@ def view_purchase_order_livraison(request, purchase_order_id):
             total_price=ExpressionWrapper(F('quantity') * F('effective_price'), output_field=FloatField())
         )
 
-    total_quantity = order_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    # If partial, filter items to only those with quantities
+    if livraison_type == 'partial' and partial_quantities:
+        order_items = [item for item in order_items if item.id in partial_quantities]
+        # Update quantities to partial quantities
+        for item in order_items:
+            item.display_quantity = partial_quantities.get(item.id, item.quantity)
+    else:
+        for item in order_items:
+            item.display_quantity = item.quantity
+
+    total_quantity = sum(item.display_quantity for item in order_items)
     worker_privileges = worker.privileges.values_list('name', flat=True)
     payment_schedules = PaymentSchedule.objects.filter(purchase_order=order) if order_type == "purchase_order" else []
 
@@ -3102,7 +3218,9 @@ def view_purchase_order_livraison(request, purchase_order_id):
         "precompte_amount": precompte_amount,
         "new_total": new_total,
         "is_special_customer": order.is_special_customer,
-        "order_type": order_type,  # Pass the order type to the template
+        "order_type": order_type,
+        "custom_title": custom_title,
+        "livraison_type": livraison_type,
     }
     context = TemplateLayout.init(request, view_context)
     return render(request, 'purchase_order_livraison.html', context)
@@ -5920,3 +6038,60 @@ def delete_proforma(request, proforma_id):
 
     context = TemplateLayout.init(request, view_context)
     return render(request, 'deleteProforma.html', context)
+
+
+@login_required
+def special_invoice_setup(request, invoice_id):
+    """
+    Setup page for special customer invoices to enter custom PO number and product references.
+    """
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    purchase_order = invoice.purchase_order
+
+    if not purchase_order or not purchase_order.is_special_customer:
+        messages.warning(request, _("This is not a special customer invoice."))
+        return redirect('invoice-doc', invoice_id=invoice_id)
+
+    # Get or create special reference
+    special_ref, created = SpecialCustomerInvoiceReference.objects.get_or_create(
+        invoice=invoice,
+        defaults={'created_by': request.user.worker_profile}
+    )
+
+    # Get all items from purchase order
+    items = PurchaseOrderItem.objects.filter(purchase_order=purchase_order).select_related('stock__product')
+
+    # Get existing item references
+    existing_refs = {}
+    if not created:
+        for item_ref in special_ref.item_references.all():
+            existing_refs[item_ref.purchase_order_item.id] = item_ref.custom_reference
+
+    if request.method == 'POST':
+        custom_po = request.POST.get('custom_po_number', '').strip()
+        special_ref.custom_po_number = custom_po if custom_po else None
+        special_ref.save()
+
+        # Save item references
+        for item in items:
+            ref_value = request.POST.get(f'ref_{item.id}', '').strip()
+            if ref_value:
+                SpecialCustomerItemReference.objects.update_or_create(
+                    special_invoice_ref=special_ref,
+                    purchase_order_item=item,
+                    defaults={'custom_reference': ref_value}
+                )
+
+        messages.success(request, _("Special customer references saved successfully!"))
+        return redirect('invoice-doc', invoice_id=invoice_id)
+
+    view_context = {
+        'invoice': invoice,
+        'purchase_order': purchase_order,
+        'items': items,
+        'special_ref': special_ref,
+        'existing_refs': existing_refs,
+    }
+
+    context = TemplateLayout.init(request, view_context)
+    return render(request, 'special_invoice_setup.html', context)

@@ -556,7 +556,7 @@
             {% for privilege in worker_privileges %}
                 {% if privilege == 'Generate Bon de Livraison' %}
                     {% if not is_return_purchase_order %}
-                        <a href="{% url 'purchase-order-livraison' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-info">
+                        <a href="{% url 'bon-de-livraison-setup' purchase_order_id=order.purchase_order_id %}" class="btn btn-info">
                             {% trans "Generate Bon de Livraison" %}
                         </a>
                     {% endif %}
@@ -583,7 +583,7 @@
                 <a href="{% url 'purchase-order-sortie' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-warning">
                     {% trans "Generate Bon de Sortie" %}
                 </a>
-                <a href="{% url 'purchase-order-livraison' purchase_order_id=order.purchase_order_id %}" target="_blank" class="btn btn-info">
+                <a href="{% url 'bon-de-livraison-setup' purchase_order_id=order.purchase_order_id %}" class="btn btn-info">
                     {% trans "Generate Bon de Livraison" %}
                 </a>
             {% endif %}

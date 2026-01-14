@@ -1,0 +1,460 @@
+{% load i18n %}
+{% load humanize %}
+{% load order_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Bon de Livraison Setup" %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+        .setup-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .setup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .setup-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .setup-header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .setup-body {
+            padding: 40px;
+        }
+        .order-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        .order-info h5 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .order-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .order-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .order-info-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .order-info-value {
+            font-size: 16px;
+            color: #212529;
+            font-weight: 500;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        .form-section h5 {
+            margin: 0 0 20px 0;
+            color: #212529;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .radio-card {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .radio-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .radio-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        .radio-card input[type="radio"]:checked + label {
+            color: #667eea;
+        }
+        .radio-card input[type="radio"]:checked ~ .radio-card-content {
+            border-color: #667eea;
+        }
+        .radio-card.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .radio-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .radio-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        .radio-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+            margin: 0;
+        }
+        .radio-card-description {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 0;
+            padding-left: 55px;
+        }
+        .partial-items-section {
+            display: none;
+            margin-top: 25px;
+        }
+        .partial-items-section.show {
+            display: block;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .items-table thead {
+            background: #667eea;
+            color: white;
+        }
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+        .items-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .items-table tbody tr:hover {
+            background: #e7f1ff;
+        }
+        .items-table input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .items-table input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #dee2e6;
+        }
+        .alert-info-custom {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .alert-info-custom i {
+            color: #667eea;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .alert-info-custom p {
+            margin: 0;
+            color: #004085;
+            font-size: 14px;
+        }
+        .max-qty-badge {
+            display: inline-block;
+            background: #e7f1ff;
+            color: #667eea;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h2><i class="fas fa-file-invoice me-2"></i>{% trans "Bon de Livraison Setup" %}</h2>
+            <p>{% trans "Configure your delivery note before generation" %}</p>
+        </div>
+
+        <div class="setup-body">
+            <!-- Order Information -->
+            <div class="order-info">
+                <h5><i class="fas fa-info-circle me-2"></i>{% trans "Order Information" %}</h5>
+                <div class="order-info-grid">
+                    <div class="order-info-item">
+                        <div class="order-info-label">{% trans "PO Number" %}</div>
+                        <div class="order-info-value">{{ order.purchase_order_id }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-label">{% trans "Customer" %}</div>
+                        <div class="order-info-value">{{ order.customer.customer_name }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-label">{% trans "Branch" %}</div>
+                        <div class="order-info-value">{{ order.branch.branch_name }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-label">{% trans "Created Date" %}</div>
+                        <div class="order-info-value">{{ order.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-info-custom">
+                <i class="fas fa-lightbulb"></i>
+                <p>{% trans "Choose between a full delivery (all items) or partial delivery (specific quantities). You can also customize the document title." %}</p>
+            </div>
+
+            <form method="post" id="setupForm">
+                {% csrf_token %}
+
+                <!-- Custom Title Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-heading me-2"></i>{% trans "Document Reference/Title" %}</h5>
+                    <div class="mb-3">
+                        <label for="custom_title" class="form-label">{% trans "Custom Reference or Title" %}</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="custom_title"
+                            name="custom_title"
+                            value="{{ existing_config.custom_title|default:'' }}"
+                            placeholder="{% trans 'E.g., NO 5364547 or DELIVERY BATCH 001' %}"
+                        >
+                        <small class="form-text text-muted">{% trans "Optional: Add a reference number or custom title (will appear below 'BORDEREAU DE LIVRAISON')" %}</small>
+                    </div>
+                </div>
+
+                <!-- Livraison Type Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-truck me-2"></i>{% trans "Delivery Type" %}</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="radio-card" id="fullCard">
+                                <input
+                                    type="radio"
+                                    id="full"
+                                    name="livraison_type"
+                                    value="full"
+                                    {% if not existing_config or existing_config.livraison_type == 'full' %}checked{% endif %}
+                                >
+                                <div class="radio-card-header">
+                                    <div class="radio-card-icon">
+                                        <i class="fas fa-boxes"></i>
+                                    </div>
+                                    <h6 class="radio-card-title">{% trans "Full Delivery" %}</h6>
+                                </div>
+                                <p class="radio-card-description">
+                                    {% trans "Deliver all items from the purchase order with their full quantities" %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="radio-card" id="partialCard">
+                                <input
+                                    type="radio"
+                                    id="partial"
+                                    name="livraison_type"
+                                    value="partial"
+                                    {% if existing_config and existing_config.livraison_type == 'partial' %}checked{% endif %}
+                                >
+                                <div class="radio-card-header">
+                                    <div class="radio-card-icon">
+                                        <i class="fas fa-box-open"></i>
+                                    </div>
+                                    <h6 class="radio-card-title">{% trans "Partial Delivery" %}</h6>
+                                </div>
+                                <p class="radio-card-description">
+                                    {% trans "Deliver specific quantities for each item (customize below)" %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Partial Items Section -->
+                <div class="partial-items-section" id="partialItemsSection">
+                    <div class="form-section">
+                        <h5><i class="fas fa-list me-2"></i>{% trans "Specify Quantities" %}</h5>
+                        <p class="text-muted mb-3">{% trans "Enter the quantity you want to deliver for each item. Leave at 0 to exclude an item from this delivery." %}</p>
+
+                        <div class="table-responsive">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">#</th>
+                                        <th>{% trans "Product Code" %}</th>
+                                        <th>{% trans "Generic Name" %}</th>
+                                        <th>{% trans "Brand Name" %}</th>
+                                        <th style="width: 120px; text-align: center;">{% trans "Order Qty" %}</th>
+                                        <th style="width: 150px;">{% trans "Delivery Qty" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order_items %}
+                                    <tr>
+                                        <td style="text-align: center;">{{ forloop.counter }}</td>
+                                        <td><strong>{{ item.stock.product.product_code }}</strong></td>
+                                        <td>{{ item.stock.product.generic_name_dosage }}</td>
+                                        <td>{{ item.stock.product.brand_name }}</td>
+                                        <td style="text-align: center;">
+                                            <strong>{{ item.quantity|intcomma }}</strong>
+                                            <span class="max-qty-badge">Max</span>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                name="qty_{{ item.id }}"
+                                                min="0"
+                                                max="{{ item.quantity }}"
+                                                value="{{ existing_partial_items|dict_get:item.id|default:'0' }}"
+                                                class="form-control"
+                                                placeholder="0"
+                                            >
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'order_details' order.id %}" class="btn-cancel">
+                        <i class="fas fa-times me-2"></i>{% trans "Cancel" %}
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check me-2"></i>{% trans "Generate Document" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle radio card selection
+        const fullRadio = document.getElementById('full');
+        const partialRadio = document.getElementById('partial');
+        const fullCard = document.getElementById('fullCard');
+        const partialCard = document.getElementById('partialCard');
+        const partialItemsSection = document.getElementById('partialItemsSection');
+
+        function updateSelection() {
+            if (fullRadio.checked) {
+                fullCard.classList.add('selected');
+                partialCard.classList.remove('selected');
+                partialItemsSection.classList.remove('show');
+            } else {
+                partialCard.classList.add('selected');
+                fullCard.classList.remove('selected');
+                partialItemsSection.classList.add('show');
+            }
+        }
+
+        fullCard.addEventListener('click', function() {
+            fullRadio.checked = true;
+            updateSelection();
+        });
+
+        partialCard.addEventListener('click', function() {
+            partialRadio.checked = true;
+            updateSelection();
+        });
+
+        fullRadio.addEventListener('change', updateSelection);
+        partialRadio.addEventListener('change', updateSelection);
+
+        // Initialize on page load
+        updateSelection();
+    </script>
+</body>
+</html>

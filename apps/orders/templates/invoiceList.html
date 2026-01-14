@@ -185,9 +185,15 @@
                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
                 <div class="dropdown-menu">
+                  {% if order.purchase_order.is_special_customer %}
+                  <a class="dropdown-item action-requires-pin" data-action-type="download" href="{% url 'special-invoice-setup' order.id %}">
+                    <i class="fa-solid fa-download me-1"></i> {% trans "Download Invoice" %}
+                  </a>
+                  {% else %}
                   <a class="dropdown-item action-requires-pin" data-action-type="download" href="{% url 'invoice-doc' order.id %}" target="_blank">
                     <i class="fa-solid fa-download me-1"></i> {% trans "Download Invoice" %}
                   </a>
+                  {% endif %}
                   <a class="dropdown-item action-requires-pin {% if order.amount_due == 0 %}disabled text-muted{% endif %}" data-action-type="add-payment"
                      href="{% if order.amount_due > 0 %}{% url 'add_invoice_payment' order.id %}{% endif %}">
                     <i class="fa-solid fa-money-bill me-1"></i> {% trans "Add Payment" %}
