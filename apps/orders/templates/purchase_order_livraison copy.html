@@ -881,9 +881,6 @@
                     </div> {% endcomment %}
         </div>
       </div>
-            <p>Object: Medicament</p>
-            <br>
-
 
             <!-- Customer Information -->
             <div class="customer-section">
@@ -918,8 +915,11 @@
                         <th>Brand Name</th>
                         <th>Batch</th>
             <th>Dosage Form</th>
+            <th>Mfg Date</th>
             <th>Exp Date</th>
                         <th>Qty</th>
+                        <th>Unit Price</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -931,22 +931,91 @@
                         <td>{{ item.stock.product.brand_name.brand_name }}</td>
                         <td>{{ item.stock.product.batch.batch_number }}</td>
                         <td>{{ item.stock.product.dosage_form }}</td>
+                        <td>{{ item.stock.product.batch.prod_date }}</td>
                         <td>{{ item.stock.product.batch.expiry_date }}</td>
                         <td class="quantity">{{ item.quantity|intcomma }}</td>
+                        <td class="price">{{ item.effective_price|floatformat:2|intcomma }} CFA</td>
+                        <td class="total">{{ item.total_price|floatformat:2|intcomma }} CFA</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
 
+            <!-- Payment Schedule -->
+            <div class="payment-schedule">
+                <h3>Payment Schedule</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Amount</th>
+                            <th>Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if is_return_purchase_order %}
+                {% for item in return_payment_schedules %}
+                <tr>
+                                <td>{{ item.when }}</td>
+                                <td>{{ item.amount|floatformat:2|intcomma }} CFA</td>
+                                <td>{{ item.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No return payment schedules available.</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+              {% for item in payment_schedules %}
+                <tr>
+                                <td>{{ item.when }}</td>
+                                <td>{{ item.amount|floatformat:2|intcomma }} CFA</td>
+                                <td>{{ item.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No payment schedules available.</td>
+                </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
 
-
+                        <!-- Totals -->
+            <div class="totals-section">
+                <h3>Order Summary</h3>
+                <div class="totals-inline">
+                    <div class="totals-item">
+                        <span class="label">Subtotal (THT):</span>
+                        <span class="value">{{ order.grand_total|floatformat:2|intcomma }} CFA</span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">IR Tax ({{ order.tax_rate }}%):</span>
+                        <span class="value">
+                            {% if is_special_customer %}-{% else %}{{ tax_amount|floatformat:0|intcomma }}{% endif %} CFA
+                        </span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">Pre Compte ({{ order.precompte }}%):</span>
+                        <span class="value">{{ precompte_amount|floatformat:0|intcomma }} CFA</span>
+                    </div>
+                    <div class="totals-item">
+                        <span class="label">TVA ({{ order.tva }}%):</span>
+                        <span class="value">{{ tva_amount|floatformat:2|intcomma }} CFA</span>
+                    </div>
+                    <div class="grand-total-inline">
+                        Total (TTC): {{ new_total|floatformat:2|intcomma }} CFA
+                    </div>
+                </div>
+            </div>
 
             <!-- Signatures -->
             <div class="signatures-section">
                 {% comment %} <h3>Authorization & Delivery</h3> {% endcomment %}
                 <div class="signature-grid">
                     <div class="signature-item">
-                        <h4>Supplier / Prestateur </h4>
+                        <h4>Stock Manager</h4>
                         <div class="signature-label">Name</div>
                         <div class="signature-line"></div>
                         <div class="signature-label">Signature</div>
@@ -957,7 +1026,7 @@
             </div>
 
                     <div class="signature-item">
-                        <h4>Aurhorizer / L'Ordonnateur</h4>
+                        <h4>Customer / Client</h4>
                         <div class="signature-label">Name</div>
                         <div class="signature-line"></div>
                         <div class="signature-label">Signature</div>

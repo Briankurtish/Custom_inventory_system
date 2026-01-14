@@ -1001,6 +1001,10 @@ def track_stocks(request):
     # Get filter and search query from request
     branch_filter = request.GET.get('branch_filter', '').strip()
     search_query = request.GET.get('search_query', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+    stock_comparison = request.GET.get('stock_comparison', '').strip()
+    stock_value = request.GET.get('stock_value', '').strip()
 
     # Fetch stock data with related models for efficiency
     all_stocks = Stock.objects.select_related('product', 'product__generic_name_dosage', 'branch')
@@ -1008,6 +1012,12 @@ def track_stocks(request):
     # Apply branch filter
     if branch_filter:
         all_stocks = all_stocks.filter(branch_id=branch_filter)
+
+    # Apply date range filter
+    if start_date:
+        all_stocks = all_stocks.filter(date_added__gte=start_date)
+    if end_date:
+        all_stocks = all_stocks.filter(date_added__lte=end_date)
 
     # Apply search filter
     if search_query:
@@ -1017,6 +1027,17 @@ def track_stocks(request):
             Q(product__brand_name__brand_name__icontains=search_query)| # Correct lookup
             Q(product__batch__batch_number__icontains=search_query)
         )
+
+    # Apply stock quantity filter
+    if stock_comparison:
+        if stock_comparison == 'zero':
+            all_stocks = all_stocks.filter(total_stock=0)
+        elif stock_comparison == 'equal' and stock_value:
+            all_stocks = all_stocks.filter(total_stock=int(stock_value))
+        elif stock_comparison == 'greater' and stock_value:
+            all_stocks = all_stocks.filter(total_stock__gt=int(stock_value))
+        elif stock_comparison == 'less' and stock_value:
+            all_stocks = all_stocks.filter(total_stock__lt=int(stock_value))
 
     # Paginate results
     paginator = Paginator(all_stocks, 100)
@@ -1033,6 +1054,10 @@ def track_stocks(request):
         "branches": branches,
         "search_query": search_query,
         "branch_filter": branch_filter,
+        "start_date": start_date,
+        "end_date": end_date,
+        "stock_comparison": stock_comparison,
+        "stock_value": stock_value,
         "all_products": all_products,
         "offset": offset,
     }

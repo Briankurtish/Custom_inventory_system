@@ -43,33 +43,95 @@
 </form> {% endcomment %}
 
 
-<form method="get" action="{% url 'track-stocks' %}" class="mb-3 d-flex flex-wrap align-items-end">
-  <div class="mb-2 d-flex flex-column me-3">
-    <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
-    <input
-      type="text"
-      name="search_query"
-      id="stock-search"
-      class="form-control"
-      placeholder="{% trans 'Type to search for stock...' %}"
-      value="{{ search_query }}"
-    />
+<form method="get" action="{% url 'track-stocks' %}" class="mb-3">
+  <div class="row g-3">
+    <!-- Search Stock -->
+    <div class="col-md-3">
+      <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
+      <input
+        type="text"
+        name="search_query"
+        id="stock-search"
+        class="form-control"
+        placeholder="{% trans 'Product code, name, batch...' %}"
+        value="{{ search_query }}"
+      />
+    </div>
+
+    <!-- Branch Filter -->
+    <div class="col-md-2">
+      <label for="branch_filter" class="form-label">{% trans "Branch" %}:</label>
+      <select name="branch_filter" id="branch_filter" class="form-select">
+        <option value="">{% trans "All Branches" %}</option>
+        {% for branch in branches %}
+          <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
+            {{ branch.branch_name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Start Date -->
+    <div class="col-md-2">
+      <label for="start_date" class="form-label">{% trans "Start Date" %}:</label>
+      <input
+        type="date"
+        name="start_date"
+        id="start_date"
+        class="form-control"
+        value="{{ start_date }}"
+      />
+    </div>
+
+    <!-- End Date -->
+    <div class="col-md-2">
+      <label for="end_date" class="form-label">{% trans "End Date" %}:</label>
+      <input
+        type="date"
+        name="end_date"
+        id="end_date"
+        class="form-control"
+        value="{{ end_date }}"
+      />
+    </div>
+
+    <!-- Stock Quantity Comparison -->
+    <div class="col-md-2">
+      <label for="stock_comparison" class="form-label">{% trans "Stock Quantity" %}:</label>
+      <select name="stock_comparison" id="stock_comparison" class="form-select">
+        <option value="">{% trans "Any" %}</option>
+        <option value="equal" {% if stock_comparison == 'equal' %}selected{% endif %}>{% trans "Equal to" %}</option>
+        <option value="greater" {% if stock_comparison == 'greater' %}selected{% endif %}>{% trans "Greater than" %}</option>
+        <option value="less" {% if stock_comparison == 'less' %}selected{% endif %}>{% trans "Less than" %}</option>
+        <option value="zero" {% if stock_comparison == 'zero' %}selected{% endif %}>{% trans "Equal to 0" %}</option>
+      </select>
+    </div>
+
+    <!-- Stock Value -->
+    <div class="col-md-1">
+      <label for="stock_value" class="form-label">{% trans "Value" %}:</label>
+      <input
+        type="number"
+        name="stock_value"
+        id="stock_value"
+        class="form-control"
+        placeholder="0"
+        value="{{ stock_value }}"
+        min="0"
+      />
+    </div>
   </div>
 
-  <div class="mb-2 d-flex flex-column me-3">
-   <label for="branch_filter" class="me-2 mb-0">{% trans "Filter by Branch" %}:</label>
-    <select name="branch_filter" id="branch_filter" class="form-select form-select-sm" style="width: 180px;">
-      <option value="">{% trans "All" %}</option>
-      {% for branch in branches %}
-        <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
-          {{ branch.branch_name }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <div class="mb-2 d-flex align-items-center">
-    <button type="submit" class="btn btn-primary">{% trans "Search & Filter" %}</button>
+  <!-- Filter Buttons -->
+  <div class="row mt-3">
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary me-2">
+        <i class="fa-solid fa-filter me-1"></i>{% trans "Apply Filters" %}
+      </button>
+      <a href="{% url 'track-stocks' %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-rotate-right me-1"></i>{% trans "Reset" %}
+      </a>
+    </div>
   </div>
 </form>
 
@@ -180,7 +242,7 @@
     <ul class="pagination justify-content-center mt-3">
       {% if stocks.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ stocks.previous_page_number }}" aria-label="Previous">
+        <a class="page-link" href="?page={{ stocks.previous_page_number }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if branch_filter %}&branch_filter={{ branch_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if stock_comparison %}&stock_comparison={{ stock_comparison }}{% endif %}{% if stock_value %}&stock_value={{ stock_value }}{% endif %}" aria-label="Previous">
           <span aria-hidden="true">&laquo;</span>
         </a>
       </li>
@@ -188,13 +250,13 @@
 
       {% for num in stocks.paginator.page_range %}
       <li class="page-item {% if stocks.number == num %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        <a class="page-link" href="?page={{ num }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if branch_filter %}&branch_filter={{ branch_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if stock_comparison %}&stock_comparison={{ stock_comparison }}{% endif %}{% if stock_value %}&stock_value={{ stock_value }}{% endif %}">{{ num }}</a>
       </li>
       {% endfor %}
 
       {% if stocks.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ stocks.next_page_number }}" aria-label="Next">
+        <a class="page-link" href="?page={{ stocks.next_page_number }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if branch_filter %}&branch_filter={{ branch_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if stock_comparison %}&stock_comparison={{ stock_comparison }}{% endif %}{% if stock_value %}&stock_value={{ stock_value }}{% endif %}" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
         </a>
       </li>
