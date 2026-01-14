@@ -850,30 +850,30 @@
     <button class="print-button" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Proforma</button>
 
     <div class="proforma-container">
-      <!-- Header -->
-      <div class="proforma-header">
-        <div class="header-main">
-          <!-- Company Logo -->
-          <div class="company-logo">
-            <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="GC Pharma Logo" />
-          </div>
-
-          <!-- Company Name -->
-          <div class="company-name-header">
-            <div class="company-title">GC PHARMA</div>
-          </div>
-
-          <!-- Proforma Invoice Details -->
-          <div class="po-details-header">
-            <div class="po-label">PROFORMA INVOICE NUMBER</div>
-            {% if is_proforma %}
-            <div class="po-number">{{ proforma.proforma_id }}</div>
-            {% else %}
-            <div class="po-number">{{ invoice.invoice_id }}</div>
-            {% endif %}
-          </div>
+        <!-- Header -->
+        <div class="proforma-header">
+            <div class="header-main">
+                <!-- Company Logo -->
+                <div class="company-logo">
+                    <img src="https://i.ibb.co/N6K7Mzyb/gcpharma-1-removebg-preview.png" alt="GC Pharma Logo" />
+                </div>
+                
+                <!-- Company Name -->
+                <div class="company-name-header">
+                    <div class="company-title">GC PHARMA</div>
+                </div>
+                
+                <!-- Proforma Invoice Details -->
+                <div class="po-details-header">
+                    <div class="po-label">PROFORMA INVOICE NUMBER</div>
+                    {% if is_proforma %}
+                        <div class="po-number">{{ proforma.proforma_id }}</div>
+                    {% else %}
+                        <div class="po-number">{{ invoice.invoice_id }}</div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-      </div>
 
       <!-- Body -->
       <div class="proforma-body">
