@@ -467,7 +467,7 @@
             .company-info-left .company-reg {
                 font-size: 10px !important;
             }
-      }
+        }
     </style>
   </head>
   <body>
@@ -515,7 +515,7 @@
                             <div class="delivery-meta-value">{{ order.created_at|date:"n/j/Y" }}</div>
                             <div class="delivery-meta-label">PO Number</div>
                             <div class="delivery-meta-value">{{ order.purchase_order_id }}</div>
-                        </div>
+                    </div>
                     </div>
                 </div>
 
@@ -523,7 +523,7 @@
                 <div class="object-section">
                     <div class="object-label">Object: Medicament</div>
                 </div>
-            </div>
+      </div>
 
             <!-- Document Type -->
             <div class="document-type-label">BORDEREAU DE LIVRAISON</div>
@@ -533,8 +533,8 @@
 
             <!-- Items Table -->
             <table class="items-table-delivery">
-                <thead>
-                    <tr>
+        <thead>
+          <tr>
                         <th>#</th>
                         <th>PRODUCT ID</th>
                         <th>GENERIC NAME</th>
@@ -543,11 +543,11 @@
                         <th>DOSAGE FORM</th>
                         <th>EXP DATE</th>
                         <th>QTY</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in order_items %}
-                    <tr>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order_items %}
+          <tr>
                         <td style="text-align: center;">{{ forloop.counter }}</td>
                         <td style="text-align: left;">{{ item.stock.product.product_code }}</td>
                         <td style="text-align: left;">{{ item.stock.product.generic_name_dosage }}</td>
@@ -556,27 +556,27 @@
                         <td style="text-align: center;">{{ item.stock.product.dosage_form }}</td>
                         <td style="text-align: center;">{{ item.stock.product.batch.expiry_date|date:"m/Y" }}</td>
                         <td style="text-align: center;">{{ item.display_quantity|intcomma }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
             <!-- Signature Section -->
             <div class="signature-section">
                 <div class="signature-box">
                     <div class="signature-line">Supplier / Prestateur</div>
-                </div>
+            </div>
                 <div class="signature-box">
                     <div class="signature-line">Aurhorizer / L'Ordonnateur</div>
-                </div>
             </div>
-      </div>
+            </div>
+          </div>
 
         <!-- Footer -->
       <div class="footer-delivery">
             <span>NIU: M022014416253M,</span>
             <span style="margin-left: 20px;">Reg No: RC/YAO/2020/B/239</span>
+        </div>
       </div>
-    </div>
   </body>
 </html>

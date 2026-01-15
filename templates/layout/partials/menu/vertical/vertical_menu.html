@@ -774,7 +774,8 @@
         <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Transit Stock" %}</div>
       </a>
     </li>
-    {% endif %} {# end privilege.name == 'View Stock In Transit' #} {% if privilege.name == 'View Stock In Transit' %}
+    {% endif %} {# end privilege.name == 'View Stock In Transit' #}
+    {% if privilege.name == 'View Stock In Transit' %}
     <li
       class="shadcn-menu-item {% if 'stock_received' == request.resolver_match.url_name or '/stocks-received/' in request.path %}active{% endif %}"
     >
@@ -783,7 +784,20 @@
         <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Stock Received" %}</div>
       </a>
     </li>
-    {% endif %} {# end privilege.name == 'View Stock In Transit' #} {% if privilege.name == 'View Orders' %}
+    {% endif %} {# end privilege.name == 'View Stock In Transit' #}
+
+     {% if privilege.name == 'Manage Petty Cash' %}
+    <li
+      class="shadcn-menu-item {% if 'petty_cash_dashboard' == request.resolver_match.url_name or '/petty_cash_dashboard' in request.path %}active{% endif %}"
+    >
+      <a href="{% url 'petty_cash_dashboard' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-wallet"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Petty Cash" %}</div>
+      </a>
+    </li>
+    {% endif %} {# end privilege.name == 'Manage Petty Cash' #}
+
+    {% if privilege.name == 'View Orders' %}
     <li
       class="shadcn-menu-item {% if request.resolver_match.url_name == 'orders' or '/orders/' in request.path %}active{% endif %}"
     >
@@ -1199,7 +1213,7 @@
           </a>
         </li>
 
-        {% if user.is_superuser %}
+
         <li
           class="shadcn-menu-item {% if 'petty_cash' in request.path or 'petty-cash' in request.path %}active{% endif %}"
         >
@@ -1208,10 +1222,7 @@
             <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Petty Cash" %}</div>
           </a>
         </li>
-        {% else %}
-          {% if role_privileges %}
-            {% for privilege in role_privileges %}
-              {% if privilege.name == 'Manage Petty Cash' %}
+
         <li
           class="shadcn-menu-item {% if 'petty_cash' in request.path or 'petty-cash' in request.path %}active{% endif %}"
         >
@@ -1220,10 +1231,6 @@
             <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Petty Cash" %}</div>
           </a>
         </li>
-              {% endif %} {# end privilege.name == 'Manage Petty Cash' #}
-            {% endfor %} {# end for privilege in role_privileges #}
-          {% endif %}
-        {% endif %}
       </ul>
     </li>
 
@@ -1263,8 +1270,10 @@
         </li>
       </ul>
     </li>
+    {% endif %} {# end if user.is_superuser #}
 
-    {% endif %} {% comment %}
+
+    {% comment %}
     <li
       class="menu-item {% if 'add' == request.resolver_match.url_name or '/add/' in request.path %}active open{% endif %}"
     >

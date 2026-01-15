@@ -1,14 +1,12 @@
 from django.views.generic import TemplateView
 from django.contrib.sites.shortcuts import get_current_site
-from web_project import TemplateLayout
 from web_project.template_helpers.theme import TemplateHelper
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
-from django.contrib.auth.forms import SetPasswordForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from smtplib import SMTPRecipientsRefused, SMTPException

@@ -47,29 +47,29 @@
   <div class="row g-3">
     <!-- Search Stock -->
     <div class="col-md-3">
-      <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
-      <input
-        type="text"
-        name="search_query"
-        id="stock-search"
-        class="form-control"
+    <label for="stock-search" class="form-label">{% trans "Search Stock" %}:</label>
+    <input
+      type="text"
+      name="search_query"
+      id="stock-search"
+      class="form-control"
         placeholder="{% trans 'Product code, name, batch...' %}"
-        value="{{ search_query }}"
-      />
-    </div>
+      value="{{ search_query }}"
+    />
+  </div>
 
     <!-- Branch Filter -->
     <div class="col-md-2">
       <label for="branch_filter" class="form-label">{% trans "Branch" %}:</label>
       <select name="branch_filter" id="branch_filter" class="form-select">
         <option value="">{% trans "All Branches" %}</option>
-        {% for branch in branches %}
-          <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
-            {{ branch.branch_name }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+      {% for branch in branches %}
+        <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == branch_filter %}selected{% endif %}>
+          {{ branch.branch_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
 
     <!-- Start Date -->
     <div class="col-md-2">
