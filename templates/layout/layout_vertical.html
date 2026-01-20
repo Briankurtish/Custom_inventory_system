@@ -29,7 +29,7 @@
         {% if is_flex %}
         <div class="{{container_class}} d-flex align-items-stretch flex-grow-1 p-0">
           {% else %}
-          <div class="{{container_class}} flex-grow-1 container-p-y">
+          <div class="{{container_class}} flex-grow-1 px-0 py-3">
             {% endif %}
             {% block content %}
             {% endblock content %}
@@ -90,6 +90,21 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Full-width content with minimal spacing */
+    .content-wrapper {
+      padding: 0 !important;
+    }
+
+    .container-fluid {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+      max-width: 100% !important;
+    }
+
+    .layout-page {
+      width: 100%;
     }
   </style>
 

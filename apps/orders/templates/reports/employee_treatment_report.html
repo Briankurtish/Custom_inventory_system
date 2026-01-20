@@ -1,0 +1,362 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Employee Treatment Report - Fraud Prevention" %}{% endblock %}
+
+{% block vendor_css %}
+<style>
+  .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+  }
+  .avatar-lg {
+    width: 70px;
+    height: 70px;
+  }
+  .card {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3 class="mb-3">
+        <i class="fa-solid fa-user-injured me-2"></i>{% trans "Employee Treatment (Sickness) Report" %}
+      </h3>
+      <p class="text-muted">{% trans "Track employee personal treatment orders to prevent abuse and fraud" %}</p>
+    </div>
+  </div>
+
+  <!-- Abuse Alerts -->
+  {% if abuse_alerts %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <h5 class="alert-heading"><i class="fa-solid fa-triangle-exclamation me-2"></i>{% trans "Potential Abuse Detected!" %}</h5>
+    <p>{% trans "The following employees have unusually high treatment orders:" %}</p>
+    <ul>
+      {% for alert in abuse_alerts %}
+      <li>
+        <strong>{{ alert.employee }}</strong>:
+        {{ alert.orders }} orders, {{ alert.quantity }} items ({{ alert.cost|floatformat:2|intcomma }} FCFA)
+        <span class="badge bg-{{ alert.alert_level }}">{% if alert.alert_level == 'danger' %}Critical{% else %}Warning{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fa-solid fa-filter me-2"></i>{% trans "Filters" %}</h5>
+    </div>
+    <div class="card-body">
+      <form method="GET" class="row g-3">
+        <div class="col-md-3">
+          <label for="employee" class="form-label">{% trans "Employee" %}</label>
+          <select id="employee" name="employee" class="form-select">
+            <option value="">{% trans "All Employees" %}</option>
+            {% for emp in employees %}
+              <option value="{{ emp.id }}" {% if selected_employee|stringformat:"s" == emp.id|stringformat:"s" %}selected{% endif %}>
+                {{ emp.user.first_name }} {{ emp.user.last_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+          <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+          <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label for="month" class="form-label">{% trans "Month" %}</label>
+          <select id="month" name="month" class="form-select">
+            <option value="">{% trans "All Months" %}</option>
+            {% for m in months %}
+              <option value="{{ m.id }}" {% if selected_month|stringformat:"s" == m.id|stringformat:"s" %}selected{% endif %}>
+                {{ m.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-1">
+          <label for="year" class="form-label">{% trans "Year" %}</label>
+          <input type="number" id="year" name="year" class="form-control" value="{{ year }}" min="2020" max="2030">
+        </div>
+
+        <div class="col-md-2">
+          <label for="branch" class="form-label">{% trans "Branch" %}</label>
+          <select id="branch" name="branch" class="form-select">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if branch_id|stringformat:"s" == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.branch_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-search me-2"></i>{% trans "Apply Filters" %}
+          </button>
+          <a href="{% url 'employee-treatment-report' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-times me-2"></i>{% trans "Clear" %}
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary Statistics -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-primary">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-primary text-white rounded">
+                <i class="fa-solid fa-clipboard-list fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Treatment Orders" %}</h6>
+              <h2 class="mb-0 text-primary">{{ summary_stats.total_orders|default:0 }}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-success">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-success text-white rounded">
+                <i class="fa-solid fa-pills fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Items Supplied" %}</h6>
+              <h2 class="mb-0 text-success">{{ summary_stats.total_items|default:0|intcomma }}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-info">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-info text-white rounded">
+                <i class="fa-solid fa-coins fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Items Count" %}</h6>
+              <h2 class="mb-0 text-info">{{ summary_stats.total_cost|default:0|intcomma }}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Breakdown -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Employee Breakdown" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>{% trans "Employee Name" %}</th>
+              <th>{% trans "Total Orders" %}</th>
+              <th>{% trans "Total Quantity" %}</th>
+              <th>{% trans "Total Cost" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp in employee_breakdown %}
+            <tr>
+              <td>{{ emp.employee__user__first_name }} {{ emp.employee__user__last_name }}</td>
+              <td>{{ emp.total_orders }}</td>
+              <td>{{ emp.total_quantity|intcomma }}</td>
+              <td>{{ emp.total_cost|floatformat:2|intcomma }} FCFA</td>
+              <td>
+                {% if emp.total_orders > 8 %}
+                  <span class="badge bg-danger"><i class="fa-solid fa-exclamation-triangle"></i> Critical</span>
+                {% elif emp.total_orders > 5 %}
+                  <span class="badge bg-warning"><i class="fa-solid fa-exclamation"></i> Warning</span>
+                {% else %}
+                  <span class="badge bg-success"><i class="fa-solid fa-check"></i> Normal</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="?employee={{ emp.employee__id }}&start_date={{ start_date }}&end_date={{ end_date }}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-eye me-1"></i>{% trans "View" %}
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">{% trans "No data available" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Breakdown -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Most Ordered Products" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Product Code" %}</th>
+              <th>{% trans "Product Name" %}</th>
+              <th>{% trans "Brand" %}</th>
+              <th>{% trans "Total Quantity" %}</th>
+              <th>{% trans "Times Ordered" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in product_breakdown %}
+            <tr>
+              <td>{{ product.stock__product__product_code }}</td>
+              <td>{{ product.stock__product__generic_name_dosage__generic_name }}</td>
+              <td>{{ product.stock__product__brand_name__brand_name }}</td>
+              <td>{{ product.total_quantity|intcomma }}</td>
+              <td>{{ product.times_ordered }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">{% trans "No data available" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Orders List -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Treatment Orders List" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Order #" %}</th>
+              <th>{% trans "Employee" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th>{% trans "Total" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Created By" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in sickness_orders %}
+            <tr>
+              <td>{{ order.created_at|date:"d M Y H:i" }}</td>
+              <td>{{ order.sickness_order_id }}</td>
+              <td>{{ order.employee.user.first_name }} {{ order.employee.user.last_name }}</td>
+              <td>{{ order.branch.branch_name }}</td>
+              <td>{{ order.grand_total|floatformat:2|intcomma }} FCFA</td>
+              <td>
+                {% if order.status == 'Completed' %}
+                  <span class="badge bg-success">{{ order.status }}</span>
+                {% elif order.status == 'Pending' %}
+                  <span class="badge bg-warning">{{ order.status }}</span>
+                {% elif order.status == 'Approved' %}
+                  <span class="badge bg-info">{{ order.status }}</span>
+                {% elif order.status == 'Rejected' %}
+                  <span class="badge bg-danger">{{ order.status }}</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ order.status }}</span>
+                {% endif %}
+              </td>
+              <td>{{ order.created_by.user.get_full_name }}</td>
+              <td>
+                <a href="{% url 'sickness_order_details' order.id %}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted">{% trans "No treatment orders found" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if sickness_orders.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if sickness_orders.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ sickness_orders.previous_page_number }}&employee={{ selected_employee }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&month={{ selected_month }}&year={{ year }}">
+              {% trans "Previous" %}
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in sickness_orders.paginator.page_range %}
+          <li class="page-item {% if sickness_orders.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}&employee={{ selected_employee }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&month={{ selected_month }}&year={{ year }}">
+              {{ num }}
+            </a>
+          </li>
+          {% endfor %}
+
+          {% if sickness_orders.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ sickness_orders.next_page_number }}&employee={{ selected_employee }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&month={{ selected_month }}&year={{ year }}">
+              {% trans "Next" %}
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

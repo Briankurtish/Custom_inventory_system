@@ -23,7 +23,7 @@ from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 from django.http import HttpResponse
 from django.utils import timezone
 from .forms import SupplierForm
@@ -1500,13 +1500,185 @@ def delete_supplier_view(request, supplier_id):
 
 @login_required
 def stock_details_view(request, stock_id):
+    from apps.stock_request.models import StockRequestProduct, StockTransferItem, InTransit
+    from apps.stock.models import StockMovement
+
     stock = get_object_or_404(Stock, id=stock_id)
 
-    # Get related transactions for this stock
-    transactions = InventoryTransaction.objects.filter(
+    # Collect all transactions in a unified format
+    all_transactions = []
+
+    # 1. Inventory Transactions (Add/Update/Remove Beginning Inventory)
+    inventory_transactions = InventoryTransaction.objects.filter(
         product=stock.product,
         branch=stock.branch
-    ).order_by('-transaction_date')[:10]  # Get last 10 transactions
+    ).select_related('worker', 'supplier')
+
+    for trans in inventory_transactions:
+        all_transactions.append({
+            'date': trans.transaction_date,
+            'type': trans.get_transaction_type_display(),
+            'quantity': trans.quantity,
+            'worker': trans.worker.user.get_full_name() if trans.worker else 'System',
+            'supplier': trans.supplier.name if trans.supplier else 'N/A',
+            'reference': f'INV-{trans.id}',
+            'details': f'{trans.get_transaction_type_display()}'
+        })
+
+    # 2. Sales (Purchase Orders)
+    sales = PurchaseOrderItem.objects.filter(
+        stock=stock
+    ).select_related('purchase_order', 'purchase_order__created_by', 'purchase_order__customer')
+
+    for sale in sales:
+        all_transactions.append({
+            'date': sale.purchase_order.created_at,
+            'type': 'Sale',
+            'quantity': -sale.quantity,  # Negative for sold items
+            'worker': sale.purchase_order.created_by.user.get_full_name() if sale.purchase_order.created_by else 'N/A',
+            'supplier': sale.purchase_order.customer.customer_name if sale.purchase_order.customer else 'N/A',
+            'reference': sale.purchase_order.purchase_order_id,
+            'details': f'Sold to {sale.purchase_order.customer.customer_name if sale.purchase_order.customer else "Customer"}'
+        })
+
+    # 3. Stock Transfers OUT (from this branch)
+    transfers_out = StockTransferItem.objects.filter(
+        product=stock.product,
+        transfer__source_branch=stock.branch
+    ).select_related('transfer', 'transfer__transferred_by', 'transfer__destination_branch', 'batch')
+
+    for transfer in transfers_out:
+        all_transactions.append({
+            'date': transfer.transfer.date_transferred or transfer.transfer.id,  # fallback to ID if no date
+            'type': 'Transfer Out',
+            'quantity': -transfer.quantity,
+            'worker': transfer.transfer.transferred_by.user.get_full_name() if transfer.transfer.transferred_by else 'N/A',
+            'supplier': f'To {transfer.transfer.destination_branch.branch_name}',
+            'reference': transfer.transfer.transfer_id,
+            'details': f'Transferred to {transfer.transfer.destination_branch.branch_name} (Batch: {transfer.batch.batch_number if transfer.batch else "N/A"})'
+        })
+
+    # 4. Stock Transfers IN (to this branch)
+    transfers_in = StockTransferItem.objects.filter(
+        product=stock.product,
+        transfer__destination_branch=stock.branch,
+        transfer__status='Received'
+    ).select_related('transfer', 'transfer__transferred_by', 'transfer__source_branch', 'batch')
+
+    for transfer in transfers_in:
+        actual_qty = transfer.actual_quantity_received or transfer.quantity
+        all_transactions.append({
+            'date': transfer.date_received or transfer.transfer.date_transferred,
+            'type': 'Transfer In',
+            'quantity': actual_qty,
+            'worker': transfer.transfer.transferred_by.user.get_full_name() if transfer.transfer.transferred_by else 'N/A',
+            'supplier': f'From {transfer.transfer.source_branch.branch_name}',
+            'reference': transfer.transfer.transfer_id,
+            'details': f'Received from {transfer.transfer.source_branch.branch_name} (Batch: {transfer.batch.batch_number if transfer.batch else "N/A"})'
+        })
+
+    # 5. Stock Requests (Products requested)
+    stock_requests = StockRequestProduct.objects.filter(
+        product=stock.product,
+        stock_request__branch=stock.branch
+    ).select_related('stock_request', 'stock_request__requested_by', 'batch')
+
+    for req in stock_requests:
+        all_transactions.append({
+            'date': req.stock_request.requested_at,
+            'type': f'Stock Request ({req.stock_request.status})',
+            'quantity': -req.quantity if req.stock_request.status == 'Accepted' else 0,
+            'worker': req.stock_request.requested_by.user.get_full_name() if req.stock_request.requested_by else 'N/A',
+            'supplier': f'Request: {req.stock_request.request_type}',
+            'reference': req.stock_request.request_number,
+            'details': f'{req.stock_request.request_type} Request - Status: {req.stock_request.status} (Batch: {req.batch.batch_number if req.batch else "N/A"})'
+        })
+
+    # 6. Damaged Products
+    damaged_items = DamagedProduct.objects.filter(
+        product=stock.product,
+        branch=stock.branch
+    ).select_related('created_by')
+
+    for damaged in damaged_items:
+        all_transactions.append({
+            'date': damaged.date_recorded,
+            'type': 'Damaged',
+            'quantity': -damaged.quantity,
+            'worker': damaged.created_by.user.get_full_name() if damaged.created_by else 'N/A',
+            'supplier': 'N/A',
+            'reference': f'DMG-{damaged.id}',
+            'details': f'Damaged: {damaged.notes or "No details provided"}'
+        })
+
+    # 7. Stock Movements
+    stock_movements = StockMovement.objects.filter(
+        product=stock.product
+    ).select_related('stock_request', 'stock_transfer', 'batch')
+
+    for movement in stock_movements:
+        ref = movement.stock_request.request_number if movement.stock_request else (
+            movement.stock_transfer.transfer_id if movement.stock_transfer else f'MOV-{movement.id}'
+        )
+        worker = 'N/A'
+        if movement.stock_request and movement.stock_request.requested_by:
+            worker = movement.stock_request.requested_by.user.get_full_name()
+        elif movement.stock_transfer and movement.stock_transfer.transferred_by:
+            worker = movement.stock_transfer.transferred_by.user.get_full_name()
+
+        all_transactions.append({
+            'date': movement.transaction_date,
+            'type': f'Movement ({movement.get_movement_type_display()})',
+            'quantity': movement.quantity,
+            'worker': worker,
+            'supplier': 'Internal Movement',
+            'reference': ref,
+            'details': f'{movement.get_movement_type_display()} (Batch: {movement.batch.batch_number if movement.batch else "N/A"})'
+        })
+
+    # 8. In-Transit Items
+    in_transit_items = InTransit.objects.filter(
+        product=stock.product,
+        destination=stock.branch
+    )
+
+    for transit in in_transit_items:
+        all_transactions.append({
+            'date': transit.created_at,
+            'type': f'In Transit ({transit.status})',
+            'quantity': transit.actual_quantity_received if transit.status == 'Delivered' else transit.quantity,
+            'worker': 'System',
+            'supplier': transit.source,
+            'reference': f'TRN-{transit.id}',
+            'details': f'From {transit.source} - Status: {transit.status} (Batch: {transit.batch.batch_number if transit.batch else "N/A"})'
+        })
+
+    # Normalize dates to datetime objects for proper comparison and template rendering
+    def normalize_date(date_val):
+        """Convert any date value to a timezone-aware datetime object"""
+        if not date_val:
+            return timezone.now()
+        # Convert date to datetime if needed
+        if isinstance(date_val, date) and not isinstance(date_val, datetime):
+            dt = datetime.combine(date_val, time.min)
+            # Make timezone-aware if needed
+            if timezone.is_naive(dt):
+                dt = timezone.make_aware(dt)
+            return dt
+        # If it's already a datetime, ensure it's timezone-aware
+        if isinstance(date_val, datetime):
+            if timezone.is_naive(date_val):
+                return timezone.make_aware(date_val)
+            return date_val
+        # Fallback for any other type (like integers)
+        return timezone.now()
+
+    # Normalize all transaction dates
+    for transaction in all_transactions:
+        transaction['date'] = normalize_date(transaction.get('date'))
+
+    # Sort all transactions by date (most recent first)
+    all_transactions.sort(key=lambda x: x['date'], reverse=True)
 
     # Get current date for expiry comparison
     today = timezone.now().date()
@@ -1514,7 +1686,7 @@ def stock_details_view(request, stock_id):
 
     view_context = {
         "stock": stock,
-        "transactions": transactions,
+        "transactions": all_transactions,
         "today": today,
         "today_plus_30": today_plus_30,
     }

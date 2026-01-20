@@ -1181,6 +1181,26 @@
             <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Proformas" %}</div>
           </a>
         </li>
+
+        {% if user.is_superuser %}
+        <li
+          class="shadcn-menu-item {% if 'sales-report-by-customer' == request.resolver_match.url_name or '/reports/sales-by-customer/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'sales-report-by-customer' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Sales Report" %}</div>
+          </a>
+        </li>
+
+        <li
+          class="shadcn-menu-item {% if 'employee-treatment-report' == request.resolver_match.url_name or '/reports/employee-treatment/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'employee-treatment-report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-user-injured"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Employee Treatment Report" %}</div>
+          </a>
+        </li>
+        {% endif %}
       </ul>
     </li>
 

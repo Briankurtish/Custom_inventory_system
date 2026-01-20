@@ -5,7 +5,7 @@
 {% block title %}{% trans "Stock Details" %}{% endblock %}
 
 {% block content %}
-<div class="container-xl py-5">
+<div class="container-fluid px-2 py-3">
   <div class="row">
     <!-- Stock Information Card -->
     <div class="col-lg-8 mb-4">
@@ -222,37 +222,45 @@
                   <tr>
                     <th>{% trans "Date" %}</th>
                     <th>{% trans "Type" %}</th>
+                    <th>{% trans "Reference" %}</th>
                     <th>{% trans "Quantity" %}</th>
-                    <th>{% trans "Supplier" %}</th>
                     <th>{% trans "Worker" %}</th>
+                    <th>{% trans "Source/Destination" %}</th>
+                    <th>{% trans "Details" %}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for transaction in transactions %}
                   <tr>
-                    <td>{{ transaction.transaction_date|date:"d M Y H:i" }}</td>
+                    <td>{{ transaction.date|date:"d M Y H:i" }}</td>
                     <td>
-                      {% with type=transaction.get_transaction_type_display|capfirst %}
-                        {% if transaction.transaction_type == 'ADD' %}
-                          <span class="badge bg-success px-3 py-2">{{ type }}</span>
-                        {% elif transaction.transaction_type == 'UPDATE' %}
-                          <span class="badge bg-primary px-3 py-2">{{ type }}</span>
-                        {% elif transaction.transaction_type == 'REMOVE' %}
-                          <span class="badge bg-danger px-3 py-2">{{ type }}</span>
-                        {% else %}
-                          <span class="badge bg-secondary px-3 py-2">{{ type }}</span>
-                        {% endif %}
-                      {% endwith %}
-                    </td>
-                    <td>{{ transaction.quantity }}</td>
-                    <td>
-                      {% if transaction.supplier %}
-                        {{ transaction.supplier.name }}
+                      {% if 'Sale' in transaction.type or 'Damaged' in transaction.type or 'Transfer Out' in transaction.type %}
+                        <span class="badge bg-danger px-2 py-1">{{ transaction.type }}</span>
+                      {% elif 'Transfer In' in transaction.type or 'Add' in transaction.type %}
+                        <span class="badge bg-success px-2 py-1">{{ transaction.type }}</span>
+                      {% elif 'Transit' in transaction.type %}
+                        <span class="badge bg-warning px-2 py-1">{{ transaction.type }}</span>
+                      {% elif 'Request' in transaction.type %}
+                        <span class="badge bg-info px-2 py-1">{{ transaction.type }}</span>
+                      {% elif 'Movement' in transaction.type %}
+                        <span class="badge bg-primary px-2 py-1">{{ transaction.type }}</span>
                       {% else %}
-                        <span class="text-muted">N/A</span>
+                        <span class="badge bg-secondary px-2 py-1">{{ transaction.type }}</span>
                       {% endif %}
                     </td>
-                    <td>{{ transaction.worker.user.get_full_name|default:"N/A" }}</td>
+                    <td><small class="text-muted">{{ transaction.reference }}</small></td>
+                    <td>
+                      {% if transaction.quantity < 0 %}
+                        <span class="text-danger fw-bold">{{ transaction.quantity }}</span>
+                      {% elif transaction.quantity > 0 %}
+                        <span class="text-success fw-bold">+{{ transaction.quantity }}</span>
+                      {% else %}
+                        <span class="text-muted">{{ transaction.quantity }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ transaction.worker }}</td>
+                    <td>{{ transaction.supplier }}</td>
+                    <td><small>{{ transaction.details }}</small></td>
                   </tr>
                   {% endfor %}
                 </tbody>

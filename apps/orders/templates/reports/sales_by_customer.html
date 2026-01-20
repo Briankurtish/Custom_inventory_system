@@ -1,0 +1,319 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Sales Report by Customer" %}{% endblock %}
+
+{% block vendor_css %}
+<style>
+  .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+  }
+  .avatar-lg {
+    width: 70px;
+    height: 70px;
+  }
+  .card {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3 class="mb-3">
+        <i class="fa-solid fa-chart-line me-2"></i>{% trans "Sales Report by Customer" %}
+      </h3>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fa-solid fa-filter me-2"></i>{% trans "Filters" %}</h5>
+    </div>
+    <div class="card-body">
+      <form method="GET" class="row g-3">
+        <div class="col-md-3">
+          <label for="customer" class="form-label">{% trans "Customer" %}</label>
+          <select id="customer" name="customer" class="form-select">
+            <option value="">{% trans "All Customers" %}</option>
+            {% for customer in customers %}
+              <option value="{{ customer.id }}" {% if selected_customer|stringformat:"s" == customer.id|stringformat:"s" %}selected{% endif %}>
+                {{ customer.customer_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="start_date" class="form-label">{% trans "Start Date" %}</label>
+          <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label for="end_date" class="form-label">{% trans "End Date" %}</label>
+          <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label for="branch" class="form-label">{% trans "Branch" %}</label>
+          <select id="branch" name="branch" class="form-select">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if branch_id|stringformat:"s" == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.branch_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="product_search" class="form-label">{% trans "Search Product" %}</label>
+          <input type="text" id="product_search" name="product_search" class="form-control"
+                 placeholder="{% trans 'Product code or name' %}" value="{{ product_search }}">
+        </div>
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-search me-2"></i>{% trans "Apply Filters" %}
+          </button>
+          <a href="{% url 'sales-report-by-customer' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-times me-2"></i>{% trans "Clear" %}
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary Statistics -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-primary">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-primary text-white rounded">
+                <i class="fa-solid fa-shopping-cart fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Orders" %}</h6>
+              <h2 class="mb-0 text-primary">{{ summary_stats.total_orders|default:0 }}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-success">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-success text-white rounded">
+                <i class="fa-solid fa-box fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Items Sold" %}</h6>
+              <h2 class="mb-0 text-success">{{ summary_stats.total_items_sold|default:0|intcomma }}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-info">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar avatar-lg bg-info text-white rounded">
+                <i class="fa-solid fa-money-bill-wave fa-2x"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">{% trans "Total Revenue" %}</h6>
+              <h2 class="mb-0 text-info">{{ summary_stats.total_revenue|default:0|floatformat:2|intcomma }} FCFA</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Breakdown -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Top Customers" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>{% trans "Customer Name" %}</th>
+              <th>{% trans "Total Orders" %}</th>
+              <th>{% trans "Total Quantity" %}</th>
+              <th>{% trans "Total Revenue" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customer_breakdown %}
+            <tr>
+              <td>{{ customer.customer__customer_name }}</td>
+              <td>{{ customer.total_orders }}</td>
+              <td>{{ customer.total_quantity|intcomma }}</td>
+              <td>{{ customer.total_revenue|floatformat:2|intcomma }} FCFA</td>
+              <td>
+                <a href="?customer={{ customer.customer__id }}&start_date={{ start_date }}&end_date={{ end_date }}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-eye me-1"></i>{% trans "View" %}
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">{% trans "No data available" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Details -->
+  {% if product_details %}
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Product Sales Details" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Order #" %}</th>
+              <th>{% trans "Customer" %}</th>
+              <th>{% trans "Product" %}</th>
+              <th>{% trans "Quantity" %}</th>
+              <th>{% trans "Price" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in product_details %}
+            <tr>
+              <td>{{ item.purchase_order.created_at|date:"d M Y" }}</td>
+              <td>{{ item.purchase_order.purchase_order_id }}</td>
+              <td>{{ item.purchase_order.customer.customer_name }}</td>
+              <td>
+                {{ item.stock.product.brand_name.brand_name }}<br>
+                <small class="text-muted">{{ item.stock.product.product_code }}</small>
+              </td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.temp_price|default:item.stock.product.unit_price|floatformat:2|intcomma }} FCFA</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Orders List -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Orders List" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Order #" %}</th>
+              <th>{% trans "Customer" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th>{% trans "Total" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            <tr>
+              <td>{{ order.created_at|date:"d M Y H:i" }}</td>
+              <td>{{ order.purchase_order_id }}</td>
+              <td>{{ order.customer.customer_name }}</td>
+              <td>{{ order.branch.branch_name }}</td>
+              <td>{{ order.grand_total|floatformat:2|intcomma }} FCFA</td>
+              <td>
+                {% if order.status == 'Completed' %}
+                  <span class="badge bg-success">{{ order.status }}</span>
+                {% elif order.status == 'Pending' %}
+                  <span class="badge bg-warning">{{ order.status }}</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ order.status }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'purchase-order' order.purchase_order_id %}"
+                   class="btn btn-sm btn-outline-primary" target="_blank">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted">{% trans "No orders found" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if orders.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if orders.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ orders.previous_page_number }}&customer={{ selected_customer }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&product_search={{ product_search }}">
+              {% trans "Previous" %}
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in orders.paginator.page_range %}
+          <li class="page-item {% if orders.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}&customer={{ selected_customer }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&product_search={{ product_search }}">
+              {{ num }}
+            </a>
+          </li>
+          {% endfor %}
+
+          {% if orders.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ orders.next_page_number }}&customer={{ selected_customer }}&start_date={{ start_date }}&end_date={{ end_date }}&branch={{ branch_id }}&product_search={{ product_search }}">
+              {% trans "Next" %}
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .sales_reports import sales_report_by_customer, employee_treatment_report
 urlpatterns = [
     path(
         "orders-list/",  # Path for listing orders
@@ -176,5 +177,9 @@ urlpatterns = [
 
     # Invoice proforma document (must come after proforma details routes)
     path("invoice-proforma/<int:invoice_id>/", proforma_doc_view, name="proforma-doc"),
+
+    # Sales and Employee Treatment Reports
+    path('reports/sales-by-customer/', sales_report_by_customer, name='sales-report-by-customer'),
+    path('reports/employee-treatment/', employee_treatment_report, name='employee-treatment-report'),
 
 ]
