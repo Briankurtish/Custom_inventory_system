@@ -786,6 +786,18 @@
     </li>
     {% endif %} {# end privilege.name == 'View Stock In Transit' #}
 
+
+    {% if privilege.name == 'Manage Proforma' %}
+    <li
+      class="shadcn-menu-item {% if 'proformas' == request.resolver_match.url_name or '/proformas' in request.path %}active{% endif %}"
+    >
+      <a href="{% url 'proformas' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+        <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Proformas" %}</div>
+      </a>
+    </li>
+    {% endif %} {# end privilege.name == 'Manage Petty Cash' #}
+
      {% if privilege.name == 'Manage Petty Cash' %}
     <li
       class="shadcn-menu-item {% if 'petty_cash_dashboard' == request.resolver_match.url_name or '/petty_cash_dashboard' in request.path %}active{% endif %}"
@@ -803,12 +815,23 @@
     >
       <a href="{% url 'orders' %}" class="shadcn-menu-link">
         <i class="shadcn-menu-icon fa-solid fa-clipboard-list"></i>
+
         <div class="shadcn-menu-text">{% trans "Orders" %}</div>
         {% if pending_orders_count > 0 %}
         <span class="shadcn-menu-badge warning">{{ pending_orders_count }}</span>
         {% endif %}
       </a>
     </li>
+    {% if privilege.name == 'Manage Proforma' %}
+    <li
+      class="shadcn-menu-item {% if request.resolver_match.url_name == 'proformas' or '/proformas/' in request.path %}active{% endif %}"
+    >
+      <a href="{% url 'proformas' %}" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-arrow-right-arrow-left"></i>
+        <div class="shadcn-menu-text">{% trans "Proforma Invoices" %}</div>
+      </a>
+    </li>
+    {% endif %}
 
     <li
       class="shadcn-menu-item {% if 'sample_orders' == request.resolver_match.url_name or '/sample_orders/' in request.path %}active{% endif %}"
@@ -1181,26 +1204,6 @@
             <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Proformas" %}</div>
           </a>
         </li>
-
-        {% if user.is_superuser %}
-        <li
-          class="shadcn-menu-item {% if 'sales-report-by-customer' == request.resolver_match.url_name or '/reports/sales-by-customer/' in request.path %}active{% endif %}"
-        >
-          <a href="{% url 'sales-report-by-customer' %}" class="shadcn-menu-link">
-            <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
-            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Sales Report" %}</div>
-          </a>
-        </li>
-
-        <li
-          class="shadcn-menu-item {% if 'employee-treatment-report' == request.resolver_match.url_name or '/reports/employee-treatment/' in request.path %}active{% endif %}"
-        >
-          <a href="{% url 'employee-treatment-report' %}" class="shadcn-menu-link">
-            <i class="shadcn-menu-icon fa-solid fa-user-injured"></i>
-            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Employee Treatment Report" %}</div>
-          </a>
-        </li>
-        {% endif %}
       </ul>
     </li>
 
@@ -1243,14 +1246,7 @@
           </a>
         </li>
 
-        <li
-          class="shadcn-menu-item {% if 'petty_cash' in request.path or 'petty-cash' in request.path %}active{% endif %}"
-        >
-          <a href="{% url 'petty_cash_dashboard' %}" class="shadcn-menu-link">
-            <i class="shadcn-menu-icon fa-solid fa-wallet"></i>
-            <div class="shadcn-menu-text" data-i18n="Dashboards">{% trans "Petty Cash" %}</div>
-          </a>
-        </li>
+
       </ul>
     </li>
 
