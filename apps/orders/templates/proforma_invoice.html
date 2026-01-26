@@ -802,7 +802,6 @@
                         <th>GENERIC NAME</th>
                         <th>BRAND NAME</th>
                         <th>ORDER TYPE</th>
-                        <th>BATCH</th>
                         <th>QTY</th>
                         <th>UNIT PRICE</th>
                         <th>TOTAL</th>
@@ -818,7 +817,6 @@
                   item.stock.product.generic_name_dosage.generic_name }} {% endif %}
                 </td>
                 <td>{{ item.stock.product.brand_name.brand_name|default:"N/A" }}</td>
-                <td>{{ item.stock.product.batch.batch_number|default:"N/A" }}</td>
                 <td>{{ item.stock.product.dosage_form|default:"N/A" }}</td>
                 <td class="text-center">{{ item.quantity }}</td>
                 <td class="text-right">
