@@ -46,9 +46,13 @@ class LoginView(TemplateView):
                 request.session.modified = True
                 request.session.save()
                 messages.success(request, _(f'Welcome back, {user.username}!'))
-                # Get the next parameter or default to index
-                next_url = request.GET.get('next', 'index')
-                return redirect(next_url)
+                # Get the next parameter or default to dashboard
+                next_url = request.POST.get('next') or request.GET.get('next')
+                if next_url and next_url != request.path:
+                    return redirect(next_url)
+                else:
+                    # Redirect to dashboard based on user role
+                    return redirect('index')
             else:
                 messages.error(request, _('Invalid username or password.'))
         else:

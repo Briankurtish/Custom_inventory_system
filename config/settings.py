@@ -30,10 +30,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = os.environ.get("SECRET_KEY", default='')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# If using the .env file for SECRET_KEY then comment below random SECRET_KEY generation code.
-SECRET_KEY = os.environ.get("SECRET_KEY")
-if not SECRET_KEY:
-    SECRET_KEY = "".join(random.choice(string.ascii_lowercase) for i in range(32))
+# SECRET_KEY must be set in environment or use this fallback (NOT RECOMMENDED for production)
+SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key-change-this-in-production-12345")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -166,6 +164,15 @@ CSRF_COOKIE_SECURE = True  # Set to True for production with HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Set to False to allow CSRF cookie to be read by JavaScript
 CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens instead of session-based
 CSRF_COOKIE_SAMESITE = 'Lax'  # Helps prevent CSRF attacks while allowing normal form submissions
+
+# Session Configuration - STABLE SETTINGS
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store sessions in database
+SESSION_COOKIE_SECURE = True  # Only send session cookie over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # Prevent CSRF while allowing normal navigation
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request to keep it alive
+SESSION_COOKIE_NAME = 'pharmamgtsystemgc_sessionid'  # Custom session cookie name
 
 
 
