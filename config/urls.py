@@ -127,6 +127,12 @@ urlpatterns = i18n_patterns(
     # Petty Cash Urls
     path("petty-cash/", include("apps.petty_cash.urls")),
 
+    # Documents Urls
+    path("documents/", include("apps.documents.urls")),
+
+    # Reports & Analytics Urls
+    path("reports/", include("apps.reports.urls")),
+
     path('i18n/', include('django.conf.urls.i18n')),
 
     path('i18n/setlang/', django.views.i18n.set_language, name='set_language'),

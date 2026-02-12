@@ -1,0 +1,167 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Follow-ups" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 11px !important;
+  }
+  th {
+    text-transform: none !important;
+  }
+  .overdue {
+    background-color: #fff5f5;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {% trans "Follow-ups" %}
+  </h4>
+
+  <div class="mb-3">
+    <a href="{% url 'document_dashboard' %}" class="btn btn-outline-secondary">
+      <i class="fa fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
+    </a>
+  </div>
+
+  <!-- Filter Tabs -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link {% if not status %}active{% endif %}" href="{% url 'followup_list' %}">
+        {% trans "Pending & In Progress" %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status == 'pending' %}active{% endif %}" href="?status=pending">
+        {% trans "Pending" %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status == 'in_progress' %}active{% endif %}" href="?status=in_progress">
+        {% trans "In Progress" %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status == 'completed' %}active{% endif %}" href="?status=completed">
+        {% trans "Completed" %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="?my_tasks=1">
+        {% trans "My Tasks" %}
+      </a>
+    </li>
+  </ul>
+
+  <!-- Follow-ups Table -->
+  <div class="card">
+    <h5 class="card-header">
+      {% trans "Follow-up Tasks" %} ({{ page_obj.paginator.count }} {% trans "total" %})
+    </h5>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "Priority" %}</th>
+            <th>{% trans "Title" %}</th>
+            <th>{% trans "Document" %}</th>
+            <th>{% trans "Customer" %}</th>
+            <th>{% trans "Assigned To" %}</th>
+            <th>{% trans "Due Date" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th>{% trans "Actions" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for followup in page_obj %}
+          <tr {% if followup.is_overdue %}class="overdue"{% endif %}>
+            <td>
+              <span class="badge bg-{{ followup.priority }}">
+                {{ followup.get_priority_display }}
+              </span>
+            </td>
+            <td>{{ followup.title|truncatewords:5 }}</td>
+            <td>
+              <a href="{% url 'document_detail' followup.document.id %}">
+                {{ followup.document.title|truncatewords:5 }}
+              </a>
+            </td>
+            <td>{{ followup.document.customer.customer_name }}</td>
+            <td>
+              {% if followup.assigned_to %}
+                {{ followup.assigned_to.user.get_full_name }}
+              {% else %}
+                <span class="text-muted">{% trans "Unassigned" %}</span>
+              {% endif %}
+            </td>
+            <td>
+              {{ followup.due_date }}
+              {% if followup.is_overdue %}
+                <i class="fa fa-exclamation-circle text-danger ms-1" title="{% trans 'Overdue' %}"></i>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-label-{{ followup.status }}">
+                {{ followup.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <a href="{% url 'followup_edit' followup.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-edit"></i> {% trans "Edit" %}
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">{% trans "No follow-ups found" %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">
+              {% trans "Previous" %}
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">
+                {{ num }}
+              </a>
+            </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}">
+              {% trans "Next" %}
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

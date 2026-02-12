@@ -1,0 +1,195 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Document Management Dashboard" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+
+  .stat-card {
+    border-left: 4px solid #696cff;
+  }
+
+  .stat-card.warning {
+    border-left-color: #ffab00;
+  }
+
+  .stat-card.danger {
+    border-left-color: #ff3e1d;
+  }
+
+  .stat-card.success {
+    border-left-color: #71dd37;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {% trans "Dashboard" %}
+  </h4>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="card-title d-flex align-items-start justify-content-between">
+            <div class="avatar flex-shrink-0">
+              <i class="fa fa-file-alt fa-2x text-primary"></i>
+            </div>
+          </div>
+          <span class="fw-semibold d-block mb-1">{% trans "Total Documents" %}</span>
+          <h3 class="card-title mb-2">{{ total_documents }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+      <div class="card stat-card success">
+        <div class="card-body">
+          <div class="card-title d-flex align-items-start justify-content-between">
+            <div class="avatar flex-shrink-0">
+              <i class="fa fa-file-contract fa-2x text-success"></i>
+            </div>
+          </div>
+          <span class="fw-semibold d-block mb-1">{% trans "Active Templates" %}</span>
+          <h3 class="card-title mb-2">{{ total_templates }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+      <div class="card stat-card warning">
+        <div class="card-body">
+          <div class="card-title d-flex align-items-start justify-content-between">
+            <div class="avatar flex-shrink-0">
+              <i class="fa fa-clock fa-2x text-warning"></i>
+            </div>
+          </div>
+          <span class="fw-semibold d-block mb-1">{% trans "Pending Follow-ups" %}</span>
+          <h3 class="card-title mb-2">{{ pending_follow_ups }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+      <div class="card stat-card danger">
+        <div class="card-body">
+          <div class="card-title d-flex align-items-start justify-content-between">
+            <div class="avatar flex-shrink-0">
+              <i class="fa fa-exclamation-triangle fa-2x text-danger"></i>
+            </div>
+          </div>
+          <span class="fw-semibold d-block mb-1">{% trans "Overdue Follow-ups" %}</span>
+          <h3 class="card-title mb-2">{{ overdue_follow_ups }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{% trans "Quick Actions" %}</h5>
+          <div class="btn-group" role="group">
+            <a href="{% url 'document_create' %}" class="btn btn-primary">
+              <i class="fa fa-plus me-2"></i>{% trans "New Document" %}
+            </a>
+            <a href="{% url 'template_list' %}" class="btn btn-outline-primary">
+              <i class="fa fa-file-contract me-2"></i>{% trans "Templates" %}
+            </a>
+            <a href="{% url 'followup_list' %}" class="btn btn-outline-warning">
+              <i class="fa fa-tasks me-2"></i>{% trans "Follow-ups" %}
+            </a>
+            <a href="{% url 'document_list' %}" class="btn btn-outline-secondary">
+              <i class="fa fa-list me-2"></i>{% trans "All Documents" %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Documents -->
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <h5 class="card-header">{% trans "Recent Documents" %}</h5>
+        <div class="table-responsive text-nowrap">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>{% trans "Document ID" %}</th>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Customer" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Created" %}</th>
+                <th>{% trans "Actions" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for document in recent_documents %}
+              <tr>
+                <td>{{ document.document_id }}</td>
+                <td>{{ document.title }}</td>
+                <td>{{ document.customer.customer_name }}</td>
+                <td>
+                  <span class="badge bg-label-{{ document.status|default:'secondary' }}">
+                    {{ document.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ document.created_at|date:"Y-m-d" }}</td>
+                <td>
+                  <a href="{% url 'document_detail' document.id %}" class="btn btn-sm btn-outline-primary">
+                    {% trans "View" %}
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center">{% trans "No documents yet" %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Follow-ups -->
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <h5 class="card-header">{% trans "My Follow-ups" %}</h5>
+        <div class="card-body">
+          {% for followup in my_follow_ups %}
+          <div class="mb-3 pb-3 border-bottom">
+            <h6 class="mb-1">{{ followup.title }}</h6>
+            <small class="text-muted">{{ followup.document.customer.customer_name }}</small>
+            <div class="mt-1">
+              <span class="badge bg-label-{{ followup.priority }}">{{ followup.get_priority_display }}</span>
+              <small class="ms-2">{% trans "Due:" %} {{ followup.due_date }}</small>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-center text-muted">{% trans "No follow-ups assigned" %}</p>
+          {% endfor %}
+
+          {% if my_follow_ups %}
+          <a href="{% url 'followup_list' %}?my_tasks=1" class="btn btn-sm btn-outline-primary w-100">
+            {% trans "View All My Tasks" %}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

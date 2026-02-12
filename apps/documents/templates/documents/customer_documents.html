@@ -1,0 +1,194 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ customer.customer_name }} - {% trans "Documents" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 11px !important;
+  }
+  th {
+    text-transform: none !important;
+  }
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+  }
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #696cff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e9ecef;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Customers" %} /</span>
+    {{ customer.customer_name }} - {% trans "Documents" %}
+  </h4>
+
+  <!-- Customer Info -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>{{ customer.customer_name }}</h5>
+          <p class="mb-1"><strong>{% trans "Customer ID:" %}</strong> {{ customer.customer_id }}</p>
+          <p class="mb-1"><strong>{% trans "Contact:" %}</strong> {{ customer.contact_person|default:"-" }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+          <a href="{% url 'document_create_for_customer' customer.id %}" class="btn btn-primary">
+            <i class="fa fa-plus me-2"></i>{% trans "New Document" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Documents Timeline -->
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Documents Timeline" %}</h5>
+        </div>
+        <div class="card-body">
+          {% if documents %}
+            <div class="timeline">
+              {% for document in documents %}
+              <div class="timeline-item">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="mb-0">{{ document.title }}</h6>
+                  <span class="badge bg-label-{{ document.status }}">
+                    {{ document.get_status_display }}
+                  </span>
+                </div>
+
+                {% if document.description %}
+                <p class="mb-2 text-muted">{{ document.description|truncatewords:20 }}</p>
+                {% endif %}
+
+                <div class="mb-2">
+                  <small class="text-muted">
+                    <i class="fa fa-calendar me-1"></i>{{ document.created_at|date:"Y-m-d H:i" }}
+                  </small>
+                  {% if document.template %}
+                  <span class="badge bg-label-info ms-2">
+                    {{ document.template.get_template_type_display }}
+                  </span>
+                  {% endif %}
+                  {% if document.requires_follow_up %}
+                  <i class="fa fa-flag text-warning ms-2" title="{% trans 'Requires Follow-up' %}"></i>
+                  {% endif %}
+                </div>
+
+                <div class="d-flex gap-2">
+                  <a href="{% url 'document_detail' document.id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fa fa-eye"></i> {% trans "View" %}
+                  </a>
+                  <a href="{% url 'document_edit' document.id %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa fa-edit"></i> {% trans "Edit" %}
+                  </a>
+                  {% if document.word_file %}
+                  <a href="{% url 'document_download' document.id %}" class="btn btn-sm btn-outline-success">
+                    <i class="fa fa-download"></i> {% trans "Download" %}
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="fa fa-file-alt fa-3x text-muted mb-3"></i>
+              <h5>{% trans "No documents yet" %}</h5>
+              <p class="text-muted">{% trans "Create the first document for this customer" %}</p>
+              <a href="{% url 'document_create_for_customer' customer.id %}" class="btn btn-primary">
+                <i class="fa fa-plus me-2"></i>{% trans "Create Document" %}
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Upcoming Follow-ups -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Upcoming Follow-ups" %}</h5>
+        </div>
+        <div class="card-body">
+          {% if upcoming_follow_ups %}
+            {% for followup in upcoming_follow_ups %}
+            <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+              <h6 class="mb-1">{{ followup.title }}</h6>
+              <small class="text-muted">{{ followup.document.title|truncatewords:5 }}</small>
+              <div class="mt-1">
+                <span class="badge bg-{{ followup.priority }}">{{ followup.get_priority_display }}</span>
+                <small class="ms-2">{{ followup.due_date }}</small>
+              </div>
+            </div>
+            {% endfor %}
+            <a href="{% url 'followup_list' %}" class="btn btn-sm btn-outline-primary w-100">
+              {% trans "View All Follow-ups" %}
+            </a>
+          {% else %}
+            <p class="text-muted text-center">{% trans "No upcoming follow-ups" %}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Statistics" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <span class="fw-semibold">{% trans "Total Documents:" %}</span>
+            <span class="float-end">{{ documents.count }}</span>
+          </div>
+          <div class="mb-3">
+            <span class="fw-semibold">{% trans "Draft:" %}</span>
+            <span class="float-end">{{ documents|length }}</span>
+          </div>
+          <div class="mb-3">
+            <span class="fw-semibold">{% trans "Pending Follow-ups:" %}</span>
+            <span class="float-end">{{ upcoming_follow_ups.count }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

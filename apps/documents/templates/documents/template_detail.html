@@ -1,0 +1,142 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ template.name }}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .template-preview {
+    border: 1px solid #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Templates" %} /</span> {{ template.template_id }}
+  </h4>
+
+  <div class="mb-3">
+    <a href="{% url 'template_edit' template.id %}" class="btn btn-primary">
+      <i class="fa fa-edit me-2"></i>{% trans "Edit" %}
+    </a>
+    <form method="post" action="{% url 'template_duplicate' template.id %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-info">
+        <i class="fa fa-copy me-2"></i>{% trans "Duplicate" %}
+      </button>
+    </form>
+    <a href="{% url 'template_list' %}" class="btn btn-outline-secondary">
+      <i class="fa fa-arrow-left me-2"></i>{% trans "Back to List" %}
+    </a>
+    <a href="{% url 'template_delete' template.id %}" class="btn btn-outline-danger">
+      <i class="fa fa-trash me-2"></i>{% trans "Delete" %}
+    </a>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Template Details" %}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless">
+            <tr>
+              <th>{% trans "Template ID" %}:</th>
+              <td>{{ template.template_id }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Name" %}:</th>
+              <td>{{ template.name }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Type" %}:</th>
+              <td>
+                <span class="badge bg-label-{{ template.template_type }}">
+                  {{ template.get_template_type_display }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>{% trans "Description" %}:</th>
+              <td>{{ template.description|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Status" %}:</th>
+              <td>
+                {% if template.is_active %}
+                  <span class="badge bg-success">{% trans "Active" %}</span>
+                {% else %}
+                  <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>{% trans "Created By" %}:</th>
+              <td>{{ template.created_by.user.get_full_name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Created At" %}:</th>
+              <td>{{ template.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Last Updated" %}:</th>
+              <td>{{ template.updated_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Documents Created" %}:</th>
+              <td>{{ documents_count }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      {% if template.word_file %}
+      <div class="card mt-3">
+        <div class="card-body">
+          <h6>{% trans "Attached File" %}</h6>
+          <p class="mb-2">{{ template.word_file.name }}</p>
+          <a href="{{ template.word_file.url }}" class="btn btn-sm btn-outline-success" download>
+            <i class="fa fa-download me-2"></i>{% trans "Download" %}
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Template Preview" %}</h5>
+        </div>
+        <div class="card-body">
+          {% if template.html_content %}
+            <div class="template-preview">
+              {{ template.html_content|safe }}
+            </div>
+          {% else %}
+            <div class="text-center text-muted py-5">
+              <i class="fa fa-file-alt fa-3x mb-3"></i>
+              <p>{% trans "No HTML content available" %}</p>
+              {% if template.word_file %}
+                <p><small>{% trans "This template uses a Word file" %}</small></p>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

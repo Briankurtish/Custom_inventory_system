@@ -91,6 +91,8 @@ INSTALLED_APPS = [
     'parler',
     'apps.custom_clearance',
     'apps.workers.apps.WorkersConfig',
+    'apps.documents',
+    'apps.reports',
 ]
 
 MIDDLEWARE = [

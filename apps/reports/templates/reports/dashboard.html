@@ -1,0 +1,554 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Reports & Analytics Dashboard" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .kpi-card {
+    border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .kpi-card.revenue {
+    border-left-color: #28a745;
+  }
+  .kpi-card.outstanding {
+    border-left-color: #dc3545;
+  }
+  .kpi-card.collected {
+    border-left-color: #007bff;
+  }
+  .kpi-card.customers {
+    border-left-color: #6c757d;
+  }
+  .chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 20px;
+  }
+  .table-sm {
+    font-size: 11px !important;
+  }
+</style>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="fa fa-chart-line me-2"></i>{% trans "Reports & Analytics Dashboard" %}
+      </h4>
+      <p class="text-muted mb-0">{% trans "Comprehensive business performance metrics and insights" %}</p>
+    </div>
+    <div>
+      <button class="btn btn-sm btn-primary" onclick="window.print()">
+        <i class="fa fa-print me-1"></i>{% trans "Print" %}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">{% trans "From Date" %}</label>
+          <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{% trans "To Date" %}</label>
+          <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{% trans "Branch" %}</label>
+          <select name="branch" class="form-select form-select-sm">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if selected_branch == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.branch_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="fa fa-filter me-1"></i>{% trans "Apply" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card kpi-card revenue">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Total Revenue" %}</small>
+              <h4 class="mb-0 fw-bold text-success">
+                {{ total_revenue|floatformat:0|intcomma }} FCFA
+              </h4>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-success">
+                <i class="fa fa-dollar-sign fa-2x"></i>
+              </span>
+            </div>
+          </div>
+          <small class="text-muted">{% trans "Last" %} {{ date_from }} - {{ date_to }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card kpi-card outstanding">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Outstanding Debt" %}</small>
+              <h4 class="mb-0 fw-bold text-danger">
+                {{ total_outstanding|floatformat:0|intcomma }} FCFA
+              </h4>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-danger">
+                <i class="fa fa-exclamation-circle fa-2x"></i>
+              </span>
+            </div>
+          </div>
+          <small class="text-muted">{% trans "Receivables" %}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card kpi-card collected">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Collected" %}</small>
+              <h4 class="mb-0 fw-bold text-primary">
+                {{ total_paid|floatformat:0|intcomma}} FCFA
+              </h4>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-primary">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </span>
+            </div>
+          </div>
+          <small class="text-success">{{ collection_rate|floatformat:1 }}% {% trans "collection rate" %}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card kpi-card customers">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Active Customers" %}</small>
+              <h4 class="mb-0 fw-bold">
+                {{ active_customers }} / {{ total_customers }}
+              </h4>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-secondary">
+                <i class="fa fa-users fa-2x"></i>
+              </span>
+            </div>
+          </div>
+          <small class="text-muted">{{ total_orders }} {% trans "orders" %}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row mb-4">
+    <!-- Revenue Trend Chart -->
+    <div class="col-lg-8 mb-3">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h5 class="card-title mb-0">{% trans "Revenue Trend" %}</h5>
+          <span class="badge bg-primary">{% trans "Daily" %}</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="revenueTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods Chart -->
+    <div class="col-lg-4 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">{% trans "Payment Methods" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="paymentMethodChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Customers & Regional Performance -->
+  <div class="row mb-4">
+    <!-- Top Customers -->
+    <div class="col-lg-6 mb-3">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h5 class="card-title mb-0">{% trans "Top 5 Customers" %}</h5>
+          <a href="{% url 'client_financial_report' %}" class="btn btn-sm btn-outline-primary">
+            {% trans "View All" %}
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Customer" %}</th>
+                  <th class="text-end">{% trans "Revenue" %}</th>
+                  <th class="text-end">{% trans "Debt" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for customer in top_customers %}
+                <tr>
+                  <td>
+                    {% if customer.customer__id %}
+                      <a href="{% url 'client_detail_report' customer.customer__id %}">
+                        {{ customer.customer__customer_name }}
+                      </a>
+                    {% else %}
+                      {{ customer.customer__customer_name }}
+                    {% endif %}
+                    <br><small class="text-muted">{{ customer.customer__customer_id }}</small>
+                  </td>
+                  <td class="text-end fw-bold">{{ customer.total_revenue|floatformat:0|intcomma }}</td>
+                  <td class="text-end">
+                    <span class="badge bg-{% if customer.total_debt > 0 %}danger{% else %}success{% endif %}">
+                      {{ customer.total_debt|floatformat:0|intcomma }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue by Branch -->
+    <div class="col-lg-6 mb-3">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h5 class="card-title mb-0">{% trans "Revenue by Branch" %}</h5>
+          <a href="{% url 'regional_performance_report' %}" class="btn btn-sm btn-outline-primary">
+            {% trans "Detailed Report" %}
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Branch" %}</th>
+                  <th class="text-end">{% trans "Revenue" %}</th>
+                  <th class="text-end">{% trans "Debt" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for branch in revenue_by_branch %}
+                <tr>
+                  <td>{{ branch.branch__branch_name }}</td>
+                  <td class="text-end fw-bold">{{ branch.revenue|floatformat:0|intcomma }}</td>
+                  <td class="text-end">
+                    <span class="badge bg-{% if branch.debt > 0 %}warning{% else %}success{% endif %}">
+                      {{ branch.debt|floatformat:0|intcomma }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Sales Reps -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+      <h5 class="card-title mb-0">{% trans "Top Sales Representatives" %}</h5>
+      <a href="{% url 'sales_agent_performance_report' %}" class="btn btn-sm btn-outline-primary">
+        {% trans "Full Report" %}
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Rank" %}</th>
+              <th>{% trans "Sales Rep" %}</th>
+              <th>{% trans "Employee ID" %}</th>
+              <th class="text-end">{% trans "Total Sales" %}</th>
+              <th class="text-end">{% trans "Orders" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rep in top_sales_reps %}
+            <tr>
+              <td>
+                <span class="badge bg-{% if forloop.counter <= 3 %}primary{% else %}secondary{% endif %}">
+                  {{ forloop.counter }}
+                </span>
+              </td>
+              <td>{{ rep.sales_rep__user__first_name }} {{ rep.sales_rep__user__last_name }}</td>
+              <td>{{ rep.sales_rep__employee_id }}</td>
+              <td class="text-end fw-bold">{{ rep.total_sales|floatformat:0|intcomma }} FCFA</td>
+              <td class="text-end">{{ rep.order_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">{% trans "Detailed Reports" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'client_financial_report' %}" class="btn btn-outline-primary w-100">
+                <i class="fa fa-users me-2"></i>{% trans "Client Financial Reports" %}
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'regional_performance_report' %}" class="btn btn-outline-success w-100">
+                <i class="fa fa-map-marker-alt me-2"></i>{% trans "Regional Performance" %}
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'sales_agent_performance_report' %}" class="btn btn-outline-info w-100">
+                <i class="fa fa-user-tie me-2"></i>{% trans "Sales Agent Performance" %}
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'financial_summary_report' %}" class="btn btn-outline-warning w-100">
+                <i class="fa fa-chart-bar me-2"></i>{% trans "Financial Summary" %}
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'debt_analysis_report' %}" class="btn btn-outline-danger w-100">
+                <i class="fa fa-exclamation-triangle me-2"></i>{% trans "Debt Analysis" %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Revenue Trend Chart
+const revenueTrendCtx = document.getElementById('revenueTrendChart');
+const dailyRevenue = {{ daily_revenue|safe }};
+
+if (dailyRevenue && dailyRevenue.length > 0) {
+  new Chart(revenueTrendCtx, {
+    type: 'line',
+    data: {
+      labels: dailyRevenue.map(d => d.date),
+      datasets: [{
+        label: 'Revenue (FCFA)',
+        data: dailyRevenue.map(d => d.revenue),
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#28a745'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            font: {
+              size: 12,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: {
+            size: 14
+          },
+          bodyFont: {
+            size: 13
+          },
+          callbacks: {
+            label: function(context) {
+              return 'Revenue: ' + context.parsed.y.toLocaleString() + ' FCFA';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            font: {
+              size: 11
+            },
+            callback: function(value) {
+              return value.toLocaleString() + ' FCFA';
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              size: 11
+            }
+          }
+        }
+      }
+    }
+  });
+} else {
+  revenueTrendCtx.parentElement.innerHTML = '<div class="text-center text-muted py-5">No revenue data available for the selected period</div>';
+}
+
+// Payment Method Chart
+const paymentMethodCtx = document.getElementById('paymentMethodChart');
+const paymentData = {{ payment_breakdown|safe }};
+
+if (paymentData && paymentData.length > 0) {
+  new Chart(paymentMethodCtx, {
+    type: 'doughnut',
+    data: {
+      labels: paymentData.map(p => p.payment_mode),
+      datasets: [{
+        data: paymentData.map(p => p.total),
+        backgroundColor: [
+          '#007bff',
+          '#28a745',
+          '#ffc107',
+          '#dc3545',
+          '#6c757d',
+          '#17a2b8',
+          '#6f42c1'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 15,
+            font: {
+              size: 11
+            },
+            generateLabels: function(chart) {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  return {
+                    text: label + ': ' + value.toLocaleString() + ' FCFA',
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    hidden: false,
+                    index: i
+                  };
+                });
+              }
+              return [];
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: {
+            size: 14
+          },
+          bodyFont: {
+            size: 13
+          },
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(1);
+              return label + ': ' + value.toLocaleString() + ' FCFA (' + percentage + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+} else {
+  paymentMethodCtx.parentElement.innerHTML = '<div class="text-center text-muted py-5">No payment data available for the selected period</div>';
+}
+</script>
+{% endblock %}

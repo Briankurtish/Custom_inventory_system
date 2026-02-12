@@ -1,0 +1,289 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Financial Summary Report" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+</style>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="fa fa-chart-bar me-2"></i>{% trans "Financial Summary Report" %}
+      </h4>
+      <p class="text-muted mb-0">{% trans "Comprehensive financial analysis and trends" %}</p>
+    </div>
+    <div>
+      <a href="{% url 'reports_dashboard' %}" class="btn btn-sm btn-secondary">
+        <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">{% trans "From Date" %}</label>
+          <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{% trans "To Date" %}</label>
+          <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{% trans "View" %}</label>
+          <select name="view" class="form-select form-select-sm">
+            <option value="daily" {% if view_type == 'daily' %}selected{% endif %}>{% trans "Daily" %}</option>
+            <option value="weekly" {% if view_type == 'weekly' %}selected{% endif %}>{% trans "Weekly" %}</option>
+            <option value="monthly" {% if view_type == 'monthly' %}selected{% endif %}>{% trans "Monthly" %}</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fa fa-filter me-1"></i>{% trans "Apply" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Revenue Summary -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Total Revenue" %}</small>
+          <h4 class="mb-0 fw-bold text-success">{{ revenue_summary.total_with_taxes|floatformat:0|intcomma }} FCFA</h4>
+          <small class="text-muted">{{ revenue_summary.total_invoices }} {% trans "invoices" %}</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Total Collected" %}</small>
+          <h4 class="mb-0 fw-bold text-primary">{{ revenue_summary.total_collected|floatformat:0|intcomma }} FCFA</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Outstanding" %}</small>
+          <h4 class="mb-0 fw-bold text-danger">{{ revenue_summary.total_outstanding|floatformat:0|intcomma }} FCFA</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trend Chart -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Revenue Trend" %}</h5>
+    </div>
+    <div class="card-body">
+      <div style="position: relative; height: 400px;">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Method Breakdown -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Payment Methods Breakdown" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>{% trans "Payment Mode" %}</th>
+              <th class="text-end">{% trans "Total Amount" %}</th>
+              <th class="text-center">{% trans "Count" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for method in payment_by_method %}
+            <tr>
+              <td><strong>{{ method.payment_mode }}</strong></td>
+              <td class="text-end">{{ method.total|floatformat:0|intcomma }} FCFA</td>
+              <td class="text-center">{{ method.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cash vs Credit -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Cash vs Credit Analysis" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>{% trans "Payment Method" %}</th>
+              <th class="text-end">{% trans "Total Amount" %}</th>
+              <th class="text-center">{% trans "Orders" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for method in cash_credit %}
+            <tr>
+              <td><strong>{{ method.payment_method }}</strong></td>
+              <td class="text-end">{{ method.total|floatformat:0|intcomma }} FCFA</td>
+              <td class="text-center">{{ method.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Trend Chart
+const trendCtx = document.getElementById('trendChart');
+const trendData = {{ trend_data|safe }};
+
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: trendData.map(d => d.period),
+    datasets: [
+      {
+        label: 'Revenue (FCFA)',
+        data: trendData.map(d => d.revenue),
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#28a745'
+      },
+      {
+        label: 'Collected (FCFA)',
+        data: trendData.map(d => d.collected),
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#007bff'
+      },
+      {
+        label: 'Outstanding (FCFA)',
+        data: trendData.map(d => d.outstanding),
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#dc3545'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          },
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        bodySpacing: 6,
+        callbacks: {
+          label: function(context) {
+            return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' FCFA';
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          callback: function(value) {
+            if (value >= 1000000) {
+              return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+              return (value / 1000).toFixed(0) + 'K';
+            }
+            return value.toLocaleString();
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

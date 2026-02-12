@@ -1,0 +1,127 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Follow-up" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Follow-ups" %} /</span>
+    {% if follow_up %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %}
+  </h4>
+
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            {% if follow_up %}
+              {% trans "Edit Follow-up" %}
+            {% else %}
+              {% trans "Create Follow-up for" %} {{ document.title }}
+            {% endif %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            {% if document %}
+            <div class="alert alert-info">
+              <strong>{% trans "Document:" %}</strong> {{ document.title }}<br>
+              <strong>{% trans "Customer:" %}</strong> {{ document.customer.customer_name }}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+              {{ form.title.label_tag }}
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="text-danger">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.description.label_tag }}
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                {{ form.priority.label_tag }}
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                  <div class="text-danger">{{ form.priority.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.status.label_tag }}
+                {{ form.status }}
+                {% if form.status.errors %}
+                  <div class="text-danger">{{ form.status.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                {{ form.due_date.label_tag }}
+                {{ form.due_date }}
+                {% if form.due_date.errors %}
+                  <div class="text-danger">{{ form.due_date.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.reminder_date.label_tag }}
+                {{ form.reminder_date }}
+                <small class="form-text text-muted">{% trans "Optional reminder date" %}</small>
+                {% if form.reminder_date.errors %}
+                  <div class="text-danger">{{ form.reminder_date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.assigned_to.label_tag }}
+              {{ form.assigned_to }}
+              {% if form.assigned_to.errors %}
+                <div class="text-danger">{{ form.assigned_to.errors }}</div>
+              {% endif %}
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% if follow_up %}{% url 'document_detail' follow_up.document.id %}{% elif document %}{% url 'document_detail' document.id %}{% else %}{% url 'followup_list' %}{% endif %}"
+                 class="btn btn-outline-secondary">
+                {% trans "Cancel" %}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save me-2"></i>{% trans "Save Follow-up" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

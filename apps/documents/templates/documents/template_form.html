@@ -1,0 +1,165 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ action }} {% trans "Template" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+</style>
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Templates" %} /</span> {{ action }}
+  </h4>
+
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ action }} {% trans "Document Template" %}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              {{ form.name.label_tag }}
+              {{ form.name }}
+              {% if form.name.errors %}
+                <div class="text-danger">{{ form.name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.template_type.label_tag }}
+              {{ form.template_type }}
+              {% if form.template_type.errors %}
+                <div class="text-danger">{{ form.template_type.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.description.label_tag }}
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+
+            <ul class="nav nav-tabs mb-3" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="html-tab" data-bs-toggle="tab"
+                        data-bs-target="#html-content" type="button">
+                  {% trans "HTML Editor" %}
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="file-tab" data-bs-toggle="tab"
+                        data-bs-target="#file-upload" type="button">
+                  {% trans "Upload Word File" %}
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="html-content" role="tabpanel">
+                <div class="mb-3">
+                  {{ form.html_content.label_tag }}
+                  {{ form.html_content }}
+                  <small class="form-text text-muted">
+                    {% trans "Use merge fields: {customer_name}, {customer_id}, {contact_person}, {email}, {telephone}, {date}" %}
+                  </small>
+                  {% if form.html_content.errors %}
+                    <div class="text-danger">{{ form.html_content.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="file-upload" role="tabpanel">
+                <div class="mb-3">
+                  {{ form.word_file.label_tag }}
+                  {{ form.word_file }}
+                  {% if template.word_file %}
+                    <small class="form-text text-muted">
+                      {% trans "Current file:" %} {{ template.word_file.name }}
+                    </small>
+                  {% endif %}
+                  {% if form.word_file.errors %}
+                    <div class="text-danger">{{ form.word_file.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3 form-check">
+              {{ form.is_active }}
+              {{ form.is_active.label_tag }}
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% if template %}{% url 'template_detail' template.id %}{% else %}{% url 'template_list' %}{% endif %}"
+                 class="btn btn-outline-secondary">
+                {% trans "Cancel" %}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save me-2"></i>{% trans "Save Template" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize CKEditor - wait for both CKEditor library and DOM
+  (function() {
+    var checkCKEditor = setInterval(function() {
+      if (typeof CKEDITOR !== 'undefined') {
+        clearInterval(checkCKEditor);
+
+        // Wait for DOM element
+        var checkElement = setInterval(function() {
+          var htmlField = document.getElementById('id_html_content');
+          if (htmlField) {
+            clearInterval(checkElement);
+
+            try {
+              CKEDITOR.replace('id_html_content', {
+                height: 400,
+                toolbar: [
+                  ['Source'],
+                  ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
+                  ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'],
+                  ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+                  ['Link', 'Unlink'],
+                  ['Format', 'Font', 'FontSize'],
+                  ['TextColor', 'BGColor'],
+                  ['Maximize']
+                ]
+              });
+              console.log('✓ CKEditor loaded successfully');
+            } catch(e) {
+              console.error('✗ CKEditor error:', e);
+            }
+          }
+        }, 100);
+      }
+    }, 100);
+  })();
+</script>
+{% endblock %}

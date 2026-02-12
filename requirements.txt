@@ -154,5 +154,6 @@ whitenoise==6.7.0
 wsproto==1.2.0
 WTForms==3.2.1
 xhtml2pdf==0.2.16
+python-docx==1.1.2
 zopfli==0.2.3.post1
 zstandard==0.23.0

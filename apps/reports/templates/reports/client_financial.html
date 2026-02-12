@@ -1,0 +1,239 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Client Financial Reports" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .debt-badge {
+    font-weight: bold;
+  }
+  .customer-row:hover {
+    background-color: #f8f9fa;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="fa fa-users me-2"></i>{% trans "Client Financial Reports" %}
+      </h4>
+      <p class="text-muted mb-0">{% trans "Debt burden and payment history for all clients" %}</p>
+    </div>
+    <div>
+      <a href="{% url 'reports_dashboard' %}" class="btn btn-sm btn-secondary">
+        <i class="fa fa-arrow-left me-1"></i>{% trans "Back to Dashboard" %}
+      </a>
+      <button class="btn btn-sm btn-success" onclick="exportToExcel()">
+        <i class="fa fa-file-excel me-1"></i>{% trans "Export" %}
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted d-block">{% trans "Total Revenue" %}</small>
+          <h4 class="mb-0 fw-bold text-success">
+            {{ totals.total_revenue|floatformat:0|intcomma }} FCFA
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted d-block">{% trans "Total Debt" %}</small>
+          <h4 class="mb-0 fw-bold text-danger">
+            {{ totals.total_debt|floatformat:0|intcomma }} FCFA
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted d-block">{% trans "Total Collected" %}</small>
+          <h4 class="mb-0 fw-bold text-primary">
+            {{ totals.total_paid|floatformat:0|intcomma }} FCFA
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">{% trans "Search Customer" %}</label>
+          <input type="text" name="search" class="form-control form-control-sm"
+                 placeholder="{% trans 'Name or ID' %}" value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{% trans "Branch" %}</label>
+          <select name="branch" class="form-select form-select-sm">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if selected_branch == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.branch_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{% trans "Debt Status" %}</label>
+          <select name="debt_status" class="form-select form-select-sm">
+            <option value="all" {% if debt_filter == 'all' %}selected{% endif %}>{% trans "All" %}</option>
+            <option value="with_debt" {% if debt_filter == 'with_debt' %}selected{% endif %}>{% trans "With Debt" %}</option>
+            <option value="no_debt" {% if debt_filter == 'no_debt' %}selected{% endif %}>{% trans "No Debt" %}</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="fa fa-filter me-1"></i>{% trans "Apply Filters" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Customers Table -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <h5 class="card-title mb-0">{% trans "Customer Financial Summary" %}</h5>
+      <span class="badge bg-primary">{{ customers|length }} {% trans "customers" %}</span>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover" id="customersTable">
+          <thead>
+            <tr>
+              <th>{% trans "Customer ID" %}</th>
+              <th>{% trans "Customer Name" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th>{% trans "Sales Rep" %}</th>
+              <th class="text-end">{% trans "Total Revenue" %}</th>
+              <th class="text-end">{% trans "Paid" %}</th>
+              <th class="text-end">{% trans "Outstanding" %}</th>
+              <th class="text-center">{% trans "Orders" %}</th>
+              <th>{% trans "Last Order" %}</th>
+              <th class="text-center">{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customers %}
+            <tr class="customer-row">
+              <td><strong>{{ customer.customer_id }}</strong></td>
+              <td>
+                <a href="{% url 'client_detail_report' customer.id %}">
+                  {{ customer.customer_name }}
+                </a>
+              </td>
+              <td>
+                {% if customer.branch %}
+                  <span class="badge bg-label-secondary">{{ customer.branch.branch_name }}</span>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if customer.sales_rep %}
+                  {{ customer.sales_rep.employee_id }}
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td class="text-end fw-bold">{{ customer.total_revenue|floatformat:0|intcomma }}</td>
+              <td class="text-end text-success">{{ customer.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-end">
+                <span class="debt-badge badge bg-{% if customer.total_debt > 0 %}danger{% else %}success{% endif %}">
+                  {{ customer.total_debt|floatformat:0|intcomma }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-label-info">{{ customer.total_orders }}</span>
+              </td>
+              <td>
+                {% if customer.last_order_date %}
+                  {{ customer.last_order_date|date:"Y-m-d" }}
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{% url 'client_detail_report' customer.id %}"
+                   class="btn btn-sm btn-outline-primary" title="{% trans 'View Details' %}">
+                  <i class="fa fa-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="10" class="text-center text-muted py-4">
+                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                {% trans "No customers found matching your criteria" %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="fw-bold">
+              <td colspan="4" class="text-end">{% trans "TOTALS:" %}</td>
+              <td class="text-end text-success">{{ totals.total_revenue|floatformat:0|intcomma }}</td>
+              <td class="text-end text-primary">{{ totals.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-end text-danger">{{ totals.total_debt|floatformat:0|intcomma }}</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+function exportToExcel() {
+  // Simple CSV export
+  const table = document.getElementById('customersTable');
+  let csv = [];
+
+  // Headers
+  const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+  csv.push(headers.join(','));
+
+  // Data rows
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll('td')).map(td => {
+      return '"' + td.textContent.trim().replace(/"/g, '""') + '"';
+    });
+    if (cells.length > 0) {
+      csv.push(cells.join(','));
+    }
+  });
+
+  // Download
+  const csvContent = csv.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'client_financial_report_' + new Date().toISOString().split('T')[0] + '.csv';
+  link.click();
+}
+</script>
+{% endblock %}

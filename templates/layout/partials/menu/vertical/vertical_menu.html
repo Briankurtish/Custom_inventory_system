@@ -959,6 +959,108 @@
       </ul>
     </li>
 
+    <!-- Document Management -->
+    <li class="shadcn-menu-item {% if '/documents/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-file-alt"></i>
+        <div class="shadcn-menu-text" data-i18n="Document Management">{% trans "Document Management" %}</div>
+        <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
+      </a>
+      <ul class="shadcn-menu-sub">
+        <li
+          class="shadcn-menu-item {% if 'document_dashboard' == request.resolver_match.url_name or '/documents/' == request.path %}active{% endif %}"
+        >
+          <a href="{% url 'document_dashboard' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboard">{% trans "Dashboard" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'document_list' == request.resolver_match.url_name or '/documents/documents/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'document_list' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-file-text"></i>
+            <div class="shadcn-menu-text" data-i18n="All Documents">{% trans "All Documents" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'template_list' == request.resolver_match.url_name or '/documents/templates/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'template_list' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-file-contract"></i>
+            <div class="shadcn-menu-text" data-i18n="Templates">{% trans "Templates" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'followup_list' == request.resolver_match.url_name or '/documents/follow-ups/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'followup_list' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-tasks"></i>
+            <div class="shadcn-menu-text" data-i18n="Follow-ups">{% trans "Follow-ups" %}</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Reports & Analytics -->
+    <li class="shadcn-menu-item {% if '/reports/' in request.path %}open{% endif %}">
+      <a href="javascript:void(0)" class="shadcn-menu-link">
+        <i class="shadcn-menu-icon fa-solid fa-chart-pie"></i>
+        <div class="shadcn-menu-text" data-i18n="Reports & Analytics">{% trans "Reports & Analytics" %}</div>
+        <i class="shadcn-menu-toggle fa-solid fa-chevron-down"></i>
+      </a>
+      <ul class="shadcn-menu-sub">
+        <li
+          class="shadcn-menu-item {% if 'reports_dashboard' == request.resolver_match.url_name or '/reports/' == request.path %}active{% endif %}"
+        >
+          <a href="{% url 'reports_dashboard' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-tachometer-alt"></i>
+            <div class="shadcn-menu-text" data-i18n="Dashboard">{% trans "Dashboard" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'client_financial_report' == request.resolver_match.url_name or '/reports/client-financial/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'client_financial_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-users"></i>
+            <div class="shadcn-menu-text" data-i18n="Client Financial">{% trans "Client Financial" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'regional_performance_report' == request.resolver_match.url_name or '/reports/regional-performance/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'regional_performance_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-map-marked-alt"></i>
+            <div class="shadcn-menu-text" data-i18n="Regional Performance">{% trans "Regional Performance" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'sales_agent_performance_report' == request.resolver_match.url_name or '/reports/sales-agent-performance/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'sales_agent_performance_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-user-tie"></i>
+            <div class="shadcn-menu-text" data-i18n="Sales Agent Performance">{% trans "Sales Agent Performance" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'financial_summary_report' == request.resolver_match.url_name or '/reports/financial-summary/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'financial_summary_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-chart-bar"></i>
+            <div class="shadcn-menu-text" data-i18n="Financial Summary">{% trans "Financial Summary" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'debt_analysis_report' == request.resolver_match.url_name or '/reports/debt-analysis/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'debt_analysis_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-exclamation-triangle"></i>
+            <div class="shadcn-menu-text" data-i18n="Debt Analysis">{% trans "Debt Analysis" %}</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
     <!-- Email Management -->
     <li class="shadcn-menu-item {% if '/emails/' in request.path %}open{% endif %}">
       <a href="javascript:void(0)" class="shadcn-menu-link">

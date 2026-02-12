@@ -1,0 +1,260 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ action }} {% trans "Document" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+</style>
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {{ action }}
+  </h4>
+
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ action }} {% trans "Document" %}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" id="document-form">
+            {% csrf_token %}
+
+            <!-- Customer Selection -->
+            <div class="mb-3">
+              {{ form.customer.label_tag }}
+              {{ form.customer }}
+              {% if form.customer.errors %}
+                <div class="text-danger">{{ form.customer.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Template Selection -->
+            <div class="mb-3">
+              {{ form.template.label_tag }}
+              {{ form.template }}
+              <small class="form-text text-muted">
+                {% trans "Select a template to populate content automatically" %}
+              </small>
+              {% if form.template.errors %}
+                <div class="text-danger">{{ form.template.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Title -->
+            <div class="mb-3">
+              {{ form.title.label_tag }}
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="text-danger">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              {{ form.description.label_tag }}
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Content Type Tabs -->
+            <ul class="nav nav-tabs mb-3" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="html-tab" data-bs-toggle="tab" data-bs-target="#html-content" type="button">
+                  {% trans "Edit Online" %}
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-upload" type="button">
+                  {% trans "Upload Word File" %}
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <!-- HTML Editor Tab -->
+              <div class="tab-pane fade show active" id="html-content" role="tabpanel">
+                <div class="mb-3">
+                  {{ form.html_content.label_tag }}
+                  {{ form.html_content }}
+                  {% if form.html_content.errors %}
+                    <div class="text-danger">{{ form.html_content.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- File Upload Tab -->
+              <div class="tab-pane fade" id="file-upload" role="tabpanel">
+                <div class="mb-3">
+                  {{ form.word_file.label_tag }}
+                  {{ form.word_file }}
+                  {% if document.word_file %}
+                    <small class="form-text text-muted">
+                      {% trans "Current file:" %} {{ document.get_file_name }}
+                    </small>
+                  {% endif %}
+                  {% if form.word_file.errors %}
+                    <div class="text-danger">{{ form.word_file.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-3">
+              {{ form.status.label_tag }}
+              {{ form.status }}
+              {% if form.status.errors %}
+                <div class="text-danger">{{ form.status.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Follow-up Section -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="mb-0">{% trans "Follow-up Settings" %}</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3 form-check">
+                  {{ form.requires_follow_up }}
+                  {{ form.requires_follow_up.label_tag }}
+                </div>
+
+                <div id="follow-up-fields" style="display: none;">
+                  <div class="mb-3">
+                    {{ form.follow_up_date.label_tag }}
+                    {{ form.follow_up_date }}
+                    {% if form.follow_up_date.errors %}
+                      <div class="text-danger">{{ form.follow_up_date.errors }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="mb-3">
+                    {{ form.follow_up_notes.label_tag }}
+                    {{ form.follow_up_notes }}
+                    {% if form.follow_up_notes.errors %}
+                      <div class="text-danger">{{ form.follow_up_notes.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Summary (for edits) -->
+            {% if action == 'Edit' %}
+            <div class="mb-3">
+              <label for="change_summary" class="form-label">{% trans "Change Summary" %}</label>
+              <textarea name="change_summary" id="change_summary" class="form-control" rows="2"
+                        placeholder="{% trans 'Describe what changed in this version...' %}"></textarea>
+            </div>
+            {% endif %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% if document %}{% url 'document_detail' document.id %}{% else %}{% url 'document_list' %}{% endif %}"
+                 class="btn btn-outline-secondary">
+                {% trans "Cancel" %}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save me-2"></i>{% trans "Save Document" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // Initialize CKEditor - wait for both CKEditor library and DOM
+  (function() {
+    var checkCKEditor = setInterval(function() {
+      if (typeof CKEDITOR !== 'undefined') {
+        clearInterval(checkCKEditor);
+
+        // Wait for DOM element
+        var checkElement = setInterval(function() {
+          var htmlField = document.getElementById('id_html_content');
+          if (htmlField) {
+            clearInterval(checkElement);
+
+            try {
+              CKEDITOR.replace('id_html_content', {
+                height: 400,
+                toolbar: [
+                  ['Source'],
+                  ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
+                  ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+                  ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+                  ['Link', 'Unlink'],
+                  ['Format', 'Font', 'FontSize'],
+                  ['TextColor', 'BGColor'],
+                  ['Maximize']
+                ]
+              });
+              console.log('✓ CKEditor loaded successfully');
+            } catch(e) {
+              console.error('✗ CKEditor error:', e);
+            }
+          }
+        }, 100);
+      }
+    }, 100);
+  })();
+
+  // Template selection - load content
+  setTimeout(function() {
+    const templateSelect = document.getElementById('id_template');
+    if (templateSelect) {
+      templateSelect.addEventListener('change', function() {
+        const templateId = this.value;
+        if (templateId) {
+          fetch(`/en/documents/templates/${templateId}/content/`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.success && data.html_content && CKEDITOR.instances['id_html_content']) {
+                CKEDITOR.instances['id_html_content'].setData(data.html_content);
+              }
+              const titleField = document.querySelector('[name="title"]');
+              if (!titleField.value) {
+                titleField.value = data.name;
+              }
+            })
+            .catch(error => console.error('Error loading template:', error));
+        }
+      });
+    }
+
+    // Follow-up checkbox toggle
+    const followUpCheckbox = document.getElementById('id_requires_follow_up');
+    if (followUpCheckbox) {
+      followUpCheckbox.addEventListener('change', function() {
+        document.getElementById('follow-up-fields').style.display = this.checked ? 'block' : 'none';
+      });
+      if (followUpCheckbox.checked) {
+        document.getElementById('follow-up-fields').style.display = 'block';
+      }
+    }
+  }, 500);
+</script>
+{% endblock %}

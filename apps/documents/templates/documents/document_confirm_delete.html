@@ -1,0 +1,49 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Document" %}{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {% trans "Delete" %}
+  </h4>
+
+  <div class="row">
+    <div class="col-lg-6 offset-lg-3">
+      <div class="card">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">
+            <i class="fa fa-exclamation-triangle me-2"></i>{% trans "Confirm Deletion" %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <p>{% trans "Are you sure you want to delete this document?" %}</p>
+
+          <div class="alert alert-warning">
+            <strong>{% trans "Document:" %}</strong> {{ document.title }}<br>
+            <strong>{% trans "Customer:" %}</strong> {{ document.customer.customer_name }}<br>
+            <strong>{% trans "Created:" %}</strong> {{ document.created_at|date:"Y-m-d H:i" }}
+          </div>
+
+          <p class="text-danger">
+            <strong>{% trans "Warning:" %}</strong>
+            {% trans "This action cannot be undone. All versions and follow-ups associated with this document will also be deleted." %}
+          </p>
+
+          <form method="post" class="d-flex justify-content-end gap-2">
+            {% csrf_token %}
+            <a href="{% url 'document_detail' document.id %}" class="btn btn-secondary">
+              {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="fa fa-trash me-2"></i>{% trans "Delete Document" %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

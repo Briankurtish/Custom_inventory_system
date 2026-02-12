@@ -1,0 +1,432 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{{ customer.customer_name }} - {% trans "Financial Report" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .account-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .status-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+</style>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Customer Header -->
+  <div class="account-header">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h3 class="mb-2">{{ customer.customer_name }}</h3>
+        <p class="mb-2"><strong>{% trans "Customer ID:" %}</strong> {{ customer.customer_id }}</p>
+        <p class="mb-2">
+          <i class="fa fa-map-marker-alt me-2"></i>
+          {% if customer.branch %}{{ customer.branch.branch_name }}{% else %}{% trans "No Branch" %}{% endif %}
+        </p>
+        <p class="mb-0">
+          <i class="fa fa-user-tie me-2"></i>
+          {% if customer.sales_rep %}
+            {{ customer.sales_rep.user.get_full_name }} ({{ customer.sales_rep.employee_id }})
+          {% else %}
+            {% trans "No Sales Rep" %}
+          {% endif %}
+        </p>
+      </div>
+      <div class="text-end">
+        <a href="{% url 'client_financial_report' %}" class="btn btn-light btn-sm mb-2">
+          <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
+        </a>
+        <button class="btn btn-light btn-sm" onclick="window.print()">
+          <i class="fa fa-print me-1"></i>{% trans "Print" %}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Financial Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Total Invoiced" %}</small>
+              <h5 class="mb-0 fw-bold">{{ financial_summary.total_amount|floatformat:0|intcomma }}</h5>
+              <small class="text-muted">FCFA</small>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-primary">
+                <i class="fa fa-file-invoice fa-2x"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Total Paid" %}</small>
+              <h5 class="mb-0 fw-bold text-success">{{ financial_summary.total_paid|floatformat:0|intcomma }}</h5>
+              <small class="text-muted">FCFA</small>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-success">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card border-danger">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Outstanding Debt" %}</small>
+              <h5 class="mb-0 fw-bold text-danger">{{ financial_summary.total_outstanding|floatformat:0|intcomma }}</h5>
+              <small class="text-muted">FCFA</small>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-danger">
+                <i class="fa fa-exclamation-circle fa-2x"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">{% trans "Total Invoices" %}</small>
+              <h5 class="mb-0 fw-bold">{{ financial_summary.total_invoices }}</h5>
+              <small class="text-muted">{% trans "invoices" %}</small>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded bg-label-info">
+                <i class="fa fa-list fa-2x"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Trend Chart -->
+  {% if monthly_trend %}
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Monthly Revenue & Debt Trend" %}</h5>
+    </div>
+    <div class="card-body">
+      <div style="position: relative; height: 300px;">
+        <canvas id="monthlyTrendChart"></canvas>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tabs for Invoices, Payments, Orders -->
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button">
+        <i class="fa fa-file-invoice me-1"></i>{% trans "Invoices" %} ({{ invoices|length }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button">
+        <i class="fa fa-money-bill me-1"></i>{% trans "Payment History" %} ({{ payments|length }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button">
+        <i class="fa fa-shopping-cart me-1"></i>{% trans "Orders" %} ({{ orders|length }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Invoices Tab -->
+    <div class="tab-pane fade show active" id="invoices" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Invoice ID" %}</th>
+                  <th>{% trans "Date" %}</th>
+                  <th class="text-end">{% trans "Amount" %}</th>
+                  <th class="text-end">{% trans "Paid" %}</th>
+                  <th class="text-end">{% trans "Due" %}</th>
+                  <th>{% trans "Status" %}</th>
+                  <th>{% trans "Payment Method" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                  <td><strong>{{ invoice.invoice_id }}</strong></td>
+                  <td>{{ invoice.created_at|date:"Y-m-d H:i" }}</td>
+                  <td class="text-end">{{ invoice.total_with_taxes|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-success">{{ invoice.amount_paid|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-danger">{{ invoice.amount_due|floatformat:0|intcomma }}</td>
+                  <td>
+                    <span class="status-badge badge bg-{% if invoice.status == 'Payment Completed' %}success{% elif invoice.status == 'Payment Ongoing' %}warning{% else %}danger{% endif %}">
+                      {{ invoice.status }}
+                    </span>
+                  </td>
+                  <td>{{ invoice.payment_method }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4">
+                    {% trans "No invoices found" %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Tab -->
+    <div class="tab-pane fade" id="payments" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Date" %}</th>
+                  <th>{% trans "Invoice" %}</th>
+                  <th>{% trans "Payment Mode" %}</th>
+                  <th class="text-end">{% trans "Amount Paid" %}</th>
+                  <th class="text-end">{% trans "Invoice Total" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for payment in payments %}
+                <tr>
+                  <td>{{ payment.payment_date|date:"Y-m-d H:i" }}</td>
+                  <td><strong>{{ payment.invoice.invoice_id }}</strong></td>
+                  <td>
+                    <span class="badge bg-label-primary">{{ payment.payment_mode }}</span>
+                  </td>
+                  <td class="text-end fw-bold">{{ payment.amount_paid|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-muted">{{ payment.invoice_total|floatformat:0|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    {% trans "No payments found" %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Tab -->
+    <div class="tab-pane fade" id="orders" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>{% trans "Order ID" %}</th>
+                  <th>{% trans "Date" %}</th>
+                  <th>{% trans "Type" %}</th>
+                  <th class="text-end">{% trans "Total" %}</th>
+                  <th>{% trans "Status" %}</th>
+                  <th>{% trans "Payment Method" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td><strong>{{ order.purchase_order_id }}</strong></td>
+                  <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                  <td>
+                    <span class="badge bg-label-info">{{ order.order_type }}</span>
+                  </td>
+                  <td class="text-end">{{ order.grand_total|floatformat:0|intcomma }}</td>
+                  <td>
+                    <span class="status-badge badge bg-{% if order.status == 'Completed' %}success{% elif order.status == 'Approved' %}primary{% elif order.status == 'Rejected' %}danger{% else %}warning{% endif %}">
+                      {{ order.status }}
+                    </span>
+                  </td>
+                  <td>{{ order.payment_method }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    {% trans "No orders found" %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+const monthlyTrendRaw = {{ monthly_trend|safe }};
+if (monthlyTrendRaw && monthlyTrendRaw.length > 0) {
+// Monthly Trend Chart
+const monthlyTrendCtx = document.getElementById('monthlyTrendChart');
+const monthlyData = monthlyTrendRaw;
+
+new Chart(monthlyTrendCtx, {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => new Date(d.month).toLocaleDateString('en-US', {year: 'numeric', month: 'short'})),
+    datasets: [
+      {
+        label: 'Revenue (FCFA)',
+        data: monthlyData.map(d => d.revenue),
+        backgroundColor: 'rgba(40, 167, 69, 0.85)',
+        borderColor: '#28a745',
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      },
+      {
+        label: 'Paid (FCFA)',
+        data: monthlyData.map(d => d.paid),
+        backgroundColor: 'rgba(0, 123, 255, 0.85)',
+        borderColor: '#007bff',
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      },
+      {
+        label: 'Outstanding (FCFA)',
+        data: monthlyData.map(d => d.outstanding),
+        backgroundColor: 'rgba(220, 53, 69, 0.85)',
+        borderColor: '#dc3545',
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          },
+          usePointStyle: true,
+          pointStyle: 'rectRounded'
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        bodySpacing: 6,
+        callbacks: {
+          label: function(context) {
+            return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' FCFA';
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          callback: function(value) {
+            if (value >= 1000000) {
+              return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+              return (value / 1000).toFixed(0) + 'K';
+            }
+            return value.toLocaleString();
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
+        }
+      }
+    }
+  }
+});
+} else {
+  const monthlyTrendCtx = document.getElementById('monthlyTrendChart');
+  if (monthlyTrendCtx) {
+    monthlyTrendCtx.parentElement.innerHTML = '<div class="text-center text-muted py-5">No monthly data available</div>';
+  }
+}
+</script>
+{% endblock %}

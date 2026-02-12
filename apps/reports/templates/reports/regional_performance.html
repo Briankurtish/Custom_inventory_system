@@ -1,0 +1,259 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Regional Performance Report" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .rank-badge {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="fa fa-map-marker-alt me-2"></i>{% trans "Regional Performance Report" %}
+      </h4>
+      <p class="text-muted mb-0">{% trans "Sales and debt analysis by branch" %}</p>
+    </div>
+    <div>
+      <a href="{% url 'reports_dashboard' %}" class="btn btn-sm btn-secondary">
+        <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Date Range Filter -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label">{% trans "From Date" %}</label>
+          <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">{% trans "To Date" %}</label>
+          <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="fa fa-filter me-1"></i>{% trans "Apply" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Total Revenue (All Branches)" %}</small>
+          <h4 class="mb-0 fw-bold text-success">{{ totals.total_revenue|floatformat:0|intcomma }} FCFA</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Total Outstanding (All Branches)" %}</small>
+          <h4 class="mb-0 fw-bold text-danger">{{ totals.total_debt|floatformat:0|intcomma }} FCFA</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <small class="text-muted">{% trans "Total Orders" %}</small>
+          <h4 class="mb-0 fw-bold">{{ totals.total_orders }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regional Comparison Chart -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Revenue & Debt by Branch" %}</h5>
+    </div>
+    <div class="card-body">
+      <div style="position: relative; height: 400px;">
+        <canvas id="regionalChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branch Performance Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">{% trans "Detailed Branch Performance" %}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>{% trans "Rank" %}</th>
+              <th>{% trans "Branch" %}</th>
+              <th class="text-center">{% trans "Customers" %}</th>
+              <th class="text-center">{% trans "Orders" %}</th>
+              <th class="text-end">{% trans "Revenue" %}</th>
+              <th class="text-end">{% trans "Collected" %}</th>
+              <th class="text-end">{% trans "Outstanding" %}</th>
+              <th class="text-center">{% trans "Sales Reps" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for branch in branches %}
+            <tr>
+              <td>
+                <span class="rank-badge {% if forloop.counter <= 3 %}bg-primary text-white{% else %}bg-light{% endif %}">
+                  {{ forloop.counter }}
+                </span>
+              </td>
+              <td><strong>{{ branch.branch_name }}</strong></td>
+              <td class="text-center">{{ branch.total_customers }}</td>
+              <td class="text-center">{{ branch.total_orders }}</td>
+              <td class="text-end fw-bold text-success">{{ branch.total_revenue|floatformat:0|intcomma }}</td>
+              <td class="text-end text-primary">{{ branch.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-end">
+                <span class="badge bg-{% if branch.total_debt > 0 %}danger{% else %}success{% endif %}">
+                  {{ branch.total_debt|floatformat:0|intcomma }}
+                </span>
+              </td>
+              <td class="text-center">{{ branch.active_sales_reps }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Regional Comparison Chart
+const regionalCtx = document.getElementById('regionalChart');
+const regionalData = {{ regional_data|safe }};
+
+new Chart(regionalCtx, {
+  type: 'bar',
+  data: {
+    labels: regionalData.map(d => d.branch_name),
+    datasets: [
+      {
+        label: 'Revenue (FCFA)',
+        data: regionalData.map(d => d.total_revenue),
+        backgroundColor: 'rgba(40, 167, 69, 0.85)',
+        borderColor: '#28a745',
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      },
+      {
+        label: 'Outstanding Debt (FCFA)',
+        data: regionalData.map(d => d.total_debt),
+        backgroundColor: 'rgba(220, 53, 69, 0.85)',
+        borderColor: '#dc3545',
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          },
+          usePointStyle: true,
+          pointStyle: 'rectRounded'
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        bodySpacing: 6,
+        callbacks: {
+          label: function(context) {
+            return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' FCFA';
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          callback: function(value) {
+            if (value >= 1000000) {
+              return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+              return (value / 1000).toFixed(0) + 'K';
+            }
+            return value.toLocaleString();
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

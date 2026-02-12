@@ -1,0 +1,247 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ document.title }}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #696cff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e9ecef;
+  }
+  .document-content {
+    border: 1px solid #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {{ document.document_id }}
+  </h4>
+
+  <!-- Action Buttons -->
+  <div class="mb-3">
+    <a href="{% url 'document_edit' document.id %}" class="btn btn-primary">
+      <i class="fa fa-edit me-2"></i>{% trans "Edit" %}
+    </a>
+    {% if document.word_file %}
+    <a href="{% url 'document_download' document.id %}" class="btn btn-success">
+      <i class="fa fa-download me-2"></i>{% trans "Download" %}
+    </a>
+    {% endif %}
+    <a href="{% url 'followup_create' document.id %}" class="btn btn-warning">
+      <i class="fa fa-plus me-2"></i>{% trans "Add Follow-up" %}
+    </a>
+    <a href="{% url 'document_list' %}" class="btn btn-outline-secondary">
+      <i class="fa fa-arrow-left me-2"></i>{% trans "Back to List" %}
+    </a>
+    <a href="{% url 'document_delete' document.id %}" class="btn btn-outline-danger">
+      <i class="fa fa-trash me-2"></i>{% trans "Delete" %}
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Document Details -->
+    <div class="col-lg-8 mb-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{{ document.title }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless">
+            <tr>
+              <th width="200">{% trans "Document ID" %}:</th>
+              <td>{{ document.document_id }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Customer" %}:</th>
+              <td>
+                <a href="{% url 'customer_documents' document.customer.id %}">
+                  {{ document.customer.customer_name }} ({{ document.customer.customer_id }})
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <th>{% trans "Template" %}:</th>
+              <td>
+                {% if document.template %}
+                  <a href="{% url 'template_detail' document.template.id %}">
+                    {{ document.template.name }}
+                  </a>
+                {% else %}
+                  <span class="text-muted">{% trans "No template used" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>{% trans "Status" %}:</th>
+              <td>
+                <span class="badge bg-label-{{ document.status }}">
+                  {{ document.get_status_display }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>{% trans "Description" %}:</th>
+              <td>{{ document.description|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Created By" %}:</th>
+              <td>{{ document.created_by.user.get_full_name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Created At" %}:</th>
+              <td>{{ document.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Last Updated" %}:</th>
+              <td>{{ document.updated_at|date:"Y-m-d H:i" }} {% trans "by" %} {{ document.updated_by.user.get_full_name|default:"N/A" }}</td>
+            </tr>
+            {% if document.requires_follow_up %}
+            <tr>
+              <th>{% trans "Follow-up Date" %}:</th>
+              <td>{{ document.follow_up_date|date:"Y-m-d" }}</td>
+            </tr>
+            <tr>
+              <th>{% trans "Follow-up Notes" %}:</th>
+              <td>{{ document.follow_up_notes|default:"-" }}</td>
+            </tr>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+
+      <!-- Document Content -->
+      {% if document.html_content %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Document Content" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="document-content">
+            {{ document.html_content|safe }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Version History -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Version History" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="timeline">
+            {% for version in versions %}
+            <div class="timeline-item">
+              <h6 class="mb-1">{% trans "Version" %} {{ version.version_number }}</h6>
+              <p class="mb-1">{{ version.change_summary|default:"No description" }}</p>
+              <small class="text-muted">
+                {{ version.created_at|date:"Y-m-d H:i" }} {% trans "by" %} {{ version.created_by.user.get_full_name|default:"N/A" }}
+              </small>
+            </div>
+            {% empty %}
+            <p class="text-muted">{% trans "No version history available" %}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Follow-ups -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{% trans "Follow-ups" %}</h5>
+          <a href="{% url 'followup_create' document.id %}" class="btn btn-sm btn-primary">
+            <i class="fa fa-plus"></i>
+          </a>
+        </div>
+        <div class="card-body">
+          {% for followup in follow_ups %}
+          <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+              <h6 class="mb-1">{{ followup.title }}</h6>
+              <span class="badge bg-label-{{ followup.priority }}">{{ followup.get_priority_display }}</span>
+            </div>
+            <p class="mb-1 small">{{ followup.description|truncatewords:15 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">{% trans "Due:" %} {{ followup.due_date }}</small>
+              <a href="{% url 'followup_edit' followup.id %}" class="btn btn-xs btn-outline-primary">
+                {% trans "Edit" %}
+              </a>
+            </div>
+            <div class="mt-1">
+              <span class="badge bg-{{ followup.status }}">{{ followup.get_status_display }}</span>
+              {% if followup.assigned_to %}
+              <small class="ms-2">{% trans "Assigned to:" %} {{ followup.assigned_to.user.get_full_name }}</small>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-muted text-center">{% trans "No follow-ups" %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Activity Log -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Activity Log" %}</h5>
+        </div>
+        <div class="card-body">
+          {% for log in access_logs %}
+          <div class="mb-2 pb-2 border-bottom">
+            <small>
+              <strong>{{ log.user.user.get_full_name|default:"Unknown" }}</strong>
+              {{ log.get_action_display }}
+            </small>
+            <br>
+            <small class="text-muted">{{ log.timestamp|date:"Y-m-d H:i" }}</small>
+          </div>
+          {% empty %}
+          <p class="text-muted text-center">{% trans "No activity yet" %}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
