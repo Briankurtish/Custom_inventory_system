@@ -46,21 +46,45 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h4 class="fw-bold mb-1">
-        <i class="fa fa-chart-line me-2"></i>{% trans "Reports & Analytics Dashboard" %}
-      </h4>
-      <p class="text-muted mb-0">{% trans "Comprehensive business performance metrics and insights" %}</p>
-    </div>
-    <div>
-      <button class="btn btn-sm btn-primary" onclick="window.print()">
-        <i class="fa fa-print me-1"></i>{% trans "Print" %}
-      </button>
+<div class="container-fluid">
+  <!-- Blue Header Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4" style="background: #5a8dee; border: none; border-radius: 0.75rem; box-shadow: 0 2px 6px 0 rgba(90, 141, 238, 0.5);">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="text-white mb-2 fw-bold">
+                <i class="fa fa-chart-line me-2"></i>{% trans "Reports & Analytics Dashboard" %}
+              </h4>
+              <p class="text-white mb-0" style="opacity: 0.95;">{% trans "Comprehensive business performance metrics and insights" %}</p>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-light btn-sm" onclick="exportReport('excel')">
+                <i class="fa fa-file-excel me-1 text-success"></i>{% trans "Excel" %}
+              </button>
+              <button class="btn btn-light btn-sm" onclick="exportReport('pdf')">
+                <i class="fa fa-file-pdf me-1 text-danger"></i>{% trans "PDF" %}
+              </button>
+              <button class="btn btn-light btn-sm" onclick="window.print()">
+                <i class="fa fa-print me-1"></i>{% trans "Print" %}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <script>
+  function exportReport(format) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('format', format);
+    window.location.href = '{% url "export_report" "dashboard" %}?' + params.toString();
+  }
+  </script>
+
+  <div class="container-fluid px-4">
 
   <!-- Filters -->
   <div class="card mb-4">
@@ -380,7 +404,9 @@
       </div>
     </div>
   </div>
-</div>
+
+  </div> <!-- Close inner container-fluid px-4 -->
+</div> <!-- Close main container-fluid -->
 {% endblock %}
 
 {% block page_js %}

@@ -18,21 +18,31 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h4 class="fw-bold mb-1">
-        <i class="fa fa-chart-bar me-2"></i>{% trans "Financial Summary Report" %}
-      </h4>
-      <p class="text-muted mb-0">{% trans "Comprehensive financial analysis and trends" %}</p>
-    </div>
-    <div>
-      <a href="{% url 'reports_dashboard' %}" class="btn btn-sm btn-secondary">
-        <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
-      </a>
+<div class="container-fluid">
+  <!-- Blue Header Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4" style="background: #5a8dee; border: none; border-radius: 0.75rem; box-shadow: 0 2px 6px 0 rgba(90, 141, 238, 0.5);">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="text-white mb-2 fw-bold">
+                <i class="fa fa-chart-bar me-2"></i>{% trans "Financial Summary Report" %}
+              </h4>
+              <p class="text-white mb-0" style="opacity: 0.95;">{% trans "Comprehensive financial analysis and trends" %}</p>
+            </div>
+            <div>
+              <a href="{% url 'reports_dashboard' %}" class="btn btn-light btn-sm">
+                <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <div class="container-fluid px-4">
 
   <!-- Filters -->
   <div class="card mb-4">
@@ -161,7 +171,9 @@
       </div>
     </div>
   </div>
-</div>
+
+  </div> <!-- Close inner container-fluid px-4 -->
+</div> <!-- Close main container-fluid -->
 {% endblock %}
 
 {% block page_js %}

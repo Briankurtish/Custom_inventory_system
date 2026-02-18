@@ -6,30 +6,70 @@
 
 {% block page_css %}
 <style>
+  :root {
+    --radius: 0.5rem;
+    --border: 214.3 31.8% 91.4%;
+  }
+
   * {
     font-size: 11px !important;
   }
   th {
     text-transform: none !important;
   }
+
+  .hero-section {
+    background: linear-gradient(135deg, #4169E1 0%, #3457D5 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .hero-title {
+    font-size: 2rem !important;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem !important;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+  }
+
+  .card {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-  <h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {% trans "Templates" %}
-  </h4>
-
-  <!-- Action Buttons -->
-  <div class="mb-3">
-    <a href="{% url 'template_create' %}" class="btn btn-primary">
-      <i class="fa fa-plus me-2"></i>{% trans "New Template" %}
-    </a>
-    <a href="{% url 'document_dashboard' %}" class="btn btn-outline-secondary">
-      <i class="fa fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
-    </a>
-  </div>
+<div class="container-fluid">
+  <div class="container-fluid px-4 py-4">
+    <!-- Hero Header -->
+    <div class="hero-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-file-contract me-3"></i>{% trans "Document Templates" %}
+          </h1>
+          <p class="hero-subtitle">{% trans "Manage and create reusable document templates" %}</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'template_create' %}" class="btn btn-light">
+            <i class="fa fa-plus me-2"></i>{% trans "New Template" %}
+          </a>
+          <a href="{% url 'document_dashboard' %}" class="btn btn-outline-light">
+            <i class="fa fa-arrow-left me-2"></i>{% trans "Back" %}
+          </a>
+        </div>
+      </div>
+    </div>
 
   <!-- Filter -->
   <div class="card mb-4">
@@ -159,5 +199,6 @@
     </ul>
   </nav>
   {% endif %}
+  </div>
 </div>
 {% endblock %}

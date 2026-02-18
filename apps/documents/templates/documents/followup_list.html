@@ -6,6 +6,11 @@
 
 {% block page_css %}
 <style>
+  :root {
+    --radius: 0.5rem;
+    --border: 214.3 31.8% 91.4%;
+  }
+
   * {
     font-size: 11px !important;
   }
@@ -15,20 +20,56 @@
   .overdue {
     background-color: #fff5f5;
   }
+
+  .hero-section {
+    background: linear-gradient(135deg, #4169E1 0%, #3457D5 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .hero-title {
+    font-size: 2rem !important;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem !important;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+  }
+
+  .card {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-  <h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">{% trans "Documents" %} /</span> {% trans "Follow-ups" %}
-  </h4>
-
-  <div class="mb-3">
-    <a href="{% url 'document_dashboard' %}" class="btn btn-outline-secondary">
-      <i class="fa fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
-    </a>
-  </div>
+<div class="container-fluid">
+  <div class="container-fluid px-4 py-4">
+    <!-- Hero Header -->
+    <div class="hero-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-tasks me-3"></i>{% trans "Follow-ups" %}
+          </h1>
+          <p class="hero-subtitle">{% trans "Track and manage document follow-up tasks" %}</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'document_dashboard' %}" class="btn btn-outline-light">
+            <i class="fa fa-arrow-left me-2"></i>{% trans "Back" %}
+          </a>
+        </div>
+      </div>
+    </div>
 
   <!-- Filter Tabs -->
   <ul class="nav nav-tabs mb-3">
@@ -82,9 +123,19 @@
           {% for followup in page_obj %}
           <tr {% if followup.is_overdue %}class="overdue"{% endif %}>
             <td>
-              <span class="badge bg-{{ followup.priority }}">
-                {{ followup.get_priority_display }}
-              </span>
+              {% if followup.priority == 'high' %}
+                <span class="badge bg-danger">
+                  <i class="fa fa-exclamation-circle me-1"></i>{{ followup.get_priority_display }}
+                </span>
+              {% elif followup.priority == 'medium' %}
+                <span class="badge bg-warning">
+                  <i class="fa fa-flag me-1"></i>{{ followup.get_priority_display }}
+                </span>
+              {% else %}
+                <span class="badge bg-info">
+                  <i class="fa fa-info-circle me-1"></i>{{ followup.get_priority_display }}
+                </span>
+              {% endif %}
             </td>
             <td>{{ followup.title|truncatewords:5 }}</td>
             <td>
@@ -107,9 +158,19 @@
               {% endif %}
             </td>
             <td>
-              <span class="badge bg-label-{{ followup.status }}">
-                {{ followup.get_status_display }}
-              </span>
+              {% if followup.status == 'completed' %}
+                <span class="badge bg-success">
+                  <i class="fa fa-check-circle me-1"></i>{{ followup.get_status_display }}
+                </span>
+              {% elif followup.status == 'in_progress' %}
+                <span class="badge bg-primary">
+                  <i class="fa fa-spinner me-1"></i>{{ followup.get_status_display }}
+                </span>
+              {% else %}
+                <span class="badge bg-warning">
+                  <i class="fa fa-clock me-1"></i>{{ followup.get_status_display }}
+                </span>
+              {% endif %}
             </td>
             <td>
               <a href="{% url 'followup_edit' followup.id %}" class="btn btn-sm btn-outline-primary">
@@ -162,6 +223,7 @@
       </nav>
     </div>
     {% endif %}
+  </div>
   </div>
 </div>
 {% endblock %}

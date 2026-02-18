@@ -1058,6 +1058,38 @@
             <div class="shadcn-menu-text" data-i18n="Debt Analysis">{% trans "Debt Analysis" %}</div>
           </a>
         </li>
+        <li
+          class="shadcn-menu-item {% if 'inventory_levels_report' == request.resolver_match.url_name or '/reports/inventory-levels/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'inventory_levels_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-boxes-stacked"></i>
+            <div class="shadcn-menu-text" data-i18n="Inventory Levels">{% trans "Inventory Levels" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'product_performance_report' == request.resolver_match.url_name or '/reports/product-performance/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'product_performance_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-chart-line"></i>
+            <div class="shadcn-menu-text" data-i18n="Product Performance">{% trans "Product Performance" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'stock_movement_report' == request.resolver_match.url_name or '/reports/stock-movement/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'stock_movement_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-truck"></i>
+            <div class="shadcn-menu-text" data-i18n="Stock Movement">{% trans "Stock Movement" %}</div>
+          </a>
+        </li>
+        <li
+          class="shadcn-menu-item {% if 'inventory_valuation_report' == request.resolver_match.url_name or '/reports/inventory-valuation/' in request.path %}active{% endif %}"
+        >
+          <a href="{% url 'inventory_valuation_report' %}" class="shadcn-menu-link">
+            <i class="shadcn-menu-icon fa-solid fa-coins"></i>
+            <div class="shadcn-menu-text" data-i18n="Inventory Valuation">{% trans "Inventory Valuation" %}</div>
+          </a>
+        </li>
       </ul>
     </li>
 

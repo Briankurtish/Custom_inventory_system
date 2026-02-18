@@ -1,0 +1,189 @@
+{% extends layout_path %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Stock Movement Report" %}{% endblock %}
+
+{% block page_css %}
+<style>
+  * {
+    font-size: 12px !important;
+  }
+  .card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+  .stat-card {
+    border-left: 4px solid #17a2b8;
+  }
+  .table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .badge-pending {
+    background-color: #ffc107;
+  }
+  .badge-approved {
+    background-color: #28a745;
+  }
+  .badge-rejected {
+    background-color: #dc3545;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Blue Header Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4" style="background: #5a8dee; border: none; border-radius: 0.75rem; box-shadow: 0 2px 6px 0 rgba(90, 141, 238, 0.5);">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="text-white mb-2 fw-bold">
+                <i class="fa fa-truck me-2"></i>{% trans "Stock Movement Report" %}
+              </h4>
+              <p class="text-white mb-0" style="opacity: 0.95;">{% trans "Transfers and movements between branches" %}</p>
+            </div>
+            <div class="btn-group">
+              <a href="{% url 'reports_dashboard' %}" class="btn btn-light btn-sm">
+                <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
+              </a>
+              <button class="btn btn-light btn-sm" onclick="window.print()">
+                <i class="fa fa-print me-1"></i>{% trans "Print" %}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid px-4">
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card stat-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-2">{% trans "Total Transfers" %}</h6>
+          <h3 class="mb-0">{{ total_transfers|intcomma }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-2">{% trans "Pending" %}</h6>
+          <h3 class="mb-0 text-warning">{{ pending_transfers|intcomma }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-2">{% trans "Completed" %}</h6>
+          <h3 class="mb-0 text-success">{{ completed_transfers|intcomma }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-2">
+          <label class="form-label">{% trans "From Date" %}</label>
+          <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{% trans "To Date" %}</label>
+          <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{% trans "Branch" %}</label>
+          <select name="branch" class="form-select form-select-sm">
+            <option value="">{% trans "All Branches" %}</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if selected_branch == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.branch_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{% trans "Movement Type" %}</label>
+          <select name="movement_type" class="form-select form-select-sm">
+            <option value="">{% trans "All Movements" %}</option>
+            <option value="in" {% if movement_type == 'in' %}selected{% endif %}>{% trans "Incoming" %}</option>
+            <option value="out" {% if movement_type == 'out' %}selected{% endif %}>{% trans "Outgoing" %}</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="fas fa-filter me-1"></i>{% trans "Apply Filters" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stock Transfers Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Stock Transfers" %}</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Transfer ID" %}</th>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "From Branch" %}</th>
+              <th>{% trans "To Branch" %}</th>
+              <th>{% trans "Requested By" %}</th>
+              <th>{% trans "Products" %}</th>
+              <th class="text-center">{% trans "Status" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transfer in transfers %}
+            <tr>
+              <td><strong>{{ transfer.transfer_id|default:transfer.id }}</strong></td>
+              <td>{{ transfer.date_transferred|date:"Y-m-d H:i"|default:"Not transferred yet" }}</td>
+              <td>{{ transfer.source_branch.branch_name }}</td>
+              <td>{{ transfer.destination_branch.branch_name }}</td>
+              <td>{{ transfer.transferred_by.user.get_full_name|default:transfer.transferred_by.user.username }}</td>
+              <td>{{ transfer.items.count }} {% trans "items" %}</td>
+              <td class="text-center">
+                {% if transfer.status == 'Pending' %}
+                  <span class="badge badge-pending">{% trans "Pending" %}</span>
+                {% elif transfer.status == 'Received' %}
+                  <span class="badge badge-approved">{% trans "Received" %}</span>
+                {% elif transfer.status == 'Cancelled' %}
+                  <span class="badge badge-rejected">{% trans "Cancelled" %}</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ transfer.status|title }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                {% trans "No stock transfers found" %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  </div> <!-- Close inner container-fluid px-4 -->
+</div> <!-- Close main container-fluid -->
+{% endblock %}

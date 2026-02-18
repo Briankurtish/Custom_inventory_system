@@ -6,12 +6,46 @@
 
 {% block page_css %}
 <style>
+  :root {
+    --radius: 0.5rem;
+    --border: 214.3 31.8% 91.4%;
+  }
+
   * {
     font-size: 11px !important;
   }
   th {
     text-transform: none !important;
   }
+
+  .hero-section {
+    background: linear-gradient(135deg, #4169E1 0%, #3457D5 100%);
+    border-radius: calc(var(--radius) * 2);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .hero-title {
+    font-size: 2rem !important;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem !important;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+  }
+
+  .card {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) * 1.5);
+  }
+
   .timeline {
     position: relative;
     padding-left: 30px;
@@ -49,29 +83,27 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-  <h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">{% trans "Customers" %} /</span>
-    {{ customer.customer_name }} - {% trans "Documents" %}
-  </h4>
-
-  <!-- Customer Info -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>{{ customer.customer_name }}</h5>
-          <p class="mb-1"><strong>{% trans "Customer ID:" %}</strong> {{ customer.customer_id }}</p>
-          <p class="mb-1"><strong>{% trans "Contact:" %}</strong> {{ customer.contact_person|default:"-" }}</p>
+<div class="container-fluid">
+  <div class="container-fluid px-4 py-4">
+    <!-- Hero Header -->
+    <div class="hero-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="hero-title">
+            <i class="fa-solid fa-user me-3"></i>{{ customer.customer_name }}
+          </h1>
+          <p class="hero-subtitle">{% trans "Customer ID:" %} {{ customer.customer_id }} | {% trans "Contact:" %} {{ customer.contact_person|default:"-" }}</p>
         </div>
-        <div class="col-md-6 text-end">
-          <a href="{% url 'document_create_for_customer' customer.id %}" class="btn btn-primary">
+        <div class="d-flex gap-2">
+          <a href="{% url 'document_create_for_customer' customer.id %}" class="btn btn-light">
             <i class="fa fa-plus me-2"></i>{% trans "New Document" %}
+          </a>
+          <a href="{% url 'document_list' %}" class="btn btn-outline-light">
+            <i class="fa fa-arrow-left me-2"></i>{% trans "Back" %}
           </a>
         </div>
       </div>
     </div>
-  </div>
 
   <div class="row">
     <!-- Documents Timeline -->
@@ -87,9 +119,13 @@
               <div class="timeline-item">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <h6 class="mb-0">{{ document.title }}</h6>
-                  <span class="badge bg-label-{{ document.status }}">
-                    {{ document.get_status_display }}
-                  </span>
+                  {% if document.status == 'sent' %}
+                    <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>{{ document.get_status_display }}</span>
+                  {% elif document.status == 'archived' %}
+                    <span class="badge bg-secondary"><i class="fa fa-archive me-1"></i>{{ document.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge bg-warning"><i class="fa fa-file me-1"></i>{{ document.get_status_display }}</span>
+                  {% endif %}
                 </div>
 
                 {% if document.description %}
@@ -101,8 +137,8 @@
                     <i class="fa fa-calendar me-1"></i>{{ document.created_at|date:"Y-m-d H:i" }}
                   </small>
                   {% if document.template %}
-                  <span class="badge bg-label-info ms-2">
-                    {{ document.template.get_template_type_display }}
+                  <span class="badge bg-info ms-2">
+                    <i class="fa fa-file-contract me-1"></i>{{ document.template.get_template_type_display }}
                   </span>
                   {% endif %}
                   {% if document.requires_follow_up %}
@@ -154,7 +190,13 @@
               <h6 class="mb-1">{{ followup.title }}</h6>
               <small class="text-muted">{{ followup.document.title|truncatewords:5 }}</small>
               <div class="mt-1">
-                <span class="badge bg-{{ followup.priority }}">{{ followup.get_priority_display }}</span>
+                {% if followup.priority == 'high' %}
+                  <span class="badge bg-danger"><i class="fa fa-exclamation-circle me-1"></i>{{ followup.get_priority_display }}</span>
+                {% elif followup.priority == 'medium' %}
+                  <span class="badge bg-warning"><i class="fa fa-flag me-1"></i>{{ followup.get_priority_display }}</span>
+                {% else %}
+                  <span class="badge bg-info"><i class="fa fa-info-circle me-1"></i>{{ followup.get_priority_display }}</span>
+                {% endif %}
                 <small class="ms-2">{{ followup.due_date }}</small>
               </div>
             </div>
@@ -189,6 +231,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </div>
 {% endblock %}
