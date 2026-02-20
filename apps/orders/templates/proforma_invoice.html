@@ -820,7 +820,7 @@
                 <td>{{ item.stock.product.dosage_form|default:"N/A" }}</td>
                 <td class="text-center">{{ item.quantity }}</td>
                 <td class="text-right">
-                  {% if is_proforma %} {{ item.get_unit_price|floatformat:2|intcomma }} CFA {% else %} {{
+                  {% if is_proforma %} {{ item.temp_price|floatformat:2|intcomma }} CFA {% else %} {{
                   item.effective_price|floatformat:2|intcomma }} CFA {% endif %}
                 </td>
                 <td class="text-right">

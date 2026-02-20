@@ -167,7 +167,7 @@
 <div class="mb-4">
   {% if role_privileges %}
       {% for privilege in role_privileges %}
-          {% if privilege.name == 'Create Proformas' %}
+          {% if privilege.name == 'Manage Proforma' %}
             <a href="{% url 'create_proforma' %}" class="shadcn-button shadcn-button-primary">
               <span class="fa-solid fa-plus me-2"></span>{% trans "Create Proforma" %}
             </a>
