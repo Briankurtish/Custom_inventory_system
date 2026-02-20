@@ -8,7 +8,7 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
   .account-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,8 +18,35 @@
     margin-bottom: 20px;
   }
   .status-badge {
-    font-size: 10px;
+    font-size: 11px;
     padding: 4px 8px;
+  }
+  /* Deep green color for paid amounts */
+  .text-deep-green {
+    color: #0d6832 !important;
+  }
+  /* Larger font for summary card numbers */
+  .card h5 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+  }
+  /* Bold amounts in tables */
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  /* Blue background with white text for Type badges */
+  .type-badge {
+    background-color: #007bff !important;
+    color: white !important;
+  }
+  /* Customer details styling */
+  .customer-detail-label {
+    font-size: 13px !important;
+    opacity: 0.9;
+  }
+  .customer-detail-value {
+    font-size: 14px !important;
+    font-weight: 600;
   }
 </style>
 {% endblock %}
@@ -35,30 +62,68 @@
     <div class="col-12">
       <div class="card mb-4" style="background: #5a8dee; border: none; border-radius: 0.75rem; box-shadow: 0 2px 6px 0 rgba(90, 141, 238, 0.5);">
         <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h3 class="text-white mb-3 fw-bold">{{ customer.customer_name }}</h3>
-              <p class="text-white mb-2" style="opacity: 0.95;"><strong>{% trans "Customer ID:" %}</strong> {{ customer.customer_id }}</p>
-              <p class="text-white mb-2" style="opacity: 0.9;">
-                <i class="fa fa-map-marker-alt me-2"></i>
-                {% if customer.branch %}{{ customer.branch.branch_name }}{% else %}{% trans "No Branch" %}{% endif %}
-              </p>
-              <p class="text-white mb-0" style="opacity: 0.9;">
-                <i class="fa fa-user-tie me-2"></i>
-                {% if customer.sales_rep %}
-                  {{ customer.sales_rep.user.get_full_name }} ({{ customer.sales_rep.employee_id }})
-                {% else %}
-                  {% trans "No Sales Rep" %}
-                {% endif %}
-              </p>
-            </div>
-            <div class="text-end btn-group">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h3 class="text-white mb-0 fw-bold">{{ customer.customer_name }}</h3>
+            <div class="btn-group">
               <a href="{% url 'client_financial_report' %}" class="btn btn-light btn-sm">
                 <i class="fa fa-arrow-left me-1"></i>{% trans "Back" %}
               </a>
               <button class="btn btn-light btn-sm" onclick="window.print()">
                 <i class="fa fa-print me-1"></i>{% trans "Print" %}
               </button>
+            </div>
+          </div>
+          
+          <div class="row">
+            <!-- Column 1 -->
+            <div class="col-md-6">
+              <p class="text-white mb-2 customer-detail-label">
+                <strong>{% trans "Customer ID:" %}</strong> 
+                <span class="customer-detail-value">{{ customer.customer_id }}</span>
+              </p>
+              <p class="text-white mb-2 customer-detail-label">
+                <i class="fa fa-map-marker-alt me-2"></i>
+                <strong>{% trans "Branch:" %}</strong>
+                <span class="customer-detail-value">
+                  {% if customer.branch %}{{ customer.branch.branch_name }}{% else %}{% trans "No Branch" %}{% endif %}
+                </span>
+              </p>
+              <p class="text-white mb-2 customer-detail-label">
+                <i class="fa fa-user-tie me-2"></i>
+                <strong>{% trans "Sales Rep:" %}</strong>
+                <span class="customer-detail-value">
+                  {% if customer.sales_rep %}
+                    {{ customer.sales_rep.user.get_full_name }} ({{ customer.sales_rep.employee_id }})
+                  {% else %}
+                    {% trans "No Sales Rep" %}
+                  {% endif %}
+                </span>
+              </p>
+            </div>
+            
+            <!-- Column 2 -->
+            <div class="col-md-6">
+              <p class="text-white mb-2 customer-detail-label">
+                <i class="fa fa-user me-2"></i>
+                <strong>{% trans "Contact Person:" %}</strong>
+                <span class="customer-detail-value">
+                  {% if customer.contact_person %}{{ customer.contact_person }}{% else %}{% trans "N/A" %}{% endif %}
+                </span>
+              </p>
+              <p class="text-white mb-2 customer-detail-label">
+                <i class="fa fa-phone me-2"></i>
+                <strong>{% trans "Phone:" %}</strong>
+                <span class="customer-detail-value">
+                  {% if customer.telephone %}{{ customer.telephone }}{% else %}{% trans "N/A" %}{% endif %}
+                </span>
+              </p>
+              <p class="text-white mb-2 customer-detail-label">
+                <i class="fa fa-envelope me-2"></i>
+                <strong>{% trans "Email:" %}</strong>
+                <span class="customer-detail-value">
+                  {% if customer.email %}{{ customer.email }}{% else %}{% trans "N/A" %}{% endif %}
+                </span>
+              </p>
             </div>
           </div>
         </div>
@@ -95,7 +160,7 @@
           <div class="d-flex justify-content-between">
             <div>
               <small class="text-muted d-block">{% trans "Total Paid" %}</small>
-              <h5 class="mb-0 fw-bold text-success">{{ financial_summary.total_paid|floatformat:0|intcomma }}</h5>
+              <h5 class="mb-0 fw-bold text-deep-green">{{ financial_summary.total_paid|floatformat:0|intcomma }}</h5>
               <small class="text-muted">FCFA</small>
             </div>
             <div class="avatar">
@@ -203,9 +268,9 @@
                 <tr>
                   <td><strong>{{ invoice.invoice_id }}</strong></td>
                   <td>{{ invoice.created_at|date:"Y-m-d H:i" }}</td>
-                  <td class="text-end">{{ invoice.total_with_taxes|floatformat:0|intcomma }}</td>
-                  <td class="text-end text-success">{{ invoice.amount_paid|floatformat:0|intcomma }}</td>
-                  <td class="text-end text-danger">{{ invoice.amount_due|floatformat:0|intcomma }}</td>
+                  <td class="text-end amount-bold">{{ invoice.total_with_taxes|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-deep-green amount-bold">{{ invoice.amount_paid|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-danger amount-bold">{{ invoice.amount_due|floatformat:0|intcomma }}</td>
                   <td>
                     <span class="status-badge badge bg-{% if invoice.status == 'Payment Completed' %}success{% elif invoice.status == 'Payment Ongoing' %}warning{% else %}danger{% endif %}">
                       {{ invoice.status }}
@@ -250,8 +315,8 @@
                   <td>
                     <span class="badge bg-label-primary">{{ payment.payment_mode }}</span>
                   </td>
-                  <td class="text-end fw-bold">{{ payment.amount_paid|floatformat:0|intcomma }}</td>
-                  <td class="text-end text-muted">{{ payment.invoice_total|floatformat:0|intcomma }}</td>
+                  <td class="text-end text-deep-green amount-bold">{{ payment.amount_paid|floatformat:0|intcomma }}</td>
+                  <td class="text-end amount-bold">{{ payment.invoice_total|floatformat:0|intcomma }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -289,9 +354,9 @@
                   <td><strong>{{ order.purchase_order_id }}</strong></td>
                   <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
                   <td>
-                    <span class="badge bg-label-info">{{ order.order_type }}</span>
+                    <span class="badge type-badge">{{ order.order_type }}</span>
                   </td>
-                  <td class="text-end">{{ order.grand_total|floatformat:0|intcomma }}</td>
+                  <td class="text-end amount-bold">{{ order.grand_total|floatformat:0|intcomma }}</td>
                   <td>
                     <span class="status-badge badge bg-{% if order.status == 'Completed' %}success{% elif order.status == 'Approved' %}primary{% elif order.status == 'Rejected' %}danger{% else %}warning{% endif %}">
                       {{ order.status }}
@@ -334,8 +399,8 @@ new Chart(monthlyTrendCtx, {
       {
         label: 'Revenue (FCFA)',
         data: monthlyData.map(d => d.revenue),
-        backgroundColor: 'rgba(40, 167, 69, 0.85)',
-        borderColor: '#28a745',
+        backgroundColor: 'rgba(13, 104, 50, 0.85)',
+        borderColor: '#0d6832',
         borderWidth: 2,
         borderRadius: 6,
         borderSkipped: false
@@ -343,8 +408,8 @@ new Chart(monthlyTrendCtx, {
       {
         label: 'Paid (FCFA)',
         data: monthlyData.map(d => d.paid),
-        backgroundColor: 'rgba(0, 123, 255, 0.85)',
-        borderColor: '#007bff',
+        backgroundColor: 'rgba(13, 104, 50, 0.85)',
+        borderColor: '#0d6832',
         borderWidth: 2,
         borderRadius: 6,
         borderSkipped: false

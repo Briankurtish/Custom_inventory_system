@@ -23,7 +23,7 @@
 {% if role_privileges %}
     {% for privilege in role_privileges %}
         {% if privilege.name == 'View Sales Agent Performance' %}
-            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'sales_agent_performance' %}'">
+            <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'sales_agent_performance_report' %}'">
               <span class="fa-solid fa-user-tie me-2"></span>{% trans "Sales Agent Performance" %}
             </button>
           {% endif %}
@@ -36,7 +36,7 @@
   <a href="{% url 'debt_recovery_report' %}" target="_blank" class="btn btn-primary">
     <i class="fa fa-chart-bar"></i> {% trans "Sales & Debt Recovery Report" %}
   </a>
-  <a href="{% url 'sales_agent_performance' %}" target="_blank" class="btn btn-outline-primary ms-2">
+  <a href="{% url 'sales_agent_performance_report' %}" target="_blank" class="btn btn-outline-primary ms-2">
   <i class="fa fa-user-tie"></i> Sales Agent Performance
 </a>
 </div>

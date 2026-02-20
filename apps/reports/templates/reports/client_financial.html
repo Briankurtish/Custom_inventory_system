@@ -16,6 +16,42 @@
   .customer-row:hover {
     background-color: #f8f9fa;
   }
+  /* Deep green color for revenue and paid */
+  .text-deep-green {
+    color: #0d6832 !important;
+  }
+  /* Larger font size for KPI card numbers */
+  .card h4 {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+  }
+  /* Slightly larger font for table */
+  #customersTable tbody td {
+    font-size: 13px !important;
+  }
+  /* Customer names in black */
+  .customer-name {
+    color: #000 !important;
+    font-weight: 500 !important;
+  }
+  /* Branch text in black */
+  .branch-text {
+    color: #000 !important;
+  }
+  /* Orders in normal blue */
+  .orders-text {
+    color: #007bff !important;
+  }
+  /* Outstanding text in red */
+  .outstanding-text {
+    color: #dc3545 !important;
+    font-weight: bold !important;
+  }
+  /* Outstanding zero in green */
+  .outstanding-zero {
+    color: #28a745 !important;
+    font-weight: bold !important;
+  }
 </style>
 {% endblock %}
 
@@ -55,7 +91,7 @@
       <div class="card">
         <div class="card-body">
           <small class="text-muted d-block">{% trans "Total Revenue" %}</small>
-          <h4 class="mb-0 fw-bold text-success">
+          <h4 class="mb-0 fw-bold text-deep-green">
             {{ totals.total_revenue|floatformat:0|intcomma }} FCFA
           </h4>
         </div>
@@ -75,7 +111,7 @@
       <div class="card">
         <div class="card-body">
           <small class="text-muted d-block">{% trans "Total Collected" %}</small>
-          <h4 class="mb-0 fw-bold text-primary">
+          <h4 class="mb-0 fw-bold text-deep-green">
             {{ totals.total_paid|floatformat:0|intcomma }} FCFA
           </h4>
         </div>
@@ -148,13 +184,13 @@
             <tr class="customer-row">
               <td><strong>{{ customer.customer_id }}</strong></td>
               <td>
-                <a href="{% url 'client_detail_report' customer.id %}">
+                <a href="{% url 'client_detail_report' customer.id %}" class="customer-name">
                   {{ customer.customer_name }}
                 </a>
               </td>
               <td>
                 {% if customer.branch %}
-                  <span class="badge bg-label-secondary">{{ customer.branch.branch_name }}</span>
+                  <span class="branch-text">{{ customer.branch.branch_name }}</span>
                 {% else %}
                   <span class="text-muted">-</span>
                 {% endif %}
@@ -167,14 +203,16 @@
                 {% endif %}
               </td>
               <td class="text-end fw-bold">{{ customer.total_revenue|floatformat:0|intcomma }}</td>
-              <td class="text-end text-success">{{ customer.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-end text-deep-green fw-bold">{{ customer.total_paid|floatformat:0|intcomma }}</td>
               <td class="text-end">
-                <span class="debt-badge badge bg-{% if customer.total_debt > 0 %}danger{% else %}success{% endif %}">
-                  {{ customer.total_debt|floatformat:0|intcomma }}
-                </span>
+                {% if customer.total_debt > 0 %}
+                  <span class="outstanding-text">{{ customer.total_debt|floatformat:0|intcomma }}</span>
+                {% else %}
+                  <span class="outstanding-zero">{{ customer.total_debt|floatformat:0|intcomma }}</span>
+                {% endif %}
               </td>
               <td class="text-center">
-                <span class="badge bg-label-info">{{ customer.total_orders }}</span>
+                <span class="orders-text fw-bold">{{ customer.total_orders }}</span>
               </td>
               <td>
                 {% if customer.last_order_date %}
@@ -202,8 +240,8 @@
           <tfoot>
             <tr class="fw-bold">
               <td colspan="4" class="text-end">{% trans "TOTALS:" %}</td>
-              <td class="text-end text-success">{{ totals.total_revenue|floatformat:0|intcomma }}</td>
-              <td class="text-end text-primary">{{ totals.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-end">{{ totals.total_revenue|floatformat:0|intcomma }}</td>
+              <td class="text-end text-deep-green">{{ totals.total_paid|floatformat:0|intcomma }}</td>
               <td class="text-end text-danger">{{ totals.total_debt|floatformat:0|intcomma }}</td>
               <td colspan="3"></td>
             </tr>

@@ -8,7 +8,32 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important; /* Increased base font size */
+  }
+  .kpi-card h3, .kpi-card h4 {
+    font-size: 1.75rem !important; /* Larger font size for KPI numbers */
+    font-weight: 700 !important; /* Extra bold */
+  }
+  .text-deep-green {
+    color: #0d6832 !important; /* Deep green color */
+  }
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  .table th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  .table td {
+    font-size: 13px !important;
+  }
+  .card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  .form-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
   .card {
     margin-bottom: 1.5rem;
@@ -25,7 +50,7 @@
     background-color: #ffc107;
   }
   .badge-approved {
-    background-color: #28a745;
+    background-color: #0d6832; /* Deep green */
   }
   .badge-rejected {
     background-color: #dc3545;
@@ -66,7 +91,7 @@
   <!-- Summary Cards -->
   <div class="row mb-4">
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Transfers" %}</h6>
           <h3 class="mb-0">{{ total_transfers|intcomma }}</h3>
@@ -74,7 +99,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Pending" %}</h6>
           <h3 class="mb-0 text-warning">{{ pending_transfers|intcomma }}</h3>
@@ -82,10 +107,10 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Completed" %}</h6>
-          <h3 class="mb-0 text-success">{{ completed_transfers|intcomma }}</h3>
+          <h3 class="mb-0 text-deep-green">{{ completed_transfers|intcomma }}</h3>
         </div>
       </div>
     </div>

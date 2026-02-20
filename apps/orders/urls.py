@@ -153,7 +153,7 @@ urlpatterns = [
 
     path('reports/sales-report/', sales_report, name='sales_report'),
     path('reports/debt-recovery/', debt_recovery_report_view, name='debt_recovery_report'),
-    path('reports/sales-agent-performance/', sales_agent_performance_report, name='sales_agent_performance'),
+    # path('reports/sales-agent-performance/', sales_agent_performance_report, name='sales_agent_performance'),  # Replaced by new custom report in apps/reports
 
     # Sickness Order URLs
     path('sickness-orders/', sickness_list, name='sickness_orders'),

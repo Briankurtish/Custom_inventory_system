@@ -8,14 +8,39 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important; /* Increased base font size */
+  }
+  .kpi-card h3, .kpi-card h4 {
+    font-size: 1.75rem !important; /* Larger font size for KPI numbers */
+    font-weight: 700 !important; /* Extra bold */
+  }
+  .text-deep-green {
+    color: #0d6832 !important; /* Deep green color */
+  }
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  .table th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  .table td {
+    font-size: 13px !important;
+  }
+  .card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  .form-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
   .card {
     margin-bottom: 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   }
   .stat-card {
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #0d6832; /* Deep green */
   }
   .low-stock-alert {
     border-left: 4px solid #dc3545;
@@ -31,7 +56,7 @@
     background-color: #ffc107;
   }
   .badge-good {
-    background-color: #28a745;
+    background-color: #0d6832; /* Deep green */
   }
 </style>
 {% endblock %}
@@ -69,7 +94,7 @@
   <!-- Summary Cards -->
   <div class="row mb-4">
     <div class="col-md-3">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Products" %}</h6>
           <h3 class="mb-0">{{ totals.total_products|intcomma }}</h3>
@@ -77,7 +102,7 @@
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Units" %}</h6>
           <h3 class="mb-0">{{ totals.total_quantity|intcomma }}</h3>
@@ -85,15 +110,15 @@
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Inventory Value" %}</h6>
-          <h3 class="mb-0">{{ totals.total_value|floatformat:0|intcomma }} FCFA</h3>
+          <h3 class="mb-0 text-deep-green">{{ totals.total_value|floatformat:0|intcomma }} FCFA</h3>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card low-stock-alert">
+      <div class="card low-stock-alert kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Low Stock Alerts" %}</h6>
           <h3 class="mb-0 text-danger">{{ low_stock_count|intcomma }}</h3>
@@ -178,10 +203,10 @@
               <td>{{ item.branch_name }}</td>
               <td>{{ item.batch__batch_number|default:"N/A" }}</td>
               <td>{{ item.batch__expiry_date|date:"Y-m-d"|default:"N/A" }}</td>
-              <td class="text-end"><strong>{{ item.total_stock|intcomma }}</strong></td>
+              <td class="text-end amount-bold">{{ item.total_stock|intcomma }}</td>
               <td class="text-end">{{ item.total_sold|intcomma }}</td>
-              <td class="text-end">{{ item.unit_price|floatformat:2|intcomma }}</td>
-              <td class="text-end"><strong>{{ item.stock_value|floatformat:0|intcomma }}</strong></td>
+              <td class="text-end amount-bold">{{ item.unit_price|floatformat:2|intcomma }}</td>
+              <td class="text-end amount-bold text-deep-green">{{ item.stock_value|floatformat:0|intcomma }}</td>
               <td class="text-center">
                 {% if item.total_stock < 10 %}
                   <span class="badge badge-low">Low</span>

@@ -8,15 +8,35 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
-  .rank-badge {
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 50%;
-    text-align: center;
+  /* Deep green color */
+  .text-deep-green {
+    color: #0d6832 !important;
+  }
+  /* Larger font for summary card numbers */
+  .card h4 {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+  }
+  /* Table styling */
+  .table tbody td {
+    font-size: 13px !important;
+  }
+  /* Simple rank number */
+  .rank-number {
     font-weight: bold;
+    font-size: 14px !important;
+    color: #333;
+  }
+  /* Outstanding text colors */
+  .outstanding-text {
+    color: #dc3545 !important;
+    font-weight: bold !important;
+  }
+  .outstanding-zero {
+    color: #28a745 !important;
+    font-weight: bold !important;
   }
 </style>
 {% endblock %}
@@ -79,7 +99,7 @@
       <div class="card">
         <div class="card-body">
           <small class="text-muted">{% trans "Total Revenue (All Branches)" %}</small>
-          <h4 class="mb-0 fw-bold text-success">{{ totals.total_revenue|floatformat:0|intcomma }} FCFA</h4>
+          <h4 class="mb-0 fw-bold text-deep-green">{{ totals.total_revenue|floatformat:0|intcomma }} FCFA</h4>
         </div>
       </div>
     </div>
@@ -137,21 +157,21 @@
             {% for branch in branches %}
             <tr>
               <td>
-                <span class="rank-badge {% if forloop.counter <= 3 %}bg-primary text-white{% else %}bg-light{% endif %}">
-                  {{ forloop.counter }}
-                </span>
+                <span class="rank-number">{{ forloop.counter }}</span>
               </td>
               <td><strong>{{ branch.branch_name }}</strong></td>
-              <td class="text-center">{{ branch.total_customers }}</td>
-              <td class="text-center">{{ branch.total_orders }}</td>
-              <td class="text-end fw-bold text-success">{{ branch.total_revenue|floatformat:0|intcomma }}</td>
-              <td class="text-end text-primary">{{ branch.total_paid|floatformat:0|intcomma }}</td>
+              <td class="text-center fw-bold">{{ branch.total_customers }}</td>
+              <td class="text-center fw-bold">{{ branch.total_orders }}</td>
+              <td class="text-end fw-bold text-deep-green">{{ branch.total_revenue|floatformat:0|intcomma }}</td>
+              <td class="text-end fw-bold text-deep-green">{{ branch.total_paid|floatformat:0|intcomma }}</td>
               <td class="text-end">
-                <span class="badge bg-{% if branch.total_debt > 0 %}danger{% else %}success{% endif %}">
-                  {{ branch.total_debt|floatformat:0|intcomma }}
-                </span>
+                {% if branch.total_debt > 0 %}
+                  <span class="outstanding-text">{{ branch.total_debt|floatformat:0|intcomma }}</span>
+                {% else %}
+                  <span class="outstanding-zero">{{ branch.total_debt|floatformat:0|intcomma }}</span>
+                {% endif %}
               </td>
-              <td class="text-center">{{ branch.active_sales_reps }}</td>
+              <td class="text-center fw-bold">{{ branch.active_sales_reps }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -178,8 +198,8 @@ new Chart(regionalCtx, {
       {
         label: 'Revenue (FCFA)',
         data: regionalData.map(d => d.total_revenue),
-        backgroundColor: 'rgba(40, 167, 69, 0.85)',
-        borderColor: '#28a745',
+        backgroundColor: 'rgba(13, 104, 50, 0.85)',
+        borderColor: '#0d6832',
         borderWidth: 2,
         borderRadius: 6,
         borderSkipped: false

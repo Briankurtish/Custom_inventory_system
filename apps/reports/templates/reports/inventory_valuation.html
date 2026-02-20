@@ -8,14 +8,39 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important; /* Increased base font size */
+  }
+  .kpi-card h3, .kpi-card h4 {
+    font-size: 1.75rem !important; /* Larger font size for KPI numbers */
+    font-weight: 700 !important; /* Extra bold */
+  }
+  .text-deep-green {
+    color: #0d6832 !important; /* Deep green color */
+  }
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  .table th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  .table td {
+    font-size: 13px !important;
+  }
+  .card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  .form-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
   .card {
     margin-bottom: 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   }
   .stat-card {
-    border-left: 4px solid #6f42c1;
+    border-left: 4px solid #0d6832; /* Deep green */
   }
   .table-responsive {
     max-height: 500px;
@@ -60,15 +85,15 @@
   <!-- Summary Cards -->
   <div class="row mb-4">
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Inventory Value" %}</h6>
-          <h3 class="mb-0">{{ overall_totals.total_inventory_value|floatformat:0|intcomma }} FCFA</h3>
+          <h3 class="mb-0 text-deep-green">{{ overall_totals.total_inventory_value|floatformat:0|intcomma }} FCFA</h3>
         </div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Units" %}</h6>
           <h3 class="mb-0">{{ overall_totals.total_units|intcomma }}</h3>
@@ -76,7 +101,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Unique Products" %}</h6>
           <h3 class="mb-0">{{ overall_totals.unique_products|intcomma }}</h3>
@@ -143,8 +168,8 @@
                 {% for item in valuation_by_branch %}
                 <tr>
                   <td><strong>{{ item.branch__branch_name }}</strong></td>
-                  <td class="text-end">{{ item.total_stock|intcomma }}</td>
-                  <td class="text-end"><strong>{{ item.total_value|floatformat:0|intcomma }}</strong></td>
+                  <td class="text-end amount-bold">{{ item.total_stock|intcomma }}</td>
+                  <td class="text-end amount-bold text-deep-green">{{ item.total_value|floatformat:0|intcomma }}</td>
                   <td class="text-end">{{ item.products_count|intcomma }}</td>
                 </tr>
                 {% empty %}
@@ -186,9 +211,9 @@
                   <td>{{ forloop.counter }}</td>
                   <td><strong>{{ product.product__product_code }}</strong></td>
                   <td>{{ product.product__brand_name__brand_name|default:"N/A" }}</td>
-                  <td class="text-end">{{ product.product__unit_price|floatformat:2|intcomma }}</td>
-                  <td class="text-end">{{ product.total_stock|intcomma }}</td>
-                  <td class="text-end"><strong>{{ product.total_value|floatformat:0|intcomma }} FCFA</strong></td>
+                  <td class="text-end amount-bold">{{ product.product__unit_price|floatformat:2|intcomma }}</td>
+                  <td class="text-end amount-bold">{{ product.total_stock|intcomma }}</td>
+                  <td class="text-end amount-bold text-deep-green">{{ product.total_value|floatformat:0|intcomma }} FCFA</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -224,12 +249,12 @@ if (branchValuationData && branchValuationData.length > 0) {
       datasets: [{
         data: branchValuationData.map(b => b.value),
         backgroundColor: [
-          '#6f42c1',
+          '#0d6832', // Deep green
           '#007bff',
-          '#28a745',
-          '#ffc107',
-          '#dc3545',
           '#17a2b8',
+          '#ffc107',
+          '#6f42c1',
+          '#dc3545',
           '#6c757d'
         ],
         borderWidth: 2,

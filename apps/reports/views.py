@@ -523,7 +523,8 @@ def sales_agent_performance_report(request):
         total_revenue=Coalesce(Sum('total_with_taxes'), Decimal('0.00')),
         total_collected=Coalesce(Sum('amount_paid'), Decimal('0.00')),
         total_outstanding=Coalesce(Sum('amount_due'), Decimal('0.00')),
-        total_orders=Count('id')
+        total_orders=Count('id'),
+        total_customers=Count('customer', distinct=True)
     )
 
     # Get branches for filter

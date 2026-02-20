@@ -8,15 +8,44 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important; /* Increased base font size */
+  }
+  .kpi-card h4 {
+    font-size: 1.75rem !important; /* Larger font size for KPI numbers */
+    font-weight: 700 !important; /* Extra bold */
+  }
+  .text-deep-green {
+    color: #0d6832 !important; /* Deep green color */
+  }
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  .table th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  .table td {
+    font-size: 13px !important;
+  }
+  .card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  .form-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
   .aging-card {
     border-left: 4px solid;
   }
-  .aging-current { border-left-color: #28a745; }
+  .aging-current { border-left-color: #0d6832; } /* Deep green */
   .aging-30 { border-left-color: #ffc107; }
   .aging-60 { border-left-color: #fd7e14; }
   .aging-90 { border-left-color: #dc3545; }
+  .rank-badge {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
 </style>
 {% endblock %}
 
@@ -84,7 +113,7 @@
   <!-- Summary -->
   <div class="row mb-4">
     <div class="col-md-3 mb-3">
-      <div class="card">
+      <div class="card kpi-card">
         <div class="card-body">
           <small class="text-muted">{% trans "Total Outstanding" %}</small>
           <h4 class="mb-0 fw-bold text-danger">{{ debt_summary.total_outstanding|floatformat:0|intcomma }} FCFA</h4>
@@ -92,7 +121,7 @@
       </div>
     </div>
     <div class="col-md-3 mb-3">
-      <div class="card">
+      <div class="card kpi-card">
         <div class="card-body">
           <small class="text-muted">{% trans "Outstanding Invoices" %}</small>
           <h4 class="mb-0 fw-bold">{{ debt_summary.total_invoices }}</h4>
@@ -100,18 +129,18 @@
       </div>
     </div>
     <div class="col-md-3 mb-3">
-      <div class="card">
+      <div class="card kpi-card">
         <div class="card-body">
           <small class="text-muted">{% trans "Average Debt" %}</small>
-          <h4 class="mb-0 fw-bold">{{ debt_summary.avg_outstanding|floatformat:0|intcomma }} FCFA</h4>
+          <h4 class="mb-0 fw-bold text-danger">{{ debt_summary.avg_outstanding|floatformat:0|intcomma }} FCFA</h4>
         </div>
       </div>
     </div>
     <div class="col-md-3 mb-3">
-      <div class="card">
+      <div class="card kpi-card">
         <div class="card-body">
           <small class="text-muted">{% trans "Oldest Debt" %}</small>
-          <h4 class="mb-0 fw-bold">{{ debt_summary.oldest_debt_days }} {% trans "days" %}</h4>
+          <h4 class="mb-0 fw-bold text-danger">{{ debt_summary.oldest_debt_days }} {% trans "days" %}</h4>
         </div>
       </div>
     </div>
@@ -196,8 +225,8 @@
               </td>
               <td>{{ invoice.branch.branch_name }}</td>
               <td>{{ invoice.created_at|date:"Y-m-d" }}</td>
-              <td class="text-end">{{ invoice.total_with_taxes|floatformat:0|intcomma }}</td>
-              <td class="text-end fw-bold text-danger">{{ invoice.amount_due|floatformat:0|intcomma }}</td>
+              <td class="text-end amount-bold">{{ invoice.total_with_taxes|floatformat:0|intcomma }}</td>
+              <td class="text-end amount-bold text-danger">{{ invoice.amount_due|floatformat:0|intcomma }}</td>
               <td class="text-center">
                 <span class="badge bg-{% if invoice.days_outstanding <= 30 %}success{% elif invoice.days_outstanding <= 60 %}warning{% elif invoice.days_outstanding <= 90 %}danger{% else %}dark{% endif %}">
                   {{ invoice.days_outstanding }} {% trans "days" %}

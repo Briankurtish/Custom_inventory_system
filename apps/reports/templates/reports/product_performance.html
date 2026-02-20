@@ -8,14 +8,39 @@
 {% block page_css %}
 <style>
   * {
-    font-size: 12px !important;
+    font-size: 13px !important; /* Increased base font size */
+  }
+  .kpi-card h3, .kpi-card h4 {
+    font-size: 1.75rem !important; /* Larger font size for KPI numbers */
+    font-weight: 700 !important; /* Extra bold */
+  }
+  .text-deep-green {
+    color: #0d6832 !important; /* Deep green color */
+  }
+  .amount-bold {
+    font-weight: bold !important;
+  }
+  .table th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  .table td {
+    font-size: 13px !important;
+  }
+  .card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  .form-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
   .card {
     margin-bottom: 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   }
   .stat-card {
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #0d6832; /* Deep green */
   }
   .table-responsive {
     max-height: 600px;
@@ -60,7 +85,7 @@
   <!-- Summary Cards -->
   <div class="row mb-4">
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Products Sold" %}</h6>
           <h3 class="mb-0">{{ totals.total_products_sold|intcomma }}</h3>
@@ -68,7 +93,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Units Sold" %}</h6>
           <h3 class="mb-0">{{ totals.total_quantity|intcomma }}</h3>
@@ -76,10 +101,10 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card stat-card">
+      <div class="card stat-card kpi-card">
         <div class="card-body">
           <h6 class="text-muted mb-2">{% trans "Total Revenue" %}</h6>
-          <h3 class="mb-0">{{ totals.total_revenue|floatformat:0|intcomma }} FCFA</h3>
+          <h3 class="mb-0 text-deep-green">{{ totals.total_revenue|floatformat:0|intcomma }} FCFA</h3>
         </div>
       </div>
     </div>
@@ -178,9 +203,9 @@
                 <tr>
                   <td><strong>{{ product.product_code }}</strong></td>
                   <td>{{ product.product_name }}</td>
-                  <td class="text-end">{{ product.unit_price|floatformat:2|intcomma }}</td>
-                  <td class="text-end"><strong>{{ product.quantity_sold|intcomma }}</strong></td>
-                  <td class="text-end"><strong>{{ product.revenue|floatformat:0|intcomma }} FCFA</strong></td>
+                  <td class="text-end amount-bold">{{ product.unit_price|floatformat:2|intcomma }}</td>
+                  <td class="text-end amount-bold">{{ product.quantity_sold|intcomma }}</td>
+                  <td class="text-end amount-bold text-deep-green">{{ product.revenue|floatformat:0|intcomma }} FCFA</td>
                   <td class="text-end">{{ product.orders|intcomma }}</td>
                   <td class="text-end">
                     {% widthratio product.quantity_sold product.orders 1 %}
@@ -220,8 +245,8 @@ if (topProductsData && topProductsData.length > 0) {
       datasets: [{
         label: 'Revenue (FCFA)',
         data: topProductsData.map(p => p.revenue),
-        backgroundColor: '#28a745',
-        borderColor: '#1e7e34',
+        backgroundColor: '#0d6832', // Deep green
+        borderColor: '#0a5028',
         borderWidth: 1
       }]
     },
