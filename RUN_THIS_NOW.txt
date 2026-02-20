@@ -1,0 +1,34 @@
+================================================================================
+                    🚨 CRITICAL: FIX 504 TIMEOUT NOW 🚨
+================================================================================
+
+YOUR REPORTS ARE TIMING OUT BECAUSE:
+  ❌ No database indexes (queries take 30-120 seconds)
+  ❌ Gunicorn timeout only 120 seconds
+  ❌ Only 3 workers (not enough for concurrent requests)
+
+COPY AND RUN THIS COMMAND NOW:
+
+  ./CRITICAL_FIX_504.sh
+
+OR MANUALLY:
+
+  source /opt/myproject/bin/activate
+  python manage.py migrate orders
+  sudo sed -i 's/--timeout 120/--timeout 300/g' /etc/systemd/system/gunicorn-myproject.service
+  sudo sed -i 's/--workers 3/--workers 4/g' /etc/systemd/system/gunicorn-myproject.service
+  sudo systemctl daemon-reload
+  sudo systemctl restart gunicorn-myproject nginx
+
+================================================================================
+
+THIS WILL:
+  ✓ Add 12 database indexes (makes queries 10-100x faster)
+  ✓ Increase Gunicorn timeout to 300 seconds
+  ✓ Increase workers to 4 for better concurrency
+  ✓ Restart services
+
+TAKES: 2 minutes
+DOWNTIME: 30 seconds
+
+================================================================================

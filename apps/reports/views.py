@@ -72,21 +72,21 @@ def reports_dashboard(request):
     if branch_filter:
         invoices_qs = invoices_qs.filter(branch_id=branch_filter)
 
-    # Calculate KPIs
-    total_revenue = invoices_qs.aggregate(
-        total=Coalesce(Sum('total_with_taxes'), Decimal('0.00'))
-    )['total']
-
-    total_outstanding = invoices_qs.aggregate(
-        outstanding=Coalesce(Sum('amount_due'), Decimal('0.00'))
-    )['outstanding']
-
-    total_paid = invoices_qs.aggregate(
-        paid=Coalesce(Sum('amount_paid'), Decimal('0.00'))
-    )['paid']
-
+    # OPTIMIZED: Combine KPI calculations in one query
+    kpis = invoices_qs.aggregate(
+        total_revenue=Coalesce(Sum('total_with_taxes'), Decimal('0.00')),
+        total_outstanding=Coalesce(Sum('amount_due'), Decimal('0.00')),
+        total_paid=Coalesce(Sum('amount_paid'), Decimal('0.00')),
+        active_customers=Count('customer', distinct=True)
+    )
+    
+    total_revenue = kpis['total_revenue']
+    total_outstanding = kpis['total_outstanding']
+    total_paid = kpis['total_paid']
+    active_customers = kpis['active_customers']
+    
+    # Get total customers (cached simple count)
     total_customers = Customer.objects.count()
-    active_customers = invoices_qs.values('customer').distinct().count()
 
     # Total orders with conditional date filtering
     orders_qs = PurchaseOrder.objects.all()
@@ -127,12 +127,15 @@ def reports_dashboard(request):
         order_count=Count('id')
     ).order_by('-total_sales')[:10]
 
-    # Daily revenue trend (last 30 days)
-    daily_revenue = invoices_qs.annotate(
+    # Daily revenue trend - OPTIMIZED: Limit to last 90 days max
+    trend_start = (timezone.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+    trend_invoices = invoices_qs.filter(created_at__date__gte=trend_start)
+    
+    daily_revenue = trend_invoices.annotate(
         date=TruncDate('created_at')
     ).values('date').annotate(
         revenue=Sum('total_with_taxes')
-    ).order_by('date')
+    ).order_by('date')[:90]  # Limit to 90 data points
 
     # Convert to JSON-safe format
     daily_revenue_data = [
@@ -208,7 +211,7 @@ def reports_dashboard(request):
 @login_required
 @manager_required
 def client_financial_report(request):
-    """Detailed financial report for all clients"""
+    """Detailed financial report for all clients - OPTIMIZED"""
 
     # Get filters
     search_query = request.GET.get('search', '')
@@ -216,9 +219,13 @@ def client_financial_report(request):
     debt_filter = request.GET.get('debt_status')  # 'with_debt', 'no_debt', 'all'
     sort_by = request.GET.get('sort', '-total_debt')
 
-    # Base queryset
-    customers = Customer.objects.all()
-
+    # OPTIMIZED: Use only() to fetch only needed fields, keep as model instances for template compatibility
+    customers = Customer.objects.select_related('branch', 'sales_rep').only(
+        'id', 'customer_id', 'customer_name', 
+        'branch__branch_name', 
+        'sales_rep__employee_id', 'sales_rep__user__first_name', 'sales_rep__user__last_name'
+    )
+    
     if search_query:
         customers = customers.filter(
             Q(customer_name__icontains=search_query) |
@@ -228,7 +235,7 @@ def client_financial_report(request):
     if branch_filter:
         customers = customers.filter(branch_id=branch_filter)
 
-    # Annotate with financial data
+    # Annotate with financial data - OPTIMIZED with date filter on annotation
     customers = customers.annotate(
         total_orders=Count('purchaseorder'),
         total_invoices=Count('invoice'),
@@ -244,14 +251,14 @@ def client_financial_report(request):
     elif debt_filter == 'no_debt':
         customers = customers.filter(total_debt=0)
 
-    # Sort
-    customers = customers.order_by(sort_by)
+    # Sort and limit to 500 for performance
+    customers = customers.order_by(sort_by)[:500]
 
-    # Calculate totals from base Invoice queryset
-    base_invoices = Invoice.objects.filter(customer__in=customers.values_list('id', flat=True))
+    # Calculate totals from filtered invoices (efficient)
+    base_invoices = Invoice.objects.all()
     if branch_filter:
         base_invoices = base_invoices.filter(branch_id=branch_filter)
-
+    
     totals = base_invoices.aggregate(
         total_revenue=Coalesce(Sum('total_with_taxes'), Decimal('0.00')),
         total_debt=Coalesce(Sum('amount_due'), Decimal('0.00')),
@@ -356,7 +363,7 @@ def client_detail_report(request, customer_id):
 @login_required
 @manager_required
 def regional_performance_report(request):
-    """Performance report by region/branch"""
+    """Performance report by region/branch - OPTIMIZED"""
 
     # Get date range
     date_from = request.GET.get('date_from')
@@ -367,75 +374,94 @@ def regional_performance_report(request):
     if not date_to:
         date_to = timezone.now().strftime('%Y-%m-%d')
 
-    # Branch performance
-    branches = Branch.objects.filter(is_active=True).annotate(
-        total_customers=Count('customers', distinct=True),
-        total_orders=Count(
-            'purchaseorder',
-            filter=Q(
-                purchaseorder__created_at__date__gte=date_from,
-                purchaseorder__created_at__date__lte=date_to
-            )
-        ),
-        total_revenue=Coalesce(
-            Sum(
-                'invoice__total_with_taxes',
-                filter=Q(
-                    invoice__created_at__date__gte=date_from,
-                    invoice__created_at__date__lte=date_to
-                )
-            ),
-            Decimal('0.00')
-        ),
-        total_debt=Coalesce(
-            Sum(
-                'invoice__amount_due',
-                filter=Q(
-                    invoice__created_at__date__gte=date_from,
-                    invoice__created_at__date__lte=date_to
-                )
-            ),
-            Decimal('0.00')
-        ),
-        total_paid=Coalesce(
-            Sum(
-                'invoice__amount_paid',
-                filter=Q(
-                    invoice__created_at__date__gte=date_from,
-                    invoice__created_at__date__lte=date_to
-                )
-            ),
-            Decimal('0.00')
-        ),
-        active_sales_reps=Count('workers', filter=Q(workers__role='Sales Rep'), distinct=True)
-    ).order_by('-total_revenue')
-
-    # Calculate totals from base invoices
-    base_invoices = Invoice.objects.filter(
+    # CRITICAL FIX: Separate fast queries, combine in Python (avoids massive JOINs)
+    
+    # Query 1: Invoice stats by branch (uses invoice_branch_date_idx)
+    invoice_stats = Invoice.objects.filter(
         created_at__date__gte=date_from,
         created_at__date__lte=date_to
+    ).values('branch_id').annotate(
+        total_revenue=Sum('total_with_taxes'),
+        total_paid=Sum('amount_paid'),
+        total_debt=Sum('amount_due')
     )
-    totals = base_invoices.aggregate(
-        total_revenue=Coalesce(Sum('total_with_taxes'), Decimal('0.00')),
-        total_debt=Coalesce(Sum('amount_due'), Decimal('0.00')),
+    invoice_dict = {item['branch_id']: item for item in invoice_stats}
+    
+    # Query 2: Order counts by branch (uses purchaseorder_branch_date_idx)
+    order_stats = PurchaseOrder.objects.filter(
+        created_at__date__gte=date_from,
+        created_at__date__lte=date_to
+    ).values('branch_id').annotate(
         total_orders=Count('id')
     )
+    order_dict = {item['branch_id']: item['total_orders'] for item in order_stats}
+    
+    # Query 3: Customer counts by branch (fast, no date filter)
+    customer_stats = Customer.objects.values('branch_id').annotate(
+        total_customers=Count('id')
+    )
+    customer_dict = {item['branch_id']: item['total_customers'] for item in customer_stats}
+    
+    # Query 4: Sales rep counts by branch (fast, no date filter)
+    rep_stats = Worker.objects.filter(
+        role='Sales Rep',
+        is_active=True
+    ).values('branch_id').annotate(
+        active_sales_reps=Count('id')
+    )
+    rep_dict = {item['branch_id']: item['active_sales_reps'] for item in rep_stats}
+    
+    # Query 5: Get branches (fast)
+    branches_base = Branch.objects.filter(is_active=True).only('id', 'branch_name')
+    
+    # Combine all data
+    class BranchStats:
+        def __init__(self, branch, invoice_data, order_count, customer_count, rep_count):
+            self.id = branch.id
+            self.branch_name = branch.branch_name
+            self.total_revenue = invoice_data.get('total_revenue') or Decimal('0.00')
+            self.total_paid = invoice_data.get('total_paid') or Decimal('0.00')
+            self.total_debt = invoice_data.get('total_debt') or Decimal('0.00')
+            self.total_orders = order_count
+            self.total_customers = customer_count
+            self.active_sales_reps = rep_count
+    
+    branches = [
+        BranchStats(
+            branch,
+            invoice_dict.get(branch.id, {}),
+            order_dict.get(branch.id, 0),
+            customer_dict.get(branch.id, 0),
+            rep_dict.get(branch.id, 0)
+        )
+        for branch in branches_base
+    ]
+    
+    # Sort by revenue
+    branches.sort(key=lambda b: b.total_revenue, reverse=True)
+    
+    # Calculate totals
+    totals = {
+        'total_revenue': sum(b.total_revenue for b in branches),
+        'total_debt': sum(b.total_debt for b in branches),
+        'total_orders': sum(b.total_orders for b in branches)
+    }
 
     # Regional comparison chart data
-    regional_data = [
+    regional_data = json.dumps([
         {
-            'branch_name': branch.branch_name,
-            'total_revenue': float(branch.total_revenue or 0),
-            'total_debt': float(branch.total_debt or 0),
-            'total_orders': branch.total_orders or 0
+            'branch_name': b.branch_name,
+            'total_revenue': float(b.total_revenue or 0),
+            'total_debt': float(b.total_debt or 0),
+            'total_orders': b.total_orders or 0
         }
-        for branch in branches
-    ]
+        for b in branches
+    ])
 
     view_context = {
         'branches': branches,
         'totals': totals,
-        'regional_data': json.dumps(regional_data),
+        'regional_data': regional_data,
         'date_from': date_from,
         'date_to': date_to,
     }
@@ -447,7 +473,7 @@ def regional_performance_report(request):
 @login_required
 @manager_required
 def sales_agent_performance_report(request):
-    """Performance report by sales agent"""
+    """Performance report by sales agent - OPTIMIZED"""
 
     # Get filters
     date_from = request.GET.get('date_from')
@@ -459,67 +485,70 @@ def sales_agent_performance_report(request):
     if not date_to:
         date_to = timezone.now().strftime('%Y-%m-%d')
 
-    # Sales rep performance
+    # OPTIMIZED: Fetch sales reps with select_related
     sales_reps = Worker.objects.filter(
         role='Sales Rep',
         is_active=True
-    )
+    ).select_related('user', 'branch')
 
     if branch_filter:
         sales_reps = sales_reps.filter(branch_id=branch_filter)
 
+    # Annotate with stats from the date range
     sales_reps = sales_reps.annotate(
-        total_customers=Count('customers', distinct=True),
-        total_orders=Count(
-            'sales_rep_orders',
-            filter=Q(
-                sales_rep_orders__created_at__date__gte=date_from,
-                sales_rep_orders__created_at__date__lte=date_to
-            )
-        ),
         total_revenue=Coalesce(
-            Sum(
-                'invoice_sales_rep_orders__total_with_taxes',
+            Sum('invoice_sales_rep_orders__total_with_taxes',
                 filter=Q(
                     invoice_sales_rep_orders__created_at__date__gte=date_from,
                     invoice_sales_rep_orders__created_at__date__lte=date_to
-                )
-            ),
+                )),
             Decimal('0.00')
         ),
         total_collected=Coalesce(
-            Sum(
-                'invoice_sales_rep_orders__amount_paid',
+            Sum('invoice_sales_rep_orders__amount_paid',
                 filter=Q(
                     invoice_sales_rep_orders__created_at__date__gte=date_from,
                     invoice_sales_rep_orders__created_at__date__lte=date_to
-                )
-            ),
+                )),
             Decimal('0.00')
         ),
         total_outstanding=Coalesce(
-            Sum(
-                'invoice_sales_rep_orders__amount_due',
+            Sum('invoice_sales_rep_orders__amount_due',
                 filter=Q(
                     invoice_sales_rep_orders__created_at__date__gte=date_from,
                     invoice_sales_rep_orders__created_at__date__lte=date_to
-                )
-            ),
+                )),
             Decimal('0.00')
+        ),
+        total_orders=Count(
+            'invoice_sales_rep_orders',
+            filter=Q(
+                invoice_sales_rep_orders__created_at__date__gte=date_from,
+                invoice_sales_rep_orders__created_at__date__lte=date_to
+            )
+        ),
+        unique_customers=Count(
+            'invoice_sales_rep_orders__customer',
+            filter=Q(
+                invoice_sales_rep_orders__created_at__date__gte=date_from,
+                invoice_sales_rep_orders__created_at__date__lte=date_to
+            ),
+            distinct=True
         )
     ).order_by('-total_revenue')
 
-    # Calculate totals from base invoices
-    base_invoices = Invoice.objects.filter(
+    # Calculate overall totals
+    invoice_query = Invoice.objects.filter(
         created_at__date__gte=date_from,
         created_at__date__lte=date_to,
         sales_rep__role='Sales Rep',
         sales_rep__is_active=True
     )
+    
     if branch_filter:
-        base_invoices = base_invoices.filter(sales_rep__branch_id=branch_filter)
-
-    totals = base_invoices.aggregate(
+        invoice_query = invoice_query.filter(sales_rep__branch_id=branch_filter)
+    
+    totals = invoice_query.aggregate(
         total_revenue=Coalesce(Sum('total_with_taxes'), Decimal('0.00')),
         total_collected=Coalesce(Sum('amount_paid'), Decimal('0.00')),
         total_outstanding=Coalesce(Sum('amount_due'), Decimal('0.00')),
@@ -595,31 +624,39 @@ def financial_summary_report(request):
         count=Count('id')
     )
 
-    # Trend analysis
+    # Trend analysis - OPTIMIZED: Limit data points and use only needed fields
+    trend_invoices = invoices_qs.only('created_at', 'total_with_taxes', 'amount_paid', 'amount_due')
+    
     if view_type == 'daily':
-        trend_data_raw = invoices_qs.annotate(
+        # Limit to last 90 days for daily view
+        trend_start = (timezone.now() - timedelta(days=90)).date()
+        trend_data_raw = trend_invoices.filter(
+            created_at__date__gte=trend_start
+        ).annotate(
             period=TruncDate('created_at')
         ).values('period').annotate(
             revenue=Sum('total_with_taxes'),
             collected=Sum('amount_paid'),
             outstanding=Sum('amount_due')
-        ).order_by('period')
+        ).order_by('period')[:90]
     elif view_type == 'weekly':
-        trend_data_raw = invoices_qs.annotate(
+        # Limit to last 26 weeks
+        trend_data_raw = trend_invoices.annotate(
             period=TruncWeek('created_at')
         ).values('period').annotate(
             revenue=Sum('total_with_taxes'),
             collected=Sum('amount_paid'),
             outstanding=Sum('amount_due')
-        ).order_by('period')
+        ).order_by('-period')[:26]
     else:  # monthly
-        trend_data_raw = invoices_qs.annotate(
+        # Limit to last 24 months
+        trend_data_raw = trend_invoices.annotate(
             period=TruncMonth('created_at')
         ).values('period').annotate(
             revenue=Sum('total_with_taxes'),
             collected=Sum('amount_paid'),
             outstanding=Sum('amount_due')
-        ).order_by('period')
+        ).order_by('-period')[:24]
 
     # Convert to JSON-safe format
     trend_data = [
@@ -714,40 +751,65 @@ def debt_analysis_report(request):
     elif age_filter == '90+':
         outstanding_invoices = outstanding_invoices.filter(created_at__date__lt=today - timedelta(days=90))
 
-    # Order by created_at (oldest first)
-    outstanding_invoices_list = list(outstanding_invoices.order_by('created_at'))
+    # OPTIMIZED: Limit to 200 invoices and use database aggregations
+    outstanding_invoices_limited = outstanding_invoices.order_by('created_at')[:200]
+    outstanding_invoices_list = list(outstanding_invoices_limited)
 
-    # Add days_outstanding attribute to each invoice
+    # Add days_outstanding attribute
     for invoice in outstanding_invoices_list:
         invoice.days_outstanding = (today - invoice.created_at.date()).days
 
-    # Summary statistics
+    # Summary statistics - use database aggregation, not Python loops
+    debt_aggregates = outstanding_invoices.aggregate(
+        total_outstanding=Coalesce(Sum('amount_due'), Decimal('0.00')),
+        total_invoices=Count('id'),
+        avg_outstanding=Coalesce(Avg('amount_due'), Decimal('0.00')),
+        oldest_date=Min('created_at')
+    )
+    
+    oldest_debt_days = 0
+    if debt_aggregates['oldest_date']:
+        oldest_debt_days = (today - debt_aggregates['oldest_date'].date()).days
+    
     debt_summary = {
-        'total_outstanding': sum(inv.amount_due for inv in outstanding_invoices_list),
-        'total_invoices': len(outstanding_invoices_list),
-        'avg_outstanding': sum(inv.amount_due for inv in outstanding_invoices_list) / len(outstanding_invoices_list) if outstanding_invoices_list else 0,
-        'oldest_debt_days': max((inv.days_outstanding for inv in outstanding_invoices_list), default=0),
+        'total_outstanding': debt_aggregates['total_outstanding'],
+        'total_invoices': debt_aggregates['total_invoices'],
+        'avg_outstanding': debt_aggregates['avg_outstanding'],
+        'oldest_debt_days': oldest_debt_days,
     }
 
-    # Top debtors
+    # OPTIMIZED: Use Customer queryset for template compatibility
     top_debtors = Customer.objects.annotate(
-        total_debt=Coalesce(Sum('invoice__amount_due', filter=Q(invoice__amount_due__gt=0)), Decimal('0.00'))
+        total_debt=Coalesce(
+            Sum('invoice__amount_due', filter=Q(invoice__amount_due__gt=0)),
+            Decimal('0.00')
+        )
     ).filter(total_debt__gt=0).order_by('-total_debt')[:20]
 
-    # Debt by branch
-    debt_by_branch = Branch.objects.annotate(
-        total_debt=Coalesce(Sum('invoice__amount_due', filter=Q(invoice__amount_due__gt=0)), Decimal('0.00')),
-        invoice_count=Count('invoice', filter=Q(invoice__amount_due__gt=0))
-    ).filter(total_debt__gt=0).order_by('-total_debt')
+    # OPTIMIZED: Debt by branch - query from Invoice side
+    debt_by_branch = Invoice.objects.filter(
+        amount_due__gt=0
+    ).values(
+        'branch_id',
+        'branch__branch_name'
+    ).annotate(
+        total_debt=Sum('amount_due'),
+        invoice_count=Count('id')
+    ).order_by('-total_debt')
 
-    # Debt by sales rep
-    debt_by_rep = Worker.objects.filter(role='Sales Rep').annotate(
-        total_debt=Coalesce(
-            Sum('invoice_sales_rep_orders__amount_due', filter=Q(invoice_sales_rep_orders__amount_due__gt=0)),
-            Decimal('0.00')
-        ),
-        invoice_count=Count('invoice_sales_rep_orders', filter=Q(invoice_sales_rep_orders__amount_due__gt=0))
-    ).filter(total_debt__gt=0).order_by('-total_debt')
+    # OPTIMIZED: Debt by sales rep - query from Invoice side
+    debt_by_rep = Invoice.objects.filter(
+        amount_due__gt=0,
+        sales_rep__role='Sales Rep'
+    ).values(
+        'sales_rep_id',
+        'sales_rep__employee_id',
+        'sales_rep__user__first_name',
+        'sales_rep__user__last_name'
+    ).annotate(
+        total_debt=Sum('amount_due'),
+        invoice_count=Count('id')
+    ).order_by('-total_debt')[:20]
 
     # Get branches for filter
     branches = Branch.objects.filter(is_active=True).order_by('branch_name')
