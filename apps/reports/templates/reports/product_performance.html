@@ -139,7 +139,7 @@
             <option value="-total_revenue" {% if sort_by == '-total_revenue' %}selected{% endif %}>{% trans "Revenue (High-Low)" %}</option>
             <option value="-total_quantity_sold" {% if sort_by == '-total_quantity_sold' %}selected{% endif %}>{% trans "Quantity (High-Low)" %}</option>
             <option value="-number_of_orders" {% if sort_by == '-number_of_orders' %}selected{% endif %}>{% trans "Orders (High-Low)" %}</option>
-            <option value="product__product_code" {% if sort_by == 'product__product_code' %}selected{% endif %}>{% trans "Product Code" %}</option>
+            <option value="stock__product__product_code" {% if sort_by == 'stock__product__product_code' %}selected{% endif %}>{% trans "Product Code" %}</option>
           </select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
@@ -190,7 +190,8 @@
               <thead class="table-light">
                 <tr>
                   <th>{% trans "Product Code" %}</th>
-                  <th>{% trans "Product Name" %}</th>
+                  <th>{% trans "Generic Name" %}</th>
+                  <th>{% trans "Brand Name" %}</th>
                   <th class="text-end">{% trans "Unit Price" %}</th>
                   <th class="text-end">{% trans "Qty Sold" %}</th>
                   <th class="text-end">{% trans "Revenue" %}</th>
@@ -202,6 +203,7 @@
                 {% for product in product_sales %}
                 <tr>
                   <td><strong>{{ product.product_code }}</strong></td>
+                  <td>{{ product.generic_name }}</td>
                   <td>{{ product.product_name }}</td>
                   <td class="text-end amount-bold">{{ product.unit_price|floatformat:2|intcomma }}</td>
                   <td class="text-end amount-bold">{{ product.quantity_sold|intcomma }}</td>
@@ -213,7 +215,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="7" class="text-center text-muted py-4">
+                  <td colspan="8" class="text-center text-muted py-4">
                     {% trans "No product sales data available" %}
                   </td>
                 </tr>
@@ -262,8 +264,14 @@ if (topProductsData && topProductsData.length > 0) {
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           padding: 12,
           callbacks: {
+            title: function(context) {
+              const index = context[0].dataIndex;
+              const genericName = topProductsData[index].generic_name;
+              const productCode = topProductsData[index].product;
+              return genericName + ' (' + productCode + ')';
+            },
             label: function(context) {
-              return context.parsed.x.toLocaleString() + ' FCFA';
+              return 'Revenue: ' + context.parsed.x.toLocaleString() + ' FCFA';
             }
           }
         }
@@ -313,8 +321,14 @@ if (topProductsQuantityData && topProductsQuantityData.length > 0) {
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           padding: 12,
           callbacks: {
+            title: function(context) {
+              const index = context[0].dataIndex;
+              const genericName = topProductsQuantityData[index].generic_name;
+              const productCode = topProductsQuantityData[index].product;
+              return genericName + ' (' + productCode + ')';
+            },
             label: function(context) {
-              return context.parsed.x.toLocaleString() + ' units';
+              return 'Quantity: ' + context.parsed.x.toLocaleString() + ' units';
             }
           }
         }

@@ -779,17 +779,46 @@ def debt_analysis_report(request):
     }
 
     # OPTIMIZED: Use Customer queryset for template compatibility
+    # Build Q filter for branch and age
+    debt_filter_q = Q(invoice__amount_due__gt=0)
+    if branch_filter:
+        debt_filter_q &= Q(invoice__branch_id=branch_filter)
+    if age_filter == '0-30':
+        debt_filter_q &= Q(invoice__created_at__date__gte=today - timedelta(days=30))
+    elif age_filter == '31-60':
+        debt_filter_q &= Q(invoice__created_at__date__lt=today - timedelta(days=30), 
+                          invoice__created_at__date__gte=today - timedelta(days=60))
+    elif age_filter == '61-90':
+        debt_filter_q &= Q(invoice__created_at__date__lt=today - timedelta(days=60), 
+                          invoice__created_at__date__gte=today - timedelta(days=90))
+    elif age_filter == '90+':
+        debt_filter_q &= Q(invoice__created_at__date__lt=today - timedelta(days=90))
+    
     top_debtors = Customer.objects.annotate(
         total_debt=Coalesce(
-            Sum('invoice__amount_due', filter=Q(invoice__amount_due__gt=0)),
+            Sum('invoice__amount_due', filter=debt_filter_q),
             Decimal('0.00')
         )
     ).filter(total_debt__gt=0).order_by('-total_debt')[:20]
 
-    # OPTIMIZED: Debt by branch - query from Invoice side
-    debt_by_branch = Invoice.objects.filter(
-        amount_due__gt=0
-    ).values(
+    # OPTIMIZED: Debt by branch - apply age filter
+    debt_by_branch_qs = Invoice.objects.filter(amount_due__gt=0)
+    if age_filter == '0-30':
+        debt_by_branch_qs = debt_by_branch_qs.filter(created_at__date__gte=today - timedelta(days=30))
+    elif age_filter == '31-60':
+        debt_by_branch_qs = debt_by_branch_qs.filter(
+            created_at__date__lt=today - timedelta(days=30),
+            created_at__date__gte=today - timedelta(days=60)
+        )
+    elif age_filter == '61-90':
+        debt_by_branch_qs = debt_by_branch_qs.filter(
+            created_at__date__lt=today - timedelta(days=60),
+            created_at__date__gte=today - timedelta(days=90)
+        )
+    elif age_filter == '90+':
+        debt_by_branch_qs = debt_by_branch_qs.filter(created_at__date__lt=today - timedelta(days=90))
+    
+    debt_by_branch = debt_by_branch_qs.values(
         'branch_id',
         'branch__branch_name'
     ).annotate(
@@ -797,11 +826,29 @@ def debt_analysis_report(request):
         invoice_count=Count('id')
     ).order_by('-total_debt')
 
-    # OPTIMIZED: Debt by sales rep - query from Invoice side
-    debt_by_rep = Invoice.objects.filter(
+    # OPTIMIZED: Debt by sales rep - apply branch and age filters
+    debt_by_rep_qs = Invoice.objects.filter(
         amount_due__gt=0,
         sales_rep__role='Sales Rep'
-    ).values(
+    )
+    if branch_filter:
+        debt_by_rep_qs = debt_by_rep_qs.filter(branch_id=branch_filter)
+    if age_filter == '0-30':
+        debt_by_rep_qs = debt_by_rep_qs.filter(created_at__date__gte=today - timedelta(days=30))
+    elif age_filter == '31-60':
+        debt_by_rep_qs = debt_by_rep_qs.filter(
+            created_at__date__lt=today - timedelta(days=30),
+            created_at__date__gte=today - timedelta(days=60)
+        )
+    elif age_filter == '61-90':
+        debt_by_rep_qs = debt_by_rep_qs.filter(
+            created_at__date__lt=today - timedelta(days=60),
+            created_at__date__gte=today - timedelta(days=90)
+        )
+    elif age_filter == '90+':
+        debt_by_rep_qs = debt_by_rep_qs.filter(created_at__date__lt=today - timedelta(days=90))
+    
+    debt_by_rep = debt_by_rep_qs.values(
         'sales_rep_id',
         'sales_rep__employee_id',
         'sales_rep__user__first_name',
@@ -840,20 +887,29 @@ def inventory_levels_report(request):
     low_stock_only = request.GET.get('low_stock') == 'true'
     sort_by = request.GET.get('sort', '-total_stock')
 
-    # Base queryset
+    # Base queryset - OPTIMIZED with select_related
     from apps.stock.models import Stock, InventoryTransaction
     from apps.products.models import Product
 
-    stock_qs = Stock.objects.select_related('product', 'branch', 'batch').all()
+    stock_qs = Stock.objects.select_related(
+        'product__brand_name', 
+        'branch', 
+        'batch'
+    ).all()
 
     if branch_filter:
         stock_qs = stock_qs.filter(branch_id=branch_filter)
     if product_filter:
         stock_qs = stock_qs.filter(product__product_code__icontains=product_filter)
 
-    # Annotate with additional info
+    # Filter low stock (less than 10 units) - BEFORE annotation for efficiency
+    if low_stock_only:
+        stock_qs = stock_qs.filter(total_stock__lt=10)
+
+    # Annotate with additional info - INCLUDE GENERIC NAME
     stock_items = stock_qs.annotate(
         product_name=F('product__brand_name__brand_name'),
+        generic_name=F('product__brand_name__generic_name'),
         branch_name=F('branch__branch_name'),
         unit_price=F('product__unit_price'),
         stock_value=ExpressionWrapper(
@@ -861,17 +917,13 @@ def inventory_levels_report(request):
             output_field=DecimalField()
         )
     ).values(
-        'id', 'product__product_code', 'product_name', 'branch_name',
+        'id', 'product__product_code', 'product_name', 'generic_name', 'branch_name',
         'batch__batch_number', 'batch__expiry_date', 'quantity', 'total_inventory',
         'total_sold', 'total_stock', 'unit_price', 'stock_value'
     )
 
-    # Filter low stock (less than 10 units)
-    if low_stock_only:
-        stock_items = stock_items.filter(total_stock__lt=10)
-
-    # Sort
-    stock_items = stock_items.order_by(sort_by)
+    # Sort - limit to 1000 for performance
+    stock_items = stock_items.order_by(sort_by)[:1000]
 
     # Calculate totals
     totals = stock_qs.aggregate(
@@ -923,20 +975,21 @@ def product_performance_report(request):
     # Base queryset for invoice items
     from apps.orders.models import InvoiceOrderItem
 
-    items_qs = InvoiceOrderItem.objects.select_related('product', 'invoice').all()
+    items_qs = InvoiceOrderItem.objects.select_related('stock__product__brand_name', 'invoice_order').all()
 
-    # Apply filters
+    # Apply filters (FIXED: use invoice_order, not invoice)
     if date_from:
-        items_qs = items_qs.filter(invoice__created_at__date__gte=date_from)
+        items_qs = items_qs.filter(invoice_order__created_at__date__gte=date_from)
     if date_to:
-        items_qs = items_qs.filter(invoice__created_at__date__lte=date_to)
+        items_qs = items_qs.filter(invoice_order__created_at__date__lte=date_to)
     if branch_filter:
-        items_qs = items_qs.filter(invoice__branch_id=branch_filter)
+        items_qs = items_qs.filter(invoice_order__branch_id=branch_filter)
 
-    # Group by product and calculate metrics
+    # Group by product and calculate metrics - INCLUDE GENERIC NAME & BRAND NAME
     product_sales = items_qs.values(
         'stock__product__product_code',
         'stock__product__brand_name__brand_name',
+        'stock__product__brand_name__generic_name',
         'stock__product__unit_price'
     ).annotate(
         total_quantity_sold=Sum('quantity'),
@@ -950,6 +1003,7 @@ def product_performance_report(request):
         product_sales_list.append({
             'product_code': item['stock__product__product_code'],
             'product_name': item['stock__product__brand_name__brand_name'] or 'N/A',
+            'generic_name': item['stock__product__brand_name__generic_name'] or 'N/A',
             'unit_price': float(item['stock__product__unit_price'] or 0),
             'quantity_sold': int(item['total_quantity_sold'] or 0),
             'revenue': float(item['total_revenue'] or 0),
@@ -963,17 +1017,18 @@ def product_performance_report(request):
         total_revenue=Coalesce(Sum(F('quantity') * F('price')), Decimal('0.00'))
     )
 
-    # Top 10 products chart data (by revenue)
+    # Top 10 products chart data (by revenue) - INCLUDE GENERIC NAME
     top_products = product_sales[:10]
     top_products_data = [
         {
             'product': item['stock__product__product_code'],
+            'generic_name': item['stock__product__brand_name__generic_name'] or 'N/A',
             'revenue': float(item['total_revenue'] or 0)
         }
         for item in top_products
     ]
 
-    # Top 10 products by quantity sold
+    # Top 10 products by quantity sold - INCLUDE GENERIC NAME
     top_products_by_quantity = sorted(
         product_sales_list,
         key=lambda x: x['quantity_sold'],
@@ -982,6 +1037,7 @@ def product_performance_report(request):
     top_products_quantity_data = [
         {
             'product': item['product_code'],
+            'generic_name': item['generic_name'],
             'quantity': item['quantity_sold']
         }
         for item in top_products_by_quantity

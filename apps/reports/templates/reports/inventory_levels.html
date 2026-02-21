@@ -146,7 +146,7 @@
         <div class="col-md-3">
           <label class="form-label">{% trans "Product Code" %}</label>
           <input type="text" name="product" class="form-control form-control-sm"
-                 placeholder="Search by product code" value="{{ product_filter }}">
+                 placeholder="Search by product code" value="{{ product_filter|default:'' }}">
         </div>
         <div class="col-md-2">
           <label class="form-label">{% trans "Stock Level" %}</label>
@@ -184,7 +184,8 @@
           <thead class="table-light">
             <tr>
               <th>{% trans "Product Code" %}</th>
-              <th>{% trans "Product Name" %}</th>
+              <th>{% trans "Generic Name" %}</th>
+              <th>{% trans "Brand Name" %}</th>
               <th>{% trans "Branch" %}</th>
               <th>{% trans "Batch" %}</th>
               <th>{% trans "Expiry Date" %}</th>
@@ -199,6 +200,7 @@
             {% for item in stock_items %}
             <tr>
               <td><strong>{{ item.product__product_code }}</strong></td>
+              <td>{{ item.generic_name|default:"N/A" }}</td>
               <td>{{ item.product_name|default:"N/A" }}</td>
               <td>{{ item.branch_name }}</td>
               <td>{{ item.batch__batch_number|default:"N/A" }}</td>
@@ -219,7 +221,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="10" class="text-center text-muted py-4">
+              <td colspan="11" class="text-center text-muted py-4">
                 {% trans "No stock data available" %}
               </td>
             </tr>
